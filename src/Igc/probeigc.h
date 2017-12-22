@@ -16,7 +16,8 @@
 #ifndef __PROBEIGC_H_
 #define __PROBEIGC_H_
 
-#include    "modelIGC.h"
+#include "igc.h"
+#include "modelIGC.h"
 
 class CprobeIGC : public TmodelIGC<IprobeIGC>
 {

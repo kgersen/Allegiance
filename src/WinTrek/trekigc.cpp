@@ -17,6 +17,7 @@
 #include "regkey.h"
 #include <zreg.h>
 #include "badwords.h"
+#include "valuetransform.h"
 
 class ClusterSiteImpl : public ClusterSite
 {
@@ -769,7 +770,7 @@ private:
         // realistic as this may be, it does not reflect the player's 
         // expectations.  Thus, use the throttle instead. 
         const ControlData&  controls = m_pship->GetControls();
-        return max(controls.jsValues[c_axisThrottle] * 0.5f + 0.5f, 
+        return std::max(controls.jsValues[c_axisThrottle] * 0.5f + 0.5f, 
             (m_pship->GetStateM() & afterburnerButtonIGC) ? 1.0f : 0.0f);
     }
 
@@ -779,7 +780,7 @@ private:
         const IhullTypeIGC* pht = m_pship->GetHullType();
         float fThrust = m_pship->GetHullType()->GetThrust() 
             / m_pship->GetHullType()->GetSideMultiplier();
-        float fForwardThrust = max(0, -1 * m_pship->GetEngineVector() 
+        float fForwardThrust = std::max(0.0f, -1 * m_pship->GetEngineVector() 
             * m_pship->GetOrientation().GetBackward());
         Vector vectSideThrust = m_pship->GetEngineVector() + 
             fForwardThrust * m_pship->GetOrientation().GetBackward();
@@ -1111,7 +1112,7 @@ private:
     void UpdateEngineSoundLevels(DWORD dwElapsedTime)
     {
         float fNewThrustSoundLevel = ForwardThrustFraction();
-        float fNewTurnSoundLevel = min(1.0f, max(TurnRate() * 20, SidewaysThrustFraction()));
+        float fNewTurnSoundLevel = std::min(1.0f, std::max(TurnRate() * 20, SidewaysThrustFraction()));
 
         // if we were playing this sound a moment ago...
         if (wasSilent != m_stateLast)
@@ -1121,15 +1122,15 @@ private:
 
             // clip the new sound level according to the max rate of change 
             // allowed.
-            fNewThrustSoundLevel = max(
+            fNewThrustSoundLevel = std::max(
                 m_fThrustSoundLevel - cfMaxThrustRateOfChange * dwElapsedTime,
-                min(
+                std::min(
                     m_fThrustSoundLevel + cfMaxThrustRateOfChange * dwElapsedTime,
                     fNewThrustSoundLevel
                 ));
-            fNewTurnSoundLevel = max(
+            fNewTurnSoundLevel = std::max(
                 m_fTurnSoundLevel - cfMaxTurnRateOfChange * dwElapsedTime,
-                min(
+                std::min(
                     m_fTurnSoundLevel + cfMaxTurnRateOfChange * dwElapsedTime,
                     fNewTurnSoundLevel
                 ));
@@ -1590,7 +1591,7 @@ class ThingSiteImpl : public ThingSitePrivate
             if (m_pthing->GetFlareCount() < 4.0f)
             {
                 TRef<Number> ptimeArg = GetWindow()->GetTime();
-                TRef<Number> ptime = Subtract(ptimeArg, ptimeArg->MakeConstant());
+                TRef<Number> ptime = NumberTransform::Subtract(ptimeArg, ptimeArg->MakeConstant());
 
                 m_pthing->AddFlare(
                     new TextureGeo(
@@ -1742,8 +1743,8 @@ class ThingSiteImpl : public ThingSitePrivate
             Number* ptime = GetWindow()->GetTime();
             TRef<AnimatedImage> pimage = 
                 GetWindow()->LoadAnimatedImage(
-                    Divide(
-                        Subtract(ptime, ptime->MakeConstant()),
+                    NumberTransform::Divide(
+                        NumberTransform::Subtract(ptime, ptime->MakeConstant()),
                         new Number(2)  // number of seconds to animate through images
                     ),
                     ZString(textureName) + "bmp"
@@ -2106,7 +2107,7 @@ class ThingSiteImpl : public ThingSitePrivate
 
             if (Training::IsTraining ())
             {
-                if ((trekClient.GetShip ()->GetSide () != side) && (Training::GetTrainingMissionID () != Training::c_TM_6_Practice_Arena))
+                if ((trekClient.GetShip()->GetSide() != side) && (Training::GetTrainingMissionID() != Training::c_TM_6_Practice_Arena) && (Training::GetTrainingMissionID() != Training::c_TM_10_Free_Flight))
                     return false;
             }
             return m_sideVisibility.fVisible();
@@ -2601,8 +2602,6 @@ IObject*    WinTrekClient::LoadRadarIcon(const char* szName)
     {
         psurface = GetModeler()->LoadSurface(ZString(szName) + "bmp", true);
         assert (psurface);
-
-        //psurface->SetColorKey(Color(0, 0, 0));
     }
     else
         psurface = NULL;
@@ -2910,6 +2909,25 @@ void WinTrekClient::DestroyTeleportProbe(IprobeIGC* pprobe)
     }
 }
 
+void WinTrekClient::PostPlainText(bool bCritical, const char* pszText)
+{
+    if (GetWindow()->GetConsoleImage())
+    {
+        assert(pszText);
+
+        if (bCritical)
+        {
+            PlaySoundEffect(newCriticalMsgSound);
+            GetWindow()->GetConsoleImage()->GetConsoleData()->SetCriticalTipText(pszText);
+        }
+        else
+        {
+            PlaySoundEffect(newNonCriticalMsgSound);
+            GetWindow()->GetConsoleImage()->GetConsoleData()->SetTipText(pszText);
+        }
+    }
+}
+
 void WinTrekClient::PostText(bool bCritical, const char* pszText, ...)
 {
     if (GetWindow()->GetConsoleImage())
@@ -2923,16 +2941,7 @@ void WinTrekClient::PostText(bool bCritical, const char* pszText, ...)
         _vsnprintf(bfr, size, pszText, vl);
         va_end(vl);
 
-        if (bCritical) 
-        {
-            PlaySoundEffect(newCriticalMsgSound);
-            GetWindow()->GetConsoleImage()->GetConsoleData()->SetCriticalTipText(bfr);
-        }
-        else
-        {
-            PlaySoundEffect(newNonCriticalMsgSound);
-            GetWindow()->GetConsoleImage()->GetConsoleData()->SetTipText(bfr);
-        }
+        PostPlainText(bCritical, bfr);
     }
 }
 
@@ -3623,7 +3632,7 @@ HRESULT WinTrekClient::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFr
 		if (pfm->fmid == FM_S_MISSIONDEF)
 		{
 			CASTPFM(pfmMissionDef, S, MISSIONDEF, pfm);
-			//char szAddr[16];
+			//char szAddr[64];
 			pthis->GetIPAddress(cnxnFrom, pfmMissionDef->szServerAddr); // get the real addr 
 			//Strncpy(pfmMissionDef->szServerAddr,szAddr,16);
 			//strcpy_s(pfmMissionDef->szServerAddr,16,szAddr); // IMAGO REVIEW CRASH 7/24/09
@@ -3857,9 +3866,14 @@ bool WinTrekClient::UseRipcord(IshipIGC* pship, ImodelIGC*  pmodel)
             pship->SetCurrentTurnRate(c_axisRoll, 0.0f);
 
             pship->SetLastUpdate(lastUpdate);
-            pship->SetBB(lastUpdate, lastUpdate, 0.0f);
+            pship->SetBB(lastUpdate, lastUpdate, 0.0f); 
 
             pship->SetCluster(pcluster);
+        }
+        
+        if (pship == trekClient.GetShip()) {
+            trekClient.PlaySoundEffect(jumpSound, static_cast<ImodelIGC*>(pship)); //Not using trekClient. messes up system sound over time. Persistent after quiting Allegiance.
+            trekClient.PostText(true, "");
         }
 
         return true;
@@ -4021,7 +4035,7 @@ void WinTrekClient::DamageShipEvent(Time now,
                 if (pcredit->GetSide() && pcredit->GetSide() != GetSide())
                 {
                     // damaged by an enemy - adjust the groove level
-                    m_nGrooveLevel = max(m_nGrooveLevel, 2);
+                    m_nGrooveLevel = std::max(m_nGrooveLevel, 2);
                     m_vtimeGrooveDrops[2] = Time::Now() + c_fGrooveLevelDuration;
                 }
             }
@@ -4101,6 +4115,9 @@ void WinTrekClient::HitWarpEvent(IshipIGC* ship, IwarpIGC* warp)
                                   (alephOrientation.GetUp() * random(2.0f, 5.0f)) +
                                   (alephOrientation.GetRight() * random(2.0f, 5.0f)) -
                                   (ship->GetRadius() + 5.0f) * backward);
+                if (ship == trekClient.GetShip())
+                    trekClient.PlaySoundEffect(jumpSound, static_cast<ImodelIGC*>(ship));
+
                 {
                     Time    t = ship->GetLastUpdate();
                     ship->SetBB(t, t, 0.0f);
@@ -4213,7 +4230,10 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
         else if (CHAT_INDIVIDUAL == ctRecipient
             && ((NA == oidRecipient) || (trekClient.GetShipID() == oidRecipient)))
         {
-            PlaySoundEffect(newPersonalMsgSound);
+            if (Training::IsTraining())
+                PlaySoundEffect(newChatMsgFromCommanderSound);
+            else
+                PlaySoundEffect(newPersonalMsgSound);
         }
         else
         {
@@ -4235,7 +4255,7 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
     if (Training::IsTraining ())
     {
         // prevent players from giving commands to themselves
-        if (pshipSender && (oidRecipient == pshipSender->GetObjectID ()))
+        if (pshipSender && (oidRecipient == pshipSender->GetObjectID ()) && !Training::CommandViewEnabled())
             pmodelTarget = NULL;
 
         // send out the chat we are getting to see if we are waiting for it...
@@ -5220,7 +5240,7 @@ int WinTrekClient::GetGrooveLevel()
                     bFiring = true;
 
                 IprojectileTypeIGC* ppt = pweapon->GetProjectileType();
-                fMaximumRange = max(fMaximumRange, ppt->GetSpeed() * pweapon->GetLifespan());
+                fMaximumRange = std::max(fMaximumRange, ppt->GetSpeed() * pweapon->GetLifespan());
             }
         }
 
@@ -5234,7 +5254,7 @@ int WinTrekClient::GetGrooveLevel()
                 bFiring = true;
 
             ImissileTypeIGC* pmt = pmagazine->GetMissileType();
-            fMaximumRange = max(fMaximumRange, 
+            fMaximumRange = std::max(fMaximumRange, 
                 pmt->GetLifespan()*(pmt->GetInitialSpeed()+0.5f*pmt->GetLifespan()*pmt->GetAcceleration()));
         }
     }
@@ -5279,7 +5299,7 @@ int WinTrekClient::GetGrooveLevel()
     // if we see enemies or enemies see us, be afraid
     if (bEnemiesSighted || MyPlayerInfo()->GetShipStatus().GetDetected())
     {
-        m_nGrooveLevel = max(m_nGrooveLevel, 1);
+        m_nGrooveLevel = std::max(m_nGrooveLevel, 1);
         m_vtimeGrooveDrops[1] = Time::Now() + c_fGrooveLevelDuration;
     }
 
@@ -5297,7 +5317,7 @@ int WinTrekClient::GetGrooveLevel()
         case c_cwMinerThreatened:
         case c_cwBuilderThreatened:
         case c_cwStationThreatened:
-            m_nGrooveLevel = max(m_nGrooveLevel, 1);
+            m_nGrooveLevel = std::max(m_nGrooveLevel, 1);
             m_vtimeGrooveDrops[1] = Time::Now() + c_fGrooveLevelDuration;
             break;
         }
@@ -5313,7 +5333,7 @@ int WinTrekClient::GetGrooveLevel()
     if (bEnemiesInRange && bFiring 
         || bEnemiesInRangeShootingAtMe)
     {
-        m_nGrooveLevel = max(m_nGrooveLevel, 2);
+        m_nGrooveLevel = std::max(m_nGrooveLevel, 2);
         m_vtimeGrooveDrops[2] = Time::Now() + c_fGrooveLevelDuration;
     }
 

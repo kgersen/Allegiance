@@ -21,7 +21,7 @@ void TextTokenImpl::SetErrorUnexpected()
         SetError("Unexpected string " + m_string);
     } else if (m_type == Number) {
         SetError("Unexpected number " + ZString(m_numberValue));
-    } else if (m_type == NULL) {
+    } else if (m_type == 0) {
         SetError("Unexpected end of file");
     } else {
         ZString str;

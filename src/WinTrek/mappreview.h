@@ -1,5 +1,8 @@
 #ifndef _mappreview_h_
 #define _mappreview_h_
+
+#include <controls.h>
+
 /*
 **
 **  File:	mappreview.h

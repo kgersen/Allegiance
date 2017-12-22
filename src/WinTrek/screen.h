@@ -25,7 +25,7 @@ public:
 
 TRef<Screen> CreateTeamScreen(Modeler* pmodeler);
 TRef<Screen> CreateGameScreen(Modeler* pmodeler);
-TRef<Screen> CreateIntroScreen(Modeler* pmodeler);
+TRef<Screen> CreateIntroScreen(Modeler* pmodeler, UiEngine& uiEngine, bool bUseOldUi);
 TRef<Screen> CreateNewGameScreen(Modeler* pmodeler);
 TRef<Screen> CreateGameOverScreen(Modeler* pmodeler);
 TRef<Screen> CreateLeaderBoardScreen(Modeler* pmodeler, ZString strCharacter);
@@ -47,6 +47,7 @@ TRef<Screen> CreateGameStartingScreen(Modeler* pmodeler);
 TRef<IPopup> CreateMissionParametersPopup(Modeler* pmodeler);
 
 extern bool g_bQuickstart;
+extern bool g_bAutomaticallySkipMotdScreen;
 extern bool g_bReloaded;   // as in after AutoUpdate
 extern int  g_civStart;
 extern bool bStartTraining;

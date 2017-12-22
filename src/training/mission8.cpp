@@ -27,6 +27,7 @@
 #include "SetCommandAction.h"
 #include "notcondition.h"
 #include "orcondition.h"
+#include "andcondition.h"
 #include "CreateWaypointAction.h"
 #include "SetControlConstraintsAction.h"
 #include "SetControlsAction.h"
@@ -41,7 +42,7 @@
 #include "SetCargoNanAction.h"
 #include "ResetAction.h"
 #include "ResetShipAction.h"
-//#include "igc.h"
+#include "objectwithinradiuscondition.h";
 
 namespace Training
 {
@@ -69,43 +70,42 @@ namespace Training
 
 	void Mission8::CreateUniverse(void)
 	{
-		LoadUniverse("training_nan", 3, 1051); // Rix Scout in sector 1051
-
+		LoadUniverse("training_nan", 685, 1051); // Adv Rix Scout in sector 1051; 3 (old) vs 685 difference: scan range reduced from 50000 to 3000 
 		trekClient.fGroupFire = true;
 
-		ImissionIGC*	pCoreU = trekClient.GetCore();
-		ImodelIGC*		pStationU = pCoreU->GetModel(OT_station, 1051);
-        IshipIGC*       pShipU = trekClient.GetShip();
-		IshipIGC*		pCommanderU = pCoreU->GetShip(m_commanderID);
-        pCommanderU->SetStation (static_cast<IstationIGC*> (pStationU));
+        pShip = trekClient.GetShip();
+        pStation = trekClient.GetSide()->GetStations()->first()->data();
+        pMission = trekClient.GetCore();
+        homeRedDoor = pStation->GetPosition();
+        homeRedDoor.x += 50.0f;
+        homeRedDoor.y += -200.0f;
+        homeRedDoor.z += -20.0f;
+
+		IshipIGC*		pCommanderU = pMission->GetShip(m_commanderID);
+        pCommanderU->SetStation (static_cast<IstationIGC*> (pStation));
         pCommanderU->SetCommand (c_cmdAccepted, NULL, c_cidDoNothing);
         pCommanderU->SetCommand (c_cmdCurrent, NULL, c_cidDoNothing);
         pCommanderU->SetAutopilot (false);
 
-		IsideIGC* frside = pCoreU->GetSide(0);
-		pShipU->SetSide(frside);
-		pShipU->SetPosition(Vector(-1500.0f, 1500.0f, 0.0f));
+        pShip->SetPosition(Vector(-1500.0f, 1500.0f, 0.0f));
 
-        // take one of the guns off the ship
-        IpartIGC*       pPart = pShipU->GetMountedPart (ET_Weapon, 0);
-        if (pPart)
-            pPart->Terminate ();
+        //Add tech, so nan2 is allowed on undock
+        TechTreeBitMask ttbm;
+        ttbm.ClearAll();
+        ttbm |= trekClient.GetCore()->GetPartType(190)->GetEffectTechs();
+        pShip->GetSide()->ApplyDevelopmentTechs(ttbm);
 
-        // Stick gat on the front
-        AddPartToShip (33, 0, 0);
 		// Take out the default probe
-		pPart = pShipU->GetMountedPart(ET_Dispenser, 0);
-
+        IpartIGC* pPart = pShip->GetMountedPart(ET_Dispenser, 0);
 		if (pPart) {
 			pPart->Terminate();
 		}
-
 		// Put in a prox 1
 		AddPartToShip(59, 0, 0x7fff);
 
 		// Load a cargo a little more appropriate for a nan
-		for (int i = -1; i >= -c_maxCargo; i--) {
-			pPart = pShipU->GetMountedPart(NA, i);
+		for (int i = -1; i >= -c_maxCargo; i--) { 
+			pPart = pShip->GetMountedPart(NA, i);
             if (pPart)
             {
 				pPart->Terminate();
@@ -118,41 +118,20 @@ namespace Training
 				AddPartToShip (59, i, 0x7fff);
 			}
 		}
-
-		// Load custom key bindings:
-		// BT - 9/17 - Added a training input map so that the keys match up to the instructor's requests.
-		//if (!GetWindow()->GetInput()->LoadMap(TRAINING_INPUTMAP_FILE)) // BT - 10/17 - Taking this back out, default input map is now back to the original values.
-			if (!GetWindow()->GetInput()->LoadMap(INPUTMAP_FILE))
-				GetWindow()->GetInput()->LoadMap(DEFAULTINPUTMAP_FILE);
-		
+        trekClient.SaveLoadout(pShip);
 	}
 
 	Condition* Mission8::CreateMission(void)
 	{
-        // create the goal and the goal list
+        m_commandViewEnabled = true;
         GoalList*                       pGoalList = new GoalList;
-        Goal*                           pGoal = new Goal (pGoalList);
-
-        pShip = static_cast<ImodelIGC*> (trekClient.GetShip ());
-		pMission = trekClient.GetCore();
-		pStation = pMission->GetModel (OT_station, 1051);
-
-		pGoal->AddConstraintCondition(new ConditionalAction( new GetShipHasCargoCondition(trekClient.GetShip(), ET_Magazine), new SetCargoNanAction(static_cast<ObjectID>(trekClient.GetShip()->GetObjectID()))));
-
-        // add the subgoals
 
         pGoalList->AddGoal (CreateGoal01 ());
         pGoalList->AddGoal (CreateGoal02 ());
-		pGoalList->AddGoal (CreateGoal03 ());        
-        //pGoalList->AddGoal (CreateGoal04 ());
-        //pGoalList->AddGoal (CreateGoal05 ());
-        //pGoalList->AddGoal (CreateGoal06 ());
-        //pGoalList->AddGoal (CreateGoal07 ());
-        //pGoalList->AddGoal (CreateGoal08 ());
-        //pGoalList->AddGoal (CreateGoal09 ());
+		pGoalList->AddGoal (CreateGoal03 ());
 
         // return the goal
-        return pGoal;
+        return new Goal(pGoalList);
 	}
 
 	    //------------------------------------------------------------------------------
@@ -163,18 +142,16 @@ namespace Training
         // play the introductory audio
         {
             Goal*                           pGoal = CreatePlaySoundGoal (salCommenceScanSound);
-            SetControlConstraintsAction*    pSetControlConstraintsAction = new SetControlConstraintsAction;
+            /*SetControlConstraintsAction*    pSetControlConstraintsAction = new SetControlConstraintsAction;
             pSetControlConstraintsAction->ScaleInputControl (c_axisYaw, 0.0f);
             pSetControlConstraintsAction->ScaleInputControl (c_axisPitch, 0.0f);
             pSetControlConstraintsAction->ScaleInputControl (c_axisRoll, 0.0f);
             pSetControlConstraintsAction->ScaleInputControl (c_axisThrottle, 0.0f);
             pSetControlConstraintsAction->DisableInputAction (0xffffffff);
-			pGoal->AddStartAction (pSetControlConstraintsAction);
+			pGoal->AddStartAction (pSetControlConstraintsAction);*/
 			
             pGoalList->AddGoal (pGoal);
         }
-
-		pGoalList->AddGoal(new Goal(new ElapsedTimeCondition(3.0f)));
 
         {
             Goal*   pGoal = new Goal (new ElapsedTimeCondition (1.0f));
@@ -183,12 +160,23 @@ namespace Training
         }
 
 		pGoalList->AddGoal (CreatePlaySoundGoal (tm_8_01Sound));
-		pGoalList->AddGoal (CreatePlaySoundGoal (tm_8_02Sound));
-		pGoalList->AddGoal (CreatePlaySoundGoal (tm_8_03Sound));
+        {
+            Goal*	pGoal = CreatePlaySoundGoal(tm_8_02Sound);
+            pGoal->SetSkipGoalCondition(new GetShipHasMountedCondition(trekClient.GetShip(), 190));
+            pGoal->AddStartAction(new MessageAction("F4 toggles the inventory. You will want it to be open."));
+            pGoalList->AddGoal(pGoal);
+        }
+
+        {
+            Goal*	pGoal = CreatePlaySoundGoal(tm_8_03Sound);
+            pGoal->SetSkipGoalCondition(new GetShipHasMountedCondition(trekClient.GetShip(), 190));
+            pGoalList->AddGoal(pGoal);
+        }
 
 		{
 			Goal*	pGoal = new Goal (new GetShipHasMountedCondition(trekClient.GetShip(), 190 ) ); 
 			pGoal->AddStartAction (new MessageAction("Swap the Nanite Repair System into slot 1 by pressing Ctrl+1.")); 
+            pGoal->AddConstraintCondition(CreateTooLongCondition(40.0f, tm_8_03Sound));
 			pGoalList->AddGoal(pGoal);
 		}
 
@@ -196,38 +184,21 @@ namespace Training
 		
 		{
 			Goal*	pGoal = new Goal(new ElapsedTimeCondition (3.0f));
-			trekClient.GetSide()->GetStations()->first()->data()->ReceiveDamage(c_dmgidNoWarn, 12500.0f, Time::Now(), Vector (-1.0f, 0.0f, 0.0f), Vector (1.0f, 0.0f, 0.0f), 0 );
+			pStation->ReceiveDamage(c_dmgidNoWarn, 12500.0f, Time::Now(), Vector (-1.0f, 0.0f, 0.0f), Vector (1.0f, 0.0f, 0.0f), 0 );
 			pGoalList->AddGoal(pGoal);
 		}
-		
-		/* Removed until turning bug is fixed
-		{
-            ObjectPointingAtCondition*  pObjectPointingAtCondition = new ObjectPointingAtCondition (static_cast<ImodelIGC*> (trekClient.GetShip ()), static_cast<ImodelIGC*> (trekClient.GetSide()->GetStations()->first()->data()));
-			Goal*                       pGoal = new Goal (pObjectPointingAtCondition);
-			pObjectPointingAtCondition->SetMinimumAngle (1.0f);
-            TurnToAction*               pTurnToAction = new TurnToAction (static_cast<ImodelIGC*> (trekClient.GetShip ()), static_cast<ImodelIGC*> (trekClient.GetSide()->GetStations()->first()->data()));
-            ConditionalAction*          pConditionalAction = new ConditionalAction (new TrueCondition(), pTurnToAction);
-            pGoal->AddConstraintCondition (pConditionalAction);
-            pGoalList->AddGoal (pGoal);
-		}
-		
-
-        // wait half second, and reset the controls
-        {
-            Goal*   pGoal = new Goal (new ElapsedTimeCondition (0.05f));
-            SetControlsAction*          pSetControlsAction = new SetControlsAction;
-            pGoal->AddStartAction (pSetControlsAction);
-            pGoalList->AddGoal (pGoal);
-        }
-		*/
 
 		{	
 			Goal*	pGoal = new Goal(new ElapsedTimeCondition (8.0f));
 			pGoal->AddStartAction (new PlaySoundAction (tm_8_05Sound));
-            SetControlConstraintsAction*    pSetControlConstraintsAction = new SetControlConstraintsAction;
+            /*SetControlConstraintsAction*    pSetControlConstraintsAction = new SetControlConstraintsAction;
 			pSetControlConstraintsAction->ScaleInputControl (c_axisYaw, 1.0f);
             pSetControlConstraintsAction->ScaleInputControl (c_axisPitch, 1.0f);
-			pGoal->AddStartAction (pSetControlConstraintsAction);
+            pSetControlConstraintsAction->ScaleInputControl(c_axisRoll, 1.0f);
+            pSetControlConstraintsAction->ScaleInputControl(c_axisThrottle, 1.0f);
+            pSetControlConstraintsAction->EnableInputAction(0xffffffff);
+			pGoal->AddStartAction (pSetControlConstraintsAction);*/
+            pGoal->AddStartAction(new SetCommandAction(pShip, c_cmdCurrent, pStation, c_cidRepair)); //target the base
 			pGoalList->AddGoal(pGoal);
 		}
 
@@ -239,16 +210,11 @@ namespace Training
 		{
 			Goal*	pGoal = new Goal(new ElapsedTimeCondition (0.5f));;
 			pGoal->AddStartAction (new MessageAction("Repair the station.", voRepairStationSound)); 
-			SetControlConstraintsAction*    pSetControlConstraintsAction = new SetControlConstraintsAction;
-            pSetControlConstraintsAction->ScaleInputControl (c_axisRoll, 1.0f);
-            pSetControlConstraintsAction->ScaleInputControl (c_axisThrottle, 1.0f);
-            pSetControlConstraintsAction->EnableInputAction (0xffffffff);
-            pGoal->AddStartAction (pSetControlConstraintsAction);
 			pGoalList->AddGoal(pGoal);
 		}
 
 		{
-			Goal*	pGoal = new Goal(new NotCondition(new GetShipIsDamagedCondition(OT_station, static_cast<ImodelIGC*>(trekClient.GetSide()->GetStations()->first()->data())->GetObjectID())));
+			Goal*	pGoal = new Goal(new NotCondition(new GetShipIsDamagedCondition(OT_station, static_cast<ImodelIGC*>(pStation)->GetObjectID())));
 			pGoalList->AddGoal(pGoal);
 		}
 
@@ -290,28 +256,29 @@ namespace Training
 			Goal*	pGoal = new Goal (new ElapsedTimeCondition(0.5f));
 
             // create friendly miner
-            Vector  pos = trekClient.GetSide()->GetStations()->first()->data()->GetPosition ();
-            pos.x += random(-150.0f, 150.0f);
-            pos.y += random(-150.0f, 150.0f);
-            pos.z += random(-150.0f, 150.0f);
-            
-            CreateDroneAction*  pCreateDroneAction = new CreateDroneAction ("Miner 01", minerID, 436, 0, c_ptMiner);
-            pCreateDroneAction->SetCreatedLocation (GetStartSectorID (), pos);
+            CreateDroneAction*  pCreateDroneAction = new CreateDroneAction ("Miner 01", minerID, 437, 0, c_ptMiner);
+            pCreateDroneAction->SetCreatedLocation (GetStartSectorID (), homeRedDoor);
 			pGoal->AddStartAction(pCreateDroneAction);
 
 			pGoalList->AddGoal (pGoal);			
 		}
 
 		pGoalList->AddGoal (CreatePlaySoundGoal (tm_8_10Sound));
-		pGoalList->AddGoal (CreatePlaySoundGoal (tm_8_11Sound));
+        {
+            Goal*	pGoal = CreatePlaySoundGoal(tm_8_11Sound);
+            pGoal->AddStartAction(new SetCommandAction(pShip, c_cmdCurrent, OT_ship, minerID, c_cidGoto)); //target miner
+            pGoalList->AddGoal(pGoal);
+        }
+		//pGoalList->AddGoal (CreatePlaySoundGoal (tm_8_11Sound));
 		pGoalList->AddGoal (CreatePlaySoundGoal (tm_8_12Sound));
 
 		pGoalList->AddGoal (new Goal(new ElapsedTimeCondition(16.0f)));
 
+        //Create enemy stealth fighters
 		{
 			Goal*	pGoal = new Goal(new ElapsedTimeCondition(1.5f));
 
-			Vector pos = trekClient.GetSide()->GetStations()->first()->data()->GetPosition ();
+			Vector pos = pStation->GetPosition ();
 			pos.x = -2500.0f;
 			pos.y = 2500.0f;
 			pos.z = 0.0f;
@@ -332,16 +299,12 @@ namespace Training
 			pGoalList->AddGoal (pGoal);
 		}
 
+        //Create defenders
 		{
 			Goal*	pGoal = new Goal(new ElapsedTimeCondition(1.0f));
 
-			Vector  pos = trekClient.GetSide()->GetStations()->first()->data()->GetPosition ();
-            pos.x += random(-150.0f, 150.0f);
-            pos.y += random(-150.0f, 150.0f);
-            pos.z += random(-150.0f, 150.0f);
-
 			CreateDroneAction* pCreateDroneAction = new CreateDroneAction("TheBored", defID, 615, 0, c_ptWingman);
-			pCreateDroneAction->SetCreatedLocation(1051, pos);
+            pCreateDroneAction->SetCreatedLocation(1051, homeRedDoor + Vector(20.0f, 0.0f, 10.0f));
 			pGoal->AddStartAction(pCreateDroneAction);
 
 			pGoal->AddStartAction(new SetCommandAction(defID, c_cmdAccepted, OT_ship, static_cast<ObjectID>(atID), c_cidAttack));
@@ -353,13 +316,8 @@ namespace Training
 		{
 			Goal*	pGoal = new Goal(new ElapsedTimeCondition(0.5f));
 
-			Vector  pos = trekClient.GetSide()->GetStations()->first()->data()->GetPosition ();
-            pos.x += random(-150.0f, 150.0f);
-            pos.y += random(-150.0f, 150.0f);
-            pos.z += random(-150.0f, 150.0f);
-
 			CreateDroneAction* pCreateDroneAction = new CreateDroneAction("AEM", defID2, 615, 0, c_ptWingman);
-			pCreateDroneAction->SetCreatedLocation(1051, pos);
+			pCreateDroneAction->SetCreatedLocation(1051, homeRedDoor+ Vector(-20.0f, 0.0f, 10.0f));
 			pGoal->AddStartAction(pCreateDroneAction);
 
 			pGoal->AddStartAction(new SetCommandAction(defID2, c_cmdAccepted, OT_ship, static_cast<ObjectID>(atID), c_cidAttack));
@@ -371,13 +329,8 @@ namespace Training
 		{
 			Goal*	pGoal = new Goal(new ElapsedTimeCondition(1.0f));
 
-			Vector  pos = trekClient.GetSide()->GetStations()->first()->data()->GetPosition ();
-            pos.x += random(-150.0f, 150.0f);
-            pos.y += random(-150.0f, 150.0f);
-            pos.z += random(-150.0f, 150.0f);
-
 			CreateDroneAction* pCreateDroneAction = new CreateDroneAction("lawson", defID3, 615, 0, c_ptWingman);
-			pCreateDroneAction->SetCreatedLocation(1051, pos);
+			pCreateDroneAction->SetCreatedLocation(1051, homeRedDoor+Vector(0.0f, 0.0f, -10.0f));
 			pGoal->AddStartAction(pCreateDroneAction);
 
 			pGoal->AddStartAction(new SetCommandAction(defID3, c_cmdAccepted, OT_ship, static_cast<ObjectID>(atID), c_cidAttack));
@@ -452,12 +405,14 @@ namespace Training
     {
 
 		GoalList*   pGoalList = new GoalList;
-		Goal*       pGoal = new Goal (pGoalList);
 		ShipID		bomberShipID = pMission->GenerateNewShipID();
 		ShipID		nanShipID = pMission->GenerateNewShipID();
 		BuoyID		alephBuoyID1 = pMission->GenerateNewBuoyID();
+        ImodelIGC*	pEnemyStation = pMission->GetModel(OT_station, 1051);
+        pEnemyStation->SetSideVisibility(pShip->GetSide(), true);
 
-		/*  Code used when only testing Goal03
+
+		/*  //Code used when only testing Goal03
 		{
             Goal*                           pGoal = CreatePlaySoundGoal (salCommenceScanSound);
             pGoalList->AddGoal (pGoal);
@@ -470,31 +425,20 @@ namespace Training
             pGoal->AddStartAction (new SetDisplayModeAction (TrekWindow::cmCockpit));
             pGoalList->AddGoal (pGoal);
         }
-		*/
+		//*/
 
+        //spawn bomber
 		{
-			Vector  pos = trekClient.GetSide()->GetStations()->first()->data()->GetPosition ();
-			pos.x += random(-150.0f, 150.0f);
-            pos.y += random(-150.0f, 150.0f);
-            pos.z += random(-150.0f, 150.0f);
-			
-			CreateDroneAction* pCreateDroneAction = new CreateDroneAction("Commander", bomberShipID, 604, 0, c_ptWingman);
-			pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
-
+            Goal*       pGoal = new Goal(new ElapsedTimeCondition(2.0f));
+			CreateDroneAction* pCreateDroneAction = new CreateDroneAction("Commander", bomberShipID, 604, 0, c_ptWingman, 0);
+            pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), homeRedDoor); //Vector(-2500.0f, 2500.0f, 0.0f));
 			pGoal->AddStartAction(pCreateDroneAction);
-		}
-
-		{
-			Goal* pGoal = new Goal(new ElapsedTimeCondition (3.0f));
-			pGoal->AddStartAction(new CreateWaypointAction(alephBuoyID1, Vector(-2500.0f, 2500.0f, 0.0f), 1051));
-			pGoal->AddStartAction(new SetCommandAction(bomberShipID, c_cmdCurrent, OT_buoy, alephBuoyID1, c_cidGoto));
-			pGoal->AddStartAction(new SetCommandAction(bomberShipID, c_cmdAccepted, OT_buoy, alephBuoyID1, c_cidGoto));
-			pGoalList->AddGoal (pGoal);
+            pGoalList->AddGoal(pGoal);
 		}
 
 		{
 			Goal* pGoal = new Goal(new ElapsedTimeCondition (2.0f));
-			pGoal->AddStartAction (new SetDisplayModeAction (TrekWindow::cmCockpit));
+			pGoal->AddStartAction(new CreateWaypointAction(alephBuoyID1, Vector(-2500.0f, 2500.0f, 0.0f), 1051));
 			pGoal->AddStartAction(new SetCommandAction(bomberShipID, c_cmdCurrent, OT_buoy, alephBuoyID1, c_cidGoto));
 			pGoal->AddStartAction(new SetCommandAction(bomberShipID, c_cmdAccepted, OT_buoy, alephBuoyID1, c_cidGoto));
 			pGoalList->AddGoal (pGoal);
@@ -510,13 +454,9 @@ namespace Training
 
 		{
 			Goal* pGoal = new Goal(new ElapsedTimeCondition (3.0f));
-			Vector  pos = trekClient.GetSide()->GetStations()->first()->data()->GetPosition ();
-			pos.x += random(-150.0f, 150.0f);
-            pos.y += random(-150.0f, 150.0f);
-            pos.z += random(-150.0f, 150.0f);
 			
-			CreateDroneAction* pCreateDroneAction = new CreateDroneAction("bahdohday", nanShipID, 3, 0, c_ptWingman);
-			pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), pos);
+			CreateDroneAction* pCreateDroneAction = new CreateDroneAction("bahdohday", nanShipID, 685, 0, c_ptWingman);
+			pCreateDroneAction->SetCreatedLocation(GetStartSectorID(), homeRedDoor);
 
 			pGoal->AddStartAction(pCreateDroneAction);
 			pGoal->AddStartAction(new SetDroneNanAction(nanShipID));
@@ -526,21 +466,7 @@ namespace Training
 
 			pGoalList->AddGoal(pGoal);
 		}
-
-
-        MessageAction*                  pBomberDeadMessage =  new MessageAction("Our bomber has been destroyed.", voArghSound);
-		MessageAction*                  pStationDeadMessage =  new MessageAction("Enemy outpost destroyed.", 901);
-		SetStationDestroyedAction*		pStationDestroyedAction = new SetStationDestroyedAction(pStation);
-        Condition*                      pStationDeadCondition = new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f));
-		Condition*                      pStationDeadCondition2 = new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f));
-        Condition*                      pBomberDeadCondition = new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(bomberShipID), 0.0f));
-		ConditionalAction*              pConditionalAction = new ConditionalAction (pStationDeadCondition, pStationDeadMessage, false, true);
-        ConditionalAction*              pConditionalAction2 = new ConditionalAction (pBomberDeadCondition, pBomberDeadMessage, false, true);
-		ConditionalAction*              pConditionalAction3 = new ConditionalAction (pStationDeadCondition2, pStationDestroyedAction, false, true);
-        pGoal->AddConstraintCondition (pConditionalAction);
-        pGoal->AddConstraintCondition (pConditionalAction2);
-		pGoal->AddConstraintCondition (pConditionalAction3);
-		
+	
 		pGoalList->AddGoal (CreatePlaySoundGoal (tm_8_17Sound));
 
 		{
@@ -548,6 +474,13 @@ namespace Training
 			pGoal->AddStartAction(new PlaySoundAction (tm_8_18Sound));
 			pGoalList->AddGoal (pGoal);
 		}
+
+        //Wait for player to be in range
+        {
+            Goal*   pGoal = new Goal(new ObjectWithinRadiusCondition(static_cast<ImodelIGC*> (pShip), OT_ship, bomberShipID, 500.0f));
+            pGoal->AddConstraintCondition(CreateTooLongCondition(40.0f, tm_8_16Sound));
+            pGoalList->AddGoal(pGoal);
+        }
 
 		{
 			Goal*	pGoal = new Goal(new ElapsedTimeCondition(4.0f));
@@ -564,50 +497,57 @@ namespace Training
 		}
 
 		pGoalList->AddGoal (CreatePlaySoundGoal (tm_8_20Sound));
-
+        
 		{
-			BuoyID alephBuoyID = pMission->GenerateNewBuoyID();
-			Goal*	pGoal = new Goal(new ElapsedTimeCondition(4.0f));
-			pGoal->AddStartAction(new MessageAction("Go Go Go!", voGoGoGoSound));
+            BuoyID alephBuoyID = pMission->GenerateNewBuoyID();
+
+            Goal*	pGoal = new Goal(new GetSectorCondition(OT_ship, static_cast<ObjectID>(bomberShipID), 1052));
 			pGoal->AddStartAction(new CreateWaypointAction(alephBuoyID, Vector(0.0f, 0.0f, 0.0f), 1052));
 
-			pGoal->AddStartAction(new SetCommandAction(bomberShipID, c_cmdCurrent, OT_buoy, alephBuoyID, c_cidGoto));
-			pGoal->AddStartAction(new SetCommandAction(bomberShipID, c_cmdAccepted, OT_buoy, alephBuoyID, c_cidGoto));
+            Condition*          pPeriodicCondition = new PeriodicCondition(new TrueCondition, 30.0f);
+            Condition*          pPeriodicCondition2 = new PeriodicCondition(new TrueCondition, 30.0f); 
+            Condition*          pPeriodicCondition3 = new PeriodicCondition(new TrueCondition, 30.0f);
+            Condition*          pPeriodicCondition4 = new PeriodicCondition(new TrueCondition, 30.0f);
+            pGoal->AddConstraintCondition(new ConditionalAction(pPeriodicCondition, new MessageAction("Go Go Go!", voGoGoGoSound)));
+            pGoal->AddConstraintCondition(new ConditionalAction(pPeriodicCondition2, new CreateWaypointAction(alephBuoyID, Vector(0.0f, 0.0f, 0.0f), 1052)));
+            pGoal->AddConstraintCondition(new ConditionalAction(pPeriodicCondition3, new SetCommandAction(bomberShipID, c_cmdCurrent, OT_buoy, alephBuoyID, c_cidGoto))); //resend bbr in case player gave it commands
+            pGoal->AddConstraintCondition(new ConditionalAction(pPeriodicCondition4, new SetCommandAction(bomberShipID, c_cmdAccepted, OT_buoy, alephBuoyID, c_cidGoto))); //resend bbr in case player gave it commands
 
-			pGoal->AddStartAction(new SetCommandAction(nanShipID, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidGoto));
-			pGoal->AddStartAction(new SetCommandAction(nanShipID, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidGoto));
+            pGoal->AddStartAction(new SetCommandAction(nanShipID, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidGoto));
+            pGoal->AddStartAction(new SetCommandAction(nanShipID, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidGoto));
 
-			pGoalList->AddGoal (pGoal);
-		}
-
-		{
-			Goal*	pGoal = new Goal (new GetSectorCondition(OT_ship, static_cast<ObjectID>(bomberShipID), 1052));
 			pGoalList->AddGoal (pGoal);
 		}
 
 		{
 			Goal*	pGoal = new Goal(new ElapsedTimeCondition(2.0f));
-			pGoal->AddStartAction(new SetCommandAction(bomberShipID, c_cmdCurrent, pStation, c_cidAttack)); 
-			pGoal->AddStartAction(new SetCommandAction(bomberShipID, c_cmdAccepted, pStation, c_cidAttack));
+			pGoal->AddStartAction(new SetCommandAction(bomberShipID, c_cmdCurrent, pEnemyStation, c_cidAttack));
+			pGoal->AddStartAction(new SetCommandAction(bomberShipID, c_cmdAccepted, pEnemyStation, c_cidAttack));
 			pGoalList->AddGoal(pGoal);
 		}
 		
+        ShipID defID = pMission->GenerateNewShipID();
+        ShipID defID2 = pMission->GenerateNewShipID();
+        ShipID defID3 = pMission->GenerateNewShipID();
+
 		{
-			const StationListIGC* list = pMission->GetStations();
-			Goal*	pGoal = new Goal(new ElapsedTimeCondition (1.5f));
+            //Spawn enemy defenders
+            // defID scout  Tkela       -> nan (bahoday)
+            // defID2 fig   ribski      -> nan
+            // defID3 fig   dontmess    -> bomber
+
+			Goal*	pGoal = new Goal(new ElapsedTimeCondition (3.0f));
 			Vector pos(0.0f, -300.0f, 400.0f);
 			Vector pos2(0.0f, 100.0f, 300.0f);
-			Vector pos3(0.0f, 0.0f, -400.0f);
-
-			ShipID defID = pMission->GenerateNewShipID();
+			
 			CreateDroneAction* pCreateDroneAction = new CreateDroneAction("Tkela", defID, 385, 1, c_ptWingman);
 			pCreateDroneAction->SetCreatedLocation(1052, pos);
 			pGoal->AddStartAction(pCreateDroneAction);
 			pGoal->AddStartAction(new SetCommandAction(defID, c_cmdAccepted, OT_ship, static_cast<ObjectID>(nanShipID), c_cidAttack));
 			pGoal->AddStartAction(new SetCommandAction(defID, c_cmdCurrent, OT_ship, static_cast<ObjectID>(nanShipID), c_cidAttack));
 
-			ShipID defID2 = pMission->GenerateNewShipID();
-			pCreateDroneAction = new CreateDroneAction("ribski", defID2, 314, 1, c_ptWingman);
+			
+			pCreateDroneAction = new CreateDroneAction("ribski", defID2, 314, 1, c_ptWingman, 2);
 			pCreateDroneAction->SetCreatedLocation(1052, pos2);
 			pGoal->AddStartAction(pCreateDroneAction);
 			pGoal->AddStartAction(new SetCommandAction(defID2, c_cmdAccepted, OT_ship, static_cast<ObjectID>(nanShipID), c_cidAttack));
@@ -617,13 +557,13 @@ namespace Training
 			pGoal->AddStartAction(new SetCommandAction(nanShipID, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidGoto));
 
   		    pGoalList->AddGoal(pGoal);
+        }
 
-			pGoal = new Goal (new ElapsedTimeCondition(1.5f));
-			pGoalList->AddGoal(pGoal);
-
-			pGoal = new Goal (new ElapsedTimeCondition(2.0f));
-			ShipID defID3 = pMission->GenerateNewShipID();
-			pCreateDroneAction = new CreateDroneAction("dontmess", defID3, 314, 1, c_ptWingman);
+        {
+			Goal* pGoal = new Goal (new ElapsedTimeCondition(2.0f));
+            Vector pos3(0.0f, 0.0f, -400.0f);
+			
+            CreateDroneAction* pCreateDroneAction = new CreateDroneAction("dontmess", defID3, 314, 1, c_ptWingman, 2);
 			pCreateDroneAction->SetCreatedLocation(1052, pos3);
 			pGoal->AddStartAction(pCreateDroneAction);
 
@@ -631,46 +571,62 @@ namespace Training
 			pGoal->AddStartAction(new SetCommandAction(defID3, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack));		
 
 			pGoalList->AddGoal(pGoal);
-
-			//static_cast<ObjectID>(trekClient.GetShip()->GetObjectID())
-			//defID and defID3 attacking bomber, defID2 attacking bahdohday
+        }
 			
-			pGoalList->AddGoal (CreatePlaySoundGoal (tm_8_21Sound));
-			pGoalList->AddGoal (new Goal(new ElapsedTimeCondition(4.0f)));
+		// "Here come a couple defenders. Keep me alive long enough to blow the base."
+		pGoalList->AddGoal (CreatePlaySoundGoal (tm_8_21Sound));
+		pGoalList->AddGoal (new Goal(new ElapsedTimeCondition(4.0f)));
 
-			pGoal = new Goal(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(bomberShipID)));
-				pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(nanShipID), 0.0f)), new SetCommandAction(defID2, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack), false, true ));
-				pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(nanShipID), 0.0f)), new SetCommandAction(defID2, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack), false, true ));
-				
-				pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(nanShipID), 0.0f)), new SetCommandAction(defID, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack), false, true ));
-				pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(nanShipID), 0.0f)), new SetCommandAction(defID, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack), false, true ));
+        {
+            // defID scout  Tkela       -> nan (bahoday) or bomber, if nan is destroyed
+            // defID2 fig   ribski      -> nan (bahoday) or bomber, if nan is destroyed
+            // defID3 fig   dontmess    -> bomber (unchanged)
 
-				pGoal->AddStartAction(new MessageAction("Defend bombers.", voDefendBomberSound));
-			pGoalList->AddGoal(pGoal);
+            Goal* pGoal = new Goal(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(bomberShipID))); //until bomber hull is damaged
+            pGoal->AddConstraintCondition(new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(nanShipID), 0.0f)), new SetCommandAction(defID2, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack), false, true));
+            pGoal->AddConstraintCondition(new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(nanShipID), 0.0f)), new SetCommandAction(defID2, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack), false, true));
 
-			//defID and defID3 attacking bomber, defID2 attacking bahdohday or bomber
-			pGoal = new Goal(new OrCondition(new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f)),
-					new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(bomberShipID), 0.0f))));
+            pGoal->AddConstraintCondition(new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(nanShipID), 0.0f)), new SetCommandAction(defID, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack), false, true));
+            pGoal->AddConstraintCondition(new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(nanShipID), 0.0f)), new SetCommandAction(defID, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack), false, true));
 
-			    pGoal->AddStartAction(new SetCommandAction(defID, c_cmdAccepted, OT_ship, static_cast<ObjectID>(trekClient.GetShip()->GetObjectID()), c_cidAttack));
-				pGoal->AddStartAction(new SetCommandAction(defID, c_cmdCurrent, OT_ship, static_cast<ObjectID>(trekClient.GetShip()->GetObjectID()), c_cidAttack));	
+            pGoal->AddStartAction(new MessageAction("Defend bombers.", voDefendBomberSound));
+            pGoalList->AddGoal(pGoal);
+        }
 
-				//pGoal->AddStartAction(new SetCommandAction(defID, c_cmdAccepted, OT_ship, static_cast<ObjectID>(nanShipID), c_cidAttack));
-				//pGoal->AddStartAction(new SetCommandAction(defID, c_cmdCurrent, OT_ship, static_cast<ObjectID>(nanShipID), c_cidAttack));	
+        {
+            // defID scout  -> player or bomber if player hull touched (player killed seems to mess conditions up)
+            // defID2 fig   -> nan (bahoday) or bomber if nan is destroyed
+            // defID3 fig   -> bomber (unchanged)
 
-				pGoal->AddStartAction(new SetCommandAction(nanShipID, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidRepair));
-				pGoal->AddStartAction(new SetCommandAction(nanShipID, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidRepair));
-				
-				pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(nanShipID), 0.0f)), new SetCommandAction(defID2, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack), false, true ));
-				pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(nanShipID), 0.0f)), new SetCommandAction(defID2, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack), false, true ));
-				
-				//pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(nanShipID), 0.0f)), new SetCommandAction(defID3, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack), false, true ));
-				//pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(nanShipID), 0.0f)), new SetCommandAction(defID3, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack), false, true ));
+            Goal* pGoal = new Goal(new OrCondition(new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f)),
+                new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(bomberShipID), 0.0f)))); //until bomber or station is destroyed
 
-				pGoal->AddStartAction(new  MessageAction("Stay on target.", voStayOnTargetSound));
-			pGoalList->AddGoal(pGoal);
+            pGoal->AddStartAction(new SetCommandAction(defID, c_cmdAccepted, OT_ship, static_cast<ObjectID>(trekClient.GetShip()->GetObjectID()), c_cidAttack));
+            pGoal->AddStartAction(new SetCommandAction(defID, c_cmdCurrent, OT_ship, static_cast<ObjectID>(trekClient.GetShip()->GetObjectID()), c_cidAttack));
+
+            pGoal->AddStartAction(new SetCommandAction(nanShipID, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidRepair));
+            pGoal->AddStartAction(new SetCommandAction(nanShipID, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidRepair));
+
+            pGoal->AddConstraintCondition(new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(nanShipID), 0.0f)), new SetCommandAction(defID2, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack), false, true));
+            pGoal->AddConstraintCondition(new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(nanShipID), 0.0f)), new SetCommandAction(defID2, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack), false, true));
+
+            pGoal->AddConstraintCondition(new ConditionalAction(new GetShipIsDamagedCondition(OT_ship, pShip->GetObjectID()), new SetCommandAction(defID, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack), false, true));
+            pGoal->AddConstraintCondition(new ConditionalAction(new GetShipIsDamagedCondition(OT_ship, pShip->GetObjectID()), new SetCommandAction(defID, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidAttack), false, true));
+
+            pGoal->AddStartAction(new  MessageAction("Stay on target.", voStayOnTargetSound));
+            pGoalList->AddGoal(pGoal);
+        }
 		
-			pGoal = new Goal(new ElapsedTimeCondition(4.0f));
+        {
+            Goal* pGoal = new Goal(new ElapsedTimeCondition(1.0f));
+            //actually blow up the station if stuck on 0hp
+            pGoal->AddConstraintCondition(new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f)), new SetStationDestroyedAction(pEnemyStation), false, true));
+            pGoalList->AddGoal(pGoal);
+        }
+
+        {
+            Goal* pGoal = new Goal(new ElapsedTimeCondition(2.0f));
+            //station is destroyed conditionnal actions
 			pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f)), new SetCommandAction(defID, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidDoNothing), true, true ));
 			pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f)), new SetCommandAction(defID, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidDoNothing), true, true ));
 			pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f)), new SetCommandAction(defID2, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidDoNothing), true, true ));
@@ -678,16 +634,31 @@ namespace Training
 			pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f)), new SetCommandAction(defID3, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidDoNothing), true, true ));
 			pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f)), new SetCommandAction(defID3, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidDoNothing), true, true ));
 
+            //end message
+            pGoal->AddConstraintCondition(new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f)), new MessageAction("Enemy outpost destroyed.", 901), false, true)); //"Well done, we destroyed the enemy station!", voYeeHaSound
+
+            //bomber is destroyed conditional actions
 			pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(bomberShipID), 0.0f)), new SetCommandAction(defID, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidDoNothing), true, true ));
 			pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(bomberShipID), 0.0f)), new SetCommandAction(defID, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidDoNothing), true, true ));
 			pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(bomberShipID), 0.0f)), new SetCommandAction(defID2, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidDoNothing), true, true ));
 			pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(bomberShipID), 0.0f)), new SetCommandAction(defID2, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidDoNothing), true, true ));
 			pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(bomberShipID), 0.0f)), new SetCommandAction(defID3, c_cmdAccepted, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidDoNothing), true, true ));
 			pGoal->AddConstraintCondition( new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(bomberShipID), 0.0f)), new SetCommandAction(defID3, c_cmdCurrent, OT_ship, static_cast<ObjectID>(bomberShipID), c_cidDoNothing), true, true ));
-			
+            			
+            //bomber dead and station alive
+            pGoal->AddConstraintCondition(new ConditionalAction(new AndCondition(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(bomberShipID), 0.0f)), new GetShipIsDamagedCondition(OT_station, 1051, 0.0f)), new MessageAction("The bomber got destroyed, better luck next time.", voArghSound), false, true));
 			pGoalList->AddGoal (pGoal);
-		}
-		
-        return pGoal;
+        }
+
+        {
+            Goal* pGoal = new Goal(new ElapsedTimeCondition(4.0f));
+            //station is destroyed
+            pGoal->AddConstraintCondition(new ConditionalAction(new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f)), new MessageAction("Yee-haaaaaw!", voYeeHaSound), false, true));
+            //bomber dead and station dead
+            pGoal->AddConstraintCondition(new ConditionalAction(new AndCondition(new NotCondition(new GetShipIsDamagedCondition(OT_ship, static_cast<ObjectID>(bomberShipID), 0.0f)), new NotCondition(new GetShipIsDamagedCondition(OT_station, 1051, 0.0f))), new MessageAction("Our bomber got destroyed too, but that is an acceptable price to pay."), false, true));
+            pGoalList->AddGoal(pGoal);
+        }
+
+        return new Goal(pGoalList);
     }
 }

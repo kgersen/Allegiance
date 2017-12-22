@@ -1,4 +1,12 @@
-#include "pch.h"
+#include "mdl.h"
+
+#include <base.h>
+#include <token.h>
+
+#include "enginep.h"
+#include "model.h"
+#include "namespace.h"
+#include "value.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //

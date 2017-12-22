@@ -9,7 +9,8 @@ CSteamAchievements::CSteamAchievements(CSteamID &steamID) :
 	m_gotRequestStatsResponse(false),
 	m_gotSuccessfulRequestStatsResponse(false),
 	m_gotStatsStoredResponse(false),
-	m_gotSuccessfulStatsStoredResponse(false)
+	m_gotSuccessfulStatsStoredResponse(false),
+    m_nanAchievementEarned(false)
 {
 	sprintf(m_szSteamID, "%" PRIu64, steamID.ConvertToUint64());
 
@@ -292,12 +293,29 @@ void CSteamAchievements::AwardIGCAchievements(AchievementMask am)
 		SetAchievement(EAchievements::FIRST_PROBE_KILL_1_9);
 	if ((am & c_achmProbeSpot) > 0)
 		SetAchievement(EAchievements::PROBE_SPOT_1_10);
+    if ((am & c_achmNewRepair) > 0 && !m_nanAchievementEarned)
+    {
+        SetAchievement(EAchievements::NANITE_REPAIR_1_11);
+        m_nanAchievementEarned = true; //I was concerned about potentially calling set achievement too much
+    }
+	if ((am & c_achmGarrSpot) > 0)
+		SetAchievement(EAchievements::SPOT_GARRISON_1_14);
 
 }
 
 void CSteamAchievements::AwardRecoverTechAchievement()
 {
 	SetAchievement(EAchievements::RECOVER_TECH_1_8);
+}
+
+void CSteamAchievements::AwardPodPickup()
+{
+	SetAchievement(EAchievements::PICKUP_POD_1_13);
+}
+
+void CSteamAchievements::AwardGetRescued()
+{
+	SetAchievement(EAchievements::GET_RESCUED_1_12);
 }
 
 
@@ -311,7 +329,11 @@ void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso, IshipIGC * pIshi
 	{
 		getSucceed = GetStat(EStats::MINER_KILLS, &tempStat);
 		if (getSucceed) //only set stat if get passes otherwise we risk resetting the stat
+		{
 			SetStat(EStats::MINER_KILLS, tempStat + minerKills);
+			if ((tempStat + minerKills) >= 50)
+				SetAchievement(EAchievements::KILL_50_MINERS_1_16);
+		}
 	}
 
 	int conKills = ppso->GetBuilderKills();
@@ -327,7 +349,11 @@ void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso, IshipIGC * pIshi
 	{
 		getSucceed = GetStat(EStats::FORCE_EJECT, &tempStat);
 		if (getSucceed)
+		{
 			SetStat(EStats::FORCE_EJECT, tempStat + forceEjects);
+			if ((tempStat + forceEjects) >= 100)
+				SetAchievement(EAchievements::FORCE_100_EJECTS_1_15);
+		}
 	}
 
 	int baseKills = ppso->GetBaseKills();
@@ -363,7 +389,17 @@ void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso, IshipIGC * pIshi
 	{
 		getSucceed = GetStat(EStats::PLAYER_WINS, &tempStat);
 		if (getSucceed)
+		{
 			SetStat(EStats::PLAYER_WINS, tempStat + 1);
+			int wins = tempStat + 1;
+			if (wins >= 10)
+				SetAchievement(EAchievements::WIN_10_GAMES_1_17);
+			if (wins >= 50)
+				SetAchievement(EAchievements::WIN_50_GAMES_1_18);
+			if (wins >= 100)
+				SetAchievement(EAchievements::WIN_100_GAMES_1_19);
+		}
+
 	}
 	if (ppso->GetLoser())
 	{
@@ -372,11 +408,12 @@ void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso, IshipIGC * pIshi
 			SetStat(EStats::PLAYER_LOSS, tempStat + 1);
 	}
 
-	if (pIship->GetRepair() > 0.0)
+	int repair = floor(100 * ppso->GetRepair());
+	if (repair > 0.0)
 	{
-		getSucceed = GetStat(EStats::REPAIR_AMOUNT, &tempStat);
+		getSucceed = GetStat(EStats::REPAIR_PERCENT, &tempStat);
 		if (getSucceed)
-			SetStat(EStats::REPAIR_AMOUNT, tempStat + floor(pIship->GetRepair()));
+			SetStat(EStats::REPAIR_PERCENT, tempStat + repair);
 	}
 }
 

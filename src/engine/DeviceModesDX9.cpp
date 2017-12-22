@@ -1,6 +1,8 @@
-
-#include "pch.h"
 #include "DeviceModesDX9.h"
+
+#include <zassert.h>
+
+#include "LogFile.h"
 
 #define OUTPUT_DEVICE_DETAILS
 
@@ -80,7 +82,7 @@ static D3DTEXTUREFILTERTYPE pTextureFilters[] =
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-static char * pszAAStrings[] = 
+static const char * pszAAStrings[] =
 {
 	"No antialiasing",
 	"2x full-scene antialiasing",
@@ -90,7 +92,7 @@ static char * pszAAStrings[] =
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-static char * pszShortAAStrings[] = 
+static const char * pszShortAAStrings[] =
 {
 	"No AA",
 	"2xFSAA",
@@ -100,7 +102,7 @@ static char * pszShortAAStrings[] =
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-static char * pszMaxTextureSizeStrings[ CD3DDevice9::eMTS_NumTextureSizes ] =
+static const char * pszMaxTextureSizeStrings[ CD3DDevice9::eMTS_NumTextureSizes ] =
 {
 	"256x256",
 	"512x512",
@@ -140,7 +142,11 @@ CD3DDeviceModeData::CD3DDeviceModeData( int iMinWidth, int iMinHeight, class CLo
 	}
 	if(hRast != 0) {
 			FARPROC D3D9GetSWInfo = GetProcAddress( hRast, "D3D9GetSWInfo");
+#ifdef __GNUC__
+            HRESULT hr = m_pD3D9->RegisterSoftwareDevice((void*)D3D9GetSWInfo);
+#else
 			HRESULT hr = m_pD3D9->RegisterSoftwareDevice(D3D9GetSWInfo);
+#endif
 			if (hr == D3D_OK) {
 				m_pLogFile->OutputString( "DX registered the SW Rasterizer.\n" );
 			} else {
@@ -277,7 +283,7 @@ int	CD3DDeviceModeData::GetDeviceCount()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 int CD3DDeviceModeData::GetTotalResolutionCount( int iDeviceIndex )
 {
-	_ASSERT( iDeviceIndex < m_iAdapterCount );
+    ZAssert( iDeviceIndex < m_iAdapterCount );
 	return m_pAdapterArray[iDeviceIndex].iTotalModeCount;
 }
 
@@ -291,7 +297,7 @@ int	CD3DDeviceModeData::GetResolutionCount( int iDeviceIndex, D3DFORMAT fmt )
 {
 	int i;
 
-	_ASSERT( iDeviceIndex < m_iAdapterCount );
+    ZAssert( iDeviceIndex < m_iAdapterCount );
 
 	for( i=0; i<eDMD_NumModes; i++ )
 	{
@@ -317,11 +323,11 @@ int	CD3DDeviceModeData::GetResolutionCount( int iDeviceIndex, D3DFORMAT fmt )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CD3DDeviceModeData::GetDeviceNameByIndex( int iDeviceIndex, char * pBuffer, int iBufferLen )
 {
-	_ASSERT( iDeviceIndex < m_iAdapterCount );
+    ZAssert( iDeviceIndex < m_iAdapterCount );
 	
 	D3DADAPTER_IDENTIFIER9 * pAdapterID = &m_pAdapterArray[ iDeviceIndex ].adapterID;
 
-	_ASSERT( iBufferLen > strlen( pAdapterID->DeviceName) + strlen( pAdapterID->Description ) + 4 );
+    ZAssert( iBufferLen > strlen( pAdapterID->DeviceName) + strlen( pAdapterID->Description ) + 4 );
 	
 	strcpy_s( pBuffer, iBufferLen, pAdapterID->Description );
 	strcat_s( pBuffer, iBufferLen, " [" );
@@ -338,7 +344,7 @@ void CD3DDeviceModeData::GetDeviceNameByIndex( int iDeviceIndex, char * pBuffer,
 void CD3DDeviceModeData::GetResolutionStringByIndex( int iDeviceIndex, int iResolutionIndex, char * pBuffer, int iBufferLen )
 {
 	int i;
-	_ASSERT( iDeviceIndex < m_iAdapterCount );
+    ZAssert( iDeviceIndex < m_iAdapterCount );
 	D3DDISPLAYMODE * pDisplayMode;
 	
 	i = 0;
@@ -371,7 +377,7 @@ int CD3DDeviceModeData::GetNumAASettings( int iDeviceIndex, int iResolutionIndex
 	int i, iAACount, iCount;
 	bool * pAAFlags;
 
-	_ASSERT( iDeviceIndex < m_iAdapterCount );
+    ZAssert( iDeviceIndex < m_iAdapterCount );
 		
 	i = 0;
 	while(	( i < eDMD_NumModes ) && 
@@ -380,8 +386,8 @@ int CD3DDeviceModeData::GetNumAASettings( int iDeviceIndex, int iResolutionIndex
 		iResolutionIndex -= m_pAdapterArray[ iDeviceIndex ].pModeCount[i];
 		i++;
 	}
-	//_ASSERT( i < eDMD_NumModes );
-	//_ASSERT( iResolutionIndex < m_pAdapterArray[ iDeviceIndex ].pModeCount[i] );
+    //ZAssert( i < eDMD_NumModes );
+    //ZAssert( iResolutionIndex < m_pAdapterArray[ iDeviceIndex ].pModeCount[i] );
 	//for now Imago 7/10
 	if (iResolutionIndex == 0) {
 		return 0;
@@ -404,7 +410,7 @@ int CD3DDeviceModeData::GetNumAASettings( int iDeviceIndex, int iResolutionIndex
 			iAACount ++;
 		}
 	}
-	//_ASSERT( iAACount > 0 );	//Should at least have 'none' as an option.
+    //ZAssert( iAACount > 0 );	//Should at least have 'none' as an option.
 	//ok Imago 7/10
 	return iAACount;
 }
@@ -424,7 +430,7 @@ void CD3DDeviceModeData::GetAASettingString(	int iDeviceIndex,
 {
 	int i, iIndex;
 	bool * pAAFlags;
-	_ASSERT( iDeviceIndex < m_iAdapterCount );
+    ZAssert( iDeviceIndex < m_iAdapterCount );
 	
 	iIndex = 0;
 	i = 0;
@@ -434,8 +440,8 @@ void CD3DDeviceModeData::GetAASettingString(	int iDeviceIndex,
 		iResolutionIndex -= m_pAdapterArray[ iDeviceIndex ].pModeCount[i];
 		i++;
 	}
-	//_ASSERT( i < eDMD_NumModes );
-	//_ASSERT( iResolutionIndex < m_pAdapterArray[ iDeviceIndex ].pModeCount[i] );
+    //ZAssert( i < eDMD_NumModes );
+    //ZAssert( iResolutionIndex < m_pAdapterArray[ iDeviceIndex ].pModeCount[i] );
 	if (iResolutionIndex == 0)
 		return; //for now Imago 7/10
 
@@ -488,7 +494,7 @@ void CD3DDeviceModeData::GetResolutionDetails(	int			iDeviceIndex,
 		i ++;
 	}
 
-	_ASSERT( i < eDMD_NumModes );
+    ZAssert( i < eDMD_NumModes );
 
 	if( i < eDMD_NumModes )
 	{
@@ -529,7 +535,7 @@ void CD3DDeviceModeData::GetRelatedResolutions(	int iDeviceIndex,
 		iModeCounter -= m_pAdapterArray[ iDeviceIndex ].pModeCount[iMode];
 		iMode ++;
 	}
-	_ASSERT( iMode < eDMD_NumModes );
+    ZAssert( iMode < eDMD_NumModes );
 
 	// Starting point.
 	CD3DDeviceModeData::SAdapterMode * pModeArray = m_pAdapterArray[ iDeviceIndex ].ppAvailableModes[iMode];
@@ -639,7 +645,7 @@ void CD3DDeviceModeData::GetRelatedResolutions(	int iDeviceIndex,
 		ppResolutionArray[0]->iHeight = 600;
 		*pSelectedResolution = 1;
 	}
-	_ASSERT( *pSelectedResolution != -1 );
+    ZAssert( *pSelectedResolution != -1 );
 }
 
 
@@ -748,6 +754,8 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 											dispMode.Format,
 											dispMode.Format, 
 											FALSE ) ;
+
+            pMode->bHWSupport = true; //initialize
 			if( hr != D3D_OK )
 			{
 				pMode->bHWSupport = false;
@@ -775,7 +783,7 @@ bool CD3DDeviceModeData::ExtractAdapterData( int iAdapter )
 				bPassed = true;
 			}
 
-			_ASSERT(bPassed);
+            ZAssert(bPassed);
 
 			pMode->bWindowAllowed = false;
 			
@@ -918,11 +926,11 @@ bool CD3DDeviceModeData::GetModeParams(	CD3DDevice9::SD3DDeviceSetupParams * pPa
 										int iAAIndex,
 										CLogFile * pLogFile )
 {
-	_ASSERT( pParams != NULL );
-	_ASSERT( iDeviceIndex < m_iAdapterCount );
+    ZAssert( pParams != NULL );
+    ZAssert( iDeviceIndex < m_iAdapterCount );
 	//not so picky for now Imago 7/10
-	//_ASSERT( iResolutionIndex < m_pAdapterArray[iDeviceIndex].iTotalModeCount );
-	_ASSERT( iAAIndex < eDMD_NumAAFormats );
+    //ZAssert( iResolutionIndex < m_pAdapterArray[iDeviceIndex].iTotalModeCount );
+    ZAssert( iAAIndex < eDMD_NumAAFormats );
 
 	SAdapterMode * pMode, * pWindowedMode;
 	int i, iModeCounter, iCount, iTemp;
@@ -937,7 +945,7 @@ bool CD3DDeviceModeData::GetModeParams(	CD3DDevice9::SD3DDeviceSetupParams * pPa
 		i ++;
 	}
 //dont sweat it for now Imago 7/10
-//	_ASSERT( i < eDMD_NumModes );
+//	ZAssert( i < eDMD_NumModes );
 	if( ( i >= eDMD_NumModes ) ||
 		( iModeCounter >= m_pAdapterArray[iDeviceIndex].pModeCount[i] ) )
 	{
@@ -953,7 +961,14 @@ bool CD3DDeviceModeData::GetModeParams(	CD3DDevice9::SD3DDeviceSetupParams * pPa
 	}
 	
 	// Prepare the full screen mode first.
-	pMode = &m_pAdapterArray[iDeviceIndex].ppAvailableModes[i][iModeCounter];
+
+    //try finding our preferred default resolution
+    pMode = FindMatchingWindowedMode(pParams, WinPoint(1366, 768), iDeviceIndex);
+    if (!pMode) {
+        //not found, select the first one (800x600)
+        pMode = &m_pAdapterArray[iDeviceIndex].ppAvailableModes[i][iModeCounter];
+    }
+
 	pParams->sFullScreenMode.mode.Format		= pMode->mode.Format;
 	pParams->sFullScreenMode.mode.Width			= pMode->mode.Width;
 	pParams->sFullScreenMode.mode.Height		= pMode->mode.Height;
@@ -1049,7 +1064,7 @@ bool CD3DDeviceModeData::GetModeParams(	CD3DDevice9::SD3DDeviceSetupParams * pPa
 	}
 	//Imago - Bug:  the AA selection box is populated only with your primary adapter's caps
 	//a fix would be to populate the AA select list with each adapter, and change the options when you change adapter
-	_ASSERT( pParams->sWindowedMode.d3dMultiSampleSetting == pParams->sFullScreenMode.d3dMultiSampleSetting );
+    ZAssert( pParams->sWindowedMode.d3dMultiSampleSetting == pParams->sFullScreenMode.d3dMultiSampleSetting );
 	pParams->bAntiAliased = pParams->sFullScreenMode.d3dMultiSampleSetting == D3DMULTISAMPLE_NONE ? false : true;
 
 	pLogFile->OutputStringV( "FSMS %d   WINMS %d\n",
@@ -1098,11 +1113,10 @@ bool CD3DDeviceModeData::GetModeParams(	CD3DDevice9::SD3DDeviceSetupParams * pPa
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 CD3DDeviceModeData::SAdapterMode * CD3DDeviceModeData::FindMatchingWindowedMode(	
 						CD3DDevice9::SD3DDeviceSetupParams * pParams,
-						SAdapterMode * pFSMode,
+						WinPoint size,
 						int iDeviceIndex )
 {
-	_ASSERT( pParams != NULL );
-	_ASSERT( pFSMode != NULL );
+    ZAssert( pParams != NULL );
 
 	int iMode, iRes;
 	SAdapterMode * pWindowedMode = NULL;
@@ -1114,8 +1128,8 @@ CD3DDeviceModeData::SAdapterMode * CD3DDeviceModeData::FindMatchingWindowedMode(
 			pWindowedMode = &m_pAdapterArray[ iDeviceIndex ].ppAvailableModes[iMode][iRes];
 			if( ( pWindowedMode->bWindowAllowed == true ) &&
 				( pWindowedMode->bHWSupport == true ) &&
-				( pWindowedMode->mode.Width == pFSMode->mode.Width ) &&
-				( pWindowedMode->mode.Height == pFSMode->mode.Height ) )
+				( pWindowedMode->mode.Width == size.X()) &&
+				( pWindowedMode->mode.Height == size.Y()) )
 			{
 				return pWindowedMode;
 			}
@@ -1125,13 +1139,24 @@ CD3DDeviceModeData::SAdapterMode * CD3DDeviceModeData::FindMatchingWindowedMode(
 	return NULL;
 }
 
+CD3DDeviceModeData::SAdapterMode * CD3DDeviceModeData::FindMatchingWindowedMode(
+    CD3DDevice9::SD3DDeviceSetupParams * pParams,
+    SAdapterMode * pFSMode,
+    int iDeviceIndex)
+{
+    ZAssert(pParams != NULL);
+    ZAssert(pFSMode != NULL);
+
+    return FindMatchingWindowedMode(pParams, WinPoint(pFSMode->mode.Width, pFSMode->mode.Height), iDeviceIndex);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // GetMaxTextureString()
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-char * CD3DDeviceModeData::GetMaxTextureString( int iIndex )
+const char *CD3DDeviceModeData::GetMaxTextureString( int iIndex )
 {
-	_ASSERT( ( iIndex >= 0 ) && ( iIndex < CD3DDevice9::eMTS_NumTextureSizes ) );
+    ZAssert( ( iIndex >= 0 ) && ( iIndex < CD3DDevice9::eMTS_NumTextureSizes ) );
 	return pszMaxTextureSizeStrings[ iIndex ];
 }

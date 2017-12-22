@@ -17,7 +17,7 @@ public:
     {
     }
 
-    TArray(TValue pvalue[count]) :
+    TArray(TValue pvalue[count])
     {
         for (int index = 0; index < count; index++) {
             m_pvalue[index] = pvalue[index];

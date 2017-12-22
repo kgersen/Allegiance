@@ -1,4 +1,9 @@
-#include "pch.h"
+#include "debrisgeo.h"
+
+#include <camera.h>
+#include <model.h>
+#include <surface.h>
+#include <viewport.h>
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -7,6 +12,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 const float maxDistance = 100;
+const float distancePerParticle = 1.0f;
 
 class DebrisGeo : public Geo {
 private:
@@ -23,6 +29,7 @@ private:
     TRef<Surface>  m_psurface;
     float          m_time;
     Vector         m_positionLast;
+    float          m_distanceTravelledSinceLastParticle;
 
     Number*    GetTime()     { return Number::Cast(GetChild(0));    }
     Viewport*  GetViewport() { return Viewport::Cast(GetChild(1));  }
@@ -32,7 +39,8 @@ private:
 
 public:
     DebrisGeo(Modeler* pmodeler, Number* ptime, Viewport* pviewport) :
-        Geo(ptime, pviewport)
+        Geo(ptime, pviewport),
+        m_distanceTravelledSinceLastParticle(0.0f)
     {   
         m_positionLast = GetCamera()->GetPosition();
         m_psurface = pmodeler->LoadSurface("debris1bmp", true);
@@ -94,8 +102,9 @@ public:
             // if we are moving add new debris
             //
 
-            while (length > 0) {
-                m_listData.PushFront();
+            m_distanceTravelledSinceLastParticle += length;
+            while (m_distanceTravelledSinceLastParticle > distancePerParticle) {
+                m_listData.PushFront(); 
                 DebrisData& data = m_listData.GetFront();
 
                 float angle    = random(0, 2 * pi);
@@ -117,7 +126,7 @@ public:
                         random(0.75f, 1.00f)
                     );
                 data.m_startTime = m_time;
-                length -= 1.0f;
+                m_distanceTravelledSinceLastParticle -= distancePerParticle;
             }
         }
 

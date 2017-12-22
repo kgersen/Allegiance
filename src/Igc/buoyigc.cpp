@@ -15,8 +15,7 @@
 **  History:
 */
 // buoyIGC.cpp : Implementation of CbuoyIGC
-#include "pch.h"
-#include "buoyIGC.h"
+#include "buoyigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CbuoyIGC

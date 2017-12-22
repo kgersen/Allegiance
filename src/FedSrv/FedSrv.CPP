@@ -2952,7 +2952,7 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
 
       pfmMoney->sidTo = pfsShip->GetShipID();
       pfmMoney->sidFrom = NA;
-      pfmMoney->dMoney = max(-pfsShip->GetMoney(), atoi(strMoney));
+      pfmMoney->dMoney = std::max(-pfsShip->GetMoney(), atoi(strMoney));
 
       pfsShip->SetMoney(pfsShip->GetMoney() + pfmMoney->dMoney);
       g.fm.SendMessages(CFSSide::FromIGC(pfsShip->GetSide())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
@@ -3658,11 +3658,9 @@ void SendShipUpdates(CFSMission * pfsMission)
 					if (ISPLAYER(pship))
 					{
 						CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
-						PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
-						if ((pship->GetAchievementMask() & c_achmProbeSpot) > 0)
-							pso->AddProbeSpot();
+						PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();						
 						if ((pship->GetAchievementMask() & c_achmNewRepair) > 0)
-							pso->SetRepair(int(pship->GetRepair()));
+							pso->SetRepair(pship->GetRepair());
 
 						pSteamAchievements->AwardIGCAchievements(pship->GetAchievementMask());
 						pship->ClearAchievementMask();
@@ -4945,7 +4943,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		ZString senderName = pfsPlayer->GetName();
 		sourceSteamID = strtoull(pfsPlayer->GetCDKey(), NULL, NULL);
 		
-		char szRemote[16];
+		char szRemote[64];
 		CFMConnection * connection = pfsPlayer->GetConnection();
 		pthis->GetIPAddress(*connection, szRemote);
 		debugf("chat from connection ID: %x IP: %s\n", connection->GetID(), szRemote);
@@ -6697,7 +6695,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         break;
 	  
 	  // BT - STEAM - Enable moderators to ban players by context menu.
-	  if (isModerator == true)
+	  if (isModerator == true && pfspAck->IsPlayer())
 	  {
 		  char szMessageParam[1024];
 		  if (FM_VAR_REF(pfmQuitMission, szMessageParam))
@@ -6765,7 +6763,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
 	  CFSPlayer * pfspAck = pfssAck->GetPlayer();
 
-	  if (isModerator == true)
+	  if (isModerator == true && pfssAck->IsPlayer())
 	  {
 		  char szMessageParam[1024];
 		  if (FM_VAR_REF(pfmQuitSide, szMessageParam))
@@ -8034,7 +8032,7 @@ void UpdateMissions(Time timeStart, Time timePrevious)
             // arena style games don't have a minimum number of players per side
             if (pfsMission->GetMissionDef()->misparms.bAllowEmptyTeams)
             {
-              pfsMission->StartCountdown(max(0.0f, dtTimeTillStart));
+              pfsMission->StartCountdown(std::max(0.0f, dtTimeTillStart));
             }
             else
             {
@@ -8043,7 +8041,7 @@ void UpdateMissions(Time timeStart, Time timePrevious)
                 pfsMission->SetForceReady(sideId, true);
 
               if (pfsMission->FAllReady()) // a team was found to have less than the required players
-                pfsMission->StartCountdown(max(0.0f, dtTimeTillStart));
+                pfsMission->StartCountdown(std::max(0.0f, dtTimeTillStart));
               else
               {
                 // let them completely run out of time before canceling the game
@@ -8872,7 +8870,7 @@ void StartDefaultGames()
 	// MaxPlayersPerGame not used for AZ
 #if defined(ALLSRV_STANDALONE)
     if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "MaxPlayersPerGame", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-      mp.nTotalMaxPlayersPerGame = min(c_cMaxPlayersPerGame, (short)dwValue);
+      mp.nTotalMaxPlayersPerGame = std::min(c_cMaxPlayersPerGame, (short)dwValue);
     else
       mp.nTotalMaxPlayersPerGame = c_cMaxPlayersPerGame;
 #endif
@@ -8885,7 +8883,7 @@ void StartDefaultGames()
 
 #if defined(ALLSRV_STANDALONE)
     mp.nMinPlayersPerTeam = 1;
-    mp.nMaxPlayersPerTeam = (char)(min(100, (int)mp.nTotalMaxPlayersPerGame / (int)mp.nTeams));
+    mp.nMaxPlayersPerTeam = (char)(std::min(100, (int)mp.nTotalMaxPlayersPerGame / (int)mp.nTeams));
 
 	mp.bObjectModelCreated = true; // a little bit of a fib, but it makes it look normal
 #else
@@ -10789,13 +10787,30 @@ class ThingSiteImpl : public ThingSite
 										{
 											AssetMask am = GetAssetMask(pSpottedShip, pSpottedShip->GetHullType(), false);
 											short hvMask = c_amEnemyMiner | c_amEnemyBuilder | c_amEnemyCapital | c_amEnemyCarrier | c_amEnemyBomber | c_amEnemyAPC | c_amEnemyTeleportShip;
-											if (am & hvMask > 0)
+											if (am & hvMask)
 											{
 												ObjectID probeID = s->GetObjectID();
 												ImodelIGC * pProbeModel = s->GetMission()->GetModel(OT_probe, probeID);
 												IprobeIGC * pProbe = (IprobeIGC*)pProbeModel;
-												IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
-												pProbingShip->SetAchievementMask(c_achmProbeSpot);
+												if (pProbe)
+												{
+													IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
+													if (pProbingShip)
+													{
+														CFSShip* pfsShip = (CFSShip *)(pProbingShip->GetPrivateData());
+														if (pfsShip && pfsShip->IsPlayer())
+														{
+															CFSPlayer* pfsPlayer = pfsShip->GetPlayer();
+															if (pfsPlayer)
+															{
+																PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
+																if (pso)
+																	pso->AddProbeSpot();
+																pfsPlayer->GetSteamAchievements()->AwardIGCAchievements(c_achmProbeSpot);
+															}
+														}
+													}
+												}
 											}
 										}
 									}
@@ -10885,10 +10900,36 @@ class ThingSiteImpl : public ThingSite
                                             pfmObjectSpotted->oidObject = pmodel->GetObjectID();
                                             pfmObjectSpotted->otSpotter = otSpotter;
                                             pfmObjectSpotted->oidSpotter = s->GetObjectID();
-
+																						
                                             g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); 
 
 											CFSMission* pfsMission = (CFSMission *)(pside->GetMission()->GetPrivateData());																		
+											
+											if (otModel == OT_station && pmodel != nullptr)
+											{
+												IstationIGC* pstation = ((IstationIGC*)pmodel);
+												const IstationTypeIGC *pStationType = pstation->GetStationType();
+
+												if (pStationType != nullptr && 
+													(
+														(pstation->GetStationType()->GetClassID() == c_scGarrison) ||
+														(pstation->GetStationType()->GetClassID() == c_scStarbase)
+													))
+												{
+													if (s != nullptr && s->GetMission() != nullptr && s->GetObjectType() == OT_ship)
+													{
+														ObjectID spotterID = s->GetObjectID();
+														ImodelIGC* pShipModel = s->GetMission()->GetModel(OT_ship, spotterID);
+
+														if (pShipModel != nullptr)
+														{
+															IshipIGC* pShip = (IshipIGC*)pShipModel;
+															pShip->SetAchievementMask(c_achmGarrSpot);
+														}
+													}													
+												}
+											}
+
 
                                             if ((otModel == OT_warp) || (otModel == OT_asteroid))
                                             {
@@ -11928,12 +11969,15 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
                                   underAttackSound, "Under attack by %s%s in %s",
                                   (PCC)strAllies, GetModelName(launcher), ship->GetCluster()->GetName());
 						
-						//7/22/09 ALLY FF
-						CFSShip*    pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
-						if (pfsLauncher->IsPlayer() && pside->AlliedSides(pside,psideLauncher))
+                        // Ally FF
+                        if (launcher->GetObjectType() == OT_ship)
                         {
-                            SendChat(ship, CHAT_INDIVIDUAL, launcher->GetObjectID(),
-                                     droneWatchFireSound, "Watch your fire");
+                            CFSShip* pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
+                            if (pfsLauncher->IsPlayer() && pside->AlliedSides(pside, psideLauncher))
+                            {
+                                SendChat(ship, CHAT_INDIVIDUAL, launcher->GetObjectID(),
+                                    droneWatchFireSound, "Watch your fire");
+                            }
                         }
                     }
                     else if (launcher != nullptr && launcher->GetObjectType() == OT_ship)
@@ -12805,6 +12849,18 @@ bool FedSrvSiteBase::RescueShipEvent(IshipIGC* pshipRescued, IshipIGC* pshipResc
   {
       CFSShip* pfsShip = (CFSShip*)(pshipRescuer->GetPrivateData());
       pfsShip->GetPlayerScoreObject()->AddRescue();
+	  if (pfsShip->IsPlayer())
+	  {
+		  CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+		  pSteamAchievements->AwardPodPickup();
+	  }
+
+	  CFSShip* rescuedShip = (CFSShip*)(pshipRescued->GetPrivateData());
+	  if (rescuedShip->IsPlayer())
+	  {
+		  CSteamAchievements *pSteamAchievements = rescuedShip->GetPlayer()->GetSteamAchievements();
+		  pSteamAchievements->AwardGetRescued();
+	  }
       BEGIN_PFM_CREATE(g.fm, pfmPlayerRescued, S, PLAYER_RESCUED)
       END_PFM_CREATE
       pfmPlayerRescued->shipIDRescuer = pshipRescuer->GetObjectID();

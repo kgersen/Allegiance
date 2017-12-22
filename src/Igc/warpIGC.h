@@ -16,7 +16,8 @@
 #ifndef __WARPIGC_H_
 #define __WARPIGC_H_
 
-#include    "modelIGC.h"
+#include "igc.h"
+#include "modelIGC.h"
 
 class CwarpIGC : public TmodelIGC<IwarpIGC>
 {

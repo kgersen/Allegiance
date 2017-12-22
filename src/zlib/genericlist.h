@@ -1,6 +1,10 @@
 #ifndef _genericlist_h_
 #define _genericlist_h_
 
+#include "event.h"
+#include "tref.h"
+
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // List Item Identifier
@@ -14,7 +18,6 @@ typedef void* ItemID;
 // List
 //
 //////////////////////////////////////////////////////////////////////////////
-
 class List : public IObject {
 public:
     virtual int           GetCount()             = 0;

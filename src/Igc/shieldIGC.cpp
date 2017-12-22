@@ -12,7 +12,6 @@
 **  History:
 */
 // shieldIGC.cpp : Implementation of CshieldIGC
-#include "pch.h"
 #include "shieldIGC.h"
 
 /////////////////////////////////////////////////////////////////////////////

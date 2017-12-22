@@ -438,11 +438,11 @@ bool CPig::WaitInTimerLoop(HANDLE hObject, DWORD dwMilliseconds)
   {
     // Compute the amount of time remaining for this time slice
     DWORD dwSliceElapsed = GetTickCount() - m_dwSliceStart;
-    DWORD dwSliceRemaining = m_msPerTick - min(m_msPerTick, dwSliceElapsed);
+    DWORD dwSliceRemaining = m_msPerTick - std::min(m_msPerTick, dwSliceElapsed);
 
     // Compute the timeout value for this wait iteration
     DWORD dwTimeout = (INFINITE == dwMilliseconds) ? dwSliceRemaining
-      : min(dwSliceRemaining, max(0L, long(dwWaitEnd - GetTickCount())));
+      : std::min(dwSliceRemaining, std::max(0L, long(dwWaitEnd - GetTickCount())));
 
     // Wait for an object to be signaled or the time slice to expire
     DWORD dwWait = MsgWaitForMultipleObjects(cHandles, &(*m_Handles.begin()),

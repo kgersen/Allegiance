@@ -64,7 +64,8 @@ namespace Training
     m_pDeadCondition (0),
     m_commanderID (NA),
     m_pChatCondition (0),
-    m_bSkipPostSlideShow (false)
+    m_bSkipPostSlideShow (false),
+    m_commandViewEnabled(false)
     {
         // get the window pointer
         TrekWindow* pWindow = GetWindow ();
@@ -257,18 +258,6 @@ namespace Training
         // check the key for tm conditions
         switch (key)
         {
-            // XXX hack to disable some keys in training
-            case TK_ViewCommand:
-            case TK_ConModeCommand:
-            case TK_ConModeInvest:
-            case TK_TargetSelf:
-            case TK_Suicide:
-            case TK_ConModeGameState:
-            case TK_ConModeTeleport:
-            case TK_ToggleAutoPilot:
-            case TK_RejectCommand: // pkk - Some training missions can't be finished
-            return false;
-
             case TK_PauseTM:
             {
                 // if the game is paused
@@ -310,6 +299,21 @@ namespace Training
             break;
           #endif
 
+            // XXX hack to disable some keys in training
+            case TK_ConModeInvest:
+            case TK_TargetSelf:
+            case TK_Suicide:
+            case TK_ConModeGameState:
+            case TK_ConModeTeleport:
+            case TK_RejectCommand: // pkk - Some training missions can't be finished
+                if (GetMissionID() != 10) //Training::c_TM_10_Free_Flight
+                    return false;
+            case TK_ViewCommand:
+            case TK_ConModeCommand:
+            case TK_ToggleAutoPilot:
+                if (!m_commandViewEnabled)
+                    return false;
+                //fallthrough otherwise
             default:
             {
                 // iterate over the key conditions with the unknown key
@@ -489,12 +493,18 @@ namespace Training
     }
 
     //------------------------------------------------------------------------------
+    bool        TrainingMission::GetCommandViewEnabled(void)
+    {
+        return m_commandViewEnabled;
+    }
+
+    //------------------------------------------------------------------------------
     void        TrainingMission::LoadUniverse (const ZString& name, HullID hullID, StationID homeStationID)
     {
         ImissionIGC*        pCore = trekClient.ResetStaticData ();
         Time                now = pCore->GetLastUpdate();
-        char*               szStaticCoreFilename = IGC_STATIC_CORE_FILENAME;
-        int                 iStaticCoreVersion = LoadIGCStaticCore (szStaticCoreFilename, pCore, false);
+        char*               szTrainingCoreFilename = IGC_TRAINING_CORE_FILENAME; //use IGC_STATIC_CORE_FILENAME for missions 1-5
+        int                 iStaticCoreVersion = LoadIGCStaticCore (szTrainingCoreFilename, pCore, false);
 
 
         // stuff for creating the sides
@@ -572,7 +582,7 @@ namespace Training
         // create the mission def
         FMD_S_MISSIONDEF    fmMissionDef;
         fmMissionDef.szDescription[0] = 0;
-        strcpy (fmMissionDef.misparms.szIGCStaticFile, szStaticCoreFilename);
+        strcpy (fmMissionDef.misparms.szIGCStaticFile, szTrainingCoreFilename);
         fmMissionDef.misparms.verIGCcore = iStaticCoreVersion;
         fmMissionDef.dwCookie = static_cast<DWORD> (pCore->GetMissionID ());
         fmMissionDef.iSideMissionOwner = 0;
@@ -689,6 +699,8 @@ namespace Training
         fmPlayerInfo.dtidDrone = NA;
         fmPlayerInfo.shipID = shipID;
         fmPlayerInfo.cbrgPersistPlayerScores = 0;
+        if (m_commanderID != NA && pShip->GetObjectID() == m_commanderID)
+            fmPlayerInfo.fTeamLeader = true;
         pPlayerInfo->Set (&fmPlayerInfo);
         pPlayerInfo->SetMission (pMission);
 

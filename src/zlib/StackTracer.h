@@ -18,9 +18,11 @@
 
 #pragma once
 
+#include <cstdint>
 #include <map>
+#include <string>
 #include <vector>
-#include <Windows.h>
+#include <windows.h>
 
 struct FunctionCall 
 {

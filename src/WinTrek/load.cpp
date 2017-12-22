@@ -1,5 +1,12 @@
 #include "pch.h"
 
+#include <button.h>
+#include <controls.h>
+#include <geometry.h>
+#include <image.h>
+#include <paneimage.h>
+#include "valuetransform.h"
+
 const Money moneyLots = 0x7fffffff;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -872,7 +879,7 @@ public:
                             m_pwrapGeo,
                             new AnimateRotateTransform(
                                 new VectorValue(Vector(0, 1, 0)),
-                                Multiply(m_ptime, new Number(1.0))
+                                NumberTransform::Multiply(m_ptime, new Number(1.0))
                             )
                         ),
                         new RotateTransform(Vector(1, 0, 0), pi/8)

@@ -9,8 +9,12 @@
 
 //  <NKM> 09-Aug-2004
 // STL lists for message queue and map for connections
+#include <Utility.h>
 #include <list>
 #include <map>
+#include <tlist.h>
+#include <ztime.h>
+#include <windowsx.h>
 
 #define OBLIVION_CLIENT_REG_KEY "Allegiance"
 
@@ -74,16 +78,16 @@ class CFMGroup;
  */
 class CFMRecipient
 {
-friend CFMConnection;
-friend CFMGroup;
+friend class CFMConnection;
+friend class CFMGroup;
 public:
   const char * GetName() {return m_szName;}
   DWORD     GetID() {return GetDPID();}
   virtual int GetCountConnections() = 0;
 
   // BT - STEAM
-  void SetSteamID(uint64 steamID) { m_steamID = steamID; }
-  uint64 GetSteamID() { return m_steamID; }
+  void SetSteamID(uint64_t steamID) { m_steamID = steamID; }
+  uint64_t GetSteamID() { return m_steamID; }
 
 protected:
   CFMRecipient(const char * szName, DPID dpid) :
@@ -100,7 +104,7 @@ protected:
 
 private:
   char * m_szName;
-  uint64 m_steamID; // BT - STEAM
+  uint64_t m_steamID; // BT - STEAM
 
 protected: // groups set their own dpid since they're not pre-created.
   void      SetDPID(DPID dpid) {m_dpid = dpid;}
@@ -116,7 +120,7 @@ protected: // groups set their own dpid since they're not pre-created.
  */
 class CFMConnection : public CFMRecipient// Hungarian prefix: cnxn
 {
-friend FedMessaging;
+friend class FedMessaging;
 public:
   void    SetPrivateData(DWORD dw) {m_dwPrivate = dw;}
   DWORD   GetPrivateData() {return m_dwPrivate;}
@@ -209,7 +213,7 @@ private:
  */
 class CFMGroup : public CFMRecipient
 {
-friend FedMessaging;
+friend class FedMessaging;
 public:
   void AddConnection(FedMessaging * pfm, CFMConnection * pcnxn);
   void DeleteConnection(FedMessaging * pfm, CFMConnection * pcnxn);
@@ -478,7 +482,7 @@ public:
     tt.Stop();
   }
 
-  HRESULT         GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16]);
+  HRESULT         GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[64]);
   HRESULT         GetListeningPort(DWORD* dwPort);
 
   //  <NKM> 07-Aug-2004
@@ -682,10 +686,10 @@ private:
      FM_##TYPE##_##SHORTNAME == ((FEDMESSAGE *)(PFM))->fmid && \
      !IsBadReadPtr(PFM, ((FEDMESSAGE *)(PFM))->cbmsg))
 
-extern char * g_rgszMsgNames[];
+extern const char * g_rgszMsgNames[];
 
 #define MAXMESSAGES 400
-#define ALLOC_MSG_LIST char * g_rgszMsgNames[MAXMESSAGES + 1]
+#define ALLOC_MSG_LIST const char * g_rgszMsgNames[MAXMESSAGES + 1]
 
 /*-------------------------------------------------------------------------
  * AddMsg
@@ -699,7 +703,7 @@ extern char * g_rgszMsgNames[];
 class AddMsg
 {
 public:
-  AddMsg(FEDMSGID fmid, char * szMsgName)
+  AddMsg(FEDMSGID fmid, const char * szMsgName)
   {
     assert (fmid <= MAXMESSAGES);
     g_rgszMsgNames[fmid] = szMsgName;

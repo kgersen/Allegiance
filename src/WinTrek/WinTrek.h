@@ -174,6 +174,7 @@ class  WinTrekClient :
         virtual void      ShipWarped(IshipIGC* ship, SectorID sidOld, SectorID sidNew);
         virtual void      ActivateTeleportProbe(IprobeIGC* pprobe);
         virtual void      DestroyTeleportProbe(IprobeIGC* pprobe);
+        virtual void      PostPlainText(bool bCritical, const char* pszText);
         virtual void      PostText(bool bCritical, const char* pszText, ...);
         virtual void      PostNotificationText(ImodelIGC* pmodel, bool bCritical, const char* pszText, ...);
         virtual void      OverrideCamera(ImodelIGC*    pmodel);

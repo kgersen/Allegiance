@@ -38,5 +38,10 @@
 #include "zlib.h"
 #include "engine.h"
 #include "effect.h"
+#include <geometry.h>
+#include <frameimage.h>
+#include <D3DDevice9.h>
+#include <LogFile.h>
+#include <VertexGenerator.h>
 
 #endif

@@ -267,7 +267,8 @@ public:
 
     BOOL RedrawWindow(const WinRect& rect, UINT flags = RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW)
     {
-        return ::RedrawWindow(m_hwnd, &(RECT)rect, NULL, flags);
+        RECT r = rect;
+        return ::RedrawWindow(m_hwnd, &r, NULL, flags);
     }
 
     int MessageBox(const ZString& strText, const ZString& strCaption, UINT nType)

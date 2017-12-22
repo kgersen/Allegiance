@@ -1,4 +1,4 @@
-#include    "pch.h"
+#include    "igc.h"
 #include    <math.h>
 
 // mmf begin
@@ -2556,8 +2556,8 @@ void   PlayerScoreObject::CalculateScore(ImissionIGC*   pmission)
         float(m_cRescues)                    * pmission->GetFloatConstant(c_fcidPointsRescues) +
         float(m_cArtifacts)                  * pmission->GetFloatConstant(c_fcidPointsArtifacts) +
         float(m_cFlags)                      * pmission->GetFloatConstant(c_fcidPointsFlags) +
-        float(m_cProbeSpot) * 10 +  //pmission->GetFloatConstant(c_fcidPointsProbeSpot) +
-        float(m_cRepair)                     * 0.0006; // pmission->GetFloatConstant(c_fcidPointsRepair);
+        float(m_cProbeSpot)                  * 10 +
+        float(m_cRepair)                     * 10;
 
     if (m_bWin)
         m_fScore *= 2.0f;

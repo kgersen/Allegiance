@@ -12,8 +12,7 @@
 **  History:
 */
 // mineTypeIGC.cpp : Implementation of CmineTypeIGC
-#include "pch.h"
-#include "mineTypeIGC.h"
+#include "minetypeigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CmineTypeIGC

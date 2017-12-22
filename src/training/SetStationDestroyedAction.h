@@ -25,11 +25,12 @@ namespace Training
     {
         public:
                     /* void */          SetStationDestroyedAction (ImodelIGC* theStation);
+                    /* void */          SetStationDestroyedAction(IstationIGC* theStation);
             virtual /* void */          ~SetStationDestroyedAction (void);
             virtual void                Execute (void);
 
         protected:
-                    ImodelIGC* pStation;
+                    IstationIGC* pStation;
     };
 
     //------------------------------------------------------------------------------

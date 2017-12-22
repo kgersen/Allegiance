@@ -1,11 +1,13 @@
-#include "pch.h"
 #include "HashTable.h"
+
+#include <cstring>
+#include <zassert.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // CHashTable()
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CHashTable::CHashTable( DWORD dwTableSize /*= s_iDefaultTableSize*/,
+CHashTable::CHashTable( uint32_t dwTableSize /*= s_iDefaultTableSize*/,
 						bool bValidateEntries /*= false*/ )
 {
 	m_dwTableSize = dwTableSize;
@@ -27,7 +29,7 @@ CHashTable::~CHashTable(void)
 {
 	CHashEntry * pCurrEntry, * pNextEntry;
 
-	for( DWORD i=0; i<m_dwTableSize; i++ )
+    for( uint32_t i=0; i<m_dwTableSize; i++ )
 	{
 		if( m_ppHashTable[i] != NULL )
 		{
@@ -62,7 +64,7 @@ CHashTable::~CHashTable(void)
 CHashEntry * CHashTable::AddHashEntry( CHashEntry * pHashEntry )
 {
 	CHashEntry * pRetVal = NULL;
-	DWORD dwTableIndex;
+    uint32_t dwTableIndex;
 	
 	dwTableIndex = pHashEntry->GetHashValue() % m_dwTableSize;
 
@@ -97,9 +99,9 @@ CHashEntry * CHashTable::AddHashEntry( CHashEntry * pHashEntry )
 // GetHashEntry()
 // Returns a hash entry with a matching hash value, NULL if no match is found.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CHashEntry * CHashTable::GetHashEntry(DWORD dwHashSearchValue)
+CHashEntry * CHashTable::GetHashEntry(uint32_t dwHashSearchValue)
 {
-	DWORD dwTableIndex;
+    uint32_t dwTableIndex;
 	CHashEntry * pRetVal = NULL;
 
 	dwTableIndex = dwHashSearchValue % m_dwTableSize;
@@ -121,9 +123,9 @@ CHashEntry * CHashTable::GetHashEntry(DWORD dwHashSearchValue)
 // GetLeadHashEntryByIndex()
 //
 ////////////////////////////////////////////////////////////////////////////////////
-CHashEntry * CHashTable::GetLeadHashEntryByIndex( DWORD dwIndex )
+CHashEntry * CHashTable::GetLeadHashEntryByIndex( uint32_t dwIndex )
 {
-	_ASSERT( dwIndex < m_dwTableSize );
+    ZAssert( dwIndex < m_dwTableSize );
 	return m_ppHashTable[ dwIndex ];
 }
 
@@ -132,9 +134,9 @@ CHashEntry * CHashTable::GetLeadHashEntryByIndex( DWORD dwIndex )
 // GetNumChildren()
 //
 ////////////////////////////////////////////////////////////////////////////////////
-DWORD CHashTable::GetNumChildren( CHashEntry * pEntry )
+uint32_t CHashTable::GetNumChildren( CHashEntry * pEntry )
 {
-	DWORD dwNumChildren = 0;
+    uint32_t dwNumChildren = 0;
 	while( pEntry != NULL )
 	{
 		if( pEntry->GetNext() != NULL )
@@ -150,9 +152,9 @@ DWORD CHashTable::GetNumChildren( CHashEntry * pEntry )
 // GenerateHashValue()
 //
 ////////////////////////////////////////////////////////////////////////////////////
-DWORD CHashTable::GenerateHashValue( const char * szString )
+uint32_t CHashTable::GenerateHashValue( const char * szString )
 {
-	DWORD dwHashValue = 0, dwChar;
+    uint32_t dwHashValue = 0, dwChar;
 
 	if( strlen( szString ) == 0 )
 	{
@@ -161,7 +163,7 @@ DWORD CHashTable::GenerateHashValue( const char * szString )
 
 	dwHashValue = 5381;
 
-	dwChar = (DWORD) * szString ++;
+    dwChar = (uint32_t) * szString ++;
 
 	while (dwChar != 0)
 	{

@@ -867,7 +867,7 @@ public:
             m_ptextMaxPlayers->SetString(
                 ZString(GetBaseMissionParams().nMinPlayersPerTeam) + " - " 
                     + ZString(
-						min(
+						std::min(
 							100,
 							GetBaseMissionParams().nTotalMaxPlayersPerGame
 							/ (int)FindValue(m_pcomboTeamCount->GetSelection(), "TeamCountValues")))
@@ -991,7 +991,7 @@ public:
         else
         {
             misparams.nMinPlayersPerTeam = 1;
-            misparams.nMaxPlayersPerTeam = min(100,misparams.nTotalMaxPlayersPerGame / misparams.nTeams);// KGJV #114
+            misparams.nMaxPlayersPerTeam = std::min(100,misparams.nTotalMaxPlayersPerGame / misparams.nTeams);// KGJV #114
         }
 
         misparams.iMaxImbalance = FindValue(m_pcomboMaxImbalance->GetSelection(), "MaxImbalanceValues");
@@ -1285,7 +1285,7 @@ public:
             || (trekClient.MyMission()->GetMissionParams().bAutoRestart && stage == STAGE_NOTSTARTED))
         {
             // note: have the timer lag by 1 second to give users the familiar countdown feel
-            int nTimeLeft = max(0, int(trekClient.MyMission()->GetMissionParams().timeStart - Time::Now()) + 1);
+            int nTimeLeft = std::max(0, int(trekClient.MyMission()->GetMissionParams().timeStart - Time::Now()) + 1);
 
             int nMinutesLeft = nTimeLeft/60;
             int nSecondsLeft = nTimeLeft - nMinutesLeft * 60;

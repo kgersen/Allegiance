@@ -14,6 +14,7 @@
 #ifndef __MAPMAKERIGC_H_
 #define __MAPMAKERIGC_H_
 
+#include "igc.h"
 
 typedef  Slist_utl<ImapMakerIGC*>       MapMakerListIGC;
 typedef  Slink_utl<ImapMakerIGC*>       MapMakerLinkIGC;

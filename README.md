@@ -39,3 +39,5 @@ Launch Visual Studio and open the main solution `src\VS2017\Allegiance.sln`
 * Kage Code Documentation: http://www.freeallegiance.org/FAW/index.php/Code_documentation
 
 * Dropbox build instructions: https://paper.dropbox.com/doc/FreeAllegiance-build-instructions-LVrOqhj4PnD0UWkohmxmW
+
+* Trello Bug Reports/Feature Request: https://trello.com/b/0ApAZt6p/steam-release-testing-dx9

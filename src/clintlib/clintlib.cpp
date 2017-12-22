@@ -1,5 +1,12 @@
 #include "pch.h"
 
+#include <AllegianceSecurity.h>
+#include <ClubMessages.h>
+#include <guids.h>
+#include <regkey.h>
+
+#include "AutoDownload.h"
+
 ALLOC_MSG_LIST;
 
 bool g_bCheckFiles = false;
@@ -1183,7 +1190,7 @@ void    BaseClient::Reinitialize(Time timeNow)
     m_timeLastPing = timeNow;
     m_serverOffset = 0;
     m_serverOffsetValidF = false;
-    m_selectedWeapon = NULL;
+    m_selectedWeapon = 0;
     m_messageType = c_mtNone;
     m_cookie = NA;
     m_plinkSelectedChat = NULL;
@@ -1699,11 +1706,12 @@ void    BaseClient::BuyLoadout(IshipIGC*    pshipLoadout, bool bLaunch)
     {
         // I'm training here
         short   size = pshipLoadout->ExportShipLoadout(NULL);
-        void*   ptr = new char[size];
+//TODO: Check me !
+        void*   ptr = malloc(size);
         pshipLoadout->ExportShipLoadout (static_cast <ShipLoadout*> (ptr));
         m_ship->PurchaseShipLoadout (size, static_cast <ShipLoadout*> (ptr));
         m_pClientEventSource->OnPurchaseCompleted (true);
-        delete ptr;
+        free(ptr);
     }
 }
 
@@ -2056,7 +2064,7 @@ HRESULT BaseClient::ReceiveMessages(void)
     return(hr);
 }
 
-HRESULT BaseClient::OnSessionLost(char * szReason, FedMessaging * pthis)
+HRESULT BaseClient::OnSessionLost(const char * szReason, FedMessaging * pthis)
 {
     debugf("OnSessionLost. %s. lastUpdate=%d now=%d Time::Now()=%d\n", 
            szReason, m_lastUpdate.clock(), m_now.clock(), Time::Now().clock());
@@ -2304,7 +2312,7 @@ void    BaseClient::SendChat(IshipIGC*      pshipSender,
 
         // do the right thing for training missions
         PilotType   pilotType = pship->GetPilotType();
-        if ((!m_fm.IsConnected ()) && (pilotType < c_ptPlayer) && (cid != c_cidNone))
+        if ((!m_fm.IsConnected ()) && (pilotType < c_ptPlayer) && (cid != c_cidNone) && (pship->GetSide()->GetObjectID() == m_pPlayerInfo->SideID()))
         {
             if ((cid == c_cidDefault) && (pmodelTarget != NULL))
             {
@@ -2334,7 +2342,9 @@ void    BaseClient::SendChat(IshipIGC*      pshipSender,
 
                         case c_ptWingman:
                         {
-                            if (pmodelTarget->GetSide() == pship->GetSide ())
+                            if (pmodelTarget->GetObjectType() == OT_buoy)
+                                cid = c_cidGoto;
+                            else if (pmodelTarget->GetSide() == pship->GetSide())
                                 cid = c_cidDefend;
                             else
                                 cid = c_cidAttack;
@@ -2808,76 +2818,63 @@ void BaseClient::StationTypeChange(IstationIGC* s)
     m_pClientEventSource->OnTechTreeChanged(sid);
 }
 
-static ItreasureIGC*    CreateTreasure(BaseClient* pClient, Time now, IshipIGC* pship, IpartIGC* p, IpartTypeIGC* ppt, const Vector& position, float dv)
+ItreasureIGC*  BaseClient::CreateTreasureLocal(Time now, IshipIGC* pship, IpartIGC* p, IpartTypeIGC* ppt, const Vector& position, float dv, float lifespan)
 {
-    assert (ppt);
-    assert (dv > 1.0f);
+    assert(p);
 
-    assert (pship);
+    short amount;
+    switch (p->GetObjectType())
+    {
+    case OT_magazine:
+    case OT_dispenser:
+    case OT_pack:
+    {
+        amount = p->GetAmount();
+        if (amount == 0)
+            return NULL;
+    }
+    break;
+    default:
+        amount = 0;
+    }
+
+    return CreateTreasureLocal(now, pship, amount, ppt, position, dv, lifespan);
+}
+
+ItreasureIGC*  BaseClient::CreateTreasureLocal(Time now, IshipIGC* pship, short amount, IpartTypeIGC* ppt, const Vector& position, float dv, float lifespan)
+{
+    assert(pship);
+    assert(ppt);
+    assert(dv > 1.0f);
 
     DataTreasureIGC dt;
     dt.treasureCode = c_tcPart;
     dt.treasureID = ppt->GetObjectID();
-
-    dt.objectID = pClient->m_pCoreIGC->GenerateNewTreasureID();
-
-    dt.p0 = position; 
-
-    Vector direction;
-    {
-        //Get a nice random 3D direction
-        direction.z = random(-1.0f, 1.0f);
-
-        float   yaw = random(0.0f, pi);
-        float   cosPitch = (float)sqrt(1.0f - direction.z * direction.z);
-
-        direction.x = cos(yaw) * cosPitch;
-        direction.y = sin(yaw) * cosPitch;
-    }
-
-    float   radius = pship->GetRadius() + 10.0f;
-    dt.p0 += radius * direction;
-
-    dt.v0 = direction * dv + pship->GetVelocity();
-    switch (ppt->GetEquipmentType())
-    {
-        case ET_Magazine:
-        case ET_Dispenser:
-        {
-            assert (p);
-            dt.amount = ((IlauncherIGC*)p)->GetAmount();
-        }
-        break;
-
-        case ET_Pack:
-        {
-            DataPackTypeIGC* pdp = (DataPackTypeIGC*)(ppt->GetData());
-            dt.amount = pdp->amount;
-        }
-        break;
-
-        default:
-            dt.amount = 0;
-    }
-    dt.lifespan = 600.0f;
-
-    IclusterIGC*    pcluster = pship->GetCluster();
-    dt.clusterID = pcluster->GetObjectID();
-
+    dt.lifespan = lifespan;
+    dt.amount = amount;
     dt.createNow = false;
 
-    dt.time0 = pClient->ServerTimeFromClientTime(now);
+    dt.objectID = pship->GetMission()->GenerateNewTreasureID();
+    dt.p0 = position;
+    Vector direction = Vector::RandomDirection();
+    float   radius = pship->GetRadius() + 10.0f;
+    dt.p0 += radius * direction;
+    dt.v0 = direction * dv + pship->GetVelocity();
+    IclusterIGC*    pcluster = pship->GetCluster();
+    dt.clusterID = pcluster->GetObjectID();
+    dt.time0 = now;
 
     ItreasureIGC* t = (ItreasureIGC *)
-                      pClient->m_pCoreIGC->CreateObject(now, OT_treasure,
-                                                        &dt, sizeof(dt));
+        pship->GetMission()->CreateObject(now, OT_treasure,
+            &dt, sizeof(dt));
 
     //Note: bad form releasing a pointer before we return it but we know it will
     //stick around since it is in a cluster.
-    assert (t);
+    assert(t);
     t->Release();
     return t;
 }
+
 void BaseClient::KillAsteroidEvent(IasteroidIGC*            pasteroid, bool explodeF)
 {
     if (!m_fm.IsConnected())
@@ -2912,9 +2909,8 @@ void BaseClient::KillShipEvent(Time now, IshipIGC* pShip, ImodelIGC* pLauncher, 
 {
     if (!m_fm.IsConnected())
     {
-        // commented because these are causing performance problems after a while BSW 10/27/1999
-        /*
-        //Blow the parts into space
+        // Previous version commented out because these were causing performance problems after a while BSW 10/27/1999
+        // Blow the parts into space
         {
             const PartListIGC*  plist = pShip->GetParts();
             PartLinkIGC*        plink;
@@ -2922,50 +2918,38 @@ void BaseClient::KillShipEvent(Time now, IshipIGC* pShip, ImodelIGC* pLauncher, 
             {
                 IpartIGC*   p = plink->data();
 
-                CreateTreasure(this, now, pShip, p, p->GetPartType(), 
-                               p1, 100.0f);
+                if (randomInt(0, 4) == 0)
+                    CreateTreasureLocal(now, pShip, p, p->GetPartType(), p1, 100.0f);
                 p->Terminate();
             }
 
             //Treasures for ammo
             {
-                int ammo = pShip->GetAmmo();
+                short ammo = pShip->GetAmmo();
                 if (ammo > 0)
                 {
                     IpartTypeIGC*  pptAmmo = m_pCoreIGC->GetAmmoPack();
-                    assert (pptAmmo);
-                    ItreasureIGC*   t = CreateTreasure(this, now, pShip, NULL, pptAmmo, p1, 100.0f);
-                    assert (t);
-                    int a = t->GetAmount();
-                    assert (a > 0);
-                    if (ammo <= a)
-                    {
-                        t->SetAmount((short)ammo);
-                    }
+                    assert(pptAmmo);
+
+                    if (randomInt(0, 4) == 0)
+                        CreateTreasureLocal(now, pShip, ammo, pptAmmo, p1, 100.0f, 30.0f);
                     pShip->SetAmmo(0);
                 }
             }
             //Ditto for fuel
             {
-                int fuel = int(pShip->GetFuel());
+                short fuel = short(pShip->GetFuel());
                 if (fuel > 0)
                 {
                     IpartTypeIGC*  pptFuel = m_pCoreIGC->GetFuelPack();
-                    assert (pptFuel);
+                    assert(pptFuel);
 
-                    ItreasureIGC*   t = CreateTreasure(this, now, pShip, NULL, pptFuel, p1, 100.0f);
-                    assert (t);
-                    int f = t->GetAmount();
-                    assert (f > 0);
-                    if (fuel <= f)
-                    {
-                        t->SetAmount((short)fuel);
-                    }
+                    if (randomInt(0, 4) == 0)
+                        CreateTreasureLocal(now, pShip, fuel, pptFuel, p1, 100.0f, 30.0f);
+                    pShip->SetFuel(0.0f);
                 }
-                pShip->SetFuel(0.0f);
             }
         }
-        */
 
         if (pShip == m_ship->GetSourceShip())
         {
@@ -4060,7 +4044,7 @@ void BaseClient::AddPlayerToSide(PlayerInfo* pPlayerInfo, SideID sideID)
 			if (otherside != GetSide() && otherside->AlliedSides(otherside,GetSide())) {
                 Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };
             	ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined ") + pside->GetName() + ZString(" \x81 ") + ConvertColorToString(AllianceColors[pside->GetAllies()]*0.75) + "(allied)" + END_COLOR_STRING + ".";
-	            ReceiveChat(NULL, CHAT_TEAM, NA, NULL, msg, c_cidNone, NA, NA);
+                ReceiveChat(NULL, CHAT_TEAM, NA, 0, msg, c_cidNone, NA, NA);
 			} else {
             	ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined your team.");
 	            ReceiveChat(NULL, CHAT_TEAM, NA, salRecruitsArrivedSound, msg, c_cidNone, NA, NA);

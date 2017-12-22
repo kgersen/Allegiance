@@ -3,7 +3,7 @@
 #include "ztime.h"
 
 #ifdef ICAP
-    #include "..\..\extern\icecap4\include\icecap.h"
+    #include "../../extern/icecap4/include/icecap.h"
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
@@ -32,13 +32,13 @@ void Window::Construct()
     m_bShowMouse    = true;
     m_bMouseInside  = false;
     m_sizeMin       = WinPoint(0, 0);
-    m_hcursor       = NULL;
+    m_hcursor       = nullptr;
 }
 
 Window::Window():
-    m_pwindowParent(NULL),
-    m_hmenu(NULL),
-    m_hwnd(NULL),
+    m_pwindowParent(nullptr),
+    m_hmenu(nullptr),
+    m_hwnd(nullptr),
     m_bSizeable(false),
     m_bHasMinimize(false),
     m_bHasMaximize(false),
@@ -84,13 +84,13 @@ Window::Window(
         );
         
         // set a default arrow cursor for topmost windows
-        m_hcursor = LoadCursor(NULL, IDC_ARROW);
+        m_hcursor = LoadCursor(nullptr, IDC_ARROW);
     }
 
     m_style.Set(StyleVisible() | StyleClipChildren() | StyleClipSiblings());
 
     m_rect = rect;
-    AdjustWindowRect(&m_rect, m_style.GetWord(), m_hmenu != NULL);
+    AdjustWindowRect(&m_rect, m_style.GetWord(), m_hmenu != nullptr);
 
     if (strClass.IsEmpty()) {
         m_hwnd = ::CreateWindowEx(
@@ -107,9 +107,9 @@ Window::Window(
 
             //m_rect.XMin(), m_rect.YMin(), 
             m_rect.XSize(), m_rect.YSize(),
-            pwindowParent ? pwindowParent->GetHWND() : NULL,
+            pwindowParent ? pwindowParent->GetHWND() : nullptr,
             m_hmenu,
-            GetModuleHandle(NULL),
+            GetModuleHandle(nullptr),
             this
         );
     } else {
@@ -128,9 +128,9 @@ Window::Window(
 
             //m_rect.XMin(), m_rect.YMin(), 
             m_rect.XSize(), m_rect.YSize(),
-            pwindowParent ? pwindowParent->GetHWND() : NULL,
+            pwindowParent ? pwindowParent->GetHWND() : nullptr,
             m_hmenu,
-            GetModuleHandle(NULL),
+            GetModuleHandle(nullptr),
             this
         );
 
@@ -170,7 +170,7 @@ BOOL Window::Create(
 
     if (!m_pwindowParent) {
         // set a default arrow cursor for topmost windows
-        m_hcursor = LoadCursor(NULL, IDC_ARROW);
+        m_hcursor = LoadCursor(nullptr, IDC_ARROW);
     }
     
     m_hwnd = ::CreateWindowEx(
@@ -180,9 +180,9 @@ BOOL Window::Create(
             m_style.GetWord(),
             m_rect.left, m_rect.top,
             m_rect.XSize(), m_rect.YSize(),
-            pwindowParent ? pwindowParent->GetHWND() : NULL,
+            pwindowParent ? pwindowParent->GetHWND() : nullptr,
             hmenu ? hmenu : (HMENU) nID,
-            GetModuleHandle(NULL),
+            GetModuleHandle(nullptr),
             this);
     
     s_mapWindow.Set(m_hwnd, this);
@@ -259,7 +259,7 @@ void Window::CalcStyle()
 
 void Window::SetTopMost(bool bTopMost)
 {
-    ZAssert(m_pwindowParent == NULL);
+    ZAssert(m_pwindowParent == nullptr);
 
     //if (m_bTopMost != bTopMost) {
         m_bTopMost = bTopMost;
@@ -269,7 +269,7 @@ void Window::SetTopMost(bool bTopMost)
 
 void Window::SetSizeable(bool bSizeable)
 {
-    ZAssert(m_pwindowParent == NULL);
+    ZAssert(m_pwindowParent == nullptr);
 
     if (m_bSizeable != bSizeable) {
         m_bSizeable = bSizeable;
@@ -305,9 +305,9 @@ void Window::UpdateRect()
 {
 	BOOL bRetVal;
     bRetVal = ::GetWindowRect(m_hwnd, &m_rect);
-    _ASSERT( bRetVal != FALSE );
+    ZAssert( bRetVal != FALSE );
 	bRetVal = ::GetClientRect(m_hwnd, &m_rectClient);
-    _ASSERT( bRetVal != FALSE );
+    ZAssert( bRetVal != FALSE );
 
     WinPoint pointOffset = ClientToScreen(WinPoint(0, 0));
 
@@ -338,7 +338,7 @@ void Window::SetRect(const WinRect& rect)
 void Window::SetClientRect(const WinRect& rectClient)
 {
     WinRect rect = rectClient;
-    AdjustWindowRect(&rect, m_style.GetWord(), m_hmenu != NULL);
+    AdjustWindowRect(&rect, m_style.GetWord(), m_hmenu != nullptr);
     SetRect(rect);
 }
 
@@ -349,13 +349,13 @@ void Window::SetPosition(const WinPoint& point)
 //		SetWindowPos(m_hwnd, HWND_NOTOPMOST, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED);
 //		SetWindowPos(m_hwnd, HWND_TOP, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
 //#else  //Imago put this back 7/6/09
-		SetWindowPos(m_hwnd, NULL, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		SetWindowPos(m_hwnd, nullptr, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 // BUILD_DX9
 }
 
 void Window::SetSize(const WinPoint& point)
 {
-    SetWindowPos(m_hwnd, NULL, 0, 0, point.X(), point.Y(), SWP_NOMOVE | SWP_NOZORDER);
+    SetWindowPos(m_hwnd, nullptr, 0, 0, point.X(), point.Y(), SWP_NOMOVE | SWP_NOZORDER);
 }
 
 void Window::SetClientSize(const WinPoint& point)
@@ -368,7 +368,7 @@ void Window::SetClientSize(const WinPoint& point)
 void Window::SetMinimumClientSize(const WinPoint& point)
 {
     WinRect rect(WinPoint(0, 0), point);
-    AdjustWindowRect(&rect, m_style.GetWord(), m_hmenu != NULL);
+    AdjustWindowRect(&rect, m_style.GetWord(), m_hmenu != nullptr);
 
     m_sizeMin = rect.Size();
 }
@@ -381,7 +381,7 @@ void Window::SetMinimumClientSize(const WinPoint& point)
 
 void Window::AddChild(Window* pchild)
 {
-    ZAssert(pchild != NULL);
+    ZAssert(pchild != nullptr);
     m_listChildren.PushFront(pchild);
 }
 
@@ -441,7 +441,7 @@ public:
 
     bool Trigger(Time now)
     {
-        return m_psink->OnEvent(NULL);
+        return m_psink->OnEvent(nullptr);
     }
 };
 
@@ -551,7 +551,7 @@ IKeyboardInput* Window::GetFocus()
 
 void Window::SetFocus(IKeyboardInput* pinput)
 {
-    if (m_pkeyboardInputFocus != NULL) {
+    if (m_pkeyboardInputFocus != nullptr) {
         m_pkeyboardInputFocus->SetFocusState(false);
     }
     m_pkeyboardInputFocus = pinput;
@@ -562,7 +562,7 @@ void Window::RemoveFocus(IKeyboardInput* pinput)
 {
     ZAssert(m_pkeyboardInputFocus == pinput);
     m_pkeyboardInputFocus->SetFocusState(false);
-    m_pkeyboardInputFocus = NULL;
+    m_pkeyboardInputFocus = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -632,15 +632,15 @@ ZString Window::GetText() const
 
 HCURSOR Window::GetCursor() const
 {
-    if (m_hcursor != NULL) {
+    if (m_hcursor != nullptr) {
         return m_hcursor;
     } else {
         // inherit our cursor from our parent window
 
-        if (GetParent() != NULL) {
+        if (GetParent() != nullptr) {
             return GetParent()->GetCursor();
         } else {
-            return NULL;
+            return nullptr;
         }
     }
 }
@@ -943,7 +943,7 @@ uint32_t Window::WndProc(
             //
 
             if (LOWORD(lParam) == HTCLIENT) {
-                ::SetCursor(NULL);
+                ::SetCursor(nullptr);
             } else {
                 ::SetCursor(GetCursor());
             }
@@ -1010,12 +1010,12 @@ uint32_t CALLBACK Window::Win32WndProc(
     Window* pwindow;
 
     if (message == WM_CREATE && 
-            NULL != (pwindow = (Window*)(((CREATESTRUCT *)lParam)->lpCreateParams))) {
+            nullptr != (pwindow = (Window*)(((CREATESTRUCT *)lParam)->lpCreateParams))) {
         pwindow->m_hwnd = hwnd;
         s_mapWindow.Set(hwnd, pwindow);
     } else {
         if (!s_mapWindow.Find(hwnd, pwindow)) {
-            pwindow = NULL;
+            pwindow = nullptr;
         }
     }
 
@@ -1036,15 +1036,15 @@ HRESULT Window::StaticInitialize()
     wc.lpfnWndProc   = (WNDPROC)Win32WndProc;
     wc.cbClsExtra    = 0;
     wc.cbWndExtra    = 4;
-    wc.hInstance     = GetModuleHandle(NULL);
-    wc.hIcon         = LoadIcon(NULL, ID_APP_ICON);
-    wc.hCursor       = NULL;
+    wc.hInstance     = GetModuleHandle(nullptr);
+    wc.hIcon         = LoadIcon(nullptr, ID_APP_ICON);
+    wc.hCursor       = nullptr;
 #ifdef DEBUG
     wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH); //imago test 7/7/09 (NYI final multimon issue, see enginewindow.cpp(386))
 #else
-	wc.hbrBackground = NULL; //imago test
+	wc.hbrBackground = nullptr; //imago test
 #endif
-    wc.lpszMenuName  = NULL;
+    wc.lpszMenuName  = nullptr;
     wc.lpszClassName = GetTopLevelWindowClassname();
 
     RegisterClass(&wc);
@@ -1065,15 +1065,15 @@ HRESULT Window::StaticTerminate()
 	// BT - 10/17 - Fixing crash when allegiance is exited from the new game screen.
 	RemoveAllKeyboardInputFilters();
 
-    g_plistIdle = NULL;
+    g_plistIdle = nullptr;
     return S_OK;
 }
 
 Window* Window::WindowFromHWND(HWND hwnd)
 {
-    Window* pwindow = NULL;
+    Window* pwindow = nullptr;
     if (!s_mapWindow.Find(hwnd, pwindow))
-        pwindow = NULL;
+        pwindow = nullptr;
     return pwindow;
 }
 
@@ -1149,9 +1149,9 @@ HRESULT Window::MessageLoop()
 
         bool bAnyMessage = true;
         if (g_bContinuousIdle) {
-            bAnyMessage = ::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) != 0;
+            bAnyMessage = ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != 0;
         } else {
-            ::GetMessage(&msg, NULL, 0, 0);
+            ::GetMessage(&msg, nullptr, 0, 0);
         }
 
         if (bAnyMessage) {
@@ -1181,7 +1181,7 @@ HRESULT Window::MessageLoop()
 
                             TList<TRef<IKeyboardInput> >::Iterator iter(g_listKeyboardInputFilters);
                             while (!iter.End() && !fHandled) {
-                                fHandled = iter.Value()->OnKey(NULL, ks, fForceTranslate);
+                                fHandled = iter.Value()->OnKey(nullptr, ks, fForceTranslate);
                                 iter.Next();
                             }
 
@@ -1207,7 +1207,7 @@ HRESULT Window::MessageLoop()
 
                             TList<TRef<IKeyboardInput> >::Iterator iter(g_listKeyboardInputFilters);
                             while (!iter.End() && !fHandled) {
-                                fHandled = iter.Value()->OnChar(NULL, ks);
+                                fHandled = iter.Value()->OnChar(nullptr, ks);
                                 iter.Next();
                             }
 
@@ -1224,7 +1224,7 @@ HRESULT Window::MessageLoop()
                         ::DispatchMessage(&msg);
                         break;
                 } 
-            } while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE));
+            } while (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE));
         }
     }
 }

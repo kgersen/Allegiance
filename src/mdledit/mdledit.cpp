@@ -78,7 +78,7 @@ public:
                 vec.x,
                 vec.y + m_amplitude * sin(m_frequency * vec.x + m_phase),
                 vec.z
-                //min(0, vec.z * max(1, vec.x * 0.25f))
+                //std::min(0, vec.z * std::max(1, vec.x * 0.25f))
             );
     }
 };
@@ -195,8 +195,6 @@ public:
             m_psurface = m_pmodeler->LoadSurface("testtexturebmp", false);
             //m_psurface = m_pmodeler->LoadSurface("fig04bmp", false);
             //m_psurface = m_pmodeler->LoadSurface("f101bmp", false);
-
-            m_psurface->SetColorKey(Color::Black());
 
             for (int qindex = 0; qindex < 100; qindex++) {
                 InitPoly(qindex);
@@ -670,8 +668,6 @@ public:
                 new CursorSurfaceSite()
             );
 
-        psurfaceCursor->SetColorKey(Color::Black());
-
         m_pimageCursor =
            new TransformImage(
                 new ConstantImage(
@@ -775,8 +771,6 @@ public:
 				true,
 				Color( 0, 0, 0 ),
 				"fxmine", true );
-		psurface->SetColorKey(Color(0, 0, 0));
-		psurface->SetEnableColorKey(true);
 
 
 
@@ -993,7 +987,7 @@ public:
                             GetModeler()->LoadGeo("bom01a"),
                             new AnimateRotateTransform(
                                 new VectorValue(Vector(0, 1, 0)),
-                                Multiply(GetTime(), new Number(1.0))
+                                NumberTransform::Multiply(GetTime(), new Number(1.0))
                             )
                         ),
                         new RotateTransform(Vector(1, 0, 0), pi/8)
@@ -1126,7 +1120,7 @@ public:
                 }
 
                 //float screenRadius = pcontext->GetScreenRadius(Vector::GetZero(), m_radius);
-                //pcontext->SetLOD(screenRadius * max(m_lodBiasMin, s_lodBias));
+                //pcontext->SetLOD(screenRadius * std::max(m_lodBiasMin, s_lodBias));
 
                 GetGeo()->Render(pcontext);
 

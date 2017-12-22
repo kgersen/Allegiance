@@ -228,13 +228,15 @@ public:
         TRef<Number> pnumberFrame = new ModifiableNumber(0);
 		TRef<Surface> psurface = GetModeler()->LoadSurface(strInput, false);
 
-        TRef<Image> pimageFrame =
-            CreateFrameImage(
+        //Rock: Broken after not not storing texture in regular memory anymore.
+        ZAssert(false);
+        TRef<Image> pimageFrame = nullptr;
+            /*CreateFrameImage(
                 pnumberFrame,
                 psurface,
                 xframes,
                 yframes
-            );
+            );*/
 
         //
         // Create the name space

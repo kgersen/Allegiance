@@ -38,5 +38,9 @@
 #include "zlib.h"
 #include "engine.h"
 #include "effect.h"
+#include <geometry.h>
+#include <D3DDevice9.h>
+#include <controls.h>
+#include <paneimage.h>
 
 #endif

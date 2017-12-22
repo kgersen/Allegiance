@@ -15,6 +15,7 @@
 
 #ifndef __TREASURESETIGC_H_
 #define __TREASURESETIGC_H_
+#include "igc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CtreasureSetIGC

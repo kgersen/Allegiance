@@ -1,6 +1,25 @@
 #ifndef _context_h_
 #define _context_h_
 
+#include <color.h>
+#include <d3d9.h>
+#include <olddxdefns.h>
+#include <point.h>
+#include <rect.h>
+#include <tvector.h>
+#include <vertex.h>
+#include <zmath.h>
+
+#include "VBIBManager.h"
+
+class Camera;
+class Context;
+class IEngineFont;
+class Material;
+class Matrix;
+class Matrix2;
+class Surface;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Plane
@@ -643,7 +662,8 @@ enum ShadeMode {
 enum BlendMode {
     BlendModeSource,
     BlendModeAdd,
-	BlendModeSourceAlpha
+	BlendModeSourceAlpha,
+    BlendModeSourceAlphaPreMultiplied
 };
 
 enum WrapMode {
@@ -728,6 +748,8 @@ public:
 
     virtual void PushState() = 0;
     virtual void PopState()  = 0;
+    virtual void UpdateState() = 0;
+    virtual void ForceState() = 0;
 
     virtual void SetGlobalColor(const Color& color, bool bOverride = false)   = 0;
     virtual void SetZTest(bool b, bool bOverride = false)                     = 0;
@@ -830,6 +852,9 @@ public:
     //
     // 2D Rendering
     //
+
+    virtual void SetYAxisInversion(bool) = 0;
+    virtual bool GetYAxisInversion() = 0;
 
     virtual void DrawImage(Surface* psurface, const Rect& rect, bool bCentered = false, const Point& point = Point(0, 0)) = 0;
     virtual void DrawImage(Surface* psurface, bool bCentered = false, const Point& point = Point(0, 0))   = 0;

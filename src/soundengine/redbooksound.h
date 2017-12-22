@@ -1,8 +1,11 @@
+#pragma once
 //
 // redbooksound.h
 //
 // SoundEngine support for redbook audio
 //
+
+#include "soundbase.h"
 
 namespace SoundEngine {
 

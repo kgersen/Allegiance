@@ -7,7 +7,7 @@
 #ifndef _Win32App_h_
 #define _Win32App_h_
 
-#include <Windows.h>
+#include <windows.h>
 
 #include "tref.h"
 

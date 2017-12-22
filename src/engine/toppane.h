@@ -1,6 +1,13 @@
 #ifndef _TopPane_H_
 #define _TopPane_H_
 
+#include <tref.h>
+#include <point.h>
+
+#include "pane.h"
+
+class Engine;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Top Pane Site

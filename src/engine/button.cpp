@@ -1,4 +1,16 @@
-#include "pch.h"
+#include "button.h"
+
+#include <event.h>
+#include <tmap.h>
+#include <tref.h>
+
+
+#include "D3DDevice9.h"
+#include "enginep.h"
+#include "surface.h"
+#include "UIVertexDefn.h"
+#include "VertexGenerator.h"
+#include "controls.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -45,7 +57,7 @@ private:
 		PrivateSurface * pprivateSurfSource;
 		CastTo( pprivateSurfSource, m_psurface );
 		TEXHANDLE hTexture = pprivateSurfSource->GetTexHandle();
-		DWORD dwSurfaceWidth, dwSurfaceHeight;
+        uint32_t dwSurfaceWidth, dwSurfaceHeight;
 		CVRAMManager::Get()->GetOriginalDimensions( hTexture, &dwSurfaceWidth, &dwSurfaceHeight );
 		
 		float fUpperV, fLowerV, fUpperY, fLowerY;
@@ -305,21 +317,6 @@ public:
         if (index != -1) 
 		{
 			CD3DDevice9 * pDev = CD3DDevice9::Get();
-
-			// If the texture has alpha, enable blending.
-			if( pprivateSurfSource->HasColorKey() == true )
-			{
-				pDev->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
-				pDev->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
-
-				pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-				pDev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
-				pDev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
-			}
-			else
-			{
-				pDev->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
-			}
 
 			// Render this pane.
 			float fXOffset, fYOffset;

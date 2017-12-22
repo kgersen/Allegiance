@@ -16,6 +16,8 @@
 #ifndef __DEVELOPMENTIGC_H_
 #define __DEVELOPMENTIGC_H_
 
+#include "igc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CdevelopmentIGC
 class       CdevelopmentIGC : public IdevelopmentIGC

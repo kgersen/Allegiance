@@ -16,7 +16,8 @@
 #ifndef __SHIPIGC_H_
 #define __SHIPIGC_H_
 
-#include    "modelIGC.h"
+#include "igc.h"
+#include "modelIGC.h"
 
 const float c_dtCheckRunaway = 31.0f;   //Must be slightly longer than ripcord time for drones.
 
@@ -1850,7 +1851,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 		}
 		virtual void AddRepair(float repair)
 		{
-			m_repair += repair; //Xynth amount of nanning performed by ship
+			m_repair += repair; //Xynth amount of nanning performed by ship as a fraction of hull repaired
 		}
 		virtual float GetRepair(void) const
 		{

@@ -1,6 +1,12 @@
 #ifndef _PaneImage_H_
 #define _PaneImage_H_
 
+#include <tref.h>
+
+class Engine;
+class Image;
+class Pane;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // PaneImage

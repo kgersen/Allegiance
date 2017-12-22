@@ -12,7 +12,6 @@
 **  History:
 */
 // warpIGC.cpp : Implementation of CwarpIGC
-#include "pch.h"
 #include "warpIGC.h"
 #include <stdio.h>
 

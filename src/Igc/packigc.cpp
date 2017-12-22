@@ -12,8 +12,7 @@
 **  History:
 */
 // packIGC.cpp : Implementation of CpackIGC
-#include "pch.h"
-#include "packIGC.h"
+#include "packigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CpackIGC

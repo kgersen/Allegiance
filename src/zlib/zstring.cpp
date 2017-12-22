@@ -20,7 +20,7 @@ ZString::ZStringData::ZStringData(PCC pcc, bool bStatic)
     ZAssert(bStatic);
 
     m_length = strlen(pcc);
-    m_pch    = NULL;
+    m_pch    = nullptr;
     m_pcc    = pcc;
 }
 
@@ -61,7 +61,7 @@ ZString::ZStringData::~ZStringData()
 void ZString::ZStringData::Set(int index, char ch)
 {
     ZAssert(
-           m_pch != NULL
+           m_pch != nullptr
         && index < m_length
         && GetCount() == 1
     );
@@ -376,7 +376,7 @@ bool operator==(const ZString& str1, const ZString& str2)
 
 bool operator==(const ZString& str, PCC pcc)
 {
-    ZAssert(pcc != NULL);
+    ZAssert(pcc != nullptr);
 
     return
            str.GetLength() == (int)strlen(pcc)
@@ -385,7 +385,7 @@ bool operator==(const ZString& str, PCC pcc)
 
 bool operator==(PCC pcc, const ZString& str)
 {
-    ZAssert(pcc != NULL);
+    ZAssert(pcc != nullptr);
 
     return
            str.GetLength() == (int)strlen(pcc)
@@ -401,7 +401,7 @@ bool operator!=(const ZString& str1, const ZString& str2)
 
 bool operator!=(const ZString& str, PCC pcc)
 {
-    ZAssert(pcc != NULL);
+    ZAssert(pcc != nullptr);
 
     return
            str.GetLength() != (int)strlen(pcc)
@@ -410,7 +410,7 @@ bool operator!=(const ZString& str, PCC pcc)
 
 bool operator!=(PCC pcc, const ZString& str)
 {
-    ZAssert(pcc != NULL);
+    ZAssert(pcc != nullptr);
 
     return 
            str.GetLength() != (int)strlen(pcc)
@@ -680,11 +680,11 @@ PathString::PathString(PCC pcc) :
 
 PathString PathString::GetCurrentDirectory()
 {
-    int size = ::GetCurrentDirectory(0, NULL);
+    int size = ::GetCurrentDirectory(0, nullptr);
     char* pch = new char[size];
     ::GetCurrentDirectory(size, pch);
     PathString str(pch);
-    delete pch;
+    delete[] pch;
 
     return str;
 }
@@ -692,7 +692,7 @@ PathString PathString::GetCurrentDirectory()
 PathString PathString::GetModulePath()
 {
     char ch[128];
-    GetModuleFileNameA(NULL, ch, sizeof(ch) / sizeof(*ch));
+    GetModuleFileNameA(nullptr, ch, sizeof(ch) / sizeof(*ch));
     return PathString(ch);
 }
 
@@ -907,7 +907,7 @@ static unsigned char ScrambleMunge(unsigned char cbStart, unsigned char cbKey)
     ZAssert(c != 0);
     ZAssert(cbKey != 0);
 
-    // (note: beware XOR, since that could generate a NULL character which 
+    // (note: beware XOR, since that could generate a nullptr character which
     // would truncate the string). 
 
     // do an add mod 255 + 1
@@ -933,7 +933,7 @@ static unsigned char ScrambleUnmunge(unsigned char cbStart, unsigned char cbKey)
     ZAssert(c != 0);
     ZAssert(cbKey > 0);
 
-    // (note: beware XOR, since that could generate a NULL character which 
+    // (note: beware XOR, since that could generate a nullptr character which
     // would truncate the string). 
 
     // undo the rotation  

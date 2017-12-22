@@ -6,6 +6,10 @@
 
 #pragma once
 
+#include <event.h>
+#include <vector.h>
+#include <tref.h>
+
 namespace SoundEngine {
 
 // choose a base class we can change if we decide to, say, go to COM+

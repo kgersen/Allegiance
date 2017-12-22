@@ -1,4 +1,8 @@
-#include "pch.h"
+#include "paneimage.h"
+
+#include "model.h"
+#include "surface.h"
+#include "toppane.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -84,7 +88,7 @@ public:
     //
     /////////////////////////////////////////////////////////////////////////////
 
-    void PaneImage::CalcBounds()
+    void CalcBounds()
     {
         m_bounds.SetRect(
             Rect(
@@ -94,16 +98,23 @@ public:
         );
     }
 
-    void PaneImage::Render(Context* pcontext)
+    void Render(Context* pcontext)
     {
         ZEnter("PaneImage::Render()");
 
         pcontext->TransformLocalToImage(Vector(0, 0, 0), m_pointOrigin);
 
+        // panes don't make use of the context, apply changes now
+        pcontext->UpdateState();
+
         Surface* surface = m_ptopPane->GetSurface();
+
+        //the pane rendering calls may have made all kinds of changes our context isn't aware of, reset
+        pcontext->ForceState();
+
         //if the surface is not initialized, the pane was likely empty.
         if (surface) {
-            pcontext->DrawImage3D(m_ptopPane->GetSurface(), Color(1, 1, 1));
+            pcontext->DrawImage3D(surface, Color(1, 1, 1));
         }
 
         ZExit("PaneImage::Render()");
@@ -120,7 +131,7 @@ public:
     //
     /////////////////////////////////////////////////////////////////////////////
 
-    void PaneImage::Evaluate()
+    void Evaluate()
     {
         m_ptopPane->Evaluate();
         Image::Evaluate();
@@ -142,32 +153,32 @@ public:
     //
     /////////////////////////////////////////////////////////////////////////////
 
-    void PaneImage::RemoveCapture()
+    void RemoveCapture()
     {
         m_ptopPane->RemoveCapture();
     }
 
-    MouseResult PaneImage::HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured)
+    MouseResult HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured)
     {
         return m_ptopPane->HitTest(pprovider, point, bCaptured);
     }
 
-    void PaneImage::MouseMove(IInputProvider* pprovider, const Point& point, bool bCaptured, bool bInside)
+    void MouseMove(IInputProvider* pprovider, const Point& point, bool bCaptured, bool bInside)
     {
         m_ptopPane->MouseMove(pprovider, point, bCaptured, bInside);
     }
 
-    void PaneImage::MouseEnter(IInputProvider* pprovider, const Point& point)
+    void MouseEnter(IInputProvider* pprovider, const Point& point)
     {
         m_ptopPane->MouseEnter(pprovider, point);
     }
 
-    void PaneImage::MouseLeave(IInputProvider* pprovider)
+    void MouseLeave(IInputProvider* pprovider)
     {
         m_ptopPane->MouseLeave(pprovider);
     }
 
-    MouseResult PaneImage::Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
+    MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
     {
         return m_ptopPane->Button(pprovider, point, button, bCaptured, bInside, bDown);
     }

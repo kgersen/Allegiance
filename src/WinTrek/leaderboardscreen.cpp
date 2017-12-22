@@ -565,7 +565,7 @@ public:
         if (m_cEntries <= 0)
             return m_nOffset;
         else
-            return max(0, m_nOffset - cLinesPerScreen + cLinesPerScreen/2); // rounding trick
+            return std::max(0, m_nOffset - cLinesPerScreen + cLinesPerScreen/2); // rounding trick
     }
 
     bool CanPageUp()
@@ -592,7 +592,7 @@ public:
         if (m_cEntries <= 0)
             return m_nOffset;
         else
-            return min(m_cEntries - 1, m_nOffset + cLinesPerScreen + cLinesPerScreen/2); 
+            return std::min(m_cEntries - 1, m_nOffset + cLinesPerScreen + cLinesPerScreen/2); 
     }
 
     bool CanPageDown()
@@ -844,7 +844,7 @@ public:
         {
             // figure out the offset in the list at which to start
             int nOffsetBasis = OffsetOfCharacter(m_strBasis);
-            m_nOffset = max(0, min(m_cEntries - cLinesPerScreen, 
+            m_nOffset = std::max(0, std::min(m_cEntries - cLinesPerScreen, 
                 nOffsetBasis - (cLinesPerScreen-1)/2));
 
             for (int i = 0; i < cLinesPerScreen && i + m_nOffset < m_cEntries; ++i)

@@ -1,4 +1,16 @@
-#include "pch.h"
+#include "enginewindow.h"
+
+#include <token.h>
+
+#include "VertexGenerator.h"
+#include "EngineSettings.h"
+#include "image.h"
+#include "engineapp.h"
+#include "LogFile.h"
+#include "enginep.h"
+#include "D3DDevice9.h"
+
+bool g_bLuaDebug = false;
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -31,10 +43,12 @@ EngineWindow::ModeData EngineWindow::s_pmodes[] = //imago updated 6/29/09 NYI le
 		ModeData(WinPoint(1440, 900),  false),
 		ModeData(WinPoint(1600, 1200), false),
 		ModeData(WinPoint(1680, 1050), false),
-		ModeData(WinPoint(1920, 1080), false)
+		ModeData(WinPoint(1920, 1080), false),
+        ModeData(WinPoint(1920, 1200), false),
+        ModeData(WinPoint(2560, 1440), false)
     };
 
-int EngineWindow::s_countModes = 9;
+int EngineWindow::s_countModes = 11; //this is not the count, this number is the largest available index.
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -213,11 +227,11 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 	pDev->Initialise( &devLog );
 	if( pDev->CreateD3D9( &devLog ) != D3D_OK )
 	{
-		_ASSERT( false );
+        ZAssert( false );
 	}
 	if( pDev->CreateDevice( hWindow, &devLog ) != D3D_OK )
 	{
-		_ASSERT( false );
+        ZAssert( false );
 	}
 	devLog.OutputString( "Device creation finished.\n" );
 
@@ -332,7 +346,9 @@ void EngineWindow::ParseCommandLine(const ZString& strCommandLine, bool& bStartF
                 bStartFullscreen = false;
             } else if (str == "fullscreen") {
                 bStartFullscreen = true;
-			}
+			} else if (str == "lua-debug") {
+                g_bLuaDebug = true;
+            }
         } else {
             token.IsString(str);
         }
@@ -389,7 +405,7 @@ void EngineWindow::UpdateSurfacePointer()
 		ZAssert(m_psurface != NULL && m_psurface->IsValid());
 		if(pDev->IsDeviceValid()) {
 			//Imago 7/28/09
-			SetWindowPos(GetHWND(),HWND_TOP,0,0,point.X(),point.Y(),NULL);
+            SetWindowPos(GetHWND(),HWND_TOP,0,0,point.X(),point.Y(),0);
 			DDCall(pDev->ResetDevice(false,point.X(),point.Y(),g_DX9Settings.m_refreshrate));
 			if (pDev->GetDeviceSetupParams()->iAdapterID) {
 				    ::ShowWindow(GetHWND(),SW_MINIMIZE);	 //imago 7/7/09 (workaround for one of the multimon bugs)
@@ -489,10 +505,21 @@ void EngineWindow::UpdateWindowStyle()
         SetClientRect(rect);
     } else {
         WinPoint size = m_pengine->GetFullscreenSize();
-        if ((GetSystemMetrics(SM_CXSCREEN) <= size.X() || GetSystemMetrics(SM_CYSCREEN) <= size.Y()))
-        {
-            //windowed, but we do not fit with the selected resolution, switch to borderless
 
+        // get the currently selected monitor's resolution
+        CD3DDevice9 * pDev = CD3DDevice9::Get();
+        RECT rectWindow = pDev->GetDeviceSetupParams()->monitorInfo.rcMonitor;
+        LONG screenWidth = rectWindow.right - rectWindow.left;
+        LONG screenHeight = rectWindow.bottom - rectWindow.top;
+
+        if (screenWidth <= size.X() && screenHeight <= size.Y()) {
+            //windowed, but we do not fit with the selected resolution, switch to borderless
+            //set to monitor resolution
+            m_pengine->SetFullscreenSize(WinPoint(screenWidth, screenHeight));
+            size = m_pengine->GetFullscreenSize();
+            SetClientRect(WinRect(WinPoint(0, 0), size));
+
+            //set window properties
             SetHasMinimize(false);
             SetHasMaximize(false);
             SetHasSysMenu(false);
@@ -707,8 +734,8 @@ bool EngineWindow::OnWindowPosChanging(WINDOWPOS* pwp)
 	{
 		// For some reason, when restoring a minimised window, it gets a position of
 		// -32000, -32000.
-		pwp->x = max( 0, pwp->x );
-		pwp->y = max( 0, pwp->y );
+        pwp->x = std::max( 0, pwp->x );
+        pwp->y = std::max( 0, pwp->y );
 
         if (!m_bMovingWindow) 
 		{
@@ -737,6 +764,7 @@ void EngineWindow::RectChanged()
                (size           != WinPoint(0, 0))
             && (m_pengine->GetFullscreenSize() != size          )
         ) {
+            SetFullscreenSize(Vector(size.X(), size.Y(), g_DX9Settings.m_refreshrate));
             Invalidate();
         }
 
@@ -777,23 +805,6 @@ WinPoint EngineWindow::GetWindowedSize()
 WinPoint EngineWindow::GetFullscreenSize()
 {
     return m_pengine->GetFullscreenSize();
-}
-
-void EngineWindow::SetWindowedSize(const WinPoint& size)
-{
-    if (g_bWindowLog) {
-        ZDebugOutput("EngineWindow::SetWindowedSize(" + GetString(size) + ")\n");
-    }
-
-    if (m_pengine->GetFullscreenSize() != size) {
-        if (!m_pengine->IsFullscreen()) {
-            Invalidate();
-        }
-    }
-
-    if (g_bWindowLog) {
-        ZDebugOutput("EngineWindow::SetWindowedSize() exiting\n");
-    }
 }
 
 void EngineWindow::Set3DAccelerationImportant(bool b3DAccelerationImportant)
@@ -1136,8 +1147,8 @@ bool EngineWindow::RenderFrame()
     TRef<Surface> psurface;
 
 	HRESULT hr = CD3DDevice9::Get()->BeginScene();
-	_ASSERT( hr == D3D_OK );
-	_ASSERT( m_psurface != NULL );
+    ZAssert( hr == D3D_OK );
+    ZAssert( m_psurface != NULL );
 
 	TRef<Context> pcontext = m_psurface->GetContext();
 	if( pcontext ) 
@@ -1148,6 +1159,8 @@ bool EngineWindow::RenderFrame()
 
 		const Rect& rect = m_pwrapRectValueRender->GetValue();
 		pcontext->Clip(rect);
+
+        pcontext->SetBlendMode(BlendModeSourceAlpha);
 
 		m_pgroupImage->Render( pcontext );
 		UpdatePerformanceCounters(pcontext, m_timeCurrent);
@@ -1326,15 +1339,12 @@ bool EngineWindow::OnActivateApp(bool bActive)
 
     if (m_bActive != bActive) {
         m_bActive = bActive;
-        if (m_pengine) {
-            m_pmouse->SetEnabled(m_bActive && m_pengine->IsFullscreen());
-        }
         m_pinputEngine->SetFocus(m_bActive);
 		
 		if( m_bActive == true )
 		{
 			SetActiveWindow( GetHWND() );
-		}
+        }
     }
 
     if (g_bWindowLog) {
@@ -1490,7 +1500,7 @@ void EngineWindow::HandleMouseMessage(UINT message, const Point& point, UINT nFl
                 m_ppointMouse->SetValue(point);
 
                 if (m_pengine->IsFullscreen()) {
-                    m_ptransformImageCursor->SetImage(m_pimageCursor ? m_pimageCursor : Image::GetEmpty());
+                    m_ptransformImageCursor->SetImage(m_pimageCursor ? (Image*)m_pimageCursor : Image::GetEmpty());
                 }
                 break;
         }

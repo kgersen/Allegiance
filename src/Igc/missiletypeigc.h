@@ -15,6 +15,7 @@
 
 #ifndef __MISSILETYPEIGC_H_
 #define __MISSILETYPEIGC_H_
+#include "igc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CmissileTypeIGC

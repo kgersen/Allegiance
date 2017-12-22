@@ -12,8 +12,7 @@
 **  History:
 */
 // dispenserIGC.cpp : Implementation of CdispenserIGC
-#include "pch.h"
-#include "dispenserIGC.h"
+#include "dispenserigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CdispenserIGC

@@ -1,5 +1,27 @@
-#include "pch.h"
+#include "model.h"
 
+#include <base.h>
+#include <quaternion.h>
+#include <tmap.h>
+
+#include "controls.h"
+#include "D3DDevice9.h"
+#include "enginep.h"
+#include "geometry.h"
+#include "frameimage.h"
+#include "image.h"
+#include "imagetransform.h"
+#include "keyframe.h"
+#include "material.h"
+#include "paneimage.h"
+#include "value.h"
+#include "valuetransform.h"
+#include "DX9PackFile.h"
+
+#ifdef STEAMSECURE
+# include "steam_api.h"
+# include <AllegianceSecurity.h>
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -159,22 +181,6 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-class PointX : public Number {
-private:
-    PointValue* GetPoint() { return PointValue::Cast(GetChild(0)); }
-
-public:
-    PointX(PointValue* ppoint) :
-        Number(ppoint)
-    {
-    }
-
-    void Evaluate()
-    {
-        GetValueInternal() = GetPoint()->GetValue().X();
-    }
-};
-
 class PointXFactory : public IFunction {
 private:
 public:
@@ -182,7 +188,7 @@ public:
     {
         TRef<PointValue> ppoint = PointValue::Cast((IObject*)stack.Pop());
 
-        return new PointX(ppoint);
+        return PointTransform::X(ppoint);
     }
 };
 
@@ -191,22 +197,6 @@ public:
 //
 //
 //////////////////////////////////////////////////////////////////////////////
-
-class PointY : public Number {
-private:
-    PointValue* GetPoint() { return PointValue::Cast(GetChild(0)); }
-
-public:
-    PointY(PointValue* ppoint) :
-        Number(ppoint)
-    {
-    }
-
-    void Evaluate()
-    {
-        GetValueInternal() = GetPoint()->GetValue().Y();
-    }
-};
 
 class PointYFactory : public IFunction {
 private:
@@ -215,7 +205,7 @@ public:
     {
         TRef<PointValue> ppoint = PointValue::Cast((IObject*)stack.Pop());
 
-        return new PointY(ppoint);
+        return PointTransform::Y(ppoint);
     }
 };
 
@@ -224,22 +214,6 @@ public:
 //
 //
 //////////////////////////////////////////////////////////////////////////////
-
-class ImageSize : public PointValue {
-private:
-    Image* GetImage() { return Image::Cast(GetChild(0)); }
-
-public:
-    ImageSize(Image* pimage) :
-        PointValue(pimage)
-    {
-    }
-
-    void Evaluate()
-    {
-        GetValueInternal() = Point::Cast(GetImage()->GetBounds().GetRect().Size());
-    }
-};
 
 class ImageSizeFactory : public IFunction {
 private:
@@ -248,7 +222,7 @@ public:
     {
         TRef<Image> pimage = Image::Cast((Value*)(IObject*)stack.Pop());
 
-        return new ImageSize(pimage);
+        return ImageTransform::Size(pimage);
     }
 };
 
@@ -624,32 +598,27 @@ protected:
 public:
 	ZPackFile(const PathString& strPath, void * pData, DWORD dwFileSize )
 	{
-		m_p = (BYTE*) pData;
+		SetPointer((BYTE*) pData);
 		m_dwFileSize = dwFileSize;
 		m_strPath = strPath;
 	}
 	~ZPackFile()
 	{
-		m_p = NULL;
+		SetPointer(NULL);
 		m_dwFileSize = 0;
 	}
 	bool  IsValid()
 	{
-		return ( m_p != NULL );
+		return (GetPointer() != NULL );
 	}
 	int   GetLength()
 	{
 		return (int) m_dwFileSize;
 	}
-	BYTE * GetPointer(bool bWrite = false, bool bCopyOnWrite = false)
-	{
-		_ASSERT( !bWrite && !bCopyOnWrite );
-		return m_p;
-	}
     DWORD Read(void* p, DWORD length)
 	{
-		_ASSERT( length <= m_dwFileSize );
-		memcpy( p, m_p, length );
+        ZAssert( length <= m_dwFileSize );
+		memcpy( p, GetPointer(), length );
 		return length;
 	}
 };
@@ -681,7 +650,7 @@ public:
 												pFile->GetLength(),
 												&fileInfo ) == D3D_OK )
 		{
-			_ASSERT( fileInfo.ResourceType == D3DRTYPE_TEXTURE );
+            ZAssert( fileInfo.ResourceType == D3DRTYPE_TEXTURE );
 			
 			// We can resize non-UI textures.
 			WinPoint targetSize( fileInfo.Width, fileInfo.Height );
@@ -690,7 +659,7 @@ public:
 			if( m_pmodeler->GetUIImageUsageHint() == false )
 			{
 				DWORD dwMaxTextureSize = CD3DDevice9::Get()->GetMaxTextureSize();
-				_ASSERT( dwMaxTextureSize >= 256 );
+                ZAssert( dwMaxTextureSize >= 256 );
 				while(	( targetSize.x > (LONG)dwMaxTextureSize ) ||
 						( targetSize.y > (LONG)dwMaxTextureSize ) )
 				{
@@ -711,64 +680,8 @@ public:
 		}
 		else
 		{
-			_ASSERT( false && "Failed to load image." );
+            ZAssert( false && "Failed to load image." );
 		}
-
-		// Replace FreeImage stuff with D3DX calls.
-//        FreeImageIO fio;
-//        fio.read_proc = myReadProc;
-//        fio.seek_proc = mySeekProc;
-//        fio.tell_proc = myTellProc;
-//
-//        FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromHandle(&fio,zf);
-//        if (fif != FIF_UNKNOWN)
-//        {
-//            FIBITMAP * dib = FreeImage_LoadFromHandle(fif,&fio,zf,PNG_IGNOREGAMMA);
-//            if (dib)
-//            {
-//                int bpp = FreeImage_GetBPP(dib);
-//                assert((bpp == 16) || (bpp==24) || (bpp==32));
-//                debugf("%s = %d bpp\n",(const char *)str,bpp);
-//                UINT redm = FreeImage_GetRedMask(dib);
-//                UINT grnm = FreeImage_GetGreenMask(dib);
-//                UINT blum = FreeImage_GetBlueMask(dib);
-//                UINT alpm = (bpp==32)?0xFF000000:0;
-//                PixelFormat* ppf = m_pengine->GetPixelFormat(
-//                    bpp,
-//                    redm,
-//                    grnm,
-//                    blum,
-//                    alpm
-//                );  
-//
-//                // engine handles bitmaps mirrored ... yeeee
-//                FreeImage_FlipHorizontal(dib);
-//                FreeImage_FlipVertical(dib);
-//                FreeImage_FlipHorizontal(dib);
-//
-//				// For D3D9, we only allow black colour keys.
-//                TRef<Surface> psurface =
-//                    m_pengine->CreateSurface(
-//                    WinPoint(FreeImage_GetWidth(dib),FreeImage_GetHeight(dib)),
-//                    ppf,
-////                    NULL,				// Remove palette.
-//                    FreeImage_GetPitch(dib),
-//                    FreeImage_GetBits(dib),
-//					zf,
-//					true,
-//					Color( 0, 0, 0 ),
-//					str );
-//                //FreeImage_Unload(dib); never free 
-//                
-//                if (b) {
-//                    // could use FreeImage_HasBackgroundColor/FreeImage_GetBackgroundColor here
-//                    // or extend MDL syntax to pass the transp color
-//                    psurface->SetColorKey(Color(0, 0, 0));
-//                }
-//
-//                return (Value*)new ConstantImage(psurface, ZString());
-//            }
-//        }
         debugf("ImportImageFromFileFactory: error reading file %s\n",(const char *)str);
         return NULL;
     }
@@ -821,7 +734,7 @@ public:
 															ppf,
 															pbsi->m_pitch,
 															pdata,
-															psite->GetMemoryObject(),
+															nullptr,
 															bColorKey,
 															Color( 0, 0, 0 ),
 															psite->GetCurrentFile(),
@@ -957,7 +870,7 @@ public:
 	private:
 		TRef<Engine> m_pengine;
 	public:
-		FillImage::FillImage(TRef<Engine> pengine, TRef<PointValue> psize, TRef<ColorValue> pcolor)
+        FillImage(TRef<Engine> pengine, TRef<PointValue> psize, TRef<ColorValue> pcolor)
 			: WrapImage(Image::GetEmpty(), psize, pcolor),
 			m_pengine(pengine)
 		{
@@ -967,7 +880,7 @@ public:
 		PointValue* GetSize() { return PointValue::Cast(GetChild(1)); }
 		ColorValue* GetColor() { return ColorValue::Cast(GetChild(2)); }
 
-		void FillImage::Evaluate()
+        void Evaluate()
 		{
 			PointValue* psize = GetSize();
 			ColorValue* pcolor = GetColor();
@@ -1046,11 +959,7 @@ public:
         TRef<Image>      pimage =      Image::Cast((Value*)(IObject*)stack.Pop());
         TRef<PointValue> ppoint = PointValue::Cast(        (IObject*)stack.Pop());
 
-        return
-           (Value*)new TransformImage(
-                pimage,
-                new TranslateTransform2(ppoint)
-           );
+        return (Value*)ImageTransform::Translate(pimage, ppoint);
     }
 };
 
@@ -1084,102 +993,8 @@ public:
         TRef<Image>      pimage =      Image::Cast((Value*)(IObject*)stack.Pop());
         TRef<PointValue> ppoint = PointValue::Cast(        (IObject*)stack.Pop());
 
-        return 
-            (Value*)new TransformImage(
-                pimage, 
-                new ScaleTransform2(ppoint)
-            );
+        return (Value*)ImageTransform::Scale(pimage, ppoint);
     }
-};
-
-class PointV : public PointValue {
-public:
-	PointV(Number* px, Number* py) :
-		PointValue(px, py)
-	{
-	}
-
-	Number* Get0() { return Number::Cast(GetChild(0)); }
-	Number* Get1() { return Number::Cast(GetChild(1)); }
-
-	void Evaluate()
-	{
-		GetValueInternal() =
-			Point(
-				Get0()->GetValue(),
-				Get1()->GetValue()
-			);
-	}
-};
-
-class FitImageFactory : public IFunction {
-public:
-	TRef<IObject> Apply(ObjectStack& stack)
-	{
-		TRef<Image>      pimage = Image::Cast((Value*)(IObject*)stack.Pop());
-		TRef<PointValue> ppoint = ModifiablePointValue::Cast((IObject*)stack.Pop());
-
-		TRef<ImageSize> sizeImage = new ImageSize(pimage);
-
-		TRef<Number> scale = Min(
-			Divide(new PointX(ppoint), new PointX(sizeImage)),
-			Divide(new PointY(ppoint), new PointY(sizeImage))
-		);
-
-		PointV * p_pointVariable = new PointV(scale, scale);
-
-		return
-			(Value*)new TransformImage(
-				pimage,
-				new ScaleTransform2(p_pointVariable)
-			);
-	}
-};
-
-class FitImageXFactory : public IFunction {
-public:
-	TRef<IObject> Apply(ObjectStack& stack)
-	{
-		TRef<Image>      pimage = Image::Cast((Value*)(IObject*)stack.Pop());
-		TRef<Number> pnumber = Number::Cast((IObject*)stack.Pop());
-
-		TRef<ImageSize> sizeImage = new ImageSize(pimage);
-
-		TRef<Number> scale = Divide(pnumber, new PointX(sizeImage));
-
-		PointV * p_pointVariable = new PointV(scale, scale);
-
-		return
-			(Value*)new TransformImage(
-				pimage,
-				new ScaleTransform2(p_pointVariable)
-			);
-	}
-};
-
-class FitImageYFactory : public IFunction {
-public:
-	TRef<IObject> Apply(ObjectStack& stack)
-	{
-		TRef<Image>      pimage = Image::Cast((Value*)(IObject*)stack.Pop());
-		TRef<Number> pnumber = Number::Cast((IObject*)stack.Pop());
-		//TRef<Number> pjustify = Number::Cast((IObject*)stack.Pop());
-
-		//Justification justification;
-		//justification.SetWord((DWORD)pjustify->GetValue());
-
-		TRef<ImageSize> sizeImage = new ImageSize(pimage);
-
-		TRef<Number> scale = Divide(pnumber, new PointY(sizeImage));
-
-		PointV * p_pointVariable = new PointV(scale, scale);
-
-		return
-			(Value*)new TransformImage(
-				pimage,
-				new ScaleTransform2(p_pointVariable)
-			);
-	}
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1381,7 +1196,7 @@ public:
         Number* px; CastTo(px, (IObject*)stack.Pop());
         Number* py; CastTo(py, (IObject*)stack.Pop());
 
-        return new PointV(px, py);
+        return PointTransform::Create(px, py);
     }
 };
 
@@ -1584,7 +1399,7 @@ protected:
     TRef<ValueType> m_pdefault;
     float           m_number;
 
-    TStaticValue<StaticType>* GetWrappedValue() { return TStaticValue<StaticType>::Cast(GetChild(0)); }
+    TStaticValue<StaticType>* GetWrappedValue() { return TStaticValue<StaticType>::Cast(Value::GetChild(0)); }
 
 public:
     //////////////////////////////////////////////////////////////////////////////
@@ -1600,7 +1415,7 @@ public:
     {
     }
 
-    Number* GetNumber() { return Number::Cast(GetChild(1)); }
+    Number* GetNumber() { return Number::Cast(Value::GetChild(1)); }
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -1616,7 +1431,7 @@ public:
 
         if (m_number == number) {
             pvalue->Update();
-            SetChild(0, pvalue);
+            TStaticValue<StaticType>::SetChild(0, pvalue);
         }
     }
 
@@ -1632,19 +1447,19 @@ public:
 
         if (m_number != number) {
             m_number = number;
-            DataList::Iterator iter(m_list);
+            typename DataList::Iterator iter(m_list);
 
             while (true) {
                 if (iter.End()) {
                     m_pdefault->Update();
-                    SetChild(0, m_pdefault);
+                    Value::SetChild(0, m_pdefault);
                     break;
                 }
                 const Data& data = iter.Value();
 
                 if (data.m_number == number) {
                     data.m_pvalue->Update();
-                    SetChild(0, data.m_pvalue);
+                    Value::SetChild(0, data.m_pvalue);
                     break;
                 }
 
@@ -1652,7 +1467,7 @@ public:
             }
         }
 
-        GetValueInternal() = GetWrappedValue()->GetValue();
+        TStaticValue<StaticType>::GetValueInternal() = GetWrappedValue()->GetValue();
     }
 };
 
@@ -2076,15 +1891,12 @@ public:
         return
             new FontValue(
                 CreateEngineFont(
-                    CreateFont(
-                        (int)pnumberSize->GetValue(),
-                        (int)pnumberStretch->GetValue(),0, 0,
-                        pboolBold->GetValue() ? FW_BOLD : FW_DONTCARE, 
-                        FALSE, FALSE, FALSE, ANSI_CHARSET,
-                        OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                        DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN,
-                        pstringName->GetValue()
-                    )
+                    std::string(pstringName->GetValue()), 
+                    (int)pnumberSize->GetValue(),
+                    (int)pnumberStretch->GetValue(),
+                    pboolBold->GetValue(),
+                    false,
+                    false
                 )
             );
     }
@@ -2104,7 +1916,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Mod(pnumber1, pnumber2);
+        return NumberTransform::Mod(pnumber1, pnumber2);
     }
 };
 
@@ -2116,7 +1928,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Min(pnumber1, pnumber2);
+        return NumberTransform::Min(pnumber1, pnumber2);
     }
 };
 
@@ -2128,7 +1940,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Max(pnumber1, pnumber2);
+        return NumberTransform::Max(pnumber1, pnumber2);
     }
 };
 
@@ -2140,7 +1952,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Add(pnumber1, pnumber2);
+        return NumberTransform::Add(pnumber1, pnumber2);
     }
 };
 
@@ -2152,7 +1964,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Subtract(pnumber1, pnumber2);
+        return NumberTransform::Subtract(pnumber1, pnumber2);
     }
 };
 
@@ -2164,7 +1976,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Multiply(pnumber1, pnumber2);
+        return NumberTransform::Multiply(pnumber1, pnumber2);
     }
 };
 
@@ -2176,7 +1988,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Divide(pnumber1, pnumber2);
+        return NumberTransform::Divide(pnumber1, pnumber2);
     }
 };
 
@@ -2337,8 +2149,10 @@ private:
     PathString				m_pathStr;
 	ImportImageFactory *	m_pImageFactory;			// This allows us to pass extra parameters into the image factory.
 
-	// BT - STEAM
+#ifdef STEAMSECURE
+    // BT - STEAM
 	FileHashTable			m_fileHashTable;
+#endif
 
     TMap<ZString, TRef<INameSpace> > m_mapNameSpace;
 
@@ -2431,7 +2245,7 @@ public:
                         0, 0, 0,
                         FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
                         OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                        DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN,
+                        ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_MODERN,
                         "tahoma"
                     )
                 )
@@ -2523,9 +2337,6 @@ public:
         pns->AddMember("ScaleImage",         new ScaleImageFactory());
         pns->AddMember("RotateImage",        new RotateImageFactory());
         pns->AddMember("BlendImage",         new BlendImageFactory());
-		pns->AddMember("FitImage",			 new FitImageFactory());
-		pns->AddMember("FitImageX",			 new FitImageXFactory());
-		pns->AddMember("FitImageY",			 new FitImageYFactory());
 
 
         //
@@ -2682,6 +2493,9 @@ public:
 				pfile = NULL;
 			}
 		}
+
+        bool bFileSteamHashInvalid = false;
+
 		if (!pfile) // if we dont have a file here, then load regularly.
 		{
 			// mmf #if this out for release.  I left the strtoTryOpenFromDev code in above
@@ -2718,6 +2532,7 @@ public:
 				{
 					// Cause the calls downward to fail out.
 					pfile = new ZFile("failsauce.nope");
+                    bFileSteamHashInvalid = true;
 				}
 #endif
 			}
@@ -2729,12 +2544,17 @@ public:
 
 #ifdef STEAMSECURE
 			// BT - STEAM - Queue up a full content re-verify in case the user has a corrupted file.
-			if (SteamUser() != nullptr && SteamUser()->BLoggedOn() == true)
+            // Rock - verification can be disabled with a command line toggle
+			if (g_bMDLLog == false && SteamUser() != nullptr && SteamUser()->BLoggedOn() == true)
 				SteamApps()->MarkContentCorrupt(false);
 #endif 
 
-			// BT - STEAM
-			MessageBoxA(GetDesktopWindow(), "Artwork file failed to validate: " + strToOpen + ", we have queued up an installation reverification. Check your Steam App in the downloads section for details..", "Allegiance: Fatal modeler error", MB_ICONERROR);
+            if (bFileSteamHashInvalid) {
+                MessageBoxA(GetDesktopWindow(), "Artwork file failed to validate: " + strToOpen + ", we have queued up an installation reverification. Check your Steam App in the downloads section for details..", "Allegiance: Fatal modeler error", MB_ICONERROR);
+            }
+            else {
+                MessageBoxA(GetDesktopWindow(), "Artwork file contained an error: " + strToOpen + ", we have queued up an installation reverification. Check your Steam App in the downloads section for details..", "Allegiance: Fatal modeler error", MB_ICONERROR);
+            }
 			exit(0);
 		}
 		ZRetailAssert(!(bError && !pfile->IsValid() && m_psite));
@@ -2794,11 +2614,6 @@ public:
             TRef<ConstantImage> pimage; CastTo(pimage, (Value*)pns->FindMember(str));
             if (pimage) {
                 TRef<Surface> psurface = pimage->GetSurface();
-                
-                // HACK: Need to uncomment and track down the bug that's 
-                // triggering this when a weapon fires, but this hack should
-                // keep the debug client testable.  
-                //ZAssert(bColorKey == psurface->HasColorKey());
 
                 return pimage;
             }     
@@ -2820,10 +2635,6 @@ public:
             if (pimage) {
                 TRef<Surface> psurface = pimage->GetSurface();
                 psurface->SetName(str);
-
-                if (bColorKey) {
-                    psurface->SetColorKey(Color(0, 0, 0));
-                }
 
                 return pimage;
             }

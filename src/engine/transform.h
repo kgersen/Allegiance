@@ -1,18 +1,16 @@
 #ifndef _Transform_h_
 #define _Transform_h_
 
+#include <zstring.h>
+
+#include "value.h"
+
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Transform
 //
 //////////////////////////////////////////////////////////////////////////////
-
-ZString GetString(int indent, const Matrix& mat);
-ZString GetString(int indent, const Matrix2& mat);
-
-ZString GetFunctionName(const Matrix& value);
-void Write(IMDLBinaryFile* pmdlFile, const Matrix& value);
-
 class Transform : public TStaticValue<Matrix> {
 protected:
     Transform(Value* pvalue0) :

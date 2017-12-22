@@ -1,6 +1,10 @@
 #ifndef _efimage_H_
 #define _efimage_H_
 
+#include <inputengine.h>
+#include <image.h>
+#include <tref.h>
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // effect images
@@ -38,6 +42,7 @@ public:
     virtual void SetSize(int rows, int columns)                     = 0;
 };
 
+class IEngineFont;
 TRef<StringGridImage> CreateStringGridImage(int columns, int rows, IEngineFont* pfont);
 
 //////////////////////////////////////////////////////////////////////////////
@@ -70,7 +75,7 @@ TRef<MuzzleFlareImage> CreateMuzzleFlareImage(Modeler* pmodeler, Number* ptime);
 // Poster
 //
 //////////////////////////////////////////////////////////////////////////////
-
+class Viewport;
 class PosterImage : public Image {
 public:
     PosterImage(Viewport* pviewport) :

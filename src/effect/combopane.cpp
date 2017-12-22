@@ -1,4 +1,9 @@
-#include "pch.h"
+#include "combopane.h"
+
+#include <button.h>
+#include <controls.h>
+#include <font.h>
+#include <menu.h>
 
 //////////////////////////////////////////////////////////////////////////////
 //

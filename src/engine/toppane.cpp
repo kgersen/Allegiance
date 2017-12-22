@@ -1,4 +1,8 @@
-#include "pch.h"
+#include "toppane.h"
+
+#include "engine.h"
+#include "enginep.h"
+#include "surface.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -96,11 +100,6 @@ void TopPane::Evaluate()
 										sizeNew,
 										new TopPaneSurfaceSite( this ) );
 			}
-
-            if (m_bColorKey) 
-			{
-                m_psurface->SetColorKey(Color(0, 0, 0));
-            }
         }
     }
 }
@@ -146,7 +145,7 @@ void TopPane::UpdateBits()
 		if( bRenderTargetRequired == true )
 		{
 			TEXHANDLE hTexture = pprivateSurface->GetTexHandle( );
-			_ASSERT( hTexture != INVALID_TEX_HANDLE );
+            ZAssert( hTexture != INVALID_TEX_HANDLE );
 			hr = CVRAMManager::Get()->PushRenderTarget( hTexture );
 		}
 

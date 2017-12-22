@@ -36,9 +36,9 @@ namespace Training
     {
         if (m_soundID != NA)
         {
-            ThingSitePrivate*           pThingSite = static_cast<ThingSitePrivate*> (trekClient.GetShip ()->GetThingSite());
-            TRef<ISoundPositionSource>  pSource = pThingSite ? pThingSite->GetSoundSource () : NULL;
-            m_soundInstance = trekClient.StartSound (m_soundID, pSource);
+            /*ThingSitePrivate*           pThingSite = static_cast<ThingSitePrivate*> (trekClient.GetShip ()->GetThingSite());
+            TRef<ISoundPositionSource>  pSource = pThingSite ? pThingSite->GetSoundSource () : NULL;*/
+            m_soundInstance = trekClient.StartSound (m_soundID); //use NULL instead of pSource, so the sounds don't stop on cluster change
         }
         m_bHasStarted = true;
     }

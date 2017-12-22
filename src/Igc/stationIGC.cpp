@@ -12,7 +12,6 @@
 **  History:
 */
 // stationIGC.cpp : Implementation of CstationIGC
-#include "pch.h"
 #include "stationIGC.h"
 #include <math.h>
 
@@ -457,11 +456,6 @@ void    CstationIGC::RepairAndRefuel(IshipIGC* pship) const
         pship->SetFraction(1.0f);
     }
 
-    {
-        IafterburnerIGC* a = (IafterburnerIGC*)(pship->GetMountedPart(ET_Afterburner, 0));
-        if (a)
-            a->Deactivate();
-    }
     {
         IshieldIGC* s = (IshieldIGC*)(pship->GetMountedPart(ET_Shield, 0));
         if (s)

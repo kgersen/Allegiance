@@ -1,4 +1,7 @@
-#include "pch.h"
+#include "listpane.h"
+
+#include <controls.h>
+#include <font.h>
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -120,11 +123,11 @@ public:
     {
         if (m_bHorizontal)
         {
-            return GetSize().X();
+            return Interface::GetSize().X();
         }
         else
         {
-            return GetSize().Y();
+            return Interface::GetSize().Y();
         }
     }
 
@@ -148,7 +151,7 @@ public:
     void SetScrollPos(int pos)
     {
         m_posScroll = 
-            max(min(pos, m_plist->GetCount() * GetSignificantSize(*m_ppainter) - GetSignificantSize()), 0);
+            std::max(std::min(pos, m_plist->GetCount() * GetSignificantSize(*m_ppainter) - GetSignificantSize()), 0);
 
         if (m_pscroll) {
             m_pscroll->SetPos(m_posScroll);
@@ -182,7 +185,7 @@ public:
             m_indexSelection++;
             m_pitemSelection  = m_plist->GetNext(m_pitemSelection);
 
-            NeedPaint();
+            Interface::NeedPaint();
             SelectionChanged();
             m_bNeedScrollUpdate      = true;
             m_bNeedSelectionOnScreen = true;
@@ -195,7 +198,7 @@ public:
             m_indexSelection--;
             m_pitemSelection  = m_plist->GetItem(m_indexSelection);
 
-            NeedPaint();
+            Interface::NeedPaint();
             SelectionChanged();
             m_bNeedScrollUpdate      = true;
             m_bNeedSelectionOnScreen = true;
@@ -247,15 +250,15 @@ public:
 
         UpdateScrollBar();
         UpdateScrollPos();
-        NeedLayout();
-        NeedPaint();
+        Interface::NeedLayout();
+        Interface::NeedPaint();
         SelectionChanged();
     }
 
     void ScrollBarChanged()
     {
         m_posScroll  = m_pscroll->GetPos()/* * GetSignificantSize(*m_ppainter)*/;
-        NeedPaint();
+        Interface::NeedPaint();
     }
 
     //
@@ -292,8 +295,8 @@ public:
 
         UpdateScrollBar();
         UpdateScrollPos();
-        NeedLayout();
-        NeedPaint();
+        Interface::NeedLayout();
+        Interface::NeedPaint();
     }
 
     void SetSelection(ItemID pitem)
@@ -319,7 +322,7 @@ public:
             else
                 m_iOldSelection = m_indexSelection;
             SelectionChanged();
-            NeedPaint();
+            Interface::NeedPaint();
         }
     }
 
@@ -371,7 +374,7 @@ public:
 
     void ForceRefresh()
     {
-        NeedPaint();
+        Interface::NeedPaint();
     }
 
     //
@@ -396,10 +399,10 @@ public:
 
     void UpdateLayout()
     {
-        InternalSetSize(
+        Interface::InternalSetSize(
             WinPoint(
-                max(m_ppainter->GetXSize(), m_sizeMin.X()),
-                max(       GetExpand().Y(), m_sizeMin.Y())
+                std::max(m_ppainter->GetXSize(), m_sizeMin.X()),
+                std::max(Interface::GetExpand().Y(), m_sizeMin.Y())
             )
         );
 
@@ -602,7 +605,7 @@ public:
 
             SetSelection(m_plist->GetItem((nSignificantMouseDim + GetScrollPos()) / nSize));
 
-            NeedPaint();
+            Interface::NeedPaint();
 
             SelectionChanged();
             if (pprovider->IsDoubleClick()) {
@@ -621,7 +624,7 @@ public:
 
             SetSelection(m_plist->GetItem((nSignificantMouseDim + GetScrollPos()) / nSize));
 
-            NeedPaint();
+            Interface::NeedPaint();
 
             SelectionChanged();
             if (pprovider->IsDoubleClick()) {

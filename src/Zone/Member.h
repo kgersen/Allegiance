@@ -1,4 +1,4 @@
-
+#pragma once
 
 // munging macros to go to/from interal internal/external ratings
 #define RATING_EXT2DISP(x) ((x) * 1000 / MAXSHORT)
@@ -23,9 +23,9 @@ public:
       return rank >= RANK_PRIVATE && rank <= RANK_GENERAL;
   }
 
-  static char * Rank2String (Rank rank)
+  static const char * Rank2String (Rank rank)
   {
-    static char* s_szRank[] = {
+    static const char* s_szRank[] = {
       "Unknown",
       "Private",
       "Sergant",
@@ -48,9 +48,9 @@ public:
       return position >= POS_MEMBER && position <= POS_LEADER;
   }
 
-  static char * Position2String (Position position)
+  static const char * Position2String (Position position)
   {
-    static char* s_szPosition[] = {
+    static const char* s_szPosition[] = {
       "Unknown",
       "Member",
       "ASL",
@@ -75,9 +75,9 @@ public:
       return status >= STAT_NO_ASSOCIATION && status <= STAT_ACTIVE;
   }
 
-  static char * Status2String (Status status)
+  static const char * Status2String (Status status)
   {
-    static char * s_szStatus[] = {
+    static const char * s_szStatus[] = {
       "No Association",
       "Booted",
       "Rejected",
@@ -106,9 +106,9 @@ public:
       return status >= DSTAT_NO_ASSOCIATION && status <= DSTAT_LEADER;
   }
 
-  static char * DetailedStatus2String (DetailedStatus status)
+  static const char * DetailedStatus2String (DetailedStatus status)
   {
-    static char * s_szDetailedStatus[] = {
+    static const char * s_szDetailedStatus[] = {
       "No Association",
       "Unknown",
       "Booted",

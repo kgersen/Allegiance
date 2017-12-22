@@ -16,6 +16,8 @@
 #ifndef __CLUSTERIGC_H_
 #define __CLUSTERIGC_H_
 
+#include "igc.h"
+
 const int   c_maxExplosions = 20;
 const int   c_nPassesPerUpdate = 10;
 

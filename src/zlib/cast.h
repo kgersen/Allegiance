@@ -7,6 +7,8 @@
 #ifndef _cast_H_
 #define _cast_H_
 
+#include "tref.h"
+
 #if !defined(_DEBUG)
     template <class DestType, class SourceType>
     void CastTo(DestType*& pdest, SourceType* psource)

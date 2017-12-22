@@ -12,8 +12,7 @@
 **  History:
 */
 // sideIGC.cpp : Implementation of CsideIGC
-#include "pch.h"
-#include "sideIGC.h"
+#include "sideigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CsideIGC

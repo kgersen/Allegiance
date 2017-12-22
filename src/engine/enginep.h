@@ -1,6 +1,13 @@
 #ifndef _enginep_h_
 #define _enginep_h_
 
+#include "context.h"
+#include "ddstruct.h"
+#include "engine.h"
+#include "namespace.h"
+#include "popup.h"
+#include "surface.h"
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Global hacks
@@ -45,7 +52,6 @@ typedef IDirectDrawGammaControl      IDirectDrawGammaControlX;*/
 // DirectX Wrapper Classes
 //
 
-#include "ddstruct.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -292,6 +298,7 @@ public:
     // State
     //
 
+    virtual void SetYAxisInversion(bool bValue)                        = 0;
     virtual bool GetClipping()                                         = 0;
     virtual const Matrix& GetMatrix()                                  = 0;
     virtual const Matrix& GetInverseModelMatrix()                      = 0;
@@ -413,169 +420,6 @@ public:
     DWORD    m_alphaMask;
     bool     m_bColorKey;
 };
-/*
-//////////////////////////////////////////////////////////////////////////////
-//
-// VideoSurface
-//
-//////////////////////////////////////////////////////////////////////////////
-
-class VideoSurface : public IObject {
-public:
-    //
-    // Attributes
-    //
-
-    virtual SurfaceType     GetSurfaceType() = 0;
-    virtual const WinPoint& GetSize()        = 0;
-    virtual int             GetPitch()       = 0;
-    virtual PixelFormat*    GetPixelFormat() = 0;
-    virtual BYTE*           GetPointer()     = 0;
-    virtual void            ReleasePointer() = 0;
-    virtual bool            IsMemoryShared() = 0;
-
-    virtual void            SetColorKey(const Color& color) = 0;
-
-    //
-    // Stretch Blt
-    //
-
-    virtual void UnclippedBlt(const WinRect& rectTarget, VideoSurface* pvideoSurfaceSource, const WinRect& rectSource, bool bHasColorKey) = 0;
-
-    //
-    // Regular Blts
-    virtual void UnclippedBlt(const WinRect& rectTarget, IDirect3DSurface9* pddsSource, const WinPoint& pointSource, bool bHasColorKey) = 0;
-    virtual void UnclippedBlt(const WinRect& rectTarget, VideoSurface* pvideoSurfaceSource, const WinPoint& pointSource) = 0;
-    virtual void UnclippedFill(const WinRect& rectTarget, Pixel pixel)                                                   = 0;
-
-    //
-    // GDI blts
-    //
-
-    virtual void BitBltFromDC(HDC hdc) = 0;
-
-    //
-    // Called from Context
-    //
-
-    virtual void BeginScene() = 0;
-    virtual void EndScene()   = 0;
-};
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// DDSurface
-//
-//////////////////////////////////////////////////////////////////////////////
-
-class DDSurface : public VideoSurface {
-public:
-    virtual bool                     HasZBuffer()                                                 = 0;
-    virtual bool                     HasColorKey()                                                = 0;
-    virtual const Color&             GetColorKey()                                                = 0;
-    virtual bool                     InVideoMemory()                                              = 0;
-    virtual DDDevice*                GetDDDevice()                                                = 0;
-    virtual TRef<IDirect3DTexture9> GetDDS()                                                     = 0;
-	virtual IDirect3DTexture9 *     GetDDSX()                                                    = 0;
-    virtual IDirect3DTexture9*     GetDDSX(PixelFormat* ppf)                                    = 0;
-//    virtual IDirect3DSurface9*     GetDDSXZBuffer()                                             = 0;
-    virtual IDirect3DTexture9*       GetTextureX(PixelFormat* ppf, const WinPoint& size, int& id) = 0;
-};*/
-
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// DDSurface
-// Merged VideoSurface and DDSurface interfaces, so that we can get
-// access to the DDDevice for rendering purposes.
-//////////////////////////////////////////////////////////////////////////////
-
-/*class DDSurface : public IObject 
-{
-public:
-	// Original VideoSurface interface functions.
-    // Attributes
-    virtual SurfaceType     GetSurfaceType() = 0;
-    virtual const WinPoint& GetSize()        = 0;
-    virtual int             GetPitch()       = 0;
-    virtual PixelFormat*    GetPixelFormat() = 0;
-    virtual BYTE*           GetPointer()     = 0;
-    virtual void            ReleasePointer() = 0;
-    virtual bool            IsMemoryShared() = 0;
-
-    virtual void            SetColorKey(const Color& color) = 0;
-
-    // Stretch Blt
-    virtual void UnclippedBlt(const WinRect& rectTarget, DDSurface* pvideoSurfaceSource, const WinRect& rectSource, bool bHasColorKey) = 0;
-
-    // Regular Blts
-    virtual void UnclippedBlt(const WinRect& rectTarget, IDirect3DSurface9* pddsSource, const WinPoint& pointSource, bool bHasColorKey) = 0;
-    virtual void UnclippedBlt(const WinRect& rectTarget, DDSurface* pvideoSurfaceSource, const WinPoint& pointSource) = 0;
-    virtual void UnclippedFill(const WinRect& rectTarget, Pixel pixel)                                                   = 0;
-
-    // GDI blts
-    virtual void BitBltFromDC(HDC hdc) = 0;
-
-    // Called from Context
-    virtual void BeginScene() = 0;
-    virtual void EndScene()   = 0;
-
-	// Original DDSurface interface functions.
-    virtual bool						HasZBuffer()                                                 = 0;
-    virtual bool						HasColorKey()                                                = 0;
-    virtual const Color&				GetColorKey()                                                = 0;
-    virtual bool						InVideoMemory()                                              = 0;
-//    virtual DDDevice*					GetDDDevice()                                                = 0;
-    virtual TRef<IDirect3DTexture9>		GetDDS()                                                     = 0;
-	virtual IDirect3DTexture9 *			GetDDSX()                                                    = 0;
-    virtual IDirect3DTexture9*			GetDDSX(PixelFormat* ppf)                                    = 0;
-//	virtual IDirect3DSurface9*			GetDDSXZBuffer()                                             = 0;
-    virtual IDirect3DTexture9*			GetTextureX(PixelFormat* ppf, const WinPoint& size, int& id) = 0;
-};*/
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// DDSurface
-//
-//////////////////////////////////////////////////////////////////////////////
-
-/*TRef<DDSurface> CreateDDSurface(
-          DDDevice*       pdddevice,
-          SurfaceType     stype,
-          PixelFormat*    ppf,
-          PrivatePalette* ppalette,
-    const WinPoint&       size
-);
-
-TRef<DDSurface> CreateDDSurface(
-          DDDevice*       pdddevice,
-          SurfaceType     stype,
-          PixelFormat*    ppf,
-          PrivatePalette* ppalette,
-    const WinPoint&       size,
-          int             pitch,
-          BYTE*           pdata
-);
-
-TRef<DDSurface> CreateDDSurface(
-    DDDevice*            pdddevice,
-    IDirectDrawSurfaceX* pdds,
-    IDirectDrawSurfaceX* pddsZBuffer,
-    PixelFormat*         ppf,
-    PrivatePalette*      ppalette,
-    SurfaceType          stype
-);*/
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// DeviceDependant
-//
-//////////////////////////////////////////////////////////////////////////////
-
-//class DeviceDependant : public IObject {
-//public:
-//    virtual void ClearDevice() = 0;
-//};
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -585,13 +429,8 @@ TRef<DDSurface> CreateDDSurface(
 
 class PrivateSurface : 
     public Surface
-//    public DeviceDependant
 {
 public:
-//    virtual DDSurface *		GetVideoSurface()                            = 0;
-//    virtual DDSurface *		GetVideoSurfaceNoAlloc()                     = 0;
-//    virtual void			SetPixelFormat(PixelFormat* ppf)             = 0;
-//    virtual void			BitBltFromDC(HDC hdc)                        = 0;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -647,7 +486,7 @@ TRef<PrivateSurface> CreatePrivateSurface(
 TRef<PrivateSurface> CreatePrivateSurface(	D3DFORMAT	texFormat,
 											DWORD		dwWidth,
 											DWORD		dwHeight,
-											char *		szTexName = NULL );
+                                            const char *szTexName = NULL );
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -704,6 +543,7 @@ public:
 
 TRef<IEngineFont> CreateEngineFont(HFONT hfont);
 TRef<IEngineFont> CreateEngineFont(IBinaryReaderSite* psite);
+TRef<IEngineFont> CreateEngineFont(std::string name, int size, int stretch, bool bold, bool italic, bool underline);
 TRef<IEngineFont> CreateEngineFont( D3DXFONT_DESC * pFontDesc );			// ADDED
 
 //////////////////////////////////////////////////////////////////////////////

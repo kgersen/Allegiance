@@ -12,8 +12,7 @@
 **  History:
 */
 // treasureSetIGC.cpp : Implementation of CtreasureSetIGC
-#include "pch.h"
-#include "treasureSetIGC.h"
+#include "treasuresetigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CtreasureSetIGC

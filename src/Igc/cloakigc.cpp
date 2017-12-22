@@ -12,8 +12,7 @@
 **  History:
 */
 // cloakIGC.cpp : Implementation of CcloakIGC
-#include "pch.h"
-#include "cloakIGC.h"
+#include "cloakigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CcloakIGC

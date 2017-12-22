@@ -46,6 +46,8 @@ namespace Training
     {
         if (m_iterator == m_messageList.end ())
             m_iterator = m_messageList.begin ();
+        if (m_soundIterator == m_soundList.end())
+            m_soundIterator = m_soundList.begin();
         if (m_iterator != m_messageList.end ())
             trekClient.ReceiveChat (g_pMission->GetCommanderShip (), CHAT_INDIVIDUAL, trekClient.GetShipID (), *m_soundIterator++, *m_iterator++, c_cidNone, NA, NA, 0, false); //TheBored 06-JUL-2007: Bahdohday's edit to allow sound w/text. 
     }

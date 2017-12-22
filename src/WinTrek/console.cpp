@@ -6,6 +6,9 @@
 #include "training.h"
 #include "badwords.h"
 
+#include <button.h>
+#include <controls.h>
+
 const int   c_iRecipientOther   = -1;
 const int   c_iRecipientMe      =  0;
 const int   c_iRecipientSector  =  1;
@@ -2302,6 +2305,12 @@ public:
                             else
                                 pszCursor = AWF_CURSOR_DEFAULT;
                         }
+
+                        // show object name
+                        TRef<IEngineFont> pfont = TrekResources::SmallFont();
+                        float   w = (float)(pfont->GetTextExtent(pmodelPick->GetName()).X());
+                        Point   offset = Point(-w / 2, -8 - pfont->GetHeight());
+                        pcontext->DrawString(pfont, (psidePick ? psidePick->GetColor() : Color::White()), m_pointMouseStop + offset, ZString(GetModelName(pmodelPick)));
                     }
                 }
 

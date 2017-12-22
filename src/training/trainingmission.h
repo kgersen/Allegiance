@@ -46,6 +46,7 @@ namespace Training
                     void                    AddPartToShip (PartID part, Mount mount, short ammo = 0);
                     IshipIGC*               CreateDrone (const ZString& name, ShipID shipID, HullID hullID, SideID sideID, PilotType pilotType);
                     void                    SetSkipPostSlideshow (void);
+                    bool                    GetCommandViewEnabled(void);
 
         protected:
             virtual void                    CreateUniverse (void) = 0;
@@ -71,6 +72,7 @@ namespace Training
                     TrekWindow::ViewMode    m_deadViewMode;
                     TrekWindow::CameraMode  m_deadCameraMode;
                     bool                    m_bSkipPostSlideShow;
+                    bool                    m_commandViewEnabled;
     };
 
     //------------------------------------------------------------------------------

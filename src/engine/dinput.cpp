@@ -1,5 +1,17 @@
-#include "pch.h"
-#include "dinput.h"
+#include <dinput.h>
+
+#include <regkey.h>
+#include <zreg.h>
+
+#include "LogFile.h"
+#include "ddstruct.h"
+#include "enginep.h"
+#include "inputengine.h"
+#include "value.h"
+
+#ifndef DIFEF_MODIFYIFNEEDED
+# define DIFEF_MODIFYIFNEEDED		0x00000010
+#endif
 
 #define SAFE_DELETE(p)       { if(p) { delete (p);     (p)=NULL; } }
 #define SAFE_RELEASE(p)      { if(p) { (p)->Release(); (p)=NULL; } }
@@ -1295,7 +1307,10 @@ public:
 
         //DDCall(
             m_pdid->EnumEffects(
-                (LPDIENUMEFFECTSCALLBACK)EnumEffectTypeProc,
+#ifndef __GNUC__
+                (LPDIENUMEFFECTSCALLBACK)
+#endif
+                        &EnumEffectTypeProc,
                 &guidEffect, 
                 DIEFT_CONSTANTFORCE
             //)
@@ -1370,7 +1385,10 @@ public:
 		} else {
 			//DDCall(
 				m_pdid->EnumEffects(
-					(LPDIENUMEFFECTSCALLBACK)EnumEffectTypeProc,
+#ifndef __GNUC__
+                    (LPDIENUMEFFECTSCALLBACK)
+#endif
+                            &EnumEffectTypeProc,
 					&guidEffect, 
 					DIEFT_PERIODIC
 				//)

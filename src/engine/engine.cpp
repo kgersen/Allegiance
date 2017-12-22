@@ -1,4 +1,12 @@
-#include "pch.h"
+#include "engine.h"
+
+#include <window.h>
+#include <zassert.h>
+
+#include "D3DDevice9.h"
+#include "EngineSettings.h"
+#include "enginep.h"
+#include "value.h"
 
 HWND g_hwndMainWindow;
 
@@ -52,7 +60,7 @@ private:
     HWND                      m_hwndFocus;
 
 	TRef<ModifiableWinPointValue>	m_sizeResolution;
-	TRef<ModifiableBoolean>		m_bFullscreen;
+    TRef<ModifiableBoolean>		m_bFullscreen;
 	WinPoint					m_pointFullscreenCurrent;
 //    TRef<PrivateSurface>      m_psurfaceBack;
     float                     m_gamma;
@@ -190,6 +198,10 @@ public:
 				m_modes.PushEnd((Vector(width,height,rate))); //WSXGA+ (widescreen)
 			if (width == 1920 && height == 1080)
 				m_modes.PushEnd((Vector(width,height,rate))); //WUXGA (1080p widescreen mode)
+            if (width == 1920 && height == 1200)
+                m_modes.PushEnd((Vector(width, height, rate)));
+            if (width == 2560 && height == 1440)
+                m_modes.PushEnd((Vector(width, height, rate)));
 		}
 #pragma warning(default:4244)
     }
@@ -299,7 +311,7 @@ private:
 		//OutputDebugString("\n\nCalling SetFocusWindow() ONLY SUPPOSED TO HAPPEN ONCE!\n");
 
         m_hwndFocus			= pwindow->GetHWND();
-		m_bFullscreen->SetValue(bStartFullscreen);
+        m_bFullscreen->SetValue(bStartFullscreen);
 		g_hwndMainWindow	= m_hwndFocus;
     }
 
@@ -745,6 +757,7 @@ private:
 				ZDebugOutput("Invalid resolution\n");
 			}
 			//auto retry next mode untill end of list NYI
+            return false;
 		}
 
         if (g_bWindowLog) {
@@ -832,17 +845,16 @@ private:
             //
             // Didn't work goto to the next lower resolution
             //
+            Vector lower_resolution = PreviousMode(m_sizeResolution->GetValue());
 
-/*            WinPoint pointNew = pdddevice->PreviousMode(m_pointFullscreen);
-
-            if (pointNew == m_pointFullscreen) {
+            if (lower_resolution.X() == m_sizeResolution->GetValue().X() && lower_resolution.Y() == m_sizeResolution->GetValue().Y()) {
                 if (g_bWindowLog) {
                     ZDebugOutput("No more valid resolutions\n");
                 }
                 return false;
             }
 
-            m_pointFullscreen = pointNew;*/
+            SetFullscreenSize(lower_resolution);
         }
     }
 
@@ -1071,6 +1083,9 @@ private:
         }
     }
 
+    void SetFullscreenSize(const WinPoint& point) {
+        SetFullscreenSize(Vector(point.X(), point.Y(), g_DX9Settings.m_refreshrate));
+    }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Re-used full screen mode change functions
@@ -1115,8 +1130,7 @@ private:
 
         for(int index = 0; index < count; index++) {
             if (
-                   m_modes[index].X() >= size.X() 
-                //&& m_modes[index].Y() >= size.Y() // Imago - look at X only due to widescreens 7/2/09
+                m_modes[index].X() == size.X() && m_modes[index].Y() == size.Y()
             ) {
                 m_modes.SetCount(index);
                 return;
@@ -1208,7 +1222,7 @@ private:
     {
         if (!m_bValid) 
 		{
-            if (m_bFullscreen->GetValue() == true) 
+            if (m_bFullscreen->GetValue() == true)
 			{
                 m_bValid = InitializeFullscreen(bChanges);
 			} 
@@ -1339,7 +1353,7 @@ private:
 
     void BltToWindow(Window* pwindow, const WinPoint& point, Surface* psurface, const WinRect& rectSource)
     {
-		_ASSERT( false );
+        ZAssert( false );
 /*        if (m_pdddeviceFullscreen == NULL) {
             if (m_hwndClip != pwindow->GetHWND()) {
                 m_hwndClip = pwindow->GetHWND();
@@ -1482,7 +1496,7 @@ private:
 										int             pitch,
 										BYTE*           pbits ) 
 	{
-		_ASSERT( false );
+        ZAssert( false );
         if (stype.Test(SurfaceTypeVideo())) 
 		{
             return CreateDDSurface( m_pdddevice, stype, m_ppf, NULL, size );
@@ -1642,36 +1656,15 @@ private:
         SurfaceType     stype, 
         SurfaceSite*    psite
     ) {
-//        PrivatePalette* pprivatePalette; CastTo(pprivatePalette, psurface->GetPalette());
-
-		// Construct the pixel format, including any alpha due to color keying.
+        // always a straight up format copy. Everything supported by the source should be supported by the target
 		PixelFormat * pixelFormat;
+        pixelFormat = psurface->GetPixelFormat();
 
-		if( psurface->HasColorKey() == false )
-		{
-			// No colour key, just a straight copy of the pixel format.
-			pixelFormat = psurface->GetPixelFormat();
-		}
-		else
-		{
-			// For now we just handle two explicit cases. 16 bit with 1 bit alpha or full 32 bit.
-			pixelFormat = psurface->GetPixelFormat();
-			if( ( pixelFormat->PixelBytes() == 2 ) &&
-				( CD3DDevice9::Get()->GetDevFlags()->bSupportsA1R5G6B6Format == true ) )
-			{
-				pixelFormat = new PixelFormat( D3DFMT_A1R5G5B5 );
-			}
-			else
-			{
-				pixelFormat = new PixelFormat( D3DFMT_A8R8G8B8 );
-			}
-		}
         return
             AddSurface(
                 CreatePrivateSurface(
                     this,
                     pixelFormat,
-//                    pprivatePalette,
                     size,
                     stype,
                     psite
@@ -1688,7 +1681,7 @@ private:
 
     TRef<Surface> CreateSurface(HBITMAP hbitmap)
     {
-		_ASSERT( false );
+        ZAssert( false );
 
 		return AddSurface(NULL, false);
 /*
@@ -1715,7 +1708,7 @@ private:
         D3D9PixelFormat ddpf;
         TRef<IDirectDrawPaletteX> pddpal;
 
-		_ASSERT( false );
+        ZAssert( false );
 //        ZVerify(FillDDPF(ddpf, m_pdddevicePrimary->GetDD(), hdcBitmap, hbitmap, &pddpal));
 
         TRef<PrivatePalette> ppalette;

@@ -1,4 +1,12 @@
-#include "pch.h"
+#include "efpane.h"
+
+#include <button.h>
+#include <controls.h>
+#include <event.h>
+#include <namespace.h>
+#include <tref.h>
+
+#include "listpane.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -181,112 +189,6 @@ public:
 
     void Paint(Surface* psurface)
     {
-/*		PrivateSurface* pprivateSurface; CastTo(pprivateSurface, m_psurface);
-		WinPoint currOffset, currSize;
-		TEXHANDLE hTexture = pprivateSurface->GetTexHandle( );
-		_ASSERT( hTexture != INVALID_TEX_HANDLE );
-
-		// If the texture has alpha, enable blending.
-		if( pprivateSurface->HasColorKey() == true )
-		{
-			CD3DDevice9::SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
-			CD3DDevice9::SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
-
-			CD3DDevice9::SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-			CD3DDevice9::SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
-			CD3DDevice9::SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
-		}
-		else
-		{
-			CD3DDevice9::SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
-		}
-		// Set texture, ensure z-testing is off.
-		CD3DDevice9::SetRenderState( D3DRS_ZENABLE, D3DZB_FALSE );
-		CVRAMManager::SetTexture( hTexture, 0 );
-
-		// Draw horizontal or vertical bar.
-		if( m_bHorizontal == true )
-		{
-			const WinPoint& size  = m_psurface->GetSize();
-			int x = 0;
-
-			while (x + size.X() < XSize()) 
-			{
-				// Generate offset and size.
-				currOffset.SetX( psurface->GetOffset().X() + x);
-				currOffset.SetY( psurface->GetOffset().Y() );
-				currSize.SetX( size.X() );
-				currSize.SetY( min( size.Y(), YSize() ) );
-				
-				// Create vertices and render.
-				GenerateScreenVertices( hTexture, &currOffset, &currSize );
-				HRESULT hr = CD3DDevice9::SetFVF( D3DFVF_UIVERTEX );
-				hr = CD3DDevice9::SetStreamSource( 0, NULL, 0, 0 );
-				hr = CD3DDevice9::DrawPrimitiveUP(	D3DPT_TRIANGLELIST,
-																m_dwNumPolys,
-																m_pPaneVerts,
-																sizeof( UIVERTEX ) );
-				_ASSERT( hr == D3D_OK );
-				x += size.X();
-			}
-			// Generate offset and size.
-			currOffset.SetX( psurface->GetOffset().X() + x);
-			currOffset.SetY( psurface->GetOffset().Y() );
-			currSize.SetX( XSize() - x );
-			currSize.SetY( min( size.Y(), YSize() ) );
-			
-			// Create vertices and render.
-			GenerateScreenVertices( hTexture, &currOffset, &currSize );
-			HRESULT hr = CD3DDevice9::SetFVF( D3DFVF_UIVERTEX );
-			hr = CD3DDevice9::SetStreamSource( 0, NULL, 0, 0 );
-			hr = CD3DDevice9::DrawPrimitiveUP(	D3DPT_TRIANGLELIST,
-															m_dwNumPolys,
-															m_pPaneVerts,
-															sizeof( UIVERTEX ) );
-		}
-		else
-		{
-			int y = 0;
-			const WinPoint& size  = m_psurface->GetSize();
-			
-			while( y + size.Y() < YSize() ) 
-			{
-				// Generate offset and size.
-				currOffset.SetX( psurface->GetOffset().X() );
-				currOffset.SetY( psurface->GetOffset().Y() + y );
-				currSize.SetX( min( size.X(), XSize() ) );
-				currSize.SetY( size.Y() );
-				
-				// Create vertices and render.
-				GenerateScreenVertices( hTexture, &currOffset, &currSize );
-				HRESULT hr = CD3DDevice9::SetFVF( D3DFVF_UIVERTEX );
-				hr = CD3DDevice9::SetStreamSource( 0, NULL, 0, 0 );
-				hr = CD3DDevice9::DrawPrimitiveUP(	D3DPT_TRIANGLELIST,
-																m_dwNumPolys,
-																m_pPaneVerts,
-																sizeof( UIVERTEX ) );
-				_ASSERT( hr == D3D_OK );
-				y += size.Y();
-			}
-
-			// Generate offset and size.
-			currOffset.SetX( psurface->GetOffset().X() );
-			currOffset.SetY( psurface->GetOffset().Y() + y );
-			currSize.SetX( min( size.X(), XSize() ) );
-			currSize.SetY( YSize() - y );
-			
-			// Create vertices and render.
-			GenerateScreenVertices( hTexture, &currOffset, &currSize );
-			HRESULT hr = CD3DDevice9::SetFVF( D3DFVF_UIVERTEX );
-			hr = CD3DDevice9::SetStreamSource( 0, NULL, 0, 0 );
-			hr = CD3DDevice9::DrawPrimitiveUP(	D3DPT_TRIANGLELIST,
-															m_dwNumPolys,
-															m_pPaneVerts,
-															sizeof( UIVERTEX ) );
-			_ASSERT( hr == D3D_OK );
-		}
-	}*/
-
        if (m_bHorizontal)
         {
             const WinPoint& size  = m_psurface->GetSize();
@@ -296,7 +198,7 @@ public:
                 psurface->BitBlt(
                     WinPoint(x, 0),
                     m_psurface,
-                    WinRect(0, 0, size.X(), min(size.Y(), YSize()))
+                    WinRect(0, 0, size.X(), std::min(size.Y(), YSize()))
                 );
                 x += size.X();
             }
@@ -304,7 +206,7 @@ public:
             psurface->BitBlt(
                 WinPoint(x, 0),
                 m_psurface,
-                WinRect(0, 0, XSize() - x, min(size.Y(), YSize()))
+                WinRect(0, 0, XSize() - x, std::min(size.Y(), YSize()))
             );
         }
         else
@@ -316,7 +218,7 @@ public:
                 psurface->BitBlt(
                     WinPoint(0, y),
                     m_psurface,
-                    WinRect(0, 0, min(size.X(), XSize()), size.Y())
+                    WinRect(0, 0, std::min(size.X(), XSize()), size.Y())
                 );
                 y += size.Y();
             }
@@ -324,7 +226,7 @@ public:
             psurface->BitBlt(
                 WinPoint(0, y),
                 m_psurface,
-                WinRect(0, 0, min(size.X(), XSize()), YSize() - y)
+                WinRect(0, 0, std::min(size.X(), XSize()), YSize() - y)
             );
         }
     }
@@ -494,12 +396,14 @@ public:
         temp.SetX((int)ppoint->GetValue().X());
         temp.SetY((int)ppoint->GetValue().Y());
 
+        TRef<IIntegerEventSource> evtmp;
+        TRef<ScrollPane> sptmp;
         return
             CreateTrekScrollPane(
                 temp,
                 m_pmodeler,
-                TRef<IIntegerEventSource>(),
-                TRef<ScrollPane>(),
+                evtmp,
+                sptmp,
                 m_bHorizontal,
                 pbuttonUp,
                 pbuttonDown,

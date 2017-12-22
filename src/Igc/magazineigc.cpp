@@ -12,8 +12,7 @@
 **  History:
 */
 // magazineIGC.cpp : Implementation of CmagazineIGC
-#include "pch.h"
-#include "magazineIGC.h"
+#include "magazineigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CmagazineIGC

@@ -12,7 +12,6 @@
 **  History:
 */
 // shipIGC.cpp : Implementation of CshipIGC
-#include "pch.h"
 #include "shipIGC.h"
 #include <math.h>
 #include <limits.h>
@@ -1226,6 +1225,7 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
 
     float   maxHP = m_myHullType.GetHitPoints();
     float   dtmArmor = GetMyMission()->GetDamageConstant(type, m_myHullType.GetDefenseType());
+	float   repairFraction;
     assert (dtmArmor >= 0.0f);
 
     float leakage;
@@ -1235,18 +1235,22 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
         m_fraction -= amount * dtmArmor / maxHP;
 		if (m_fraction > 1.0f)
 		{
-			amount += (m_fraction - 1.0) * maxHP / dtmArmor; //Set amount to amount that had effect for stat
+			amount += (m_fraction - 1.0) * maxHP / dtmArmor; //Set amount to amount that had effect for stat			
 			m_fraction = 1.0f;
 		}            
         GetThingSite ()->RemoveDamage (m_fraction);
-
+		if (GetMyMission()->GetMissionParams()->bAllowFriendlyFire || //no points when FF is on
+			!((pside == launcher->GetSide()) || IsideIGC::AlliedSides(pside, launcher->GetSide()))) //no points for healing the enemy
+			repairFraction = 0;
+		else
+			repairFraction = fabs(amount * dtmArmor / maxHP);
         leakage = 0.0f;
         dr = c_drNoDamage;
 		if (launcher->GetObjectType() == OT_ship && (pside == launcher->GetSide()) || IsideIGC::AlliedSides(pside, launcher->GetSide()))
 		{
 
 			IshipIGC * pIship = ((IshipIGC*)launcher);
-			pIship->AddRepair(-amount);
+			pIship->AddRepair(repairFraction);
 			pIship->SetAchievementMask(c_achmNewRepair);
 		}
     }
@@ -1283,10 +1287,12 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
             dr = c_drHullDamage;
         }
 
+#ifndef __GNUC__
 		// BT - 9/17 - Not sure why this exception is happening here. The stack traces I get from the mini-dumps are not helping much. Maybe this will
 		// show more, and also keep the server from crashing?
 		__try
 		{
+#endif
 			if (m_fraction > 0.0f)
 			{
 				if ((type & c_dmgidNoDebris) == 0)
@@ -1316,12 +1322,13 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
 					dr = c_drKilled;
 				}
 			}
-		}
+#ifndef __GNUC__
+        }
 		__except (StackTracer::ExceptionFilter(GetExceptionInformation()))
 		{
 			StackTracer::OutputStackTraceToDebugF();
 		}
-
+#endif
     }
     //Imago 6/10
     //assert (m_fraction >= 0.0f);

@@ -861,10 +861,10 @@ bool FixSliderThumbSize(HWND hwndSlider)
   nThumb -= nTickSides * nTicks;
 
   // Allow the thumb to be no shorter than 6
-  nThumb = max(nThumb, 6L);
+  nThumb = std::max(nThumb, 6L);
 
   // Allow the thumb to be no longer than the original
-  nThumb = min(nThumb, nDefault);
+  nThumb = std::min(nThumb, nDefault);
 
   // Indicate success if the thumb is already the computed size
   if (nThumb == nDefault)
@@ -997,8 +997,8 @@ int TCLoadStringW(HINSTANCE hInstance, UINT wID, LPWSTR wzBuf, int cchBuf)
   // Copy the string to the specified buffer
   if (wzBuf && cchBuf)
   {
-    wcsncpy(wzBuf, str + 1, min(cchBuf - 1, *str));
-    wzBuf[min(cchBuf-1, *str) ] = '\0';
+    wcsncpy(wzBuf, str + 1, std::min((WCHAR)(cchBuf - 1), *str));
+    wzBuf[std::min(WCHAR(cchBuf-1), *str) ] = '\0';
   }
 
   // Return the length of the string resource

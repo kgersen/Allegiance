@@ -12,8 +12,7 @@
 **  History:
 */
 // probeIGC.cpp : Implementation of CprobeIGC
-#include "pch.h"
-#include "probeIGC.h"
+#include "probeigc.h"
 
 const float c_deceleration = 10.0f;
 

@@ -39,9 +39,6 @@
 #include <set>
 #include <vector>
 
-// redo min and max after all STL includes
-#include <minmax.h>
-
 #include <atlbase.h>
 extern CComModule _Module;
 #include <atlcom.h>

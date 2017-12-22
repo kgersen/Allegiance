@@ -8,7 +8,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-Matrix g_matIdentity;
+static Matrix g_matIdentity;
 
 class InitializeTransform {
 public:
@@ -16,7 +16,9 @@ public:
     {
         g_matIdentity.SetIdentity();
     }
-} initialize;
+};
+
+static InitializeTransform initialize;
 
 const Matrix& Matrix::GetIdentity()
 {

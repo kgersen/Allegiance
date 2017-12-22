@@ -1,9 +1,13 @@
+#pragma once
 //
 // ds3dvirtualbuffer.h
 //
 // Classes representing virtual DirectSound3D buffers that may or may not have
 // a real DirectSoundBuffer associated with them at any given moment.
 //
+
+#include "ds3dbuffer.h"
+#include "soundbase.h"
 
 namespace SoundEngine {
 

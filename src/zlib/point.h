@@ -7,6 +7,7 @@
 #ifndef _Point_H_
 #define _Point_H_
 
+#include <cmath>
 #include "zstring.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -31,14 +32,14 @@ public:
     {
         return
             TPoint(
-                (PointType::Number)point.X(),
-                (PointType::Number)point.Y()
+                (typename PointType::Number)point.X(),
+                (typename PointType::Number)point.Y()
             );
     }
 
     TPoint& operator+=(const TPoint& pt) {
-        SetX(X() + pt.X());
-        SetY(Y() + pt.Y());
+        PointType::SetX(PointType::X() + pt.X());
+        PointType::SetY(PointType::Y() + pt.Y());
         return *this;
     }
 
@@ -46,7 +47,7 @@ public:
 
     typename PointType::Number LengthSquared() const
     {
-        return X() * X() + Y() * Y();
+        return PointType::X() * PointType::X() + PointType::Y() * PointType::Y();
     }
 
     typename PointType::Number Length() const
@@ -54,13 +55,13 @@ public:
         if (LengthSquared() == 1) {
             return 1;
         } else {
-            return (PointType::Number)sqrt((float)LengthSquared());
+            return (typename PointType::Number)sqrt((float)LengthSquared());
         }
     }
 
     ZString GetString() const
     {
-        return ZString("(") + ZString(X()) + ", " + ZString(Y()) + ")";
+        return ZString("(") + ZString(PointType::X()) + ", " + ZString(PointType::Y()) + ")";
     }
 
     friend TPoint operator*(typename PointType::Number value, const TPoint& p1)

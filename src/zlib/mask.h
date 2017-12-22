@@ -7,7 +7,10 @@
 #ifndef _mask_H_
 #define _mask_H_
 
+#include <algorithm>
+#include <cmath>
 #include <cstdint>
+#include <cstring>
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -190,12 +193,12 @@ template<int nBits> class TLargeBitMask
 		// CHECK THIS, IT MIGHT OVERFLOW ! -KGJV
         void ToString(char* pszBytes, int cch) const
         {
-          int cb = min(cch / 2, sizeof(m_bits));
+          int cb = std::min<int>(cch / 2, sizeof(m_bits));
           for (int i = 0; i < cb; ++i)
           {
             char szByte[3];
             sprintf(szByte, "%02X", m_bits[i]);
-            CopyMemory(pszBytes + (i * 2), szByte, 2);
+            memcpy(pszBytes + (i * 2), szByte, 2);
           }
         }
 
@@ -206,16 +209,16 @@ template<int nBits> class TLargeBitMask
             return false;
           uint8_t bits[sizeof(m_bits)];
           ZeroMemory(bits, sizeof(bits));
-          int cb = min(cch / 2, sizeof(m_bits));
+          int cb = std::min<int>(cch / 2, sizeof(m_bits));
           for (int i = 0; i < cb; ++i)
           {
             char szByte[3];
-            CopyMemory(szByte, pszBits + (i * 2), 2);
+            memcpy(szByte, pszBits + (i * 2), 2);
             szByte[2] = '\0';
-            long nBits = strtoul(szByte, NULL, 16);
-            if ((0 == nBits || ULONG_MAX == nBits) && ERANGE == errno)
+            long lBits = strtoul(szByte, NULL, 16);
+            if ((0 == lBits || ULONG_MAX == lBits) && ERANGE == errno)
               return false;
-            bits[i] = (uint8_t)nBits;
+            bits[i] = (uint8_t)lBits;
           }
 
           Set(bits);

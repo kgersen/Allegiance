@@ -1,11 +1,500 @@
 #include "pch.h"
 #include "regkey.h"
 #include "training.h"
+#include "valuetransform.h"
+#include <boost/any.hpp>
+
+#include "CreateGameDialog.h"
 
 extern bool CheckNetworkDevices(ZString& strDriverURL);
 
 //KGJV test
 #define ENABLE3DINTROSCREEN
+
+class ErrorState : public UiState {
+    using UiState::UiState;
+};
+class NoErrorState : public ErrorState {
+public:
+    NoErrorState() :
+        ErrorState("No")
+    {}
+};
+class YesErrorState : public ErrorState {
+public:
+    YesErrorState(std::string message) :
+        ErrorState("Yes", {
+            { "Message", (TRef<StringValue>)new StringValue(message.c_str()) }
+        })
+    {}
+};
+
+class LoggedOutState : public UiState {
+private:
+    TRef<UiStateValue> m_stateError;
+
+public:
+    LoggedOutState(UiStateValue* stateError, IEventSink* sinkLogin) :
+        m_stateError(stateError),
+        UiState("Logged out", {
+            { "Has error", (TRef<UiStateValue>)stateError },
+            { "Login", (TRef<IEventSink>)sinkLogin }
+        })
+    {
+    }
+
+    TRef<UiStateValue> GetHasError() {
+        return Get<TRef<UiStateValue>>("Has error");
+    }
+};
+
+class LoggingInState : public UiState {
+public:
+    LoggingInState() :
+        UiState("Logging in", {
+            { "Step number", (TRef<Number>)new ModifiableNumber(0.0f) },
+            { "Step message", (TRef<StringValue>)new ModifiableString("") }
+        })
+    {
+    }
+
+    void SetStep(int step, std::string message) {
+        ((ModifiableNumber*)(Number*)Get<TRef<Number>>("Step number"))->SetValue((float)step);
+        ((ModifiableString*)(StringValue*)Get<TRef<StringValue>>("Step message"))->SetValue(message.c_str());
+    }
+};
+
+class LoginHelper;
+class LoggedInState : public UiState {
+private:
+
+public:
+    LoggedInState(IEventSink* sinkLogout, IEventSink* sinkCreateGame) :
+        UiState("Logged in", {
+            { "Mission list", (TRef<ContainerList>)new ContainerList({}) },
+            { "Server list", (TRef<ContainerList>)new ContainerList({}) },
+            { "Core list", (TRef<ContainerList>)new ContainerList({}) },
+            { "Logout", (TRef<IEventSink>)sinkLogout },
+            { "Create mission dialog", (TRef<IEventSink>)sinkCreateGame },
+            { "Create mission", (TRef<TEvent<ZString, ZString, ZString>::Sink>)new CallbackValueSink<ZString, ZString, ZString>([this](ZString serverName, ZString coreName, ZString missionName) {
+                auto server = this->FindServer(serverName);
+                auto core = this->FindCore(coreName);
+
+                ServerCoreInfo serverinfo = server->Get<ServerCoreInfo>("ServerCoreInfo");
+                StaticCoreInfo coreinfo = server->Get<StaticCoreInfo>("StaticCoreInfo");
+
+                trekClient.CreateMissionReq(
+                    serverinfo.szName,
+                    serverinfo.szRemoteAddress,
+                    coreinfo.cbIGCFile,
+                    missionName
+                );
+                return true;
+            }) }
+        })
+    {}
+
+    TRef<UiObjectContainer> FindCore(ZString coreName) {
+        auto listCores = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Core list")->GetList();
+
+        auto current_iterator = listCores.begin();
+
+        while (current_iterator != listCores.end()) {
+            ZString current_core_name = (*current_iterator)->Get<TRef<StringValue>>("Name")->GetValue();
+
+            if (coreName == current_core_name) {
+                return *current_iterator;
+            }
+
+            ++current_iterator;
+        }
+
+        throw std::runtime_error("Core not found");
+    }
+
+    TRef<UiObjectContainer> FindServer(ZString name) {
+        auto listCores = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Server list")->GetList();
+
+        auto current_iterator = listCores.begin();
+
+        while (current_iterator != listCores.end()) {
+            ZString current_name = (*current_iterator)->Get<TRef<StringValue>>("Name")->GetValue();
+
+            if (name == current_name) {
+                return *current_iterator;
+            }
+
+            ++current_iterator;
+        }
+
+        throw std::runtime_error("Server not found");
+    }
+
+    void SetMissionList(List* plist) {
+        std::list<TRef<UiObjectContainer>> result;
+        auto current_modifiablelist = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Mission list");
+        auto current_list = current_modifiablelist->GetList();
+
+        ItemID pitem = plist->GetItem(0);
+        auto current_iterator = current_list.begin();
+        int i = 0;
+        /* For now, disable compare and just delete/add everything
+        while (pitem && current_iterator != current_list.end()) {
+            MissionInfo* game = (MissionInfo*)pitem;
+            TRef<UiObjectContainer> current_entry = *current_iterator;
+            {
+                //compare
+            }
+
+            pitem = plist->GetNext(pitem);
+            ++current_iterator;
+
+        }
+        */
+
+        //remove entries
+        while (current_iterator != current_list.end()) {
+            current_modifiablelist->Remove(i);
+            ++current_iterator;
+        }
+         
+        //add entries
+        while (pitem) {
+            MissionInfo* game = (MissionInfo*)pitem;
+
+            Time timeApplicationStart = GetWindow()->GetTimeStart();
+            TRef<Number> pTimeSinceApplicationStart = GetWindow()->GetTime();
+
+            TRef<Number> pTimeMisisonInProgress;
+            if (game->InProgress()) {
+                float secondsOffset = game->StartTime() - timeApplicationStart;
+
+                pTimeMisisonInProgress = NumberTransform::Subtract(
+                    pTimeSinceApplicationStart,
+                    new Number(secondsOffset)
+                );
+            }
+            else {
+                pTimeMisisonInProgress = new Number(0.0f);
+            }
+
+            current_modifiablelist->Insert(i, new UiObjectContainer({
+                { "Join", (TRef<IEventSink>)new CallbackSink([game]() {
+                    trekClient.JoinMission(game, "");
+                    return false;
+                }) },
+                { "Name", (TRef<StringValue>)new StringValue(game->Name()) },
+                { "Player count", (TRef<Number>)new Number((float)game->NumPlayers()) },
+                { "Player noat count", (TRef<Number>)new Number((float)game->NumNoatPlayers()) },
+                { "Max player count", (TRef<Number>)new Number((float)game->MaxPlayers()) },
+                { "Is in progress", (TRef<Boolean>)new Boolean(game->InProgress()) },
+                { "Time in progress", (TRef<Number>)pTimeMisisonInProgress },
+                { "Server name", (TRef<StringValue>)new StringValue(game->GetMissionDef().szServerName) },
+                { "Core name", (TRef<StringValue>)new StringValue(trekClient.CfgGetCoreName(game->GetIGCStaticFile())) },
+
+                { "Has goal conquest", (TRef<Boolean>)new Boolean(game->GoalConquest()) },
+                { "Has goal territory", (TRef<Boolean>)new Boolean(game->GoalTerritory()) },
+                { "Has goal prosperity", (TRef<Boolean>)new Boolean(game->GoalProsperity()) },
+                { "Has goal artifacts", (TRef<Boolean>)new Boolean(game->GoalArtifacts()) },
+                { "Has goal flags", (TRef<Boolean>)new Boolean(game->GoalFlags()) },
+                { "Has goal deathmatch", (TRef<Boolean>)new Boolean(game->GoalDeathMatch()) },
+                { "Has goal countdown", (TRef<Boolean>)new Boolean(game->GoalCountdown()) },
+            }));
+            pitem = plist->GetNext(pitem);
+            ++i;
+        }
+    }
+
+    void SetCoreList(int count, StaticCoreInfo* plist) {
+        std::list<TRef<UiObjectContainer>> result;
+        auto current_modifiablelist = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Core list");
+        auto current_list = current_modifiablelist->GetList();
+
+        auto current_iterator = current_list.begin();
+        int i = 0;
+
+        //remove entries
+        while (current_iterator != current_list.end()) {
+            current_modifiablelist->Remove(i);
+            ++current_iterator;
+        }
+
+        //add entries
+        for (i = 0; i < count; ++i) {
+            StaticCoreInfo pitem = plist[i];
+
+            current_modifiablelist->Insert(i, new UiObjectContainer({
+                { "Name", (TRef<StringValue>)new StringValue(trekClient.CfgGetCoreName(pitem.cbIGCFile)) },
+                { "Bitmask", (uint32)(1 << i) },
+                { "StaticCoreInfo", (StaticCoreInfo)pitem }
+            }));
+        }
+    }
+
+    void SetServerList(int count, ServerCoreInfo* plist) {
+        std::list<TRef<UiObjectContainer>> result;
+        auto current_modifiablelist = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Server list");
+        auto current_list = current_modifiablelist->GetList();
+
+        auto current_iterator = current_list.begin();
+        int i = 0;
+
+        //remove entries
+        while (current_iterator != current_list.end()) {
+            current_modifiablelist->Remove(i);
+            ++current_iterator;
+        }
+
+        //add entries
+        for (i = 0; i < count; ++i) {
+            ServerCoreInfo pitem = plist[i];
+
+            uint32 bitmaskServer = (uint32)pitem.dwCoreMask;
+
+            current_modifiablelist->Insert(i, new UiObjectContainer({
+                { "Name", (TRef<StringValue>)new StringValue(pitem.szName) },
+                { "ServerCoreInfo", (ServerCoreInfo)pitem },
+                { "Has core", [bitmaskServer, this](std::string core_name) {
+                    auto listCores = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Core list")->GetList();
+
+                    auto current_iterator = listCores.begin();
+
+                    while (current_iterator != listCores.end()) {
+                        std::string current_core_name = (*current_iterator)->Get<TRef<StringValue>>("Name")->GetValue();
+
+                        if (core_name == current_core_name) {
+                            uint32 core_bitmask = (*current_iterator)->Get<uint32>("Bitmask");
+
+                            return (bool)(bitmaskServer & core_bitmask);
+                        }
+
+                        ++current_iterator;
+                    }
+
+                    throw std::runtime_error("Core was not found in core list");
+                } }
+            }));
+        }
+    }
+};
+
+class LoginHelper : public IClientEventSink {
+private:
+    TRef<UiStateModifiableValue> m_state;
+    TRef<IClientEventSink>      m_pClientEventSink;
+    TRef<IEventSink>            m_pServerlistChangedSink;
+
+    TRef<CreateGameDialogPopup> m_pcreateDialog;
+
+public:
+    LoginHelper() :
+        m_state(new UiStateModifiableValue(LoggedOutState(new UiStateValue(NoErrorState()), GetLoginSink())))
+    {
+
+    }
+
+    ~LoginHelper() {
+        if (m_pClientEventSink && trekClient.GetClientEventSource()) {
+            trekClient.GetClientEventSource()->RemoveSink(m_pClientEventSink);
+        }
+        if (m_pServerlistChangedSink) {
+            trekClient.GetMissionList()->GetChangedEvent()->RemoveSink(m_pServerlistChangedSink);
+        }
+        trekClient.DisconnectLobby();
+    }
+
+    TRef<IEventSink> GetLoginSink() {
+        return new CallbackSink([this]() {
+            this->Login();
+            return true;
+        });
+    }
+
+    TRef<IEventSink> GetLogoutSink() {
+        return new CallbackSink([this]() {
+            this->Logout();
+            return true;
+        });
+    }
+
+    TRef<UiStateValue> GetState() {
+        return m_state;
+    }
+
+    void SetLoginError(std::string message) {
+        trekClient.GetClientEventSource()->RemoveSink(m_pClientEventSink);
+        m_pClientEventSink = nullptr;
+        m_state->SetValue(LoggedOutState(new UiStateValue(YesErrorState(message)), this->GetLoginSink()));
+    }
+
+    void Async(std::function<void()> callback) {
+        //the callback needs to stay alive, copy into pointer
+        std::function<void()>* pCallback = new std::function<void()>(callback);
+
+        CreateThread(NULL, 0, [](void* pData) {
+            std::function<void()> callback = *(std::function<void()>*)pData;
+
+            callback();
+
+            //delete pointer
+            delete pData;
+            return (DWORD)0;
+        }, pCallback, 0, NULL);
+    }
+
+    void Logout() {
+        if (m_state->GetValue().GetName() != "Logged in") {
+            ZAssert(false);
+            return;
+        }
+
+        trekClient.DisconnectLobby();
+
+        if (m_pClientEventSink && trekClient.GetClientEventSource()) {
+            trekClient.GetClientEventSource()->RemoveSink(m_pClientEventSink);
+            m_pClientEventSink = nullptr;
+        }
+
+        if (m_pServerlistChangedSink) {
+            trekClient.GetMissionList()->GetChangedEvent()->RemoveSink(m_pServerlistChangedSink);
+            m_pServerlistChangedSink = nullptr;
+        }
+
+        m_state->SetValue(LoggedOutState(new UiStateValue(NoErrorState()), this->GetLoginSink()));
+    }
+
+    void Login() {
+        if (m_state->GetValue().GetName() != "Logged out") {
+            ZAssert(false);
+            return;
+        }
+
+        m_pClientEventSink = IClientEventSink::CreateDelegate(this);
+        trekClient.GetClientEventSource()->AddSink(m_pClientEventSink);
+
+        m_state->SetValue(LoggingInState());
+        m_state->GetValue().as<LoggingInState>()->SetStep(1, "Connecting to the lobby");
+
+        ZString name = trekClient.GetSavedCharacterName();
+
+        // BT - Steam - User is logged into steam, and has a steam profile name
+        // The steam reviewer was somehow launching the game with steam authorization but no persona name. If 
+        // there is an player name, then the server rejects the user as a hacker with a DPlay error. 
+        bool isUserLoggedIntoSteamWithValidPlayerName = SteamUser() != nullptr && strlen(name) > 0;
+
+        if (isUserLoggedIntoSteamWithValidPlayerName == false)
+        {
+            SetLoginError("Invalid user supplied by Steam");
+            return;
+        }
+
+        // BT - STEAM - Add players callsign and token.
+        CallsignTagInfo callSignTagInfo;
+        ZString characterName = callSignTagInfo.Render(name);
+
+        Async([this, characterName]() {
+            PathString pathConfig(PathString::GetCurrentDirectory() + "allegiance.txt");
+            trekClient.GetCfgInfo().Load(pathConfig);
+
+            BaseClient::ConnectInfo ci;
+            DWORD cbZoneTicket = 0;
+            ci.pZoneTicket = NULL;
+            DWORD cbName = sizeof(ci.szName);
+
+            lstrcpy(ci.szName, characterName);
+
+            ZeroMemory(&ci.ftLastArtUpdate, sizeof(ci.ftLastArtUpdate));
+
+            ((BaseClient*)&trekClient)->ConnectToLobby(&ci);
+            if (!trekClient.m_fmLobby.IsConnected()) {
+                SetLoginError("Failed to connect to the lobby.");
+                return;
+            }
+            m_state->GetValue().as<LoggingInState>()->SetStep(2, "Connected to the lobby. Waiting for the server list.");
+        });
+    }
+
+    void OnLostConnection(const char * szReason) override {};
+    void OnLogonLobby() override {
+        if (m_state->GetValue().GetName() != "Logging in") {
+            ZAssert(false);
+            return;
+        }
+        m_state->GetValue().as<LoggingInState>()->SetStep(3, "Logged in to the lobby. Waiting for server/core list");
+
+        Async([this]() {
+            trekClient.ServerListReq();
+            if (!GetWindow()->GetPopupContainer()->IsEmpty())
+                GetWindow()->GetPopupContainer()->ClosePopup(NULL);
+            GetWindow()->RestoreCursor();
+        });
+    };
+    void OnLogonLobbyFailed(bool bRetry, const char * szReason) override {
+        SetLoginError(std::string("Lobby login failed: ") + std::string(szReason));
+    };
+    void OnLogonGameServer() override {};
+    void OnLogonGameServerFailed(bool bRetry, const char * szReason) override {};
+
+    /*int m_cCores;
+    StaticCoreInfo* m_pcores;
+    int m_cServers;
+    ServerCoreInfo* m_pservers;*/
+
+    void OnServersList(int cCores, char *Cores, int cServers, char *Servers) override {
+        //prepare the new game dialog
+
+        if (!m_pcreateDialog) {
+            Modeler* pmodeler = GetModeler();
+            //export to mdl
+            TRef<INameSpace> pnsGameScreen = pmodeler->CreateNameSpace("gamescreendata", pmodeler->GetNameSpace("effect"));
+            pnsGameScreen->AddMember("playerCount", new ModifiableNumber(0));
+
+            TRef<INameSpace> pns = pmodeler->GetNameSpace("gamescreen");
+
+            m_pcreateDialog = new CreateGameDialogPopup(pns);
+        }
+
+        StaticCoreInfo *pcores = (StaticCoreInfo*)Cores;
+        ServerCoreInfo *pservers = (ServerCoreInfo*)Servers;
+
+        m_pcreateDialog->OnServersList(cCores, pcores, cServers, pservers);
+
+        //finish login process
+        if (m_pServerlistChangedSink) {
+            //we are already connected?
+            ZAssert(false);
+        }
+        m_pServerlistChangedSink = new CallbackSink([this]() {
+            if (m_state->GetValue().GetName() != "Logged in") {
+                ZAssert(false);
+                return false;
+            }
+            m_state->GetValue().as<LoggedInState>()->SetMissionList(trekClient.GetMissionList());
+            return true;
+        });
+
+        List* plist = trekClient.GetMissionList();
+        plist->GetChangedEvent()->AddSink(m_pServerlistChangedSink);
+
+        m_state->SetValue(LoggedInState(this->GetLogoutSink(), this->GetShowNewGamePopupSink()));
+        m_state->GetValue().as<LoggedInState>()->SetMissionList(plist);
+        m_state->GetValue().as<LoggedInState>()->SetCoreList(cCores, pcores);
+        m_state->GetValue().as<LoggedInState>()->SetServerList(cServers, pservers);
+    };
+
+    TRef<IEventSink> GetShowNewGamePopupSink() {
+        return new CallbackSink([this]() {
+            if (!GetWindow()->GetPopupContainer()->IsEmpty())
+                GetWindow()->GetPopupContainer()->ClosePopup(NULL);
+            GetWindow()->RestoreCursor();
+
+            GetWindow()->GetPopupContainer()->OpenPopup(m_pcreateDialog, false);
+            return true;
+        });
+    }
+
+};
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Intro Screen
@@ -20,8 +509,12 @@ class IntroScreen :
     public PasswordDialogSink
 {
 private:
+    bool                m_bUseOldUi;
+
     TRef<Modeler>       m_pmodeler;
+    UiEngine&           m_uiEngine;
     TRef<Pane>          m_ppane;
+    TRef<Image>         m_pimage;
 
 	TRef<ButtonPane>	m_pbuttonDiscord;
     TRef<ButtonPane>    m_pbuttonPlayLan;
@@ -43,6 +536,8 @@ private:
     ZString             m_strCharacterName;
     ZString             m_strPassword;
     MissionInfo*        m_pmissionJoining;
+
+    TRef<LoginHelper>   m_pLoginHelper;
 
 #ifdef ENABLE3DINTROSCREEN
 	//KGJV
@@ -100,7 +595,7 @@ private:
             CastTo(m_ppane,        pns->FindMember("screen"));
             CastTo(m_pbuttonClose, pns->FindMember("closeButtonPane"));
 
-            pcreditsTime->SetWrappedValue(Subtract(ptime, new Number(ptime->GetValue())));
+            pcreditsTime->SetWrappedValue(NumberTransform::Subtract(ptime, new Number(ptime->GetValue())));
 
 			AddEventTarget(&IntroScreen::CreditsPopup::OnButtonClose, m_pbuttonClose->GetEventSource());
         }
@@ -555,113 +1050,185 @@ private:
 
 public:
 
-    IntroScreen(Modeler* pmodeler) :
-        m_pmodeler(pmodeler)
+    Image* GetImage()
     {
-        
+        return m_pimage;
+    }
+
+    IntroScreen(Modeler* pmodeler, UiEngine& uiEngine, bool bUseOldUi) :
+        m_pmodeler(pmodeler),
+        m_uiEngine(uiEngine),
+        m_bUseOldUi(bUseOldUi)
+    {
+        if (m_bUseOldUi == false) {
+            std::map<std::string, std::function<bool()>> listeners;
+            listeners["open.training"] = [this]() {
+                IntroScreen::OnButtonTraining();
+                return true;
+            };
+            listeners["open.motd"] = [this]() {
+                g_bAutomaticallySkipMotdScreen = false;
+                GetWindow()->screen(ScreenIDZoneClubScreen);
+                return true;
+            };
+            listeners["open.lobby"] = [pmodeler]() {
+                g_bAutomaticallySkipMotdScreen = true;
+                GetWindow()->screen(ScreenIDZoneClubScreen);
+                return true;
+            };
+            listeners["open.website"] = [this]() {
+                GetWindow()->ShowWebPage();
+                return true;
+            };
+            listeners["open.discord"] = [this]() {
+                IntroScreen::OnButtonDiscord();
+                return true;
+            };
+            listeners["open.options"] = [this]() {
+                GetWindow()->ShowOptionsMenu();
+                return true;
+            };
+            listeners["open.lan"] = [this]() {
+                IntroScreen::OnButtonLAN();
+                return true;
+            };
+            listeners["open.intro"] = [this]() {
+                IntroScreen::OnButtonIntro();
+                return true;
+            };
+            listeners["open.credits"] = [this]() {
+                IntroScreen::OnButtonCredits();
+                return true;
+            };
+            listeners["open.help"] = [this]() {
+                IntroScreen::OnButtonHelp();
+                return true;
+            };
+            listeners["open.exit"] = [this]() {
+                IntroScreen::OnButtonExit();
+                return true;
+            };
+
+            std::map<std::string, boost::any> map;
+
+            map["time"] = (TRef<Number>)GetWindow()->GetTime();
+            map["callsign"] = (TRef<StringValue>)new StringValue(trekClient.GetSavedCharacterName());
+
+            /*TRef<UiStateModifiableValue> login_state = new UiStateModifiableValue(UiState("Logged out", UiObjectContainer({
+                {"event.login", (TRef<IEventSink>)new CallbackSink([]() {
+                    //auto screen = CreateZoneClubScreen();
+                })}
+            })));*/
+            m_pLoginHelper = new LoginHelper();
+            map["Login state"] = m_pLoginHelper->GetState();
+
+            m_pimage = m_uiEngine.LoadImageFromLua(UiScreenConfiguration::Create("menuintroscreen/introscreen.lua", listeners, map));
+        }
+
         trekClient.DisconnectClub();
 
+
         TRef<INameSpace> pnsIntroScreen = m_pmodeler->CreateNameSpace("introscreendata", m_pmodeler->GetNameSpace("gamepanes"));
-        pnsIntroScreen->AddMember("hoverNone",       new Number(hoverNone        ));
-        pnsIntroScreen->AddMember("hoverPlayLan",    new Number(hoverPlayLan        ));
-        pnsIntroScreen->AddMember("hoverPlayInt",    new Number(hoverPlayInt)    );
+        pnsIntroScreen->AddMember("hoverNone", new Number(hoverNone));
+        pnsIntroScreen->AddMember("hoverPlayLan", new Number(hoverPlayLan));
+        pnsIntroScreen->AddMember("hoverPlayInt", new Number(hoverPlayInt));
 #ifdef USEAZ
-        pnsIntroScreen->AddMember("hoverZoneClub",   new Number(hoverZoneClub    ));
+        pnsIntroScreen->AddMember("hoverZoneClub", new Number(hoverZoneClub));
 #endif
-        pnsIntroScreen->AddMember("hoverZoneWeb",    new Number(hoverZoneWeb        ));
-        pnsIntroScreen->AddMember("hoverTrain",      new Number(hoverTrain        ));
-        pnsIntroScreen->AddMember("hoverOptions",    new Number(hoverOptions      ));
-        pnsIntroScreen->AddMember("hoverIntro",      new Number(hoverIntro        ));
-        pnsIntroScreen->AddMember("hoverCredits",    new Number(hoverCredits        ));
-        pnsIntroScreen->AddMember("hoverQuickstart", new Number(hoverQuickstart  ));
-        pnsIntroScreen->AddMember("hoverExit",       new Number(hoverExit        ));
-        pnsIntroScreen->AddMember("hoverHelp",       new Number(hoverHelp        ));
-        pnsIntroScreen->AddMember("hoverDiscord",    new Number(hoverDiscord));
+        pnsIntroScreen->AddMember("hoverZoneWeb", new Number(hoverZoneWeb));
+        pnsIntroScreen->AddMember("hoverTrain", new Number(hoverTrain));
+        pnsIntroScreen->AddMember("hoverOptions", new Number(hoverOptions));
+        pnsIntroScreen->AddMember("hoverIntro", new Number(hoverIntro));
+        pnsIntroScreen->AddMember("hoverCredits", new Number(hoverCredits));
+        pnsIntroScreen->AddMember("hoverQuickstart", new Number(hoverQuickstart));
+        pnsIntroScreen->AddMember("hoverExit", new Number(hoverExit));
+        pnsIntroScreen->AddMember("hoverHelp", new Number(hoverHelp));
+        pnsIntroScreen->AddMember("hoverDiscord", new Number(hoverDiscord));
 
         pnsIntroScreen->AddMember("CurrentHover", m_pnumberCurrentHover = new ModifiableNumber(hoverNone));
 
 #ifdef ENABLE3DINTROSCREEN
-//KGJV
-		pnsIntroScreen->AddMember("bgImage",   (Value*)(m_pwrapImage = new WrapImage(Image::GetEmpty())));
-		m_pthing = NULL;
+        //KGJV
+        pnsIntroScreen->AddMember("bgImage", (Value*)(m_pwrapImage = new WrapImage(Image::GetEmpty())));
+        m_pthing = NULL;
 #endif
         TRef<INameSpace> pns = pmodeler->GetNameSpace("introscreen");
-        CastTo(m_ppane, pns->FindMember("screen"));
-        CastTo(m_pbuttonPlayLan,    pns->FindMember("playLanButtonPane"));
-        CastTo(m_pbuttonPlayInt,    pns->FindMember("playIntButtonPane"));
-		CastTo(m_pbuttonDiscord, pns->FindMember("discordButtonPane"));
+        if (m_bUseOldUi) {
+            CastTo(m_ppane, pns->FindMember("screen"));
+            CastTo(m_pbuttonPlayLan, pns->FindMember("playLanButtonPane"));
+            CastTo(m_pbuttonPlayInt, pns->FindMember("playIntButtonPane"));
+            CastTo(m_pbuttonDiscord, pns->FindMember("discordButtonPane"));
 
-#ifdef USEAZ
-        CastTo(m_pbuttonZoneClub,   pns->FindMember("zoneClubButtonPane" ));
-#endif
-        //CastTo(m_pbuttonTraining,   pns->FindMember("trainButtonPane"));
-        CastTo(m_pbuttonTrainingBig,pns->FindMember("trainBigButtonPane"));
-        CastTo(m_pbuttonZoneWeb,    pns->FindMember("zoneWebButtonPane" ));
-        CastTo(m_pbuttonOptions,     pns->FindMember("optionsButtonPane"));
-        CastTo(m_pbuttonIntro,      pns->FindMember("introButtonPane"));
-        CastTo(m_pbuttonCredits,    pns->FindMember("creditsButtonPane"));
-        //CastTo(m_pbuttonQuickstart, pns->FindMember("quickstartButtonPane"));
-        CastTo(m_pbuttonExit,       pns->FindMember("exitButtonPane" ));
-        CastTo(m_pbuttonHelp,       pns->FindMember("helpButtonPane" ));
-        
+    #ifdef USEAZ
+            CastTo(m_pbuttonZoneClub, pns->FindMember("zoneClubButtonPane"));
+    #endif
+            //CastTo(m_pbuttonTraining,   pns->FindMember("trainButtonPane"));
+            CastTo(m_pbuttonTrainingBig, pns->FindMember("trainBigButtonPane"));
+            CastTo(m_pbuttonZoneWeb, pns->FindMember("zoneWebButtonPane"));
+            CastTo(m_pbuttonOptions, pns->FindMember("optionsButtonPane"));
+            CastTo(m_pbuttonIntro, pns->FindMember("introButtonPane"));
+            CastTo(m_pbuttonCredits, pns->FindMember("creditsButtonPane"));
+            //CastTo(m_pbuttonQuickstart, pns->FindMember("quickstartButtonPane"));
+            CastTo(m_pbuttonExit, pns->FindMember("exitButtonPane"));
+            CastTo(m_pbuttonHelp, pns->FindMember("helpButtonPane"));
 
-        //AddEventTarget(OnButtonGames,       m_pbuttonPlayLan->GetEventSource());
-        //AddEventTarget(OnButtonTraining,    m_pbuttonTraining->GetEventSource());
 
-		
-		AddEventTarget(&IntroScreen::OnButtonDiscord, m_pbuttonDiscord->GetEventSource());
-		AddEventTarget(&IntroScreen::OnButtonTraining,    m_pbuttonTrainingBig->GetEventSource());
-        AddEventTarget(&IntroScreen::OnButtonExit,        m_pbuttonExit->GetEventSource());
-        AddEventTarget(&IntroScreen::OnButtonHelp,        m_pbuttonHelp->GetEventSource());
-#ifdef USEAZ
-        AddEventTarget(OnButtonZoneClub,    m_pbuttonZoneClub->GetEventSource());
-#endif
-        AddEventTarget(&IntroScreen::OnButtonInternet,    m_pbuttonPlayInt->GetEventSource());
-        AddEventTarget(&IntroScreen::OnButtonLAN,         m_pbuttonPlayLan->GetEventSource());
-        AddEventTarget(&IntroScreen::OnButtonZoneWeb,     m_pbuttonZoneWeb->GetEventSource());
-        AddEventTarget(&IntroScreen::OnButtonOptions,     m_pbuttonOptions->GetEventSource());
-        AddEventTarget(&IntroScreen::OnButtonCredits,     m_pbuttonCredits->GetEventSource());
-        AddEventTarget(&IntroScreen::OnButtonIntro,       m_pbuttonIntro->GetEventSource());
-        
+            //AddEventTarget(OnButtonGames,       m_pbuttonPlayLan->GetEventSource());
+            //AddEventTarget(OnButtonTraining,    m_pbuttonTraining->GetEventSource());
 
-        AddEventTarget(&IntroScreen::OnHoverPlayLan,      m_pbuttonPlayLan->GetMouseEnterEventSource());
-        AddEventTarget(&IntroScreen::OnHoverPlayInt,      m_pbuttonPlayInt->GetMouseEnterEventSource());
-#ifdef USEAZ
-        AddEventTarget(OnHoverZoneClub,     m_pbuttonZoneClub->GetMouseEnterEventSource());
-#endif
-        //AddEventTarget(OnHoverTrain,        m_pbuttonTraining->GetMouseEnterEventSource());
-        AddEventTarget(&IntroScreen::OnHoverTrain,        m_pbuttonTrainingBig->GetMouseEnterEventSource());
-        AddEventTarget(&IntroScreen::OnHoverZoneWeb,      m_pbuttonZoneWeb->GetMouseEnterEventSource());
-        AddEventTarget(&IntroScreen::OnHoverOptions,       m_pbuttonOptions->GetMouseEnterEventSource());
-        AddEventTarget(&IntroScreen::OnHoverIntro,        m_pbuttonIntro->GetMouseEnterEventSource());
-        AddEventTarget(&IntroScreen::OnHoverCredits,      m_pbuttonCredits->GetMouseEnterEventSource());
-        //AddEventTarget(OnHoverQuickstart,   m_pbuttonQuickstart->GetMouseEnterEventSource());
-        AddEventTarget(&IntroScreen::OnHoverExit,         m_pbuttonExit->GetMouseEnterEventSource());
-        AddEventTarget(&IntroScreen::OnHoverHelp,         m_pbuttonHelp->GetMouseEnterEventSource());
-        AddEventTarget(&IntroScreen::OnHoverDiscord,         m_pbuttonDiscord->GetMouseEnterEventSource());
 
-        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonPlayLan->GetMouseLeaveEventSource());
-        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonPlayInt->GetMouseLeaveEventSource());
-#ifdef USEAZ
-        AddEventTarget(OnHoverNone,     m_pbuttonZoneClub->GetMouseLeaveEventSource());
-#endif
-        //AddEventTarget(OnHoverNone,     m_pbuttonTraining->GetMouseLeaveEventSource());
-        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonTrainingBig->GetMouseLeaveEventSource());
-        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonZoneWeb->GetMouseLeaveEventSource());
-        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonOptions->GetMouseLeaveEventSource());
-        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonIntro->GetMouseLeaveEventSource());
-        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonCredits->GetMouseLeaveEventSource());
-        //AddEventTarget(OnHoverNone,     m_pbuttonQuickstart->GetMouseLeaveEventSource());
-        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonHelp->GetMouseLeaveEventSource());
-        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonExit->GetMouseLeaveEventSource());
-        AddEventTarget(&IntroScreen::OnHoverNone,     m_pbuttonDiscord->GetMouseLeaveEventSource());
+            AddEventTarget(&IntroScreen::OnButtonDiscord, m_pbuttonDiscord->GetEventSource());
+            AddEventTarget(&IntroScreen::OnButtonTraining, m_pbuttonTrainingBig->GetEventSource());
+            AddEventTarget(&IntroScreen::OnButtonExit, m_pbuttonExit->GetEventSource());
+            AddEventTarget(&IntroScreen::OnButtonHelp, m_pbuttonHelp->GetEventSource());
+    #ifdef USEAZ
+            AddEventTarget(OnButtonZoneClub, m_pbuttonZoneClub->GetEventSource());
+    #endif
+            AddEventTarget(&IntroScreen::OnButtonInternet, m_pbuttonPlayInt->GetEventSource());
+            AddEventTarget(&IntroScreen::OnButtonLAN, m_pbuttonPlayLan->GetEventSource());
+            AddEventTarget(&IntroScreen::OnButtonZoneWeb, m_pbuttonZoneWeb->GetEventSource());
+            AddEventTarget(&IntroScreen::OnButtonOptions, m_pbuttonOptions->GetEventSource());
+            AddEventTarget(&IntroScreen::OnButtonCredits, m_pbuttonCredits->GetEventSource());
+            AddEventTarget(&IntroScreen::OnButtonIntro, m_pbuttonIntro->GetEventSource());
 
-        //m_pbuttonPlayLan->SetEnabled(false);
-        //m_pbuttonPlayInt->SetEnabled(false);
 
-		// BT - Steam - Hiding these irrelevant buttons for now.
-		m_pbuttonPlayLan->SetHidden(false);
-		m_pbuttonDiscord->SetHidden(false);
+            AddEventTarget(&IntroScreen::OnHoverPlayLan, m_pbuttonPlayLan->GetMouseEnterEventSource());
+            AddEventTarget(&IntroScreen::OnHoverPlayInt, m_pbuttonPlayInt->GetMouseEnterEventSource());
+    #ifdef USEAZ
+            AddEventTarget(OnHoverZoneClub, m_pbuttonZoneClub->GetMouseEnterEventSource());
+    #endif
+            //AddEventTarget(OnHoverTrain,        m_pbuttonTraining->GetMouseEnterEventSource());
+            AddEventTarget(&IntroScreen::OnHoverTrain, m_pbuttonTrainingBig->GetMouseEnterEventSource());
+            AddEventTarget(&IntroScreen::OnHoverZoneWeb, m_pbuttonZoneWeb->GetMouseEnterEventSource());
+            AddEventTarget(&IntroScreen::OnHoverOptions, m_pbuttonOptions->GetMouseEnterEventSource());
+            AddEventTarget(&IntroScreen::OnHoverIntro, m_pbuttonIntro->GetMouseEnterEventSource());
+            AddEventTarget(&IntroScreen::OnHoverCredits, m_pbuttonCredits->GetMouseEnterEventSource());
+            //AddEventTarget(OnHoverQuickstart,   m_pbuttonQuickstart->GetMouseEnterEventSource());
+            AddEventTarget(&IntroScreen::OnHoverExit, m_pbuttonExit->GetMouseEnterEventSource());
+            AddEventTarget(&IntroScreen::OnHoverHelp, m_pbuttonHelp->GetMouseEnterEventSource());
+            AddEventTarget(&IntroScreen::OnHoverDiscord, m_pbuttonDiscord->GetMouseEnterEventSource());
+
+            AddEventTarget(&IntroScreen::OnHoverNone, m_pbuttonPlayLan->GetMouseLeaveEventSource());
+            AddEventTarget(&IntroScreen::OnHoverNone, m_pbuttonPlayInt->GetMouseLeaveEventSource());
+    #ifdef USEAZ
+            AddEventTarget(OnHoverNone, m_pbuttonZoneClub->GetMouseLeaveEventSource());
+    #endif
+            //AddEventTarget(OnHoverNone,     m_pbuttonTraining->GetMouseLeaveEventSource());
+            AddEventTarget(&IntroScreen::OnHoverNone, m_pbuttonTrainingBig->GetMouseLeaveEventSource());
+            AddEventTarget(&IntroScreen::OnHoverNone, m_pbuttonZoneWeb->GetMouseLeaveEventSource());
+            AddEventTarget(&IntroScreen::OnHoverNone, m_pbuttonOptions->GetMouseLeaveEventSource());
+            AddEventTarget(&IntroScreen::OnHoverNone, m_pbuttonIntro->GetMouseLeaveEventSource());
+            AddEventTarget(&IntroScreen::OnHoverNone, m_pbuttonCredits->GetMouseLeaveEventSource());
+            //AddEventTarget(OnHoverNone,     m_pbuttonQuickstart->GetMouseLeaveEventSource());
+            AddEventTarget(&IntroScreen::OnHoverNone, m_pbuttonHelp->GetMouseLeaveEventSource());
+            AddEventTarget(&IntroScreen::OnHoverNone, m_pbuttonExit->GetMouseLeaveEventSource());
+
+            //m_pbuttonPlayLan->SetEnabled(false);
+            //m_pbuttonPlayInt->SetEnabled(false);
+
+            // BT - Steam - Hiding these irrelevant buttons for now.
+            //m_pbuttonPlayLan->SetHidden(false);
+        }
 
         m_pfindServerPopup = new FindServerPopup(pns, this);
           
@@ -718,31 +1285,32 @@ public:
 
         trekClient.FlushSessionLostMessage();
 
-#ifdef ENABLE3DINTROSCREEN
-		// KGJV test
-		{
-			m_pwrapImage->SetImage((Image*)(Value *)pns->FindMember("bkImage"));
-			m_ppaneGeo = CreateGeoPane(
-				pns->FindPoint("geoSize"),
-				pns->FindPoint("geoPosition")
-			);
-			m_ppaneGeo->SetOffset(pns->FindWinPoint("geoPosition"));
-			m_ppane->InsertAtTop(m_ppaneGeo);
 
-			TRef<StringValue> pstring; CastTo(pstring, pns->FindMember("geoModel"));
-			TRef<INameSpace> pnsgeo = m_pmodeler->GetNameSpace(pstring->GetValue());
-	
-			if (pnsgeo) {
-				m_pthing = ThingGeo::Create(m_pmodeler, m_ptime);
-				m_pthing->LoadMDL(0, pnsgeo, NULL);
-				m_pthing->SetShadeAlways(true);
-				//m_pthing->SetTransparentObjects(true);
-				//m_pthing->SetShowBounds(true);
-		
-				SetGeo(m_pthing->GetGeo());
-			}
-	    
-	    }
+#ifdef ENABLE3DINTROSCREEN
+        // KGJV test
+        if (m_bUseOldUi) {
+            m_pwrapImage->SetImage((Image*)(Value *)pns->FindMember("bkImage"));
+            m_ppaneGeo = CreateGeoPane(
+                pns->FindPoint("geoSize"),
+                pns->FindPoint("geoPosition")
+            );
+            m_ppaneGeo->SetOffset(pns->FindWinPoint("geoPosition"));
+            m_ppane->InsertAtTop(m_ppaneGeo);
+
+            TRef<StringValue> pstring; CastTo(pstring, pns->FindMember("geoModel"));
+            TRef<INameSpace> pnsgeo = m_pmodeler->GetNameSpace(pstring->GetValue());
+
+            if (pnsgeo) {
+                m_pthing = ThingGeo::Create(m_pmodeler, m_ptime);
+                m_pthing->LoadMDL(0, pnsgeo, NULL);
+                m_pthing->SetShadeAlways(true);
+                //m_pthing->SetTransparentObjects(true);
+                //m_pthing->SetShowBounds(true);
+
+                SetGeo(m_pthing->GetGeo());
+            }
+
+        }
 #endif
 
     }
@@ -808,7 +1376,7 @@ public:
                             m_pwrapGeo,
                             new AnimateRotateTransform(
                                 new VectorValue(Vector(0, 1, 0)),
-                                Multiply(m_ptime, new Number(1.0))
+                                NumberTransform::Multiply(m_ptime, new Number(1.0))
                             )
                         ),
                         new RotateTransform(Vector(1, 0, 0), pi/8)
@@ -1346,9 +1914,9 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-TRef<Screen> CreateIntroScreen(Modeler* pmodeler)
+TRef<Screen> CreateIntroScreen(Modeler* pmodeler, UiEngine& uiEngine, bool bUseOldUi)
 {
-    return new IntroScreen(pmodeler);
+    return new IntroScreen(pmodeler, uiEngine, bUseOldUi);
 }
 
 

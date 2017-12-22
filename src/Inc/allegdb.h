@@ -14,8 +14,10 @@
 #include <oledb.h>
 #include <sqloledb.h>
 #include <atldbcli.h>
-#include <..\test\TCLib\TCThread.h>
+#include <../test/TCLib/TCThread.h>
 #include <mutex>
+
+#include "Utility.h"
 
 class CSQLCore;
 class CSQLQuery;

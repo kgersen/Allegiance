@@ -15,6 +15,7 @@
 
 #ifndef __MODELIGC_H_
 #define __MODELIGC_H_
+#include "igc.h"
 
 template<class T> class TmodelIGC;
 

@@ -1,6 +1,11 @@
 #ifndef _font_h_
 #define _font_h_
 
+#include <tref.h>
+#include <point.h>
+
+#include "value.h"
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // IEngineFont
@@ -15,8 +20,15 @@ public:
     virtual int      GetHeight()                                                    = 0;
 
     virtual void DrawString(
-        const WinPoint& point,
+        const Point& point,
         const ZString&  str, 
+        const Color&    color,
+        bool bYAxisInversion
+    ) = 0;
+
+    virtual void DrawStringScreenSpace(
+        const WinPoint& point,
+        const ZString&  str,
         const Color&    color
     ) = 0;
 };

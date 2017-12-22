@@ -1,6 +1,21 @@
 #ifndef _surface_h_
 #define _surface_h_
 
+#include <mask.h>
+#include <point.h>
+#include <rect.h>
+#include <tref.h>
+
+#include "pixel.h"
+#include "VRAMManager.h"
+
+class Color;
+class Context;
+class Engine;
+class IEngineFont;
+class PixelFormat;
+class ZFile;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // SurfaceTypes
@@ -25,9 +40,10 @@ class SurfaceTypeSystemMemory	: public SurfaceType { public: SurfaceTypeSystemMe
 //
 //////////////////////////////////////////////////////////////////////////////
 
+class Surface;
 class SurfaceSite : public IObject {
 public:
-    virtual void UpdateSurface(Surface* psurface) {};
+    virtual void UpdateSurface(Surface* psurface) {}
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -46,13 +62,6 @@ public:
     virtual TRef<Surface> CreateCompatibleSurface(const WinPoint& size, SurfaceType stype, SurfaceSite* psite = NULL) = 0;
 
     //
-    // Serialization
-    //
-
-    virtual void Save(ZFile* pfile)  = 0; // save as a bmp
-    virtual void Write(ZFile* pfile) = 0; // write to an mdl file
-
-    //
     // Set Attributes
     //
 
@@ -65,7 +74,6 @@ public:
     //
 
     virtual Engine*         GetEngine()      = 0;
-//    virtual Palette*        GetPalette()     = 0;
     virtual SurfaceType     GetSurfaceType() = 0;
     virtual const WinPoint& GetSize()        = 0;
     virtual PixelFormat*    GetPixelFormat() = 0;
@@ -91,28 +99,8 @@ public:
     virtual void            RestoreClipRect(const WinRect& rect) = 0;
 
     //
-    // Color Keying
-    //
-
-    virtual bool         HasColorKey()						= 0;
-    virtual const Color& GetColorKey()						= 0;
-    virtual void         SetColorKey(const Color& color)	= 0;
-    virtual void         SetEnableColorKey(bool bEnable )	= 0;
-
-    //
     // Direct Surface manipulation
     //
-
-    virtual int   GetPitch()                                          = 0;
-    virtual const BYTE* GetPointer()                                  = 0;
-    virtual const BYTE* GetPointer(const WinPoint& point)             = 0;
-    virtual BYTE* GetWritablePointer()                                = 0;
-    virtual BYTE* GetWritablePointer(const WinPoint& point)           = 0;
-    virtual void  ReleasePointer()                                    = 0;
-    virtual Pixel GetPixel(const WinPoint& point)                     = 0;
-    virtual void  SetPixel(const WinPoint& point, Pixel pixel)        = 0;
-    virtual Color GetColor(const WinPoint& point)                     = 0;
-    virtual void  SetColor(const WinPoint& point, const Color& color) = 0;
 
 	virtual TEXHANDLE		GetTexHandle()							  = 0;
 
@@ -132,7 +120,6 @@ public:
     virtual void FillRect(const WinRect& rect, const Color& color) = 0;
     virtual void FillSurface(Pixel pixel)                          = 0;
     virtual void FillSurface(const Color& color)                   = 0;
-    virtual void FillSurfaceWithColorKey()                         = 0;
 
     //
     // Text

@@ -15,8 +15,7 @@
 **  History:
 */
 // chaffIGC.cpp : Implementation of CchaffIGC
-#include "pch.h"
-#include "chaffIGC.h"
+#include "chaffigc.h"
 
 
 const float c_fLifespan = 5.0f;

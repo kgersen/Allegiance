@@ -16,7 +16,8 @@
 #ifndef __BUOYIGC_H_
 #define __BUOYIGC_H_
 
-#include    "modelIGC.h"
+#include "igc.h"
+#include "modelIGC.h"
 
 class CbuoyIGC : public TmodelIGC<IbuoyIGC>
 {

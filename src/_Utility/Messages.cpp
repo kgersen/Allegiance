@@ -4,7 +4,7 @@
 */
 
 #include "pch.h"
-#include "MessageCore.h"
+#include "messagecore.h"
 
 //  <NKM> 25-Aug-2004
 // For debug purposes....
@@ -754,7 +754,7 @@ HRESULT FedMessaging::OnSysMessage( const DPlayMsg& msg )
 	//removed below becasue connections can reset here 
 	//then GetIPAddress breaks the lobby -Imago
 
-	// char szRemoteAddress[16];
+	// char szRemoteAddress[64];
    // GetIPAddress( *pcnxn, szRemoteAddress );
    // debugf(" ip=%s\n", szRemoteAddress );
 
@@ -1624,7 +1624,7 @@ CFMGroup * FedMessaging::GetGroupFromDpid(DPID dpid)
 }
 
 
-HRESULT FedMessaging::GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16])
+HRESULT FedMessaging::GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[64])
 {
   //assert( m_pDirectPlayServer != 0 );
 

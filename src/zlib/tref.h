@@ -59,19 +59,22 @@ public:
 #endif
 		uint32_t __stdcall Release()
 	{
+#ifndef __GNUC__
 		// BT - 9/17 - Hunting down mystery fedsrv crashes.
 		__try
 		{
+#endif
 			if (--m_count == 0) {
 				delete this;
 				return 0;
 			}
+#ifndef __GNUC__
 		}
 		__except (StackTracer::ExceptionFilter(GetExceptionInformation()))
 		{
 			StackTracer::OutputStackTraceToDebugF();
 		}
-
+#endif
 		return m_count;
 	}
 };

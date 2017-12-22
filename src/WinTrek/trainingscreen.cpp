@@ -91,12 +91,12 @@ public:
         // hilite the current mission
 		CheckButton(m_iMissionNext);
         m_pbuttonTrain->SetChecked (true);
-#ifdef _DEBUG
+//#ifdef _DEBUG
 		if (bStartTraining) {
-			g_pnumberMissionNumber->SetValue(6);
+			g_pnumberMissionNumber->SetValue(Training::c_TM_10_Free_Flight);
 			OnButtonTrain();
 		}
-#endif
+//#endif
     }
 
     ~TrainingScreen()
@@ -195,13 +195,25 @@ public:
             case Training::c_TM_4_Enemy_Engagement:
             case Training::c_TM_5_Command_View:
             case Training::c_TM_6_Practice_Arena:
-			case Training::c_TM_8_Nanite: //TheBored 06-JUL-07: nanite mission
+            case Training::c_TM_8_Nanite:
                 // note that the training slideshow can get the mission number from the global
                 // value when subsequently launching.
-                GetWindow ()->screen (ScreenIDTrainSlideshow);
+                GetWindow()->screen(ScreenIDTrainSlideshow);
+                break;
+            case Training::c_TM_10_Free_Flight:
+                //Skip slideshow -- Let stuff load before changing it
+                TRef<IMessageBox>   pMsgBox = CreateMessageBox("Training simulation initiated...", NULL, false);
+                GetWindow()->GetPopupContainer()->OpenPopup(pMsgBox, false);
+                AddEventTarget(&TrainingScreen::OnFreeFlightSwitchOut, GetWindow(), 0.1f);
                 break;
         }
         return true;
+    }
+
+    bool OnFreeFlightSwitchOut(void)
+    {
+        GetWindow()->StartTraining(Training::c_TM_10_Free_Flight);
+        return false;
     }
 
 	bool OnButtonMission(const int iMission)

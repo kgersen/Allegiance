@@ -1209,7 +1209,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                     {
                         char    bfr[100];
                         sprintf(bfr, "You have started donating your income to %s", pshipTo->GetName());
-                        PostText(true, bfr);
+                        PostPlainText(true, bfr);
                     }
                     else
                     {
@@ -1221,7 +1221,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                     char    bfr[100];
                     sprintf(bfr, "%s is now donating to you", pshipBy->GetName());
 
-                    PostText(true, bfr);
+                    PostPlainText(true, bfr);
 
                     // count donors, and play the designated investor sound if we've gone from 0 to 1
                     int nNumDonors = 0;
@@ -1240,7 +1240,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 {
                     char    bfr[100];
                     sprintf(bfr, "%s has stopped donating to you", pshipBy->GetName());
-                    PostText(true, bfr);
+                    PostPlainText(true, bfr);
                 }
             }
 
@@ -2948,7 +2948,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 {
                     char    bfr[100];
                     sprintf(bfr, "%s has become the team leader", pplayer->CharacterName());
-                    PostText(true, bfr);
+                    PostPlainText(true, bfr);
                 }
             }
 

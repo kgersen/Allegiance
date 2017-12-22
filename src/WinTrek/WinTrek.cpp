@@ -20,6 +20,10 @@
 class QuickChatNode : public IMDLObject {};
 
 #include "quickchat.h"
+#include <EngineSettings.h>
+#include <paneimage.h>
+#include <D3DDevice9.h>
+#include <DX9PackFile.h>
 
 // Tell the linker that my DLL should be delay loaded
 //#pragma comment(linker, "/DelayLoad:icqmapi.dll")
@@ -31,8 +35,8 @@ const float c_dtFlashOff = 0.25f;
 const float c_dtFlashingDuration = 2.0f;
 
 const int c_nCountdownMax = 1000000; // just a big number
-const int c_nMinGain = -60;
-const int c_nMinFFGain = 0; //Imago
+const float c_nMinGain = -60;
+const float c_nMinFFGain = 0; //Imago
 
 // -Imago: manual AFK toggle flags for auto-AFK
 extern bool g_bActivity = true;
@@ -1198,6 +1202,7 @@ public:
     // Screens
     //
 
+    TRef<UiEngine>       m_pUiEngine;
     TRef<Image>          m_pimageScreen;
     TRef<Screen>         m_pscreen;
     ScreenID             m_screen;
@@ -1299,6 +1304,7 @@ public:
     bool                m_bOverlaysChanged;
 	bool				m_bShowSectorMapPane;
 	bool				m_bShowInventoryPane;
+    bool                m_bFreshInvestmentPane;
 
 
     //
@@ -1339,6 +1345,7 @@ public:
     TRef<IMenuItem>            m_pitemToggleDebris;
     TRef<IMenuItem>            m_pitemToggleStars;
     TRef<IMenuItem>            m_pitemToggleEnvironment;
+    TRef<IMenuItem>			   m_pitemToggleUseOldUi;
 	TRef<IMenuItem>			   m_pitemToggleHighResTextures; // BT - 10/17 - HighRes Textures
     TRef<IMenuItem>            m_pitemToggleRoundRadar;
     TRef<IMenuItem>            m_pitemToggleLinearControls;
@@ -1446,6 +1453,8 @@ public:
     DWORD m_cVTVersion;
     HWND  m_hwndVTEdit;
 
+    bool m_bUseOldUi;
+
 	// BT - 10/17 - HighRes Textures
 	bool m_bUseHighResTextures;
 
@@ -1462,6 +1471,12 @@ public:
     AsteroidAbilityBitMask          m_aabmCommand;
 
 public:
+
+    bool      OnActivateApp(bool bActive) override {
+        bool result = EngineWindow::OnActivateApp(bActive);
+        UpdateMouseEnabled();
+        return result;
+    }
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -2162,32 +2177,42 @@ public:
 
     void SetScreen(WrapImage* target, Screen* pscreen)
     {
-        m_pimageScreen = pscreen->GetImage();
+        TRef<Image> pimageScreen = pscreen->GetImage();
 
-        if (m_pimageScreen == NULL) {
-            TRef<Pane> ppane = pscreen->GetPane();
-
-            //
-            // Add a caption
-            //
-
-            SetCaption(CreateCaption(GetModeler(), ppane, this));
-
-            //
-            // Create the UI Window
-            //
-
-			m_pMatrixTransformScreen = new MatrixTransform2(Matrix2::GetIdentity());
-
-            m_pimageScreen = new TransformImage(
-				CreatePaneImage(GetEngine(), false, ppane),
-				m_pMatrixTransformScreen
-			);
+        if (pimageScreen == NULL) {
+            pimageScreen = Image::GetEmpty();
         }
+
+        TRef<Pane> ppane = pscreen->GetPane();
+
+        //
+        // Add a caption
+        //
+        if (ppane) {
+            SetCaption(CreateCaption(GetModeler(), ppane, this));
+        }
+
+        if (ppane == NULL) {
+            ppane = new ImagePane(Image::GetEmpty());
+        }
+
+        //
+        // Create the UI Window
+        //
+
+		m_pMatrixTransformScreen = new MatrixTransform2(Matrix2::GetIdentity());
+
+        m_pimageScreen = new TransformImage(
+            new GroupImage(
+                CreatePaneImage(GetEngine(), false, ppane), 
+                pimageScreen
+            ),
+			m_pMatrixTransformScreen
+		);
 
 		target->SetImage(m_pimageScreen);
 		
-        //SetSizeable(true); // kg-: #226 always
+        SetSizeable(true); // kg-: #226 always
 
         //
         // keep a reference to the screen to keep it alive
@@ -2340,7 +2365,7 @@ public:
                     break;
 
                 case ScreenIDIntroScreen:
-					SetUiScreen(CreateIntroScreen(GetModeler()));
+					SetUiScreen(CreateIntroScreen(GetModeler(), *m_pUiEngine, m_bUseOldUi));
                     break;
 
 				case ScreenIDSplashScreen:
@@ -2417,7 +2442,7 @@ public:
 							}
 						}
 						GetWindow()->screen(ScreenIDIntroScreen);
-						SetUiScreen(CreateIntroScreen(GetModeler()));
+						SetUiScreen(CreateIntroScreen(GetModeler(), *m_pUiEngine, m_bUseOldUi));
 	                    break;
 					}
 
@@ -2470,7 +2495,7 @@ public:
                 {
                     extern  TRef<ModifiableNumber>  g_pnumberMissionNumber;
                     int     iMission = static_cast<int> (g_pnumberMissionNumber->GetValue ());
-                    ZAssert ((iMission >= 1) && (iMission <= 8)); //TheBored 06-JUL-07: second condition must be (iMission <= (number of training missions))
+                    ZAssert ((iMission >= 1) && (iMission <= 10)); //TheBored 06-JUL-07: second condition must be (iMission <= (number of training missions))
                     char*   strNamespace[] =
                     {
                         "",
@@ -2480,8 +2505,10 @@ public:
                         "tm_4_enemy_engagement_post",
                         "tm_5_command_view_post",
                         "tm_6_practice_arena_post",
-						"", //TheBored 06-JUL-07: Mish #7, blank because its never used
-						"tm_8_nanite_post", //TheBored 06-JUL-07: Mish #8 postgame panels
+                        "", //TheBored 06-JUL-07: Mish #7, blank because its never used
+                        "tm_8_nanite_post", //TheBored 06-JUL-07: Mish #8 postgame panels
+                        "",
+                        "tm_6_practice_arena_post" //05-NOV-17: FreeFlight pseudo training mission - use same post slides as tm6 (showing station instead of text in ui-stretch beta)
                     };
 					SetUiScreen(CreatePostTrainingSlideshow (GetModeler (), strNamespace[iMission]));
                     break;
@@ -2714,8 +2741,8 @@ public:
 		m_iMouseAccel(0), //#215
 		m_bShowInventoryPane(true), // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
 		m_bShowSectorMapPane(true),  // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
-		m_bUseHighResTextures(true) // BT - 10/17 - HighRes Textures
-
+		m_bUseHighResTextures(true), // BT - 10/17 - HighRes Textures
+        m_bUseOldUi(false)
     {
         HRESULT hr;
 
@@ -2732,6 +2759,12 @@ public:
 
 		// Now set the art path, performed after initialise, else Modeler isn't valid.
 		GetModeler()->SetArtPath(strArtPath);
+
+        UiEngine::SetGlobalArtPath((std::string)strArtPath);
+
+        if (g_bLuaDebug) {
+            UiEngine::m_stringLogPath = (std::string)"lua.log";
+        }
 
 		//Imago 6/29/09 7/28/09 now plays video in thread while load continues // BT - 9/17 - Refactored a bit.
 		HANDLE hDDVidThread = NULL;
@@ -2971,6 +3004,10 @@ public:
 
         InitializeSoundTemplates();
 
+        m_pUiEngine = UiEngine::Create(m_pengine, m_pSoundEngine, [this](std::string strWebsite) {
+            this->ShowWebPage(strWebsite.c_str());
+        });
+
         //
         // Load the Quick Chat Info
         //
@@ -2994,6 +3031,8 @@ public:
 		m_bUseHighResTextures    = (LoadPreference("HighResTextures",		1) != 0);
 
 		m_pmodeler->SetHighResTextures(m_bUseHighResTextures);
+
+        m_bUseOldUi = (LoadPreference("OldUi", 1) != 0);
 
         //
         // Initial screen size
@@ -3323,7 +3362,7 @@ public:
         //
         // intro.avi video moved up
         //
-		TRef<Screen> introscr = CreateIntroScreen(GetModeler());
+		TRef<Screen> introscr = CreateIntroScreen(GetModeler(), *m_pUiEngine, m_bUseOldUi);
 		SetUiScreen(introscr);
         m_screen = ScreenIDIntroScreen;
         RestoreCursor();
@@ -3543,6 +3582,7 @@ public:
         m_mapAnimatedImages.SetEmpty();
 
         TerminateGameStateContainer();
+        m_pwrapImageTop->SetImage(Image::GetEmpty());
         m_pimageScreen     = NULL;
         m_pscreen          = NULL;
         SetCaption(NULL);
@@ -3586,8 +3626,9 @@ public:
         m_pqcmenuMain = NULL;
         m_psoundmutexSal->Reset();
         m_psoundmutexVO->Reset();
-        m_pSoundEngine = NULL;
 
+        m_pUiEngine = NULL;
+        m_pSoundEngine = NULL;
         m_ptrekInput = NULL;
     }
 
@@ -3696,7 +3737,7 @@ public:
     void StartQuitMission()
     {
         TRef<IMessageBox> pmessageBox;
-        if (Training::IsTraining () || Slideshow::IsInSlideShow ())
+        if (Training::IsTraining() || Slideshow::IsInSlideShow())
             pmessageBox = CreateMessageBox("Quit the Current Training Mission?", NULL, true, true);
         else
             pmessageBox = CreateMessageBox("Quit the Current Game?", NULL, true, true);
@@ -3704,7 +3745,7 @@ public:
         GetPopupContainer()->OpenPopup(pmessageBox, false);
     }
 
-    TrekInput*  GetInput (void)
+    TrekInput*  GetInput(void)
     {
         return m_ptrekInput;
     }
@@ -3729,9 +3770,9 @@ public:
             );
             m_pimageStars->SetCount(pcluster->GetStarSeed(), pcluster->GetNstars());
 
-            m_color                     = pcluster->GetLightColor();
-            m_colorAlt                  = pcluster->GetLightColorAlt();
-            m_ambientLevel              = pcluster->GetAmbientLevel();
+            m_color = pcluster->GetLightColor();
+            m_colorAlt = pcluster->GetLightColorAlt();
+            m_ambientLevel = pcluster->GetAmbientLevel();
             m_ambientLevelBidirectional = pcluster->GetBidirectionalAmbientLevel();
 
             SetLightDirection(pcluster->GetLightDirection());
@@ -3752,32 +3793,37 @@ public:
         UpdateMusic();
     }
 
-	void UpdateBackdropCentering()
-	{
-		//kg- #226 - todo -factorize with above code
-		if (m_pimageScreen)
-		{
-			// center the pane on the screen
-			const Rect& rectScreen = GetScreenRectValue()->GetValue();
-			if (m_pscreen->GetPane()) //kg- review
-			{
-				const WinPoint& sizePane = m_pscreen->GetPane()->GetSize();
+    void UpdateBackdropCentering()
+    {
+        //kg- #226 - todo -factorize with above code
+        if (m_pimageScreen)
+        {
+            // center the pane on the screen
+            const Rect& rectScreen = GetScreenRectValue()->GetValue();
+            Point sizeScreenBeforeScaling;
+            if (m_pscreen->GetPane())
+            {
+                const WinPoint& sizePane = m_pscreen->GetPane()->GetSize();
+                sizeScreenBeforeScaling = Point(sizePane.X(), sizePane.Y());
+            }
+            else if (m_pscreen->GetImage()) {
+                sizeScreenBeforeScaling = m_pscreen->GetImage()->GetBounds().GetRect().Size();
+            }
 
-				float scale;
-				scale = min(rectScreen.XSize() / sizePane.X(), rectScreen.YSize() / sizePane.Y());
+			float scale;
+			scale = std::min(rectScreen.XSize() / sizeScreenBeforeScaling.X(), rectScreen.YSize() / sizeScreenBeforeScaling.Y());
 
-				Point pointTranslate;
-				pointTranslate = Point(
-					0.5 * (rectScreen.XSize() - sizePane.X() * scale),
-					0.5 * (rectScreen.YSize() - sizePane.Y() * scale)
-				);
+			Point pointTranslate;
+			pointTranslate = Point(
+				0.5 * (rectScreen.XSize() - sizeScreenBeforeScaling.X() * scale),
+				0.5 * (rectScreen.YSize() - sizeScreenBeforeScaling.Y() * scale)
+			);
 
-				Matrix2 matrix = Matrix2::GetIdentity();
-				matrix.SetScale(Point(scale, scale));
-				matrix.Translate(pointTranslate);
+			Matrix2 matrix = Matrix2::GetIdentity();
+			matrix.SetScale(Point(scale, scale));
+			matrix.Translate(pointTranslate);
 
-				m_pMatrixTransformScreen->SetValue(matrix);
-			}
+			m_pMatrixTransformScreen->SetValue(matrix);
 		}
 	}
 
@@ -4105,6 +4151,8 @@ public:
 
 	#define idmHighResTextures	822	// BT - 10/17 - HighRes Textures
 
+    #define idmOldUi	        823
+
 	// BT - STEAM
 	#define idmCallsignTag0		900
 	#define idmCallsignTag1		901
@@ -4327,6 +4375,7 @@ public:
         OpenPopup(m_pmenu, Point(10, 10));
     }
 
+	// BT - Steam
 	bool IsPlayerSteamModerator()
 	{
 		// The MSAlleg Steam Group ID.
@@ -4407,7 +4456,7 @@ public:
         if(bEnableMute)			m_pmenu->AddMenuItem(idmContextMutePlayer  , str4 , playerInfo->GetMute() == false ?'M' :'U');		
 
 		// BT - STEAM - Enable moderators to ban players by context menu.
-		if (IsPlayerSteamModerator())
+		if (IsPlayerSteamModerator() && playerInfo->IsHuman())
 		{
 			m_pmenu->AddMenuItem(idmContextKickPlayer, "Kick To NOAT", 'K');
 			m_pmenu->AddMenuItem(idmContextBanPlayer, "Ban From Game", 'B');
@@ -4505,7 +4554,7 @@ public:
 			if(bEnableReject)		m_pmenu->AddMenuItem(idmContextRejectPlayer , str4 , 'R');
 
 			// BT - STEAM - Enable moderators to ban players by context menu.
-			if (bSteamModerator == true && bEnableDock == false)
+			if (bSteamModerator == true && bEnableDock == false && playerInfo->IsHuman())
 			{
 				m_pmenu->AddMenuItem(idmContextKickPlayer, "Kick To NOAT", 'K');
 				m_pmenu->AddMenuItem(idmContextBanPlayer, "Ban From Game", 'B');
@@ -4620,6 +4669,9 @@ public:
 				
 				// BT - 10/17 - HighRes Textures
 				m_pitemToggleHighResTextures	   = pmenu->AddMenuItem(idmHighResTextures,				GetHighResTexturesString(),				'X');
+
+                //Rock: Disabled for release
+                //m_pitemToggleUseOldUi     = pmenu->AddMenuItem(idmOldUi, GetOldUiMenuString(), 'G');
  				
 				break;
 
@@ -4683,7 +4735,7 @@ public:
 			//imago 6/30/09: new graphics options dx9, removed vsync 7/10
 			case idmDeviceOptions:
 				m_pitemAA				= pmenu->AddMenuItem(idmAA   			  , GetAAString()                                       , 'A');
-			    m_pitemMip				= pmenu->AddMenuItem(idmMip    			  , GetMipString()                                      , 'M');
+			    //m_pitemMip				= pmenu->AddMenuItem(idmMip    			  , GetMipString()                                      , 'M'); // BT - Disable MipMaps for now
 				m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V'); //Spunky #265 backing out //Imago 7/10
 				// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 				m_pitemMaxTextureSize	= pmenu->AddMenuItem(idmMaxTextureSize,     GetMaxTextureSizeMenuString(),    					  'X');
@@ -4874,7 +4926,7 @@ public:
 	// #294 - Turkey 8/13
 	void IncreaseChatLines()
 	{
-		DWORD lines = (DWORD)m_pnumberChatLinesDesired->GetValue() + 1;
+		int lines = (int)m_pnumberChatLinesDesired->GetValue() + 1;
 
 		if (SetChatLines(lines))
 		{
@@ -4885,8 +4937,8 @@ public:
 			{
 				if (GetViewMode() == vmLoadout)
 				{
-					m_pchatListPane->SetChatLines(min(lines, 6));
-					m_pnumberChatLines->SetValue(min(lines, 6));
+					m_pchatListPane->SetChatLines(std::min(lines, 6));
+					m_pnumberChatLines->SetValue(std::min(lines, 6));
 				}
 				else if (GetViewMode() <= vmOverride)
 				{
@@ -4901,7 +4953,7 @@ public:
 
 	void ReduceChatLines()
 	{
-		DWORD lines = (DWORD)m_pnumberChatLinesDesired->GetValue() - 1;
+		int lines = (int)m_pnumberChatLinesDesired->GetValue() - 1;
 
 		if (SetChatLines(lines))
 		{
@@ -4912,8 +4964,8 @@ public:
 			{
 				if (GetViewMode() == vmLoadout)
 				{
-					m_pchatListPane->SetChatLines(min(lines, 6));
-					m_pnumberChatLines->SetValue(min(lines, 6));
+					m_pchatListPane->SetChatLines(std::min(lines, 6));
+					m_pnumberChatLines->SetValue(std::min(lines, 6));
 				}
 				else if (GetViewMode() <= vmOverride)
 				{
@@ -5371,6 +5423,38 @@ public:
         }
     }
 
+    class CloseNotificationSink : public IIntegerEventSink {
+    public:
+        TrekWindowImpl* m_pwindow;
+
+        CloseNotificationSink(TrekWindowImpl* pwindow) :
+            m_pwindow(pwindow)
+        {
+        }
+
+        bool OnEvent(IIntegerEventSource* pevent, int value)
+        {
+            m_pwindow->CloseMessageBox();
+            return false;
+        }
+    };
+
+    void ToggleOldUi()
+    {
+        m_bUseOldUi = !m_bUseOldUi;
+
+        SavePreference("OldUi", m_bUseOldUi);
+
+        if (m_pitemToggleUseOldUi != NULL) {
+            m_pitemToggleUseOldUi->SetString(GetOldUiMenuString());
+        }
+
+        m_pmessageBox = CreateMessageBox("Enabling or Disabling the old UI will require you to restart Allegiance.", NULL, true, false);
+        m_pmessageBox->GetEventSource()->AddSink(new CloseNotificationSink(this));
+        GetWindow()->GetPopupContainer()->OpenPopup(m_pmessageBox, false);
+
+    }
+
 	// BT - 10/17 - HighRes Textures
 	void ToggleHighResTextures()
 	{
@@ -5385,6 +5469,7 @@ public:
 		}
 
 		m_pmessageBox = CreateMessageBox("Enabling or Disabling the High Resolution Textures will require you to restart Allegiance.", NULL, true, false);
+        m_pmessageBox->GetEventSource()->AddSink(new CloseNotificationSink(this));
 		GetWindow()->GetPopupContainer()->OpenPopup(m_pmessageBox, false);
 
 	}
@@ -5604,7 +5689,7 @@ public:
 
     void AdjustMusicVolume(float fDelta)
     {
-        float fNewValue = min(0, max(c_nMinGain, m_pnumMusicGain->GetValue() + fDelta));
+        float fNewValue = std::min(0.0f, std::max(c_nMinGain, m_pnumMusicGain->GetValue() + fDelta));
         m_pnumMusicGain->SetValue(fNewValue);
 
         SavePreference("MusicGain", (DWORD)-fNewValue);
@@ -5624,7 +5709,7 @@ public:
 
     void AdjustSFXVolume(float fDelta)
     {
-        float fNewValue = min(0, max(c_nMinGain, m_pnumSFXGain->GetValue() + fDelta));
+        float fNewValue = std::min(0.0f, std::max(c_nMinGain, m_pnumSFXGain->GetValue() + fDelta));
         m_pnumSFXGain->SetValue(fNewValue);
 
         SavePreference("SFXGain", (DWORD)-fNewValue);
@@ -5643,7 +5728,7 @@ public:
 
     void AdjustVoiceOverVolume(float fDelta)
     {
-        float fNewValue = min(0, max(c_nMinGain, m_pnumVoiceOverGain->GetValue() + fDelta));
+        float fNewValue = std::min(0.0f, std::max(c_nMinGain, m_pnumVoiceOverGain->GetValue() + fDelta));
         m_pnumVoiceOverGain->SetValue(fNewValue);
 
         SavePreference("VoiceOverGain", (DWORD)-fNewValue);
@@ -5663,7 +5748,7 @@ public:
 	//Imago 7/10 #187
     void AdjustFFGain(float fDelta)
     {
-        float fNewValue = min(10000, max(c_nMinFFGain, m_pnumFFGain->GetValue() + fDelta));
+        float fNewValue = std::min(10000.0f, std::max(c_nMinFFGain, m_pnumFFGain->GetValue() + fDelta));
         m_pnumFFGain->SetValue(fNewValue);
 
         SavePreference("FFGain", fNewValue);
@@ -5685,7 +5770,7 @@ public:
 
     void AdjustMouseSens(float fDelta)
     {
-        float fNewValue = min(2, max(0.1f, m_pnumMouseSens->GetValue() + fDelta));
+        float fNewValue = std::min(2.0f, std::max(0.1f, m_pnumMouseSens->GetValue() + fDelta));
         m_pnumMouseSens->SetValue(fNewValue);
 
         SavePreference("MouseSensitivity", ZString(fNewValue));
@@ -5765,7 +5850,7 @@ public:
         }
         else
         {
-			float value = (min(2, max(0.1f, fCurrentSens + fDelta))) * 100;
+			float value = (std::min(2.0f, std::max(0.1f, fCurrentSens + fDelta))) * 100;
 			char szValue[4] = {'\0'};
 			sprintf(szValue,"%.0f",value);
             strResult += "to " + ZString(szValue) + " %";
@@ -6047,6 +6132,11 @@ public:
         return (m_bFlipY ? "Y Axis Flipped " : "Y Axis Not Flipped ");
     }
 
+    ZString GetOldUiMenuString()
+    {
+        return "Use old UI: " + ZString(m_bUseOldUi ? "On" : "Off");
+    }
+
 	// BT - 10/17 - HighRes Textures
 	ZString GetHighResTexturesString()
 	{
@@ -6071,7 +6161,7 @@ public:
         }
         else
         {
-            strResult += "to " + ZString(min(0, max(c_nMinGain, fCurrentGain + fDelta))) + " dB";
+            strResult += "to " + ZString(std::min(0.0f, std::max(c_nMinGain, fCurrentGain + fDelta))) + " dB";
         }
 
         return strResult;
@@ -6091,7 +6181,7 @@ public:
         }
         else
         {
-            strResult += "to " + ZString(min(10000, max(c_nMinFFGain, fCurrentGain + fDelta) / 100)) + " %";
+            strResult += "to " + ZString(std::min(10000.0f, std::max(c_nMinFFGain, fCurrentGain + fDelta) / 100)) + " %";
         }
 
         return strResult;
@@ -6331,6 +6421,10 @@ public:
 			case idmHighResTextures:
 				ToggleHighResTextures();
 				break;
+
+            case idmOldUi:
+                ToggleOldUi();
+                break;
 
 
 			/* pkk May 6th: Disabled bandwidth patch
@@ -6859,7 +6953,7 @@ public:
 
 			// yp - Your_Persona buttons get stuck patch. aug-03-2006
 			// clear the keyboard buttons.
-			m_ptrekInput->ClearButtonStates();
+			m_ptrekInput->ClearButtonStates(); //Possibly not needed any more with server side fix.
 
 			// #294 - Turkey / #361 Use different number of chatlines for the loadout screen cos there's less space
 			if (m_pchatListPane)
@@ -6868,8 +6962,8 @@ public:
 
 				if (vm == vmLoadout)
 				{
-					m_pchatListPane->SetChatLines(min(lines, 6));
-					m_pnumberChatLines->SetValue(min(lines, 6));
+					m_pchatListPane->SetChatLines(std::min(lines, 6));
+					m_pnumberChatLines->SetValue(std::min(lines, 6));
 				}
 				else if (vm <= vmOverride)
 				{
@@ -7555,7 +7649,7 @@ public:
 
         int nNumPlayingSoundBuffers;
         ZSucceeded(m_pSoundEngine->GetNumPlayingVirtualBuffers(nNumPlayingSoundBuffers));
-        char szRemoteAddress [16];
+        char szRemoteAddress[64];
         if (trekClient.m_fm.IsConnected())
           trekClient.m_fm.GetIPAddress(*trekClient.m_fm.GetServerConnection(), szRemoteAddress);
         else
@@ -7622,15 +7716,10 @@ public:
     static void  GetDefaultPosition(Vector*    pposition, float*   pradiusMin)
     {
         IstationIGC*    pstation = trekClient.GetShip()->GetStation();
-        if (pstation)
+        if (pstation && pstation->GetCluster() == trekClient.GetCluster())
         {
-            if (pstation->GetCluster() == trekClient.GetCluster())
-            {
-                *pposition = pstation->GetPosition();
-                *pradiusMin = pstation->GetRadius() * 2.0f;
-            }
-            else
-                *pposition = Vector::GetZero();
+            *pposition = pstation->GetPosition();
+            *pradiusMin = pstation->GetRadius() * 2.0f;
         }
         else
         {
@@ -7774,6 +7863,23 @@ public:
         return m_fDeltaTime;
     }
 
+    void UpdateMouseEnabled() {
+        bool bEnable =
+            m_bEnableVirtualJoystick
+            && m_bActive
+            && GetPopupContainer()->IsEmpty()
+            && trekClient.flyingF()
+            && ((m_viewmode == vmCombat) || (m_viewmode == vmOverride))
+            && ((m_voverlaymask[m_viewmode] & (c_omBanishablePanes & ~ofInvestment)) == 0)
+            && (!m_bFreshInvestmentPane || (m_voverlaymask[m_viewmode] & ofInvestment) == 0);
+
+        //enabling mouse means that we listen to the mouse manually and ignore window events
+        m_pmouse->SetEnabled((bEnable || m_pengine->IsFullscreen()));
+        m_pjoystickImage->SetEnabled(bEnable, bEnable);
+        SetMoveOnHide(!bEnable);
+        ShowCursor(!bEnable);
+    }
+
     void EvaluateFrame(Time time)
     {
         static bool bFirstFrame = true;
@@ -7796,20 +7902,7 @@ public:
         // Turn on the virtual joystick if the right conditions are met
         //
 
-        {
-            bool bEnable =
-                   m_bEnableVirtualJoystick
-                && GetPopupContainer()->IsEmpty()
-                && trekClient.flyingF()
-                && ((m_viewmode == vmCombat) || (m_viewmode == vmOverride))
-                && ((m_voverlaymask[m_viewmode] & c_omBanishablePanes) == 0);
-
-            //enabling mouse means that we listen to the mouse manually and ignore window events
-            m_pmouse->SetEnabled(bEnable || (m_bActive && m_pengine->IsFullscreen()));
-            m_pjoystickImage->SetEnabled(bEnable, bEnable);
-            SetMoveOnHide(!bEnable);
-            ShowCursor(!bEnable);
-        }
+        UpdateMouseEnabled();
 
         //
         // Give the current screen a chance to do something on a per frame basis
@@ -8255,7 +8348,7 @@ public:
             else
                 m_cameraControl.SetZClip(5.0f, 10000.0f);
 
-            if ((pmodelTarget == NULL) && bAnyEnemyShips && (!Training::IsTraining ()))
+            if ((pmodelTarget == NULL) && bAnyEnemyShips)
             {
                 //We have no target and there are enemy ships ... select an appropriate ship
                 const Vector&   position = pshipSource->GetPosition();
@@ -8432,14 +8525,16 @@ public:
 						bool    bControlsInUse = SenseJoystick(&js, bNoCameraControl, bAllowKeyboardMovement, bUpdateThrottle);
                         int     oldButtonsM = buttonsM;
 
-                        if (m_ptrekInput->IsTrekKeyDown(TK_ThrustLeft, bAllowKeyboardMovement))
-                            buttonsM |= leftButtonIGC;
-                        if (m_ptrekInput->IsTrekKeyDown(TK_ThrustRight, bAllowKeyboardMovement))
-                            buttonsM |= rightButtonIGC;
-                        if (m_ptrekInput->IsTrekKeyDown(TK_ThrustUp, bAllowKeyboardMovement))
-                            buttonsM |= upButtonIGC;
-                        if (m_ptrekInput->IsTrekKeyDown(TK_ThrustDown, bAllowKeyboardMovement))
-                            buttonsM |= downButtonIGC;
+                        if (!CommandCamera(m_cm)) {
+                            if (m_ptrekInput->IsTrekKeyDown(TK_ThrustLeft, bAllowKeyboardMovement))
+                                buttonsM |= leftButtonIGC;
+                            if (m_ptrekInput->IsTrekKeyDown(TK_ThrustRight, bAllowKeyboardMovement))
+                                buttonsM |= rightButtonIGC;
+                            if (m_ptrekInput->IsTrekKeyDown(TK_ThrustUp, bAllowKeyboardMovement))
+                                buttonsM |= upButtonIGC;
+                            if (m_ptrekInput->IsTrekKeyDown(TK_ThrustDown, bAllowKeyboardMovement))
+                                buttonsM |= downButtonIGC;
+                        }
                         if (m_ptrekInput->IsTrekKeyDown(TK_ThrustForward, bAllowKeyboardMovement))
                             buttonsM |= forwardButtonIGC;
                         if (m_ptrekInput->IsTrekKeyDown(TK_ThrustBackward, bAllowKeyboardMovement))
@@ -8739,11 +8834,20 @@ public:
                     {
                         m_rollCommandCamera -= dt;
 
-                        if (m_distanceCommandCamera < 0.0f)
-                            m_distanceCommandCamera += 2.0f * pi;
+                        if (m_rollCommandCamera < 0.0f)
+                            m_rollCommandCamera += 2.0f * pi;
 
                         OrientCommandView();
                     }
+
+                    if (m_ptrekInput->IsTrekKeyDown(TK_ThrustRight, bAllowKeyboardMovement))
+                        dRight += delta / 2;
+                    if (m_ptrekInput->IsTrekKeyDown(TK_ThrustLeft, bAllowKeyboardMovement))
+                        dRight -= delta / 2;
+                    if (m_ptrekInput->IsTrekKeyDown(TK_ThrustUp, bAllowKeyboardMovement))
+                        dUp -= delta / 2; // Something is off here - should be called dDown. This is what happens if you don't just stick with top/left as 0/0 as it's meant to be done. Also costs performance above.
+                    if (m_ptrekInput->IsTrekKeyDown(TK_ThrustDown, bAllowKeyboardMovement))
+                        dUp += delta / 2;
 
                     if (dRight)
                     {
@@ -8909,6 +9013,13 @@ public:
             m_ptrekInput->SetFocus(true);
             TrekKey tk = m_ptrekInput->HandleKeyMessage(ks);
 
+            if (g_bLuaDebug && ks.bDown && ks.bAlt) {
+                switch (ks.vk) {
+                case VK_F1:
+                    m_pUiEngine->TriggerReload();
+                    return true;
+                }
+            }
             if (TK_NoKeyMapping != tk) {
                 if (ks.bDown) {
 
@@ -9377,9 +9488,9 @@ public:
         void Evaluate()
         {
             if (m_bOn) {
-                m_value = min(1, m_valueStart + (GetTime() - m_timeStart));
+                m_value = std::min(1.0f, m_valueStart + (GetTime() - m_timeStart));
             } else {
-                m_value = max(0, m_valueStart - (GetTime() - m_timeStart));
+                m_value = std::max(0.0f, m_valueStart - (GetTime() - m_timeStart));
             }
 
             GetValueInternal() = Interpolate(m_positionOff, m_positionOn, m_value);
@@ -9491,11 +9602,13 @@ public:
 				case TK_ScrnShot:
 					TakeScreenShot();
 					return true;
-				// SR added ability to toggle virtual joystick during launch animation 8/06
+
+				// Toggle virtual joystick during launch animation
 				case TK_ToggleMouse:
 					if (trekClient.IsInGame() &&
 					GetViewMode() == vmOverride &&
-					!trekClient.IsLockedDown()) {
+					!trekClient.IsLockedDown() && 
+                    (m_pconsoleImage == NULL || !m_pconsoleImage->IsComposing())) {
 						m_bEnableVirtualJoystick = !m_bEnableVirtualJoystick;
 						if(m_bEnableVirtualJoystick) m_ptrekInput->ClearButtonStates();//#56
 						return true;
@@ -9625,7 +9738,14 @@ public:
 
             case TK_ToggleMouse:
             {
-                m_bEnableVirtualJoystick = !m_bEnableVirtualJoystick;
+                if (m_voverlaymask[m_viewmode] & (c_omBanishablePanes & ~ofInvestment)) {
+                    TurnOffOverlayFlags(c_omBanishablePanes & ~ofInvestment);
+                    m_bEnableVirtualJoystick = true;
+                }
+                else if (m_bFreshInvestmentPane && (m_voverlaymask[m_viewmode] & ofInvestment))
+                    m_bFreshInvestmentPane = false;
+                else
+                    m_bEnableVirtualJoystick = !m_bEnableVirtualJoystick;
             }
             break;
 
@@ -9672,8 +9792,7 @@ public:
 
             case TK_Ripcord:
             {
-                if (!Training::IsTraining ())
-                {
+                
                     if ((trekClient.GetShip()->GetParentShip() == NULL) &&
                         trekClient.GetShip()->GetCluster())
                     {
@@ -9699,11 +9818,9 @@ public:
                                     pcluster = trekClient.GetShip()->GetCluster();
                                 assert (pcluster);
                             }
-
                             trekClient.RequestRipcord(trekClient.GetShip(), pcluster);
                         }
                     }
-                }
             }
             break;
 
@@ -10098,9 +10215,10 @@ public:
 
                 if (CommandCamera(m_cm))
                 {
-                    if (GetOverlayFlags() & c_omBanishablePanes) {
+                    if (GetOverlayFlags() & c_omBanishablePanes) 
                         TurnOffOverlayFlags(c_omBanishablePanes);
-                    } else if (!trekClient.GetShip()->IsGhost()) {
+
+                    if (!trekClient.GetShip()->IsGhost()) {
                         if (trekClient.flyingF()) {
                             SetViewMode(vmCombat);
                         } else {
@@ -10110,6 +10228,10 @@ public:
                 }
                 else
                 {
+                    //Turn off overlay flags, as overlays get closed anyway. Without, their closing anim shows on closing command view.
+                    if (GetOverlayFlags() & c_omBanishablePanes)
+                        TurnOffOverlayFlags(c_omBanishablePanes);
+
                     if ((trekClient.GetViewCluster() == NULL) && !trekClient.flyingF())
                     {
                         IstationIGC*    pstation = trekClient.GetShip()->GetStation();
@@ -10226,6 +10348,7 @@ public:
                 {
                     TurnOffOverlayFlags(c_omBanishablePanes & ~ofInvestment);
                     ToggleOverlayFlags(ofInvestment);
+                    m_bFreshInvestmentPane = (m_voverlaymask[m_viewmode] & ofInvestment);
                 }
             }
             break;
@@ -11340,9 +11463,9 @@ public:
             int nTimeLeft;
 
             if (trekClient.MyMission()->GetStage() == STAGE_STARTING)
-                nTimeLeft = max(0, int(trekClient.MyMission()->GetMissionParams().timeStart - Time::Now()) + 1);
+                nTimeLeft = std::max(0, int(trekClient.MyMission()->GetMissionParams().timeStart - Time::Now()) + 1);
             else
-                nTimeLeft = max(0, int(
+                nTimeLeft = std::max(0, int(
                     trekClient.MyMission()->GetMissionParams().GetCountDownTime()
                         - (Time::Now() - trekClient.MyMission()->GetMissionParams().timeStart) + 1));
 
