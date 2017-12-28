@@ -135,6 +135,26 @@ public:
     }
 };
 
+template <typename Type>
+auto CreateSourceFilteringFunction() {
+    typedef TEvent<Type> Event;
+
+    return [](const TRef<Event::Source>& source, const TRef<Boolean>& active) {
+        //this should be optimized so that the boolean value switches the link on off instead of filtering each entry
+        //memory leak here when the source isn't cleaned up
+
+        TRef<Event::SourceImpl> result = new Event::SourceImpl();
+        source->AddSink(new CallbackValueSink<Type>([result, active](Type value) {
+            if (active->GetValue()) {
+                result->Trigger(value);
+            }
+            return true;
+        }));
+
+        return (TRef<Event::Source>)result;
+    };
+}
+
 template <typename TypeResult>
 class EventVoidToOne {
     typedef TRef<TStaticValue<TypeResult>> WrappedResult;
@@ -231,6 +251,27 @@ public:
             MouseEventImage* ptr = (MouseEventImage*)(Image*)image;
             return ptr->GetPointEventSource(string);
         };
+
+        table["Filter"] = sol::overload(
+            [](const TRef<IEventSource>& pEventSource, const TRef<Boolean>& active) {
+                //this should be optimized so that the boolean value switches the link on off instead of filtering each entry
+                //memory leak here when the source isn't cleaned up
+
+                TRef<EventSourceImpl> result = new EventSourceImpl();
+                pEventSource->AddSink(new CallbackSink([result, active]() {
+                    if (active->GetValue()) {
+                        result->Trigger();
+                    }
+                    return true;
+                }));
+
+                return (TRef<IEventSource>)result;
+            },
+            CreateSourceFilteringFunction<float>(),
+            CreateSourceFilteringFunction<bool>(),
+            CreateSourceFilteringFunction<ZString>(),
+            CreateSourceFilteringFunction<Point>()
+        );
 
         table["ToBoolean"] = [](sol::table table, sol::object valueDefault) {
             std::map<TRef<IEventSource>, TRef<Boolean>> mapOptions;
