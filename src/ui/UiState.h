@@ -29,7 +29,7 @@ public:
             throw std::runtime_error("Key not found: " + key);
         }
 
-        return (Type)(*found->second);
+        return (const Type&)(*found->second);
     }
 
     std::shared_ptr<Exposer> GetExposer(std::string key) const {

@@ -21,7 +21,7 @@ public:
     virtual sol::object ExposeSolObject(lua_State* L) = 0;
 
     template <typename T>
-    operator T() const {
+    operator const T&() const {
         return *std::static_pointer_cast<T>(m_pobject);
     }
 };
