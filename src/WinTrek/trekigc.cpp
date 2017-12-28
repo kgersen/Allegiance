@@ -740,12 +740,14 @@ private:
     TRef<ISoundInstance> m_pMainThrusterInteriorSound;
     TRef<ISoundInstance> m_pTurnThrusterInteriorSound;
     TRef<ISoundInstance> m_pAfterburnerInteriorSound;
+	TRef<ISoundInstance> m_pSideThrustInteriorSound;
 
     // sounds used outside of a ship
     TRef<ISoundInstance> m_pExteriorSound;
     TRef<ISoundInstance> m_pMainThrusterExteriorSound;
     TRef<ISoundInstance> m_pTurnThrusterExteriorSound;
     TRef<ISoundInstance> m_pAfterburnerExteriorSound;
+	TRef<ISoundInstance> m_pSideThrustExteriorSound;
     TRef<ISoundInstance> m_pMiningSound;
 
     // weapon sounds for each mount
@@ -1299,6 +1301,8 @@ public:
                 PlaySoundIf(m_pAfterburnerInteriorSound, 
                     GetAfterburnerSoundID(true), 
                     m_psourceEngine, AfterburnerPower() > 0.0f);
+				//Sidethrusters
+				PlaySoundIf(m_pSideThrustInteriorSound, SidethrustInteriorSound, GetSoundSource(), SidewaysThrustFraction() > 0.01f);
             }
 
             //
@@ -1316,6 +1320,8 @@ public:
                 GetAfterburnerSoundID(false), 
                 m_psourceEngine,
                 AfterburnerPower() > 0.0f);
+			//Sidethrusters
+			PlaySoundIf(m_pSideThrustExteriorSound, SidethrustExteriorSound, GetSoundSource(), SidewaysThrustFraction() > 0.01f);
 
             UpdateEngineSoundLevels(dwElapsedTime);
 
