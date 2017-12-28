@@ -681,6 +681,13 @@ void CFSShip::CaptureStation(IstationIGC * pstation)
   }
   else if (psideOld->GetActiveF())						//RESET OUR EYE HERE?  IMAGO CAPTURE EYE BUG FIX?  REVIEW 7/23/09
       m_pfsMission->VacateStation(pstation);
+
+  for (SideLinkIGC* l = pside->GetMission()->GetSides()->first(); (l != NULL); l = l->next()) {
+      IsideIGC* pcurSide = l->data();
+      if (pcurSide == pside || pcurSide == psideOld || IsideIGC::AlliedSides(pside, pcurSide) || IsideIGC::AlliedSides(psideOld, pcurSide)) {
+          l->data()->UpdateTerritory();
+      }
+  }
 }
 
 void CFSShip::QueueLoadoutChange(bool bForce)
