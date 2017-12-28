@@ -233,6 +233,20 @@ TRef<Number> NumberTransform::Cos(Number* pvalue)
     return new CosNumber(pvalue);
 };
 
+TRef<Number> NumberTransform::Sqrt(Number* pvalue)
+{
+    return new TransformedValue<float, float>([](float value) {
+        return sqrt(value);
+    }, pvalue);
+};
+
+TRef<Number> NumberTransform::Power(Number* pvalue, Number* power)
+{
+    return new TransformedValue2<float, float, float>([](float value, float power) {
+        return pow(value, power);
+    }, pvalue, power);
+};
+
 
 // ### Point ###
 

@@ -21,6 +21,8 @@ public:
     static TRef<Number> Round(Number* a, int decimals);
     static TRef<Number> Sin(Number* a);
     static TRef<Number> Cos(Number* a);
+    static TRef<Number> Sqrt(Number* a);
+    static TRef<Number> Power(Number* a, Number* power);
 };
 
 class PointTransform {
