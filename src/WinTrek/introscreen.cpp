@@ -2,9 +2,10 @@
 #include "regkey.h"
 #include "training.h"
 #include "valuetransform.h"
-#include <boost/any.hpp>
 
 #include "CreateGameDialog.h"
+
+#include "ui.h"
 
 extern bool CheckNetworkDevices(ZString& strDriverURL);
 
@@ -24,7 +25,7 @@ class YesErrorState : public ErrorState {
 public:
     YesErrorState(std::string message) :
         ErrorState("Yes", {
-            { "Message", (TRef<StringValue>)new StringValue(message.c_str()) }
+            { "Message", TypeExposer<TRef<StringValue>>::Create(new ModifiableString(message.c_str())) }
         })
     {}
 };
@@ -37,8 +38,8 @@ public:
     LoggedOutState(UiStateValue* stateError, IEventSink* sinkLogin) :
         m_stateError(stateError),
         UiState("Logged out", {
-            { "Has error", (TRef<UiStateValue>)stateError },
-            { "Login", (TRef<IEventSink>)sinkLogin }
+            { "Has error", TypeExposer<TRef<UiStateValue>>::Create(stateError) },
+            { "Login", TypeExposer<TRef<IEventSink>>::Create(sinkLogin) }
         })
     {
     }
@@ -52,8 +53,10 @@ class LoggingInState : public UiState {
 public:
     LoggingInState() :
         UiState("Logging in", {
-            { "Step number", (TRef<Number>)new ModifiableNumber(0.0f) },
-            { "Step message", (TRef<StringValue>)new ModifiableString("") }
+            { "Step number", TypeExposer<TRef<Number>>::Create(new ModifiableNumber(0.0f)) },
+            { "Step message", TypeExposer<TRef<StringValue>>::Create(new ModifiableString("")) },
+            //{ "Step number", (TRef<Number>)new ModifiableNumber(0.0f) },
+            //{ "Step message", (TRef<StringValue>)new ModifiableString("") }
         })
     {
     }
@@ -71,12 +74,12 @@ private:
 public:
     LoggedInState(IEventSink* sinkLogout, IEventSink* sinkCreateGame) :
         UiState("Logged in", {
-            { "Mission list", (TRef<ContainerList>)new ContainerList({}) },
-            { "Server list", (TRef<ContainerList>)new ContainerList({}) },
-            { "Core list", (TRef<ContainerList>)new ContainerList({}) },
-            { "Logout", (TRef<IEventSink>)sinkLogout },
-            { "Create mission dialog", (TRef<IEventSink>)sinkCreateGame },
-            { "Create mission", (TRef<TEvent<ZString, ZString, ZString>::Sink>)new CallbackValueSink<ZString, ZString, ZString>([this](ZString serverName, ZString coreName, ZString missionName) {
+            { "Mission list", TypeExposer<TRef<ContainerList>>::Create(new ContainerList({})) },
+            { "Server list", TypeExposer<TRef<ContainerList>>::Create(new ContainerList({})) },
+            { "Core list", TypeExposer<TRef<ContainerList>>::Create(new ContainerList({})) },
+            { "Logout", TypeExposer<TRef<IEventSink>>::Create(sinkLogout) },
+            { "Create mission dialog", TypeExposer<TRef<IEventSink>>::Create(sinkCreateGame) },
+            { "Create mission", TypeExposer<TRef<TEvent<ZString, ZString, ZString>::Sink>>::Create(new CallbackValueSink<ZString, ZString, ZString>([this](ZString serverName, ZString coreName, ZString missionName) {
                 auto server = this->FindServer(serverName);
                 auto core = this->FindCore(coreName);
 
@@ -90,7 +93,7 @@ public:
                     missionName
                 );
                 return true;
-            }) }
+            })) }
         })
     {}
 
@@ -179,26 +182,26 @@ public:
             }
 
             current_modifiablelist->Insert(i, new UiObjectContainer({
-                { "Join", (TRef<IEventSink>)new CallbackSink([game]() {
+                { "Join", TypeExposer<TRef<IEventSink>>::Create(new CallbackSink([game]() {
                     trekClient.JoinMission(game, "");
                     return false;
-                }) },
-                { "Name", (TRef<StringValue>)new StringValue(game->Name()) },
-                { "Player count", (TRef<Number>)new Number((float)game->NumPlayers()) },
-                { "Player noat count", (TRef<Number>)new Number((float)game->NumNoatPlayers()) },
-                { "Max player count", (TRef<Number>)new Number((float)game->MaxPlayers()) },
-                { "Is in progress", (TRef<Boolean>)new Boolean(game->InProgress()) },
-                { "Time in progress", (TRef<Number>)pTimeMisisonInProgress },
-                { "Server name", (TRef<StringValue>)new StringValue(game->GetMissionDef().szServerName) },
-                { "Core name", (TRef<StringValue>)new StringValue(trekClient.CfgGetCoreName(game->GetIGCStaticFile())) },
+                })) },
+                { "Name", StringExposer::CreateStatic(game->Name()) },
+                { "Player count", NumberExposer::CreateStatic((float)game->NumPlayers()) },
+                { "Player noat count", NumberExposer::CreateStatic((float)game->NumNoatPlayers()) },
+                { "Max player count", NumberExposer::CreateStatic((float)game->MaxPlayers()) },
+                { "Is in progress", BooleanExposer::CreateStatic(game->InProgress()) },
+                { "Time in progress", NumberExposer::Create(pTimeMisisonInProgress) },
+                { "Server name", StringExposer::CreateStatic(game->GetMissionDef().szServerName) },
+                { "Core name", StringExposer::CreateStatic(trekClient.CfgGetCoreName(game->GetIGCStaticFile())) },
 
-                { "Has goal conquest", (TRef<Boolean>)new Boolean(game->GoalConquest()) },
-                { "Has goal territory", (TRef<Boolean>)new Boolean(game->GoalTerritory()) },
-                { "Has goal prosperity", (TRef<Boolean>)new Boolean(game->GoalProsperity()) },
-                { "Has goal artifacts", (TRef<Boolean>)new Boolean(game->GoalArtifacts()) },
-                { "Has goal flags", (TRef<Boolean>)new Boolean(game->GoalFlags()) },
-                { "Has goal deathmatch", (TRef<Boolean>)new Boolean(game->GoalDeathMatch()) },
-                { "Has goal countdown", (TRef<Boolean>)new Boolean(game->GoalCountdown()) },
+                { "Has goal conquest", BooleanExposer::CreateStatic(game->GoalConquest()) },
+                { "Has goal territory", BooleanExposer::CreateStatic(game->GoalTerritory()) },
+                { "Has goal prosperity", BooleanExposer::CreateStatic(game->GoalProsperity()) },
+                { "Has goal artifacts", BooleanExposer::CreateStatic(game->GoalArtifacts()) },
+                { "Has goal flags", BooleanExposer::CreateStatic(game->GoalFlags()) },
+                { "Has goal deathmatch", BooleanExposer::CreateStatic(game->GoalDeathMatch()) },
+                { "Has goal countdown", BooleanExposer::CreateStatic(game->GoalCountdown()) },
             }));
             pitem = plist->GetNext(pitem);
             ++i;
@@ -224,9 +227,9 @@ public:
             StaticCoreInfo pitem = plist[i];
 
             current_modifiablelist->Insert(i, new UiObjectContainer({
-                { "Name", (TRef<StringValue>)new StringValue(trekClient.CfgGetCoreName(pitem.cbIGCFile)) },
-                { "Bitmask", (uint32)(1 << i) },
-                { "StaticCoreInfo", (StaticCoreInfo)pitem }
+                { "Name", StringExposer::CreateStatic(trekClient.CfgGetCoreName(pitem.cbIGCFile)) },
+                //{ "Bitmask", (uint32)(1 << i) },
+                //{ "StaticCoreInfo", (StaticCoreInfo)pitem }
             }));
         }
     }
@@ -252,9 +255,9 @@ public:
             uint32 bitmaskServer = (uint32)pitem.dwCoreMask;
 
             current_modifiablelist->Insert(i, new UiObjectContainer({
-                { "Name", (TRef<StringValue>)new StringValue(pitem.szName) },
-                { "ServerCoreInfo", (ServerCoreInfo)pitem },
-                { "Has core", [bitmaskServer, this](std::string core_name) {
+                { "Name", StringExposer::CreateStatic(pitem.szName) },
+                //{ "ServerCoreInfo", (ServerCoreInfo)pitem },
+                { "Has core", TypeExposer<std::function<void(std::string)>>::Create([bitmaskServer, this](std::string core_name) {
                     auto listCores = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Core list")->GetList();
 
                     auto current_iterator = listCores.begin();
@@ -272,7 +275,7 @@ public:
                     }
 
                     throw std::runtime_error("Core was not found in core list");
-                } }
+                }) }
             }));
         }
     }
@@ -1109,10 +1112,10 @@ public:
                 return true;
             };
 
-            std::map<std::string, boost::any> map;
+            std::map<std::string, std::shared_ptr<Exposer>> map;
 
-            map["time"] = (TRef<Number>)GetWindow()->GetTime();
-            map["callsign"] = (TRef<StringValue>)new StringValue(trekClient.GetSavedCharacterName());
+            map["time"] = NumberExposer::Create(GetWindow()->GetTime());
+            map["callsign"] = StringExposer::CreateStatic(trekClient.GetSavedCharacterName());
 
             /*TRef<UiStateModifiableValue> login_state = new UiStateModifiableValue(UiState("Logged out", UiObjectContainer({
                 {"event.login", (TRef<IEventSink>)new CallbackSink([]() {
@@ -1120,7 +1123,7 @@ public:
                 })}
             })));*/
             m_pLoginHelper = new LoginHelper();
-            map["Login state"] = m_pLoginHelper->GetState();
+            map["Login state"] = TypeExposer<TRef<UiStateValue>>::Create(m_pLoginHelper->GetState());
 
             m_pimage = m_uiEngine.LoadImageFromLua(UiScreenConfiguration::Create("menuintroscreen/introscreen.lua", listeners, map));
         }

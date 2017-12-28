@@ -7,35 +7,37 @@
 
 #include <functional>
 #include <list>
-#include <boost/any.hpp>
+#include <memory>
 
+#include "Exposer.h"
 
 class UiObjectContainer : public IObject {
 
 private:
-    std::map<std::string, boost::any> m_map;
+    std::map<std::string, std::shared_ptr<Exposer>> m_map;
 
 public:
-    UiObjectContainer(std::map<std::string, boost::any> map) :
+    UiObjectContainer(std::map<std::string, std::shared_ptr<Exposer>> map) :
         m_map(map)
     {
     }
 
     template <typename Type>
-    Type Get(std::string key) const {
+    const Type& Get(std::string key) const {
         auto found = m_map.find(key);
         if (found == m_map.end()) {
             throw std::runtime_error("Key not found: " + key);
         }
 
-        try
-        {
-            return boost::any_cast<Type>(found->second);
+        return (Type)(*found->second);
+    }
+
+    std::shared_ptr<Exposer> GetExposer(std::string key) const {
+        auto found = m_map.find(key);
+        if (found == m_map.end()) {
+            throw std::runtime_error("Key not found: " + key);
         }
-        catch (const boost::bad_any_cast &)
-        {
-            throw std::runtime_error("Key found but not of valid type: " + key);
-        }
+        return found->second;
     }
 
     TRef<StringValue> GetString(std::string key) const {
@@ -65,7 +67,7 @@ private:
     std::string m_name;
 public:
     using UiObjectContainer::UiObjectContainer;
-    UiState(std::string name, std::map<std::string, boost::any> map = {}) :
+    UiState(std::string name, std::map<std::string, std::shared_ptr<Exposer>> map = {}) :
         m_name(name),
         UiObjectContainer(map)
     {}
@@ -86,7 +88,7 @@ public:
 
 class SimpleUiState : public UiState {
 public:
-    SimpleUiState(std::string name, std::map<std::string, boost::any> map = {}) :
+    SimpleUiState(std::string name, std::map<std::string, std::shared_ptr<Exposer>> map = {}) :
         UiState(name, map)
     {
     }

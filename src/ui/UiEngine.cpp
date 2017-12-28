@@ -38,7 +38,7 @@ class UiScreenConfigurationImpl : public UiScreenConfiguration {
     std::string m_strPath;
 
 public:
-    UiScreenConfigurationImpl(std::string path, std::map<std::string, boost::any> map) :
+    UiScreenConfigurationImpl(std::string path, std::map<std::string, std::shared_ptr<Exposer>> map) :
         UiScreenConfiguration(map)
     {
         m_strPath = path;
@@ -54,11 +54,12 @@ public:
 
 };
 
-std::shared_ptr<UiScreenConfiguration> UiScreenConfiguration::Create(std::string path, std::map<std::string, std::function<bool()>> event_listeners, std::map<std::string, boost::any> map) {
+std::shared_ptr<UiScreenConfiguration> UiScreenConfiguration::Create(std::string path, std::map<std::string, std::function<bool()>> event_listeners, std::map<std::string, std::shared_ptr<Exposer>> map) {
     
     std::for_each(event_listeners.begin(), event_listeners.end(),
         [&map](auto& p) {
-        map[p.first] = (TRef<IEventSink>)new CallbackSink(p.second);
+        std::shared_ptr<Exposer> tmp = std::shared_ptr<Exposer>(new TypeExposer<TRef<IEventSink>>(new CallbackSink(p.second)));
+        map[p.first] = tmp;
     });
 
     return std::make_shared<UiScreenConfigurationImpl>(path, map);

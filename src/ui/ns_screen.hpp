@@ -33,6 +33,9 @@ public:
     static void AddNamespace(LuaScriptContext& context) {
         sol::table table = context.GetLua().create_table();
 
+        table["Get"] = [&context](sol::this_state s, std::string name) {
+            return context.GetScreenGlobals().GetExposer(name)->ExposeSolObject(s);
+        };
         table["GetString"] = [&context](std::string name) {
             return context.GetScreenGlobals().Get<TRef<StringValue>>(name);
         };
@@ -48,6 +51,9 @@ public:
 
         context.GetLua().new_usertype<TRef<UiObjectContainer>>("UiObjectContainer",
             "new", sol::no_constructor,
+            "Get", [](sol::this_state s, TRef<UiObjectContainer> pointer, std::string key) {
+                return pointer->GetExposer(key)->ExposeSolObject(s);
+            },
             "GetString", [](TRef<UiObjectContainer> pointer, std::string key) {
                 return pointer->GetString(key);
             },
@@ -70,6 +76,9 @@ public:
 
         context.GetLua().new_usertype<UiState>("UiState", 
             "new", sol::no_constructor,
+            "Get", [](sol::this_state s, const UiState& state, std::string key) {
+                return state.GetExposer(key)->ExposeSolObject(s);
+            },
             "GetString", [](const UiState& state, std::string key) {
                 return state.GetString(key);
             },
