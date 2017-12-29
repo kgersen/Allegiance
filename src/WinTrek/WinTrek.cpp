@@ -3004,7 +3004,7 @@ public:
 
         InitializeSoundTemplates();
 
-        m_pUiEngine = UiEngine::Create(m_pengine, m_pSoundEngine, [this](std::string strWebsite) {
+        m_pUiEngine = UiEngine::Create(this, m_pengine, m_pSoundEngine, [this](std::string strWebsite) {
             this->ShowWebPage(strWebsite.c_str());
         });
 

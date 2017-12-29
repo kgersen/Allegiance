@@ -192,7 +192,8 @@ T Executor::Execute(sol::function script, TArgs ... args) {
     }
 };
 
-LuaScriptContext::LuaScriptContext(Engine* pEngine, ISoundEngine* pSoundEngine, std::string stringArtPath, const std::shared_ptr<UiScreenConfiguration>& pConfiguration, std::function<void(std::string)> funcOpenWebsite) :
+LuaScriptContext::LuaScriptContext(Window* pWindow, Engine* pEngine, ISoundEngine* pSoundEngine, std::string stringArtPath, const std::shared_ptr<UiScreenConfiguration>& pConfiguration, std::function<void(std::string)> funcOpenWebsite) :
+    m_pWindow(pWindow),
     m_pEngine(pEngine),
     m_pSoundEngine(pSoundEngine),
     m_pConfiguration(pConfiguration),
@@ -205,7 +206,9 @@ LuaScriptContext::LuaScriptContext(Engine* pEngine, ISoundEngine* pSoundEngine, 
         stringArtPath
     })),
     m_funcOpenWebsite(funcOpenWebsite),
-    m_executor(Executor())
+    m_executor(Executor()),
+    m_pHasKeyboardFocus(new SimpleModifiableValue<bool>(false)),
+    m_pKeyboardSource(new TEvent<const KeyState&>::SourceImpl())
 {
     m_loader.InitNamespaces(*this);
 }
@@ -280,6 +283,7 @@ UiObjectContainer& LuaScriptContext::GetScreenGlobals() {
 class UiEngineImpl : public UiEngine {
 
 private:
+    TRef<Window> m_pWindow;
     TRef<Engine> m_pEngine;
     TRef<ISoundEngine> m_pSoundEngine;
     std::function<void(std::string)> m_funcOpenWebsite;
@@ -288,7 +292,8 @@ private:
 
 
 public:
-    UiEngineImpl(Engine* pEngine, ISoundEngine* pSoundEngine, std::function<void(std::string)> funcOpenWebsite) :
+    UiEngineImpl(Window* pWindow, Engine* pEngine, ISoundEngine* pSoundEngine, std::function<void(std::string)> funcOpenWebsite) :
+        m_pWindow(pWindow),
         m_pEngine(pEngine),
         m_pSoundEngine(pSoundEngine),
         m_pReloadEventSource(new EventSourceImpl()),
@@ -306,15 +311,42 @@ public:
     //
     //}
 
-    class ContextImage : public WrapImage {
+
+    class ValueChangeSource : public Value, public EventSourceImpl {
+    public:
+        ValueChangeSource(const TRef<Value>& value) :
+            Value(value)
+        {
+        }
+
+        void ChildChanged(Value* pvalue, Value* pvalueNew) override {
+            Trigger();
+        }
+    };
+
+    class ContextImage : public WrapImage, public IKeyboardInput {
     private:
         std::unique_ptr<LuaScriptContext> m_pContext;
+        TRef<IEventSource> m_pFocusChangedSource;
+        bool m_bFocus;
 
     public:
         ContextImage(std::unique_ptr<LuaScriptContext> pContext, Image* pImage) :
             WrapImage(pImage),
-            m_pContext(std::move(pContext))
+            m_pContext(std::move(pContext)),
+            m_bFocus(false)
         {
+            m_pFocusChangedSource = new ValueChangeSource(m_pContext->HasKeyboardFocus());
+            m_pFocusChangedSource->AddSink(new CallbackSink([this]() {
+                auto window = m_pContext->GetWindow();
+                if (m_pContext->HasKeyboardFocus()->GetValue()) {
+                    window->SetFocus(this);
+                }
+                else {
+                    window->RemoveFocus(this);
+                }
+                return true;
+            }));
         }
 
         ~ContextImage() {
@@ -327,6 +359,20 @@ public:
             pcontext->SetYAxisInversion(false);
             WrapImage::Render(pcontext);
             pcontext->SetYAxisInversion(true); //not part of the state, so revert manually
+        }
+
+        void SetFocusState(bool bFocus) override {
+            m_bFocus = bFocus;
+            if (m_pContext->HasKeyboardFocus()->GetValue() != bFocus) {
+                m_pContext->HasKeyboardFocus()->SetValue(bFocus);
+            }
+        }
+
+        bool OnChar(IInputProvider* pprovider, const KeyState& ks) override
+        {
+            m_pContext->GetKeyboardSource()->Trigger(ks);
+
+            return false;
         }
 
         void MouseMove(IInputProvider* pprovider, const Point& point, bool bCaptured, bool bInside) override
@@ -352,7 +398,7 @@ public:
     };
 
     TRef<Image> InnerLoadImageFromLua(const std::shared_ptr<UiScreenConfiguration>& screenConfiguration) {
-        std::unique_ptr<LuaScriptContext> pContext = std::make_unique<LuaScriptContext>(m_pEngine, m_pSoundEngine, m_stringArtPath, screenConfiguration, m_funcOpenWebsite);
+        std::unique_ptr<LuaScriptContext> pContext = std::make_unique<LuaScriptContext>(m_pWindow, m_pEngine, m_pSoundEngine, m_stringArtPath, screenConfiguration, m_funcOpenWebsite);
 
         Executor* executor = pContext->GetExecutor();
 
@@ -425,7 +471,7 @@ public:
     }
 };
 
-UiEngine* UiEngine::Create(Engine* pEngine, ISoundEngine* pSoundEngine, std::function<void(std::string)> funcOpenWebsite)
+UiEngine* UiEngine::Create(Window* pWindow, Engine* pEngine, ISoundEngine* pSoundEngine, std::function<void(std::string)> funcOpenWebsite)
 {
-    return new UiEngineImpl(pEngine, pSoundEngine, funcOpenWebsite);
+    return new UiEngineImpl(pWindow, pEngine, pSoundEngine, funcOpenWebsite);
 }

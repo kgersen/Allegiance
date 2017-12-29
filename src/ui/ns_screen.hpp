@@ -28,6 +28,36 @@ public:
     }
 };
 
+template <typename OriginalType, typename ResultType>
+class EventMapper : public TEvent<ResultType>::SourceImpl, public TEvent<OriginalType>::Sink {
+    TRef<typename TEvent<OriginalType>::Source> m_pOriginal;
+    std::function<ResultType(const OriginalType&)> m_callback;
+
+    TRef<typename TEvent<OriginalType>::Sink> m_pSinkDelegate;
+
+public:
+    EventMapper(const TRef<typename TEvent<OriginalType>::Source>& pOriginal, const std::function<ResultType(const OriginalType&)>& callback) : 
+        m_pOriginal(pOriginal),
+        m_callback(callback)
+    {
+        m_pSinkDelegate = TEvent<OriginalType>::Sink::CreateDelegate(this);
+        m_pOriginal->AddSink(m_pSinkDelegate);
+    }
+
+    ~EventMapper() {
+        if (m_pSinkDelegate) {
+            m_pOriginal->RemoveSink(m_pSinkDelegate);
+            m_pSinkDelegate = nullptr;
+        }
+    }
+
+    bool OnEvent(typename TEvent<OriginalType>::Source* pevent, const OriginalType& value) override {
+        Trigger(m_callback(value));
+        return true;
+    }
+
+};
+
 class ScreenNamespace {
 public:
     static void AddNamespace(LuaScriptContext& context) {
@@ -126,6 +156,28 @@ public:
             return (TRef<PointValue>)new TransformedValue<Point, WinPoint>([](WinPoint winpoint) {
                 return Point((float)winpoint.X(), (float)winpoint.Y());
             }, context.GetEngine()->GetResolutionSizeModifiable());
+        };
+
+        table["HasKeyboardFocus"] = [&context]() {
+            return (TRef<SimpleModifiableValue<bool>>)context.HasKeyboardFocus();
+        };
+
+        table["GetKeyboardKeySource"] = [&context]() {
+            return (TRef<TEvent<ZString>::Source>)new EventMapper<const KeyState&, ZString>(context.GetKeyboardSource(), [](const KeyState& ks) {
+                if (ks.vk == 13) {
+                    return ZString("");
+                }
+                else if (ks.vk == 8) {
+                    //?
+                    return ZString("");
+                }
+                else {
+                    char ch = ks.vk;
+                    ZString str = ZString(ch, 1);
+                    return str;
+                }
+
+            });
         };
 
         context.GetLua().set("Screen", table);

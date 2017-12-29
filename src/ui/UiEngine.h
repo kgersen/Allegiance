@@ -23,7 +23,7 @@ public:
     static std::string m_stringLogPath;
 
     static void SetGlobalArtPath(std::string path);
-    static UiEngine* UiEngine::Create(Engine* pEngine, ISoundEngine* pSoundEngine, std::function<void(std::string)> funcOpenWebsite);
+    static UiEngine* UiEngine::Create(Window* pWindow, Engine* pEngine, ISoundEngine* pSoundEngine, std::function<void(std::string)> funcOpenWebsite);
 
     //virtual Image* LoadImage(std::string path) = 0;
     virtual TRef<Image> LoadImageFromLua(const std::shared_ptr<UiScreenConfiguration>& screenConfiguration) = 0;
@@ -94,19 +94,30 @@ public:
 
 class LuaScriptContext {
 private:
+    TRef<Window> m_pWindow;
     TRef<Engine> m_pEngine;
     TRef<ISoundEngine> m_pSoundEngine;
     Loader m_loader;
     PathFinder m_pathFinder;
     std::shared_ptr<UiScreenConfiguration> m_pConfiguration;
     std::function<void(std::string)> m_funcOpenWebsite;
+    TRef<SimpleModifiableValue<bool>> m_pHasKeyboardFocus;
+
+    TRef<TEvent<const KeyState&>::SourceImpl> m_pKeyboardSource;
 
     Executor m_executor;
 
     sol::state m_lua;
 
 public:
-    LuaScriptContext(Engine* pEngine, ISoundEngine* pSoundEngine, std::string stringArtPath, const std::shared_ptr<UiScreenConfiguration>& pConfiguration, std::function<void(std::string)> funcOpenWebsite);
+    LuaScriptContext(
+        Window* pWindow,
+        Engine* pEngine,
+        ISoundEngine* pSoundEngine, 
+        std::string stringArtPath, 
+        const std::shared_ptr<UiScreenConfiguration>& pConfiguration, 
+        std::function<void(std::string)> funcOpenWebsite
+    );
 
     sol::state& GetLua();
 
@@ -120,6 +131,18 @@ public:
 
     Executor* GetExecutor() {
         return &m_executor;
+    }
+
+    TRef<SimpleModifiableValue<bool>> HasKeyboardFocus() {
+        return m_pHasKeyboardFocus;
+    }
+
+    TRef<TEvent<const KeyState&>::SourceImpl> GetKeyboardSource() {
+        return m_pKeyboardSource;
+    }
+
+    TRef<Window> GetWindow() {
+        return m_pWindow;
     }
 
     IEventSink& GetExternalEventSink(std::string name);

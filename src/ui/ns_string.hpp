@@ -107,8 +107,13 @@ public:
         };
 
         context.GetLua().new_usertype<TRef<StringValue>>("StringValue", 
-            sol::meta_function::concatenation, [](sol::object a, sol::object b) {
-                return StringTransform::Concat(wrapString(a), wrapString(b));
+            sol::meta_function::concatenation, [](const TRef<StringValue>& a, const TRef<StringValue>& b) {
+                return StringTransform::Concat(a, b);
+            }
+        );
+        context.GetLua().new_usertype<TRef<SimpleModifiableValue<ZString>>>("StringValue",
+            sol::meta_function::concatenation, [](const TRef<StringValue>& a, const TRef<StringValue>& b) {
+                return StringTransform::Concat(a, b);
             }
         );
 
