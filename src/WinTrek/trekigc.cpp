@@ -936,6 +936,12 @@ private:
         }
     };
 
+	//Sidethrusters
+	bool PlaySidethrust()
+	{
+		return m_pship->GetStateM() & (backwardButtonIGC | leftButtonIGC | rightButtonIGC);
+	}
+
     void PlayWeaponSounds()
     {
         // check all of the fixed weapon mounts
@@ -1302,7 +1308,7 @@ public:
                     GetAfterburnerSoundID(true), 
                     m_psourceEngine, AfterburnerPower() > 0.0f);
 				//Sidethrusters
-				PlaySoundIf(m_pSideThrustInteriorSound, SidethrustInteriorSound, GetSoundSource(), SidewaysThrustFraction() > 0.01f);
+				PlaySoundIf(m_pSideThrustInteriorSound, SidethrustInteriorSound, GetSoundSource(), PlaySidethrust());
             }
 
             //
@@ -1321,7 +1327,7 @@ public:
                 m_psourceEngine,
                 AfterburnerPower() > 0.0f);
 			//Sidethrusters
-			PlaySoundIf(m_pSideThrustExteriorSound, SidethrustExteriorSound, GetSoundSource(), SidewaysThrustFraction() > 0.01f);
+			PlaySoundIf(m_pSideThrustExteriorSound, SidethrustExteriorSound, GetSoundSource(), PlaySidethrust());
 
             UpdateEngineSoundLevels(dwElapsedTime);
 
