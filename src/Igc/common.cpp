@@ -660,7 +660,7 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
                             if (clustersVisited.find(pclusterOther) == NULL)
                             {
                                 //No
-                                if (((ttMask & c_ttCowardly) == 0) || IsFriendlyCluster(pclusterOther, pside))
+                                if (((ttMask & c_ttCowardly) == 0) || pside->IsTerritory(pclusterOther))
                                     pwlTwoAway->last(pwarpDestination);
                             }
                         }

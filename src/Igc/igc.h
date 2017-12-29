@@ -4267,6 +4267,11 @@ class IsideIGC : public IbaseIGC
 
 		//Xynth Adding function to return number of players on a side
 		virtual int GetNumPlayersOnSide(void) const = 0;
+
+        //Territory clusters
+        virtual void UpdateTerritory() = 0;
+        virtual ClusterListIGC GetTerritory() = 0;
+        virtual bool IsTerritory(IclusterIGC* pcluster) = 0;
 };
 
 class IcivilizationIGC : public IbaseIGC
