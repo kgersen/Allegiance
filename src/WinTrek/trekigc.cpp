@@ -1308,7 +1308,13 @@ public:
                     GetAfterburnerSoundID(true), 
                     m_psourceEngine, AfterburnerPower() > 0.0f);
 				//Sidethrusters
-				PlaySoundIf(m_pSideThrustInteriorSound, SidethrustInteriorSound, GetSoundSource(), PlaySidethrust());
+				if (m_pship->GetHullType()->HasCapability(c_habmFighter))
+				{	//if its a small ship, play small ship sound
+					PlaySoundIf(m_pSideThrustInteriorSound, SidethrustInteriorSound, GetSoundSource(), PlaySidethrust());
+				}
+				else { //else play capship sound
+					PlaySoundIf(m_pSideThrustInteriorSound, CapSidethrustInteriorSound, GetSoundSource(), PlaySidethrust());
+				}
             }
 
             //
@@ -1327,8 +1333,13 @@ public:
                 m_psourceEngine,
                 AfterburnerPower() > 0.0f);
 			//Sidethrusters
-			PlaySoundIf(m_pSideThrustExteriorSound, SidethrustExteriorSound, GetSoundSource(), PlaySidethrust());
-
+			if (m_pship->GetHullType()->HasCapability(c_habmFighter))
+			{	//if its a small ship, play small ship sound
+				PlaySoundIf(m_pSideThrustInteriorSound, SidethrustExteriorSound, GetSoundSource(), PlaySidethrust());
+			}
+			else { //else play capship sound
+				PlaySoundIf(m_pSideThrustInteriorSound, CapSidethrustExteriorSound, GetSoundSource(), PlaySidethrust());
+			}
             UpdateEngineSoundLevels(dwElapsedTime);
 
             // if we are inside of the ship...
