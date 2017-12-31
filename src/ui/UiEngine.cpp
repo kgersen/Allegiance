@@ -340,7 +340,9 @@ public:
             m_pFocusChangedSource->AddSink(new CallbackSink([this]() {
                 auto window = m_pContext->GetWindow();
                 if (m_pContext->HasKeyboardFocus()->GetValue()) {
-                    window->SetFocus(this);
+                    if (window->GetFocus() != this) {
+                        window->SetFocus(this);
+                    }
                 }
                 else {
                     window->RemoveFocus(this);
