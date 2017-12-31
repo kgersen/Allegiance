@@ -56,6 +56,10 @@ public:
             return StringTransform::Concat(wrapString(a), wrapString(b));
         };
 
+        table["Slice"] = [](const TRef<StringValue>& string, const TRef<Number>& start, const TRef<Number>& length) {
+            return StringTransform::Slice(string, start, length);
+        };
+
         table["Equals"] = [](TRef<StringValue> const& a, TRef<StringValue> const& b) {
             return StringTransform::Equals(a, b);
         };

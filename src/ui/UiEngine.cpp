@@ -208,7 +208,8 @@ LuaScriptContext::LuaScriptContext(Window* pWindow, Engine* pEngine, ISoundEngin
     m_funcOpenWebsite(funcOpenWebsite),
     m_executor(Executor()),
     m_pHasKeyboardFocus(new SimpleModifiableValue<bool>(false)),
-    m_pKeyboardSource(new TEvent<const KeyState&>::SourceImpl())
+    m_pKeyboardCharSource(new TEvent<const KeyState&>::SourceImpl()),
+    m_pKeyboardKeySource(new TEvent<const KeyState&>::SourceImpl())
 {
     m_loader.InitNamespaces(*this);
 }
@@ -329,23 +330,34 @@ public:
         std::unique_ptr<LuaScriptContext> m_pContext;
         TRef<IEventSource> m_pFocusChangedSource;
         bool m_bFocus;
+        TRef<IKeyboardInput> m_pPreviousFocus;
 
     public:
         ContextImage(std::unique_ptr<LuaScriptContext> pContext, Image* pImage) :
             WrapImage(pImage),
             m_pContext(std::move(pContext)),
-            m_bFocus(false)
+            m_bFocus(false),
+            m_pPreviousFocus(nullptr)
         {
             m_pFocusChangedSource = new ValueChangeSource(m_pContext->HasKeyboardFocus());
             m_pFocusChangedSource->AddSink(new CallbackSink([this]() {
                 auto window = m_pContext->GetWindow();
                 if (m_pContext->HasKeyboardFocus()->GetValue()) {
                     if (window->GetFocus() != this) {
+                        m_pPreviousFocus = window->GetFocus();
                         window->SetFocus(this);
                     }
                 }
                 else {
-                    window->RemoveFocus(this);
+                    if (window->GetFocus() == this) {
+                        if (!m_pPreviousFocus) {
+                            window->RemoveFocus(this);
+                        }
+                        else {
+                            window->SetFocus(m_pPreviousFocus);
+                            m_pPreviousFocus = nullptr;
+                        }
+                    }
                 }
                 return true;
             }));
@@ -372,7 +384,20 @@ public:
 
         bool OnChar(IInputProvider* pprovider, const KeyState& ks) override
         {
-            m_pContext->GetKeyboardSource()->Trigger(ks);
+            switch (ks.vk) {
+            case VK_RETURN:
+            case VK_BACK:
+                //I think only a very limited subset arrives here
+                return false;
+            default:
+                m_pContext->GetKeyboardCharSource()->Trigger(ks);
+                return true;
+            }
+        }
+
+        bool OnKey(IInputProvider* pprovider, const KeyState& ks, bool& fForceTranslate) override
+        {
+            m_pContext->GetKeyboardKeySource()->Trigger(ks);
 
             return false;
         }

@@ -103,7 +103,8 @@ private:
     std::function<void(std::string)> m_funcOpenWebsite;
     TRef<SimpleModifiableValue<bool>> m_pHasKeyboardFocus;
 
-    TRef<TEvent<const KeyState&>::SourceImpl> m_pKeyboardSource;
+    TRef<TEvent<const KeyState&>::SourceImpl> m_pKeyboardCharSource;
+    TRef<TEvent<const KeyState&>::SourceImpl> m_pKeyboardKeySource;
 
     Executor m_executor;
 
@@ -137,8 +138,12 @@ public:
         return m_pHasKeyboardFocus;
     }
 
-    TRef<TEvent<const KeyState&>::SourceImpl> GetKeyboardSource() {
-        return m_pKeyboardSource;
+    TRef<TEvent<const KeyState&>::SourceImpl> GetKeyboardCharSource() {
+        return m_pKeyboardCharSource;
+    }
+
+    TRef<TEvent<const KeyState&>::SourceImpl> GetKeyboardKeySource() {
+        return m_pKeyboardKeySource;
     }
 
     TRef<Window> GetWindow() {

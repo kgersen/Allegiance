@@ -55,7 +55,64 @@ public:
         Trigger(m_callback(value));
         return true;
     }
+};
 
+template <typename OriginalType>
+class VoidEventMapper : public EventSourceImpl, public TEvent<OriginalType>::Sink {
+    TRef<typename TEvent<OriginalType>::Source> m_pOriginal;
+
+    TRef<typename TEvent<OriginalType>::Sink> m_pSinkDelegate;
+
+public:
+    VoidEventMapper(const TRef<typename TEvent<OriginalType>::Source>& pOriginal) :
+        m_pOriginal(pOriginal)
+    {
+        m_pSinkDelegate = TEvent<OriginalType>::Sink::CreateDelegate(this);
+        m_pOriginal->AddSink(m_pSinkDelegate);
+    }
+
+    ~VoidEventMapper() {
+        if (m_pSinkDelegate) {
+            m_pOriginal->RemoveSink(m_pSinkDelegate);
+            m_pSinkDelegate = nullptr;
+        }
+    }
+
+    bool OnEvent(typename TEvent<OriginalType>::Source* pevent, const OriginalType& value) override {
+        Trigger();
+        return true;
+    }
+};
+
+template <typename Type>
+class EventFilter : public TEvent<Type>::SourceImpl, public TEvent<Type>::Sink {
+    TRef<typename TEvent<Type>::Source> m_pOriginal;
+    std::function<bool(const Type&)> m_callback;
+
+    TRef<typename TEvent<Type>::Sink> m_pSinkDelegate;
+
+public:
+    EventFilter(const TRef<typename TEvent<Type>::Source>& pOriginal, const std::function<bool(const Type&)>& callback) :
+        m_pOriginal(pOriginal),
+        m_callback(callback)
+    {
+        m_pSinkDelegate = TEvent<Type>::Sink::CreateDelegate(this);
+        m_pOriginal->AddSink(m_pSinkDelegate);
+    }
+
+    ~EventFilter() {
+        if (m_pSinkDelegate) {
+            m_pOriginal->RemoveSink(m_pSinkDelegate);
+            m_pSinkDelegate = nullptr;
+        }
+    }
+
+    bool OnEvent(typename TEvent<Type>::Source* pevent, const Type& value) override {
+        if (m_callback(value)) {
+            Trigger(value);
+        }
+        return true;
+    }
 };
 
 class ScreenNamespace {
@@ -162,21 +219,34 @@ public:
             return (TRef<SimpleModifiableValue<bool>>)context.HasKeyboardFocus();
         };
 
-        table["GetKeyboardKeySource"] = [&context]() {
-            return (TRef<TEvent<ZString>::Source>)new EventMapper<const KeyState&, ZString>(context.GetKeyboardSource(), [](const KeyState& ks) {
-                if (ks.vk == 13) {
-                    return ZString("");
-                }
-                else if (ks.vk == 8) {
-                    //?
-                    return ZString("");
-                }
-                else {
-                    char ch = ks.vk;
-                    ZString str = ZString(ch, 1);
-                    return str;
-                }
+        table["GetKeyboardKeySource"] = [&context](std::string name) {
+            int code = -1;
+            if (name == "enter") {
+                code = VK_RETURN;
+            }
+            else if (name == "backspace") {
+                code = VK_BACK;
+            }
+            else if (name == "escape") {
+                code = VK_ESCAPE;
+            }
+            else if (name == "tab") {
+                code = VK_TAB;
+            }
+            else {
+                throw std::runtime_error("Unknown keyboard key");
+            }
+            auto filtered = new EventFilter<const KeyState&>(context.GetKeyboardKeySource(), [code](const KeyState& ks) {
+                return ks.bDown && ks.vk == code;
+            });
+            return (TRef<IEventSource>)new VoidEventMapper<const KeyState&>(filtered);
+        };
 
+        table["GetKeyboardCharSource"] = [&context]() {
+            return (TRef<TEvent<ZString>::Source>)new EventMapper<const KeyState&, ZString>(context.GetKeyboardCharSource(), [](const KeyState& ks) {
+                char ch = ks.vk;
+                ZString str = ZString(ch, 1);
+                return str;
             });
         };
 
