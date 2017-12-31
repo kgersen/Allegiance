@@ -175,10 +175,11 @@ function buyShipSetSkillsLaunch(safe) {
         var objHullTypes = HullTypes;
 
         var fRand = Random() % 5;
-        if (fRand > 3) ShipSelection = "Interceptor";
-        if (fRand > 2) ShipSelection = "Fighter";
-        if (fRand > 1) ShipSelection = "Stealth";
-        if (fRand > 0) ShipSelection = "Scout";
+        Trace("Random : " + fRand);
+        if (fRand >= 3) ShipSelection = "Scout";
+        if (fRand >= 2) ShipSelection = "Adv Stl Fighter";
+        if (fRand >= 1) ShipSelection = "Interceptor";
+        if (fRand >= 0) ShipSelection = "Adv Fighter";
 
         var realShipSelection = ShipSelection;
         if (Money && Money >= 500) {

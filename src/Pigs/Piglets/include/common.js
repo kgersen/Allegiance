@@ -74,7 +74,7 @@ function SelectBestHull (hullCollection, strFirstChoice, strSecondChoice) {
   var e = new Enumerator (hullCollection)
 	for (var i=0; !e.atEnd(); e.moveNext(), i++) {
         var hull = e.item();
-        Trace("Hull: " + hull.Name + "\n");
+        
         if (hull.Name.search(strFirstChoice) != -1)
                 FirstHull = i;
 
