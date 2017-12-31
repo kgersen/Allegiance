@@ -1520,7 +1520,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 
         virtual float               GetRipcordTimeLeft(void) const
         {
-            assert(fRipcordActive());
+            // assert(fRipcordActive());
 
             return m_dtRipcordCountdown;
         }

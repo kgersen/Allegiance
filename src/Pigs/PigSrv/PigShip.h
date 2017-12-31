@@ -103,7 +103,8 @@ public:
   STDMETHODIMP Face(VARIANT* pvarObject, BSTR bstrExpirationExpr,
     BSTR bstrInterruptionExpr, VARIANT_BOOL bLevel, BSTR* pbstrResponse);
   STDMETHODIMP Defend(BSTR bstrObject, BSTR* pbstrResponse);
-  STDMETHODIMP Attack(BSTR bstrObject, BSTR* pbstrResponse);
+  STDMETHODIMP AttackShip(IAGCShip* pTarget, BSTR* pbstrResponse);
+  STDMETHODIMP AttackStation(IAGCStation* pTarget, BSTR* pbstrResponse);
   STDMETHODIMP Goto(BSTR bstrObject, VARIANT_BOOL bFriendly, BSTR* pbstrResponse);
   STDMETHODIMP GotoStationID(ObjectID oid, BSTR* pbstrResponse);
   STDMETHODIMP put_AutoPilot(VARIANT_BOOL bEngage);
@@ -118,6 +119,8 @@ public:
   STDMETHODIMP get_IsVectorLocked(VARIANT_BOOL* pbVectorLocked);
   STDMETHODIMP get_IsRipCording(VARIANT_BOOL* pbRipCording);
   STDMETHODIMP get_IsCloaked(VARIANT_BOOL* pbCloaked);
+  STDMETHODIMP get_MissileRange(float* pfRange);
+  STDMETHODIMP get_MissileLock(float* pfLock);
   STDMETHODIMP put_Throttle(float fThrottle);
   STDMETHODIMP get_Throttle(float* pfThrottle);
   STDMETHODIMP put_Pitch(float fPitch);

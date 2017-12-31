@@ -98,6 +98,7 @@ function OnStateMissionList(eStatePrevious) {
 
 // step 3...
 function OnStateWaitingForMission(eStatePrevious) {
+    KillAllTimers()
 	DisplayStateTransition(eStatePrevious);
 	if (PigState_CreatingMission == eStatePrevious) {
 		Trace("Creating JoinTimer()\n");
@@ -148,26 +149,54 @@ function OnStateTeamList(eStatePrevious) {
 }
 
 // step 5...
+var latest_OnStateDocked_eStatePrevious = PigState_WaitingForMission;
 function OnStateDocked(eStatePrevious) {
+    latest_OnStateDocked_eStatePrevious = eStatePrevious;
 	DisplayStateTransition(eStatePrevious);
-	KillTimers();
-	IsTargetClose = false;
-	ReachedEnemy = false;
-	AboutToDie = false;
-	HailedForRescue = false;
-	var objHullTypes = HullTypes;
-	var iHull = SelectBestHull(objHullTypes,ShipSelection,"Fighter");
-	Ship.BuyHull(objHullTypes(iHull));
-	if (eStatePrevious != PigState_WaitingForMission || Game.GameStage == 2) { //AGCGameStage_Started
-		Trace("Launching into space...\n");
-		SetSkills(ShootSkill,TurnSkill,GotoSkill);
-		Launch();
-	}
+    KillTimers();
+
+    CreateTimer(18.0, "onStateDockedTimeElapsed(true)", -1, "onStateDockedTimeElapsedTimer");
 }
+
+function onStateDockedTimeElapsed(safe) {
+    eStatePrevious = latest_OnStateDocked_eStatePrevious;
+    Timer.Kill();
+    IsTargetClose = false;
+    ReachedEnemy = false;
+    AboutToDie = false;
+    HailedForRescue = false;
+
+    buyShipSetSkillsLaunch(safe);
+}
+
+function buyShipSetSkillsLaunch(safe) {
+    if (safe) {
+
+        var objHullTypes = HullTypes;
+
+        var fRand = Random() % 5;
+        if (fRand > 3) ShipSelection = "Interceptor";
+        if (fRand > 2) ShipSelection = "Fighter";
+        if (fRand > 1) ShipSelection = "Stealth";
+        if (fRand > 0) ShipSelection = "Scout";
+
+        var realShipSelection = ShipSelection;
+        if (Money && Money >= 500) {
+            Trace("Money... " + Money + " \n");
+            realShipSelection = "Bomber";
+        }
+        
+        var iHull = SelectBestHull(objHullTypes, realShipSelection, "Fighter");
+        Ship.BuyHull(objHullTypes(iHull));
+        Trace("Launching into space...\n");
+        SetSkills(ShootSkill, TurnSkill, GotoSkill);
+        Launch();
+    }
+}
+
 function OnMissionStarted() {
-	Trace("OnMissionStarted()! launching into space...\n");
-	SetSkills(ShootSkill,TurnSkill,GotoSkill);
-	Launch();
+    Trace("OnMissionStarted()! launching into space...\n");
+    buyShipSetSkillsLaunch(true);
 }
 
 // the end...

@@ -576,21 +576,19 @@ STDMETHODIMP CPigBehaviorScript::OnScriptError(IActiveScriptError* pScriptError)
 	pScriptError->GetSourcePosition(&sourceContext, &lineNumber, &charPosition);
 
 	printf("Script Error!\n");
-	printf("Exception Info: %S\n", info);
+	printf("Exception Info: %S\n", info.bstrDescription);
 	//printf("Source Line Text: %S\n", line);
-	printf("Source Position: %ld, Line: %ul, charPosition: %ld\n", sourceContext, lineNumber, charPosition);
+	printf("Source Position: %ld, Line: %u, charPosition: %ld\n", sourceContext, lineNumber, charPosition);
 
+	// Perform default processing
+	IActiveScriptSiteImplBase::OnScriptError(pScriptError);
 
+	// Save error information
+	m_spAse = pScriptError;
 
-  // Perform default processing
-  IActiveScriptSiteImplBase::OnScriptError(pScriptError);
-
-  // Save error information
-  m_spAse = pScriptError;
-
-  // Indicating that the script is invalid
-//  m_bAppearsValid = false;
-  // TODO: Notify the CPigEngine (to fire an event to the sessions)
+	// Indicating that the script is invalid
+	//  m_bAppearsValid = false;
+	// TODO: Notify the CPigEngine (to fire an event to the sessions)
 
   // Indicate success
   return S_OK;

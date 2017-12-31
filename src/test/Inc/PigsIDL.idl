@@ -143,6 +143,8 @@ enum dispid_PigsIDL
   dispid_Defend,
   dispid_IsRipCording,
   dispid_IsCloaked,
+  dispid_MissileRange,
+  dispid_MissileLock,
   dispid_LockVector,
   dispid_IsVectorLocked,
   dispid_QueuedCommand,
@@ -176,7 +178,8 @@ enum dispid_PigsIDL
   dispid_GameName,
   dispid_CoreName,
   dispid_TeamKills,
-  dispid_Attack,
+  dispid_AttackShip,
+  dispid_AttackStation,
   dispid_KillBonus,
   dispid_Defections,
   dispid_Miners,
@@ -1194,9 +1197,13 @@ interface IPigShip : IAGCShip
   HRESULT Defend([in] BSTR bstrObject,
     [out, retval] BSTR* pbstrResponse);
 
-  [id(dispid_Attack), helpstring("Attacks the specified target.")]
-  HRESULT Attack([in] BSTR bstrObject,
-    [out, retval] BSTR* pbstrResponse);
+  [id(dispid_AttackShip), helpstring("Attacks the specified target ship.")]
+  HRESULT AttackShip([in] IAGCShip* pTarget,
+	  [out, retval] BSTR* pbstrResponse);
+
+  [id(dispid_AttackStation), helpstring("Attacks the specified target station.")]
+  HRESULT AttackStation([in] IAGCStation* pTarget,
+	  [out, retval] BSTR* pbstrResponse);
 
   [id(dispid_Goto), helpstring("Goto the specified target.")]
   HRESULT Goto([in] BSTR bstrObject, [in] VARIANT_BOOL bFriendly,
@@ -1239,6 +1246,12 @@ interface IPigShip : IAGCShip
 
   [propget, id(dispid_IsCloaked), helpstring("Indicates whether the ship is cloaked.")]
   HRESULT IsCloaked([out, retval] VARIANT_BOOL* pbCloaked);
+
+  [propget, id(dispid_MissileRange), helpstring("Gets the max range of the current missile")]
+  HRESULT MissileRange([out, retval] float* pfRange);
+
+  [propget, id(dispid_MissileLock), helpstring("Gets the currnt missile lock 0.0 to 1.0")]
+  HRESULT MissileLock([out, retval] float* pfLock);
 
   [propput, helpstring("Gets/sets the ship's throttle. The valid range is 0 to 100.")]
   HRESULT Throttle([in] float fThrottle);

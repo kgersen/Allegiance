@@ -2227,13 +2227,20 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
             m_dtTimeBetweenComplaints = c_dtTimeBetweenComplaints;
 
             if (((m_pilotType == c_ptWingman) || (m_pilotType == c_ptCheatPlayer)) &&
-                (m_commandTargets[c_cmdPlan]->GetCluster() == GetCluster()))
+                (m_commandTargets[c_cmdPlan]->GetCluster() == GetCluster()) && m_mountedWeapons[0] != NULL)
             {
                 if ( m_commandIDs[c_cmdPlan] == c_cidAttack )
                 {
                     //In the same cluster as the target ... we dodge, turn to face the aim point and fire if close enough
-                    float   fShootSkill = 0.75f;
+                    // TODO: Get rid of the hard coded skills and use the ship values
+					float   fShootSkill = 0.75f;
                     float   fTurnSkill = 0.75f;
+
+					if (m_pilotType == c_ptCheatPlayer) {
+						fShootSkill = m_fShootSkill;
+						fTurnSkill = m_fTurnSkill;
+					}
+
                     int     state = 0;
                     bool    bDodge = Dodge(this, NULL, &state);
 

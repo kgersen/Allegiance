@@ -780,6 +780,20 @@ STDMETHODIMP CPigBehaviorScriptType::GetItemInfo(LPCOLESTR pstrName,
 
 STDMETHODIMP CPigBehaviorScriptType::OnScriptError(IActiveScriptError* pScriptError)
 {
+	EXCEPINFO info;
+	BSTR line;
+	DWORD sourceContext;
+	ULONG lineNumber;
+	LONG charPosition;
+	pScriptError->GetExceptionInfo(&info);
+	pScriptError->GetSourceLineText(&line);
+	pScriptError->GetSourcePosition(&sourceContext, &lineNumber, &charPosition);
+
+	printf("Script Error!\n");
+	printf("Exception Info: %S\n", info.bstrDescription);
+	//printf("Source Line Text: %S\n", line);
+	printf("Source Position: %ld, Line: %u, charPosition: %ld\n", sourceContext, lineNumber, charPosition);
+
   // Save error information
   m_spAse = pScriptError;
 

@@ -779,6 +779,8 @@ STDMETHODIMP CPigShip::Face(VARIANT* pvarObject, BSTR bstrExpirationExpr,
 STDMETHODIMP CPigShip::Defend(BSTR bstrObject, BSTR* pbstrResponse)
 {
   // Resolve the specified target name
+
+
   ImodelIGC* pTarget = CPigShipEvent::FindTargetName(m_pPig, bstrObject);
   if (!pTarget)
     return FormattedError(IDS_E_FMT_OBJNAME, bstrObject ? bstrObject : L"");
@@ -789,29 +791,64 @@ STDMETHODIMP CPigShip::Defend(BSTR bstrObject, BSTR* pbstrResponse)
 	m_pPig->BaseClient::SetAutoPilot(true); //imago 10/14
 
   // Set the queued command
-  GetIGC()->SetCommand(c_cmdQueued, pTarget, c_cidDefend);
+  GetIGC()->SetCommand(c_cmdPlan, pTarget, c_cidDefend);
 
-  // Accept the queued command
-  return AcceptCommand(pbstrResponse);
+  return S_OK;
 }
 
-STDMETHODIMP CPigShip::Attack(BSTR bstrObject, BSTR* pbstrResponse)
+STDMETHODIMP CPigShip::AttackShip(IAGCShip* pTargetShip, BSTR* pbstrResponse)
 {
-	// Resolve the specified target name
-	ImodelIGC* pTarget = CPigShipEvent::FindTargetName(m_pPig, bstrObject);
-	if (!pTarget)
-		return FormattedError(IDS_E_FMT_OBJNAME, bstrObject ? bstrObject : L"");
+	IAGCModel* pModel = (IAGCModel*)pTargetShip;
+	
+	// Validate the specified pointer
+	if (!pModel)
+		return E_POINTER;
 
+	// Get the IGC pointer of the specified AGCHullType
+	IAGCPrivatePtr spPrivate(pModel);
+	assert(spPrivate->GetIGCVoid());
+
+	// Get the specified hull type's IGC pointer
+	ImodelIGC* pTarget = reinterpret_cast<ImodelIGC*>(spPrivate->GetIGCVoid());
 	// Kill any current automatic action, including AutoPilot
 	KillAutoAction();
 
 	m_pPig->BaseClient::SetAutoPilot(true);
 
-	// Set the queued command
-	GetIGC()->SetCommand(c_cmdQueued, pTarget, c_cidAttack);
+	// Set the Plan command 
+	// This was queueing a command, but the queued command didn't end up as a Plan,
+	// And it seems that only Plan commands are evaluated by autopilot.
+	GetIGC()->SetCommand(c_cmdPlan, pTarget, c_cidAttack);
+
+	return S_OK;
+}
+
+STDMETHODIMP CPigShip::AttackStation(IAGCStation* pTargetStation, BSTR* pbstrResponse)
+{
+	IAGCModel* pModel = (IAGCModel*)pTargetStation;
+
+	// Validate the specified pointer
+	if (!pModel)
+		return E_POINTER;
+
+	// Get the IGC pointer of the specified AGCHullType
+	IAGCPrivatePtr spPrivate(pModel);
+	assert(spPrivate->GetIGCVoid());
+
+	// Get the specified hull type's IGC pointer
+	ImodelIGC* pTarget = reinterpret_cast<ImodelIGC*>(spPrivate->GetIGCVoid());
+	// Kill any current automatic action, including AutoPilot
+	KillAutoAction();
+
+	m_pPig->BaseClient::SetAutoPilot(true);
+
+	// Set the Plan command 
+	// This was queueing a command, but the queued command didn't end up as a Plan,
+	// And it seems that only Plan commands are evaluated by autopilot.
+	GetIGC()->SetCommand(c_cmdPlan, pTarget, c_cidAttack);
 
 	// Accept the queued command
-	return AcceptCommand(pbstrResponse);
+	return S_OK;
 }
 
 //imago 10/14
@@ -828,10 +865,9 @@ STDMETHODIMP CPigShip::Goto(BSTR bstrObject, VARIANT_BOOL bFriendly, BSTR* pbstr
 	m_pPig->BaseClient::SetAutoPilot(true);
 
 	// Set the queued command
-	GetIGC()->SetCommand(c_cmdQueued, pTarget, c_cidGoto);
+	GetIGC()->SetCommand(c_cmdPlan, pTarget, c_cidGoto);
 
-	// Accept the queued command
-	return AcceptCommand(pbstrResponse);
+	return S_OK;
 }
 
 //imago 10/14
@@ -848,10 +884,9 @@ STDMETHODIMP CPigShip::GotoStationID(ObjectID oid, BSTR* pbstrResponse)
 	m_pPig->BaseClient::SetAutoPilot(true);
 
 	// Set the queued command
-	GetIGC()->SetCommand(c_cmdQueued, pTarget, c_cidGoto);
+	GetIGC()->SetCommand(c_cmdPlan, pTarget, c_cidGoto);
 
-	// Accept the queued command
-	return AcceptCommand(pbstrResponse);
+	return S_OK;
 }
 
 
@@ -964,6 +999,43 @@ STDMETHODIMP CPigShip::get_IsFiringMissile(VARIANT_BOOL* pbFiring)
 
   // Indicate success
   return S_OK;
+}
+
+STDMETHODIMP CPigShip::get_MissileRange(float* pfRange)
+{
+	// Test the ship state bit
+	XLock lock(this);
+	float maxRange = 0;
+	CLEAROUT(pfRange, maxRange);
+
+	ImagazineIGC* pmagazine = (ImagazineIGC*)m_pPig->BaseClient::GetShip()->GetMountedPart(ET_Magazine, 0);
+	if (pmagazine) {
+		//bool isLocked = (pmagazine && pmagazine->GetLock() == 1.0f);
+		ImissileTypeIGC* missileType = pmagazine->GetMissileType();
+		if (missileType) {
+			float lifespan = missileType->GetLifespan();
+			maxRange = missileType->GetInitialSpeed() * lifespan + 0.5f * missileType->GetAcceleration() * lifespan * lifespan;
+			CLEAROUT(pfRange, maxRange);
+		}
+	}
+
+	return S_OK;
+}
+
+STDMETHODIMP CPigShip::get_MissileLock(float* pfLock)
+{
+	// Test the ship state bit
+	XLock lock(this);
+	float missilelock = 0;
+	CLEAROUT(pfLock, missilelock);
+
+	ImagazineIGC* pmagazine = (ImagazineIGC*)m_pPig->BaseClient::GetShip()->GetMountedPart(ET_Magazine, 0);
+	if (pmagazine) {
+		missilelock = pmagazine->GetLock();
+		CLEAROUT(pfLock, missilelock);
+	}
+
+	return S_OK;
 }
 
 STDMETHODIMP CPigShip::get_IsDroppingMine(VARIANT_BOOL* pbDropping)

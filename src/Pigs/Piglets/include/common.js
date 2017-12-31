@@ -1,7 +1,8 @@
 //imagotrigger@gmail.com 10/14 originally from Matthew Lee, 1999 Microsoft
 
+
 function DisplayStateTransition(eStatePrevious) {
-	Trace("State changed from " + StateName(eStatePrevious) + " to " + PigStateName + "\n");
+    Trace("State changed from " + StateName(eStatePrevious) + " to " + PigStateName + "\n");
 }
 
 function NeedPickup() {
@@ -28,7 +29,16 @@ function KillTimers() {
 	if ("object" == typeof(Properties("FindTargetTimer")))
 		Properties("FindTargetTimer").Kill();
 	if ("object" == typeof(Properties("RearmTimer")))
-		Properties("RearmTimer").Kill();
+        Properties("RearmTimer").Kill();
+    if ("object" == typeof (Properties("CheckFireMissileTimer")))
+        Properties("CheckFireMissileTimer").Kill();
+}
+
+
+function KillAllTimers() {
+    KillTimers();
+    if ("object" == typeof (Properties("CheckFireMissileTimer")))
+        Properties("CheckFireMissileTimer").Kill();
 }
 
 function dump(arr,level) {
@@ -63,14 +73,18 @@ function SelectBestHull (hullCollection, strFirstChoice, strSecondChoice) {
   var FirstHull = -1, SecondHull = -1, DefaultHull = -1;
   var e = new Enumerator (hullCollection)
 	for (var i=0; !e.atEnd(); e.moveNext(), i++) {
-    var hull = e.item();
-    if (hull.Name.search(strFirstChoice) != -1)
-      FirstHull = i;
-    if (hull.Name.search(strSecondChoice) != -1)
-      SecondHull = i;		
-    if (hull.Name.search("Scout") != -1)
-      DefaultHull = i;		
-  }
+        var hull = e.item();
+        Trace("Hull: " + hull.Name + "\n");
+        if (hull.Name.search(strFirstChoice) != -1)
+                FirstHull = i;
+
+        if (hull.Name.search(strSecondChoice) != -1)
+            SecondHull = i;		
+
+        if (hull.Name.search("Scout") != -1)
+            DefaultHull = i;		
+
+    }
 	if (FirstHull != -1) {
     return FirstHull;
 	} else if (SecondHull != -1) {
@@ -81,7 +95,7 @@ function SelectBestHull (hullCollection, strFirstChoice, strSecondChoice) {
 }
 
 function Range2Ship(agcShip) {
-  return (Position.Subtract(agcShip.Position).LengthSquared);
+    return (Position.Subtract(agcShip.Position).Length);
 }
 
 function FindNearestEnemy(shipCollection) {
@@ -114,6 +128,39 @@ function FindNearestFriend(shipCollection) {
 		}
 	}
 	return Nearest;
+}
+
+function FindNearestFriendlyStation(stationCollection) {
+    var Nearest = -1, Dist = Number.MAX_VALUE;
+    var e = new Enumerator(stationCollection);
+
+    for (var i =0; !e.atEnd(); e.moveNext(), i++) {
+        x = e.item();
+        if (x.Team == Ship.Team) {
+            var range = Range2Ship(x);
+            if (range < Dist) {
+                Dist = range;
+                Nearest = i;
+            }
+        }
+    }
+    return Nearest
+}
+function FindNearestEnemyStation(stationCollection) {
+    var Nearest = -1, Dist = Number.MAX_VALUE;
+    var e = new Enumerator(stationCollection);
+
+    for (var i = 0; !e.atEnd(); e.moveNext(), i++) {
+        x = e.item();
+        if (x.Team != Ship.Team) {
+            var range = Range2Ship(x);
+            if (range < Dist) {
+                Dist = range;
+                Nearest = i;
+            }
+        }
+    }
+    return Nearest
 }
 
 function IsTargetValid(shipCollection,objTarget) {

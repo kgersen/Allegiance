@@ -539,6 +539,7 @@ void CPigEngine::AddScriptFile(const WIN32_FIND_DATA* pffd,
     // Add the new object to the map of scripts
     XLock lock(this);
     m_mapScripts.insert(std::make_pair(strFileName, pScript));
+	printf("Loaded script %s\n", strFileName.c_str());
   }
 }
 
@@ -555,7 +556,7 @@ void CPigEngine::LoadScriptFile(CPigBehaviorScriptType* pScript,
   HRESULT hrEI = GetErrorInfo(0, &pei);
   _com_error err(hr, pei);
   _bstr_t bstrDesc(err.Description());
-  _TRACE2("CPigEngine::LoadScriptFile(%s): %s\n", strFileName.c_str(),
+  printf("CPigEngine::LoadScriptFile(%s): %s\n", strFileName.c_str(),
     (bstrDesc.length()) ? LPCTSTR(bstrDesc) : err.ErrorMessage());
 }
 

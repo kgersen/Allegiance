@@ -4,13 +4,14 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
@@ -18,82 +19,6 @@ using System.Windows.Shapes;
 
 namespace WpfApp1
 {
-
-    public class PigInfo : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private PigsLib.IPig _pig;
-        public PigsLib.IPig Pig
-        {
-            get { return _pig; }
-            set
-            {
-                _pig = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Pig"));
-            }
-        }
-
-        private string _name;
-        public string Name
-        {
-            get { return _name; }
-            set
-            {
-                _name = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Name"));
-            }
-        }
-
-        private string _state;
-        private string _gameName;
-        private int _money;
-        private string _hull;
-        private string _position;
-
-        public string State
-        {
-            get { return _state; }
-            set
-            {
-                _state = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("State"));
-            }
-        }
-
-        public string GameName
-        {
-            get => _gameName; internal set
-            {
-                _gameName = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("GameName"));
-            }
-        }
-        public int Money
-        {
-            get => _money; internal set
-            {
-                _money = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Money"));
-            }
-        }
-
-        public string Hull
-        {
-            get => _hull; internal set
-            {
-                _hull = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Hull"));
-            }
-        }
-
-        public string Position { get => _position; internal set
-            {
-                _position = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Position"));
-            }
-         }
-    }
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -101,10 +26,21 @@ namespace WpfApp1
     {
         PigsLib.PigSession session = null;
 
+        private IObservable<Unit> refreshTicker;
+        private IDisposable refreshSub;
+        bool _refreshEnabled = true;
         public MainWindow()
         {
             InitializeComponent();
             this.DataContext = this;
+            refreshTicker = Observable.Return(Unit.Default).Delay(TimeSpan.FromSeconds(1)).Repeat().SkipWhile(u => _refreshEnabled);
+            refreshSub = refreshTicker.Subscribe(u =>
+            {
+                foreach (var pig in pigInfos)
+                {
+                    pig.Refresh();
+                }
+            });
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -151,6 +87,8 @@ namespace WpfApp1
         }
 
         ObservableCollection<PigInfo> _pigInfos = new ObservableCollection<PigInfo>();
+
+
         public ObservableCollection<PigInfo> pigInfos
         {
             get { return _pigInfos; }
@@ -160,7 +98,11 @@ namespace WpfApp1
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("pigInfos"));
             }
         }
-        
+
+        public bool RefreshEnabled { get => _refreshEnabled; set { _refreshEnabled = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("RefreshEnabled"));
+            } }
+
         void log(string text)
         {
             logText += string.Format("{0}\n", text);
@@ -190,6 +132,7 @@ namespace WpfApp1
                 session = null;
                 logText = "";
             }
+            pigInfos.Clear();
         }
         private void ClearLog_Click(object sender, RoutedEventArgs e)
         {
@@ -230,14 +173,13 @@ namespace WpfApp1
                     {
                         pigScript = newScripts.First();
                     }
-
-                    foreach (PigsLib.IPig p in session.Pigs)
-                    {
-                        pigInfos.Add(new PigInfo { Pig = p });
-                    }
-                    //session.ActivateAllEvents();
-                    // log(String.Format("Attached to events.", session.ProcessID));
-                }
+                    pigInfos.Clear();
+                    //for (int i = 0; i < session.Pigs.Count; i++)
+                    //{
+                    //    pigInfos.Add(new PigInfo(session.Pigs[i]));
+                    //}
+                   
+                      }
             }
         }
 
@@ -255,7 +197,7 @@ namespace WpfApp1
                     log(String.Format("Request returned: {0}", pig));
                     if (pig != null)
                     {
-                        pigInfos.Add(new PigInfo { Pig = pig });
+                        pigInfos.Add(new PigInfo( pig ));
                         log(String.Format("pig {0} : State {1}", pig.Name, pig.PigStateName));
                         RefreshPigs_Click(sender, e);
                     }
@@ -275,21 +217,7 @@ namespace WpfApp1
 
         private void RefreshPigs_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var pig in pigInfos)
-            {
-                try
-                {
-                    pig.Name = pig.Pig.Name;
-                    pig.State = pig.Pig?.PigStateName ?? "";
-                    pig.GameName = pig.Pig?.Game.Name ?? "";
-                    pig.Money = pig.Pig.Money;
-                    pig.Hull = pig.Pig?.Ship?.HullType?.Name ?? "";
-                    pig.Position = pig.Pig?.Ship?.Position?.DisplayString ?? "";
-                }
-                catch (Exception)
-                {
-                }
-            }
+            _refreshEnabled = !_refreshEnabled;
         }
     }
 }
