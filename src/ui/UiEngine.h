@@ -1,59 +1,15 @@
 #pragma once
 
-#include <boost/any.hpp>
-
-class UiObjectContainer : public IObject {
-
-private:
-    std::map<std::string, boost::any> m_map;
-
-public:
-    UiObjectContainer(std::map<std::string, boost::any> map) :
-        m_map(map)
-    {
-    }
-
-    template <typename Type>
-    Type Get(std::string key) {
-        auto found = m_map.find(key);
-        if (found == m_map.end()) {
-            throw std::runtime_error("Key not found: " + key);
-        }
-
-        try
-        {
-            return boost::any_cast<Type>(found->second);
-        }
-        catch (const boost::bad_any_cast &)
-        {
-            throw std::runtime_error("Key found but not of valid type: " + key);
-        }
-    }
-
-    TRef<StringValue> GetString(std::string key) {
-        return Get<TRef<StringValue>>(key);
-    }
-
-    TRef<Boolean> GetBoolean(std::string key) {
-        return Get<TRef<Boolean>>(key);
-    }
-
-    TRef<Number> GetNumber(std::string key) {
-        return Get<TRef<Number>>(key);
-    }
-
-};
-
 class UiScreenConfiguration : public UiObjectContainer {
 public:
-    UiScreenConfiguration(std::map<std::string, boost::any> map) :
+    UiScreenConfiguration(std::map<std::string, std::shared_ptr<Exposer>> map) :
         UiObjectContainer(map)
     {}
 
     virtual std::string GetPath() = 0;
     virtual IEventSink& GetEventSink(std::string) = 0;
 
-    static std::shared_ptr<UiScreenConfiguration> Create(std::string path, std::map<std::string, std::function<bool()>> event_listeners, std::map<std::string, boost::any> map);
+    static std::shared_ptr<UiScreenConfiguration> Create(std::string path, std::map<std::string, std::function<bool()>> event_listeners, std::map<std::string, std::shared_ptr<Exposer>> map);
 }; 
 
 class UiEngine : public IObject
@@ -67,7 +23,7 @@ public:
     static std::string m_stringLogPath;
 
     static void SetGlobalArtPath(std::string path);
-    static UiEngine* UiEngine::Create(Engine* pEngine, ISoundEngine* pSoundEngine, std::function<void(std::string)> funcOpenWebsite);
+    static UiEngine* UiEngine::Create(Window* pWindow, Engine* pEngine, ISoundEngine* pSoundEngine, std::function<void(std::string)> funcOpenWebsite);
 
     //virtual Image* LoadImage(std::string path) = 0;
     virtual TRef<Image> LoadImageFromLua(const std::shared_ptr<UiScreenConfiguration>& screenConfiguration) = 0;
@@ -119,19 +75,50 @@ public:
     sol::function LoadScript(std::string subpath);
 };
 
+class Executor {
+private:
+    int m_countInScriptLevel;
+
+public:
+    Executor() :
+        m_countInScriptLevel(0)
+    {}
+
+    bool IsInScript() {
+        return m_countInScriptLevel > 0;
+    }
+
+    template <class T, typename... TArgs>
+    T Execute(sol::function script, TArgs ... args);
+};
+
 class LuaScriptContext {
 private:
+    TRef<Window> m_pWindow;
     TRef<Engine> m_pEngine;
     TRef<ISoundEngine> m_pSoundEngine;
     Loader m_loader;
     PathFinder m_pathFinder;
     std::shared_ptr<UiScreenConfiguration> m_pConfiguration;
     std::function<void(std::string)> m_funcOpenWebsite;
+    TRef<SimpleModifiableValue<bool>> m_pHasKeyboardFocus;
+
+    TRef<TEvent<const KeyState&>::SourceImpl> m_pKeyboardCharSource;
+    TRef<TEvent<const KeyState&>::SourceImpl> m_pKeyboardKeySource;
+
+    Executor m_executor;
 
     sol::state m_lua;
 
 public:
-    LuaScriptContext(Engine* pEngine, ISoundEngine* pSoundEngine, std::string stringArtPath, const std::shared_ptr<UiScreenConfiguration>& pConfiguration, std::function<void(std::string)> funcOpenWebsite);
+    LuaScriptContext(
+        Window* pWindow,
+        Engine* pEngine,
+        ISoundEngine* pSoundEngine, 
+        std::string stringArtPath, 
+        const std::shared_ptr<UiScreenConfiguration>& pConfiguration, 
+        std::function<void(std::string)> funcOpenWebsite
+    );
 
     sol::state& GetLua();
 
@@ -142,6 +129,26 @@ public:
     Engine* GetEngine();
 
     ISoundEngine* GetSoundEngine();
+
+    Executor* GetExecutor() {
+        return &m_executor;
+    }
+
+    TRef<SimpleModifiableValue<bool>> HasKeyboardFocus() {
+        return m_pHasKeyboardFocus;
+    }
+
+    TRef<TEvent<const KeyState&>::SourceImpl> GetKeyboardCharSource() {
+        return m_pKeyboardCharSource;
+    }
+
+    TRef<TEvent<const KeyState&>::SourceImpl> GetKeyboardKeySource() {
+        return m_pKeyboardKeySource;
+    }
+
+    TRef<Window> GetWindow() {
+        return m_pWindow;
+    }
 
     IEventSink& GetExternalEventSink(std::string name);
 

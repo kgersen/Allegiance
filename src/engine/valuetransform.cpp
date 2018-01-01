@@ -2,6 +2,19 @@
 #include "valuetransform.h"
 
 
+template <typename Type>
+class EqualsTransform : public TransformedValue2<bool, Type, Type> {
+    typedef TRef<TStaticValue<Type>> WrappedType;
+
+public:
+    EqualsTransform(WrappedType const& a, WrappedType const& b) :
+        TransformedValue2([](ZString a, ZString b) {
+        return a == b;
+    }, a, b)
+    {
+    }
+};
+
 class SubtractNumber : public Number {
 public:
     SubtractNumber(Number* pvalue0, Number* pvalue1) :
@@ -162,6 +175,11 @@ TRef<StringValue> NumberTransform::ToString(Number* pNumber, int decimals)
     }, pNumber);
 }
 
+TRef<Boolean> NumberTransform::Equals(Number* a, Number* b)
+{
+    return new EqualsTransform<float>(a, b);
+}
+
 TRef<Number> NumberTransform::Round(Number* pNumber, int decimals)
 {
     return new TransformedValue<float, float>([decimals](float a) {
@@ -213,6 +231,20 @@ TRef<Number> NumberTransform::Sin(Number* pvalue)
 TRef<Number> NumberTransform::Cos(Number* pvalue)
 {
     return new CosNumber(pvalue);
+};
+
+TRef<Number> NumberTransform::Sqrt(Number* pvalue)
+{
+    return new TransformedValue<float, float>([](float value) {
+        return sqrt(value);
+    }, pvalue);
+};
+
+TRef<Number> NumberTransform::Power(Number* pvalue, Number* power)
+{
+    return new TransformedValue2<float, float, float>([](float value, float power) {
+        return pow(value, power);
+    }, pvalue, power);
 };
 
 
@@ -429,6 +461,11 @@ public:
     }
 };
 
+TRef<Boolean> BooleanTransform::Equals(Boolean* a, Boolean* b)
+{
+    return new EqualsTransform<bool>(a, b);
+}
+
 TRef<Boolean> BooleanTransform::And(Boolean* pvalue1, Boolean* pvalue2)
 {
     return new AndBoolean(pvalue1, pvalue2);
@@ -447,7 +484,7 @@ TRef<Boolean> BooleanTransform::Not(Boolean* pvalue1)
 TRef<Number> BooleanTransform::ToNumber(Boolean* pvalue1)
 {
     return new TransformedValue<float, bool>([](bool bValue) {
-        return bValue ? 1 : 0;
+        return bValue ? 1.0f : 0.0f;
     }, pvalue1);
 }
 
@@ -488,7 +525,52 @@ TRef<Number> StringTransform::Length(StringValue* a)
     }, a);
 }
 
+TRef<Boolean> StringTransform::Equals(StringValue* a, StringValue* b)
+{
+    return new EqualsTransform<ZString>(a, b);
+}
+
 TRef<StringValue> StringTransform::Concat(StringValue* a, StringValue* b)
 {
     return new ConcatenatedString(a, b);
+}
+
+TRef<StringValue> StringTransform::Slice(StringValue* string, Number* start, Number* length)
+{
+    return new TransformedValue3<ZString, ZString, float, float>([](ZString string, float fstart, float flength) {
+        int start = (int)fstart;
+        int length = (int)flength;
+
+        int string_length = string.GetLength();
+
+        if (start < 0) {
+            //negative start values means from end of string
+            start = string_length + start;
+        }
+
+        if (length < 0) {
+            //negative length values means up to the last n characters
+            length = string_length + length;
+        }
+
+        //validation
+        if (start < 0) {
+            start = 0;
+        }
+
+        if (start >= string_length) {
+            return ZString("");
+        }
+
+        if (length <= 0) {
+            return ZString("");
+        }
+
+        if (length > string_length - start) {
+            length = string_length - start;
+        }
+
+        ZString strSlice = string.Middle(start, length);
+        return strSlice;
+    }, string, start, length);
 }

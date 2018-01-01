@@ -749,6 +749,7 @@ public:
     virtual void PushState() = 0;
     virtual void PopState()  = 0;
     virtual void UpdateState() = 0;
+    virtual void ForceState() = 0;
 
     virtual void SetGlobalColor(const Color& color, bool bOverride = false)   = 0;
     virtual void SetZTest(bool b, bool bOverride = false)                     = 0;

@@ -76,6 +76,8 @@ HRESULT     CstationIGC::Initialize(ImissionIGC* pMission, Time now, const void*
 
             m_hullFraction = dataStation->bpHull;
             SetShieldFraction(dataStation->bpShield);
+
+            this->GetSide()->UpdateTerritory();
         }
 
         m_timeLastDamageReport = now;

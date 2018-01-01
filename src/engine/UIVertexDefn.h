@@ -25,7 +25,7 @@ struct UICOLOURFILLVERTEX
 #define D3DFVF_UICOLOURVERT ( D3DFVF_XYZRHW | D3DFVF_DIFFUSE )
 
 
-// UI vertex, single textured uncoloured vertices.
+// UI vertex, single textured uncoloured vertices. Not affected by transforms or lighting.
 struct UIFONTVERTEX
 {
     float x, y, z, rhw; // The transformed position for the vertex
@@ -35,6 +35,18 @@ struct UIFONTVERTEX
 
 // FVF for the above vertex defn.
 #define D3DFVF_UIFONTVERTEX ( D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1 )
+
+
+// Vertex that is affected by transforms and lighting
+struct UIFONTVERTEX2
+{
+    float x, y, z; // The transformed position for the vertex
+    uint32_t color;		// Colour value.
+    float fU, fV;		// Texture coords.
+};
+
+// FVF for the above vertex defn.
+#define D3DFVF_UIFONTVERTEX2 ( D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1 )
 
 
 #endif // _UIVERTEXDEFN_H_

@@ -255,6 +255,7 @@ public:
 	void			PostWindowCreationInit();
 
     Number*          GetTime()           { return m_pnumberTime;             }
+    Time             GetTimeStart()      { return m_timeStart;               }
     Engine*          GetEngine()         { return m_pengine;                 }
     Modeler*         GetModeler()        { return m_pmodeler;                }
     bool             GetFullscreen()     { return m_pengine->IsFullscreen(); }

@@ -30,6 +30,10 @@ public:
             return NumberTransform::ToString(wrapValue<float>(a), decimals.value_or(0));
         };
 
+        table["Equals"] = [](TRef<Number> const& a, TRef<Number> const& b) {
+            return NumberTransform::Equals(a, b);
+        };
+
         table["Add"] = [](sol::object a, sol::object b) {
             return NumberTransform::Add(wrapValue<float>(a), wrapValue<float>(b));
         };
@@ -66,8 +70,14 @@ public:
         table["Cos"] = [](sol::object a) {
             return NumberTransform::Cos(wrapValue<float>(a));
         };
+        table["Sqrt"] = [](const TRef<Number>& value) {
+            return NumberTransform::Sqrt(value);
+        };
+        table["Power"] = [](const TRef<Number>& value, const TRef<Number>& power) {
+            return NumberTransform::Power(value, power);
+        };
 
-        m_pLua->new_usertype<Number>("Number",
+        m_pLua->new_usertype<TRef<Number>>("Number",
             sol::meta_function::addition, [](sol::object a, sol::object b) {
                 return NumberTransform::Add(wrapValue<float>(a), wrapValue<float>(b));
             },
@@ -82,8 +92,8 @@ public:
             }
         );
 
-        m_pLua->new_usertype<SimpleModifiableValue<float>>("SimpleModifiableValue<float>",
-            sol::base_classes, sol::bases<Number, TEvent<float>::Sink>(),
+        m_pLua->new_usertype<TRef<SimpleModifiableValue<float>>>("SimpleModifiableValue<float>",
+            //sol::base_classes, sol::bases<Number, TEvent<float>::Sink>(),
             sol::meta_function::addition, [](sol::object a, sol::object b) {
                 return NumberTransform::Add(wrapValue<float>(a), wrapValue<float>(b));
             },
@@ -96,7 +106,7 @@ public:
                 sol::meta_function::division, [](sol::object a, sol::object b) {
                 return NumberTransform::Divide(wrapValue<float>(a), wrapValue<float>(b));
             }
-            );
+        );
 
         m_pLua->set("Number", table);
     }
@@ -136,6 +146,10 @@ public:
 
         table["CreateEventSink"] = [](bool a) {
             return (TRef<SimpleModifiableValue<bool>>)new SimpleModifiableValue<bool>(a);
+        };
+
+        table["Equals"] = [](TRef<Boolean> const& a, TRef<Boolean> const& b) {
+            return BooleanTransform::Equals(a, b);
         };
 
         table["And"] = [](sol::object a, sol::object b) {

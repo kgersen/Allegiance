@@ -38,7 +38,7 @@ class UiScreenConfigurationImpl : public UiScreenConfiguration {
     std::string m_strPath;
 
 public:
-    UiScreenConfigurationImpl(std::string path, std::map<std::string, boost::any> map) :
+    UiScreenConfigurationImpl(std::string path, std::map<std::string, std::shared_ptr<Exposer>> map) :
         UiScreenConfiguration(map)
     {
         m_strPath = path;
@@ -54,11 +54,12 @@ public:
 
 };
 
-std::shared_ptr<UiScreenConfiguration> UiScreenConfiguration::Create(std::string path, std::map<std::string, std::function<bool()>> event_listeners, std::map<std::string, boost::any> map) {
+std::shared_ptr<UiScreenConfiguration> UiScreenConfiguration::Create(std::string path, std::map<std::string, std::function<bool()>> event_listeners, std::map<std::string, std::shared_ptr<Exposer>> map) {
     
     std::for_each(event_listeners.begin(), event_listeners.end(),
         [&map](auto& p) {
-        map[p.first] = (TRef<IEventSink>)new CallbackSink(p.second);
+        std::shared_ptr<Exposer> tmp = std::shared_ptr<Exposer>(new TypeExposer<TRef<IEventSink>>(new CallbackSink(p.second)));
+        map[p.first] = tmp;
     });
 
     return std::make_shared<UiScreenConfigurationImpl>(path, map);
@@ -128,43 +129,71 @@ sol::function Loader::LoadScript(std::string subpath) {
     return function;
 }
 
-class Executor {
+template <class T>
+void Initialize(T value) {
+}
 
-public:
+template <>
+void Initialize(TRef<Image> value) {
+    value->Update();
+}
 
-    template <class T, typename... TArgs>
-    T Execute(sol::function script, TArgs ... args) {
-        try {
-            sol::function_result result = script.call(args...);
-            if (result.valid() == false) {
-                sol::error err = result;
-                throw err;
-            }
+template <>
+void Initialize(TRef<TStaticValue<float>> value) {
+    value->Update();
+}
 
-            sol::optional<sol::object> object = result;
-            if (!object || object.value().is<T>() == false) {
-                throw std::runtime_error("Expected return value to be of a specific type");
-            }
-            T image = result;
-            return image;
+template <>
+void Initialize(TRef<TStaticValue<bool>> value) {
+    value->Update();
+}
+
+template <>
+void Initialize(TRef<TStaticValue<ZString>> value) {
+    value->Update();
+}
+
+template <class T, typename... TArgs>
+T Executor::Execute(sol::function script, TArgs ... args) {
+    try {
+        m_countInScriptLevel += 1;
+        sol::function_result function_result = script.call(args...);
+        if (function_result.valid() == false) {
+            sol::error err = function_result;
+            throw err;
         }
-        catch (const sol::error& e) {
-            throw std::runtime_error(e.what());
+
+        sol::optional<sol::object> object = function_result;
+        if (!object || object.value().is<T>() == false) {
+            throw std::runtime_error("Expected return value to be of a specific type");
         }
-        catch (const std::runtime_error& e) {
-            throw e;
-        }
-        catch (const std::exception& e) {
-            throw std::runtime_error(e.what());
-        }
-        catch (...) {
-            ZAssert(false);
-            throw std::runtime_error("Unknown error");
-        }
+        T result = function_result;
+        Initialize<T>(result);
+
+        m_countInScriptLevel -= 1;
+        return result;
+    }
+    catch (const sol::error& e) {
+        m_countInScriptLevel -= 1;
+        throw std::runtime_error(e.what());
+    }
+    catch (const std::runtime_error& e) {
+        m_countInScriptLevel -= 1;
+        throw e;
+    }
+    catch (const std::exception& e) {
+        m_countInScriptLevel -= 1;
+        throw std::runtime_error(e.what());
+    }
+    catch (...) {
+        m_countInScriptLevel -= 1;
+        ZAssert(false);
+        throw std::runtime_error("Unknown error");
     }
 };
 
-LuaScriptContext::LuaScriptContext(Engine* pEngine, ISoundEngine* pSoundEngine, std::string stringArtPath, const std::shared_ptr<UiScreenConfiguration>& pConfiguration, std::function<void(std::string)> funcOpenWebsite) :
+LuaScriptContext::LuaScriptContext(Window* pWindow, Engine* pEngine, ISoundEngine* pSoundEngine, std::string stringArtPath, const std::shared_ptr<UiScreenConfiguration>& pConfiguration, std::function<void(std::string)> funcOpenWebsite) :
+    m_pWindow(pWindow),
     m_pEngine(pEngine),
     m_pSoundEngine(pSoundEngine),
     m_pConfiguration(pConfiguration),
@@ -176,7 +205,11 @@ LuaScriptContext::LuaScriptContext(Engine* pEngine, ISoundEngine* pSoundEngine, 
         stringArtPath + "/PBUI",
         stringArtPath
     })),
-    m_funcOpenWebsite(funcOpenWebsite)
+    m_funcOpenWebsite(funcOpenWebsite),
+    m_executor(Executor()),
+    m_pHasKeyboardFocus(new SimpleModifiableValue<bool>(false)),
+    m_pKeyboardCharSource(new TEvent<const KeyState&>::SourceImpl()),
+    m_pKeyboardKeySource(new TEvent<const KeyState&>::SourceImpl())
 {
     m_loader.InitNamespaces(*this);
 }
@@ -211,22 +244,29 @@ std::function<void(std::string)> LuaScriptContext::GetOpenWebsiteFunction() {
 
 template <typename T, typename... TArgs>
 std::function<T(TArgs...)> LuaScriptContext::WrapCallback(sol::function callback, T valueDefault) {
-    return [callback, valueDefault](TArgs ... args) {
-        Executor executor = Executor();
+    Executor* executor = GetExecutor();
+    return [executor, callback, valueDefault](TArgs ... args) {
         try {
             //WriteLog("(Callback function): Started");
 
             auto start = std::chrono::high_resolution_clock::now();
 
-            T result = executor.Execute<T, TArgs...>(callback, args...);
+            T result = executor->Execute<T, TArgs...>(callback, args...);
 
             auto elapsed = std::chrono::high_resolution_clock::now() - start;
             long long milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
 
-            WriteLog("(Callback function): Finished " + std::to_string(milliseconds) + " ms");
+            if (!executor->IsInScript()) {
+                //only output that we have done anything if this is the main script
+                WriteLog("(Callback function): Finished " + std::to_string(milliseconds) + " ms");
+            }
             return result;
         }
         catch (const std::runtime_error& e) {
+            if (executor->IsInScript()) {
+                //if we are in a script we are wrapped in a try-catch which can catch this
+                throw e;
+            }
             WriteLog(std::string("(Callback function): ERROR ") + e.what());
             return valueDefault;
         }
@@ -244,6 +284,7 @@ UiObjectContainer& LuaScriptContext::GetScreenGlobals() {
 class UiEngineImpl : public UiEngine {
 
 private:
+    TRef<Window> m_pWindow;
     TRef<Engine> m_pEngine;
     TRef<ISoundEngine> m_pSoundEngine;
     std::function<void(std::string)> m_funcOpenWebsite;
@@ -252,7 +293,8 @@ private:
 
 
 public:
-    UiEngineImpl(Engine* pEngine, ISoundEngine* pSoundEngine, std::function<void(std::string)> funcOpenWebsite) :
+    UiEngineImpl(Window* pWindow, Engine* pEngine, ISoundEngine* pSoundEngine, std::function<void(std::string)> funcOpenWebsite) :
+        m_pWindow(pWindow),
         m_pEngine(pEngine),
         m_pSoundEngine(pSoundEngine),
         m_pReloadEventSource(new EventSourceImpl()),
@@ -270,15 +312,55 @@ public:
     //
     //}
 
-    class ContextImage : public WrapImage {
+
+    class ValueChangeSource : public Value, public EventSourceImpl {
+    public:
+        ValueChangeSource(const TRef<Value>& value) :
+            Value(value)
+        {
+        }
+
+        void ChildChanged(Value* pvalue, Value* pvalueNew) override {
+            Trigger();
+        }
+    };
+
+    class ContextImage : public WrapImage, public IKeyboardInput {
     private:
         std::unique_ptr<LuaScriptContext> m_pContext;
+        TRef<IEventSource> m_pFocusChangedSource;
+        bool m_bFocus;
+        TRef<IKeyboardInput> m_pPreviousFocus;
 
     public:
         ContextImage(std::unique_ptr<LuaScriptContext> pContext, Image* pImage) :
             WrapImage(pImage),
-            m_pContext(std::move(pContext))
+            m_pContext(std::move(pContext)),
+            m_bFocus(false),
+            m_pPreviousFocus(nullptr)
         {
+            m_pFocusChangedSource = new ValueChangeSource(m_pContext->HasKeyboardFocus());
+            m_pFocusChangedSource->AddSink(new CallbackSink([this]() {
+                auto window = m_pContext->GetWindow();
+                if (m_pContext->HasKeyboardFocus()->GetValue()) {
+                    if (window->GetFocus() != this) {
+                        m_pPreviousFocus = window->GetFocus();
+                        window->SetFocus(this);
+                    }
+                }
+                else {
+                    if (window->GetFocus() == this) {
+                        if (!m_pPreviousFocus) {
+                            window->RemoveFocus(this);
+                        }
+                        else {
+                            window->SetFocus(m_pPreviousFocus);
+                            m_pPreviousFocus = nullptr;
+                        }
+                    }
+                }
+                return true;
+            }));
         }
 
         ~ContextImage() {
@@ -291,6 +373,33 @@ public:
             pcontext->SetYAxisInversion(false);
             WrapImage::Render(pcontext);
             pcontext->SetYAxisInversion(true); //not part of the state, so revert manually
+        }
+
+        void SetFocusState(bool bFocus) override {
+            m_bFocus = bFocus;
+            if (m_pContext->HasKeyboardFocus()->GetValue() != bFocus) {
+                m_pContext->HasKeyboardFocus()->SetValue(bFocus);
+            }
+        }
+
+        bool OnChar(IInputProvider* pprovider, const KeyState& ks) override
+        {
+            switch (ks.vk) {
+            case VK_RETURN:
+            case VK_BACK:
+                //I think only a very limited subset arrives here
+                return false;
+            default:
+                m_pContext->GetKeyboardCharSource()->Trigger(ks);
+                return true;
+            }
+        }
+
+        bool OnKey(IInputProvider* pprovider, const KeyState& ks, bool& fForceTranslate) override
+        {
+            m_pContext->GetKeyboardKeySource()->Trigger(ks);
+
+            return false;
         }
 
         void MouseMove(IInputProvider* pprovider, const Point& point, bool bCaptured, bool bInside) override
@@ -316,9 +425,9 @@ public:
     };
 
     TRef<Image> InnerLoadImageFromLua(const std::shared_ptr<UiScreenConfiguration>& screenConfiguration) {
-        std::unique_ptr<LuaScriptContext> pContext = std::make_unique<LuaScriptContext>(m_pEngine, m_pSoundEngine, m_stringArtPath, screenConfiguration, m_funcOpenWebsite);
+        std::unique_ptr<LuaScriptContext> pContext = std::make_unique<LuaScriptContext>(m_pWindow, m_pEngine, m_pSoundEngine, m_stringArtPath, screenConfiguration, m_funcOpenWebsite);
 
-        Executor executor = Executor();
+        Executor* executor = pContext->GetExecutor();
 
         auto path = screenConfiguration->GetPath();
 
@@ -330,7 +439,7 @@ public:
 
             auto start = std::chrono::high_resolution_clock::now();
 
-            TRef<Image> image = executor.Execute<Image*>(script);
+            TRef<Image> image = executor->Execute<TRef<Image>>(script);
 
             auto elapsed = std::chrono::high_resolution_clock::now() - start;
             long long milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
@@ -389,7 +498,7 @@ public:
     }
 };
 
-UiEngine* UiEngine::Create(Engine* pEngine, ISoundEngine* pSoundEngine, std::function<void(std::string)> funcOpenWebsite)
+UiEngine* UiEngine::Create(Window* pWindow, Engine* pEngine, ISoundEngine* pSoundEngine, std::function<void(std::string)> funcOpenWebsite)
 {
-    return new UiEngineImpl(pEngine, pSoundEngine, funcOpenWebsite);
+    return new UiEngineImpl(pWindow, pEngine, pSoundEngine, funcOpenWebsite);
 }

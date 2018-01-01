@@ -250,6 +250,8 @@ public:
         m_indexIndexBuffer(0),
 
         m_bClip(true),
+        m_rectClip(0.0f, 0.0f, 1.0f, 1.0f),
+
         m_shadeMode(ShadeModeGouraud),
         m_bUpdateMatFull(true),
         m_bUpdateLighting(true),
@@ -400,6 +402,8 @@ public:
 
     void SetYAxisInversion(bool bValue) {
         m_bYAxisInversion = bValue;
+
+        GenerateProjectionTransform();
     }
 
     void SetClipRect(const Rect& rectClip)
@@ -427,6 +431,8 @@ public:
 
         m_bUpdateMatFull = true;
         m_prasterizer->SetClipRect(m_rectClipScreen);
+
+        GenerateProjectionTransform();
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -498,6 +504,10 @@ public:
 			matD3D.Scale(Vector(1, -1, 1));
 		}
 
+        if (!m_bYAxisInversion) {
+            matD3D.Scale(Vector(1, -1, 1));
+        }
+
 		// Reorganise the perspective matrix.
 		m_matPerspectiveD3D._11 = matD3D[0][0];
 		m_matPerspectiveD3D._12 = matD3D[1][0];
@@ -562,6 +572,8 @@ public:
 		m_matWorldD3D._42 = m_matWorldTM[1][3];
 		m_matWorldD3D._43 = m_matWorldTM[2][3];
 		m_matWorldD3D._44 = m_matWorldTM[3][3];
+
+        CD3DDevice9::Get()->SetTransform(D3DTS_WORLD, &m_matWorldD3D);
 	}
 
     const Matrix& GetFullMatrix()
@@ -649,6 +661,7 @@ public:
                     m_pfnLightVertex = &Device3D::TransformNoClipNoLight;
 //                    ZAssert( false );
                 }
+                pDev->SetRenderState(D3DRS_LIGHTING, FALSE);
                 break;
 
             case ShadeModeGlobalColor:
@@ -1029,6 +1042,9 @@ public:
         m_bUpdateLighting = true;
         m_bUpdateInverse  = true;
 		m_bUpdateInverseWorld = true;
+
+        GenerateWorldTransform();
+        GenerateViewTransform();
     }
 
     void SetPerspectiveMatrix(const Matrix& mat)
@@ -2678,15 +2694,11 @@ public:
 
 		// Now we update the light vectors and settings.
 		UpdateLighting( );
-
-		// Get the current world transform from the device state.
-		GenerateWorldTransform( );
+        CD3DDevice9::Get()->SetRenderState(D3DRS_LIGHTING, false);
 
 		hr = CVBIBManager::Get()->SetVertexStream( phVB );
         ZAssert( hr == D3D_OK );
 		hr = CD3DDevice9::Get()->SetFVF( phVB->dwBufferFormat );
-        ZAssert( hr == D3D_OK );
-		hr = CD3DDevice9::Get()->SetTransform( D3DTS_WORLD, &m_matWorldD3D );
         ZAssert( hr == D3D_OK );
 		hr = CD3DDevice9::Get()->DrawPrimitive( primType, phVB->dwFirstElementOffset, dwNumPrims );
         ZAssert( hr == S_OK );

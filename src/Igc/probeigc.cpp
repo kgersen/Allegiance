@@ -399,25 +399,24 @@ void    CprobeIGC::Update(Time now)
                 }
                 else
                 {
-                    if (eabm & c_eabmShootShips)
+                    if (eabm & c_eabmShootStations)
                     {
-                        //Threats to stations get highest priority
+                        GetTarget((const ModelListIGC*)(pcluster->GetStations()),
+                            pside, myPosition, dtUpdate, accuracy, speed, lifespan, OT_station,
+                            &pmodelTarget, &distance2Min, &directionMin);
+                    }
+
+                    if (!pmodelTarget && (eabm & c_eabmShootShips))
+                    {
                         GetTarget((const ModelListIGC*)(pcluster->GetShips()),
                                   pside, myPosition, dtUpdate, accuracy, speed, lifespan, OT_ship,
                                   &pmodelTarget, &distance2Min, &directionMin);
                     }
 
-                    if (eabm & c_eabmShootMissiles)
+                    if (!pmodelTarget && (eabm & c_eabmShootMissiles))
                     {
                         GetTarget((const ModelListIGC*)(pcluster->GetMissiles()),
                                   pside, myPosition, dtUpdate, accuracy, speed, lifespan, OT_missile, 
-                                  &pmodelTarget, &distance2Min, &directionMin);
-                    }
-
-                    if (eabm & c_eabmShootStations)
-                    {
-                        GetTarget((const ModelListIGC*)(pcluster->GetStations()),
-                                  pside, myPosition, dtUpdate, accuracy, speed, lifespan, OT_station, 
                                   &pmodelTarget, &distance2Min, &directionMin);
                     }
                 }

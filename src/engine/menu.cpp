@@ -102,14 +102,7 @@ public:
     {
         const Color color(74.0f / 255.0f, 124.0f / 255.0f, 88.0f / 255.0f);
 
-        PrivateSurface * psurfaceSource = (PrivateSurface*)psurface;
-		if( psurfaceSource->GetPixelFormat()->AlphaMask() != 0 )
-		{
-			psurfaceSource->SetColorKey( Color(0.0f, 0.0f, 0.0f ) );
-		}
-
 //        psurface->FillSurface(Color::Black());
-		PixelFormat * pixelFmt = psurfaceSource->GetEngine()->GetPrimaryPixelFormat();
 		psurface->FillSurface( Pixel::Create( 0 ) );
         psurface->FillRect(WinRect(1, 1, 2, 8), color);
         psurface->FillRect(WinRect(2, 2, 3, 7), color);
@@ -236,8 +229,6 @@ public:
                 SurfaceType2D(),// | SurfaceTypeColorKey(),
                 new PopupSurfaceSite()
             );
-
-        psurfacePopup->SetColorKey(Color(0, 0, 0));
 
         if (m_psubmenuEventSink) {
             ppaneRight = new SurfacePane(psurfacePopup);
