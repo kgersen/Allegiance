@@ -108,6 +108,10 @@ public:
         pcontext->UpdateState();
 
         Surface* surface = m_ptopPane->GetSurface();
+
+        //the pane rendering calls may have made all kinds of changes our context isn't aware of, reset
+        pcontext->ForceState();
+
         //if the surface is not initialized, the pane was likely empty.
         if (surface) {
             pcontext->DrawImage3D(surface, Color(1, 1, 1));

@@ -57,25 +57,16 @@ public:
 													const WinPoint & size,
 													const Color & colorKey );
 
-	///////////////////////////////////////////////////////////////////////////////////
-    static void Transfer24BitTo32BitWithColourKey(	const uint8_t * pSrc,
-													const int iSrcPitch,
-                                                    uint8_t * pDst,
-													const int iDstPitch,
-													const WinPoint & srcPos,
-													const WinPoint & dstPos,
-													const WinPoint & size,
-													const Color & colorKey );
-
-	///////////////////////////////////////////////////////////////////////////////////
-    static void Transfer32BitTo32BitWithColourKey(	const uint8_t * pSrc,
-													const int iSrcPitch,
-                                                    uint8_t * pDst,
-													const int iDstPitch,
-													const WinPoint & srcPos,
-													const WinPoint & dstPos,
-													const WinPoint & size,
-                                                    const Color & colorKey );
+    ///////////////////////////////////////////////////////////////////////////////////
+    static void Transfer32BitTo32BitCopy(
+        const uint8_t * pSrc,
+        const int iSrcPitch,
+        uint8_t * pDst,
+        const int iDstPitch,
+        const WinPoint & srcPos,
+        const WinPoint & dstPos,
+        const WinPoint & size
+    );
 
 	///////////////////////////////////////////////////////////////////////////////////
 	static void ColourImageFill16Bit(	void * pDst,

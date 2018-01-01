@@ -196,8 +196,6 @@ public:
             //m_psurface = m_pmodeler->LoadSurface("fig04bmp", false);
             //m_psurface = m_pmodeler->LoadSurface("f101bmp", false);
 
-            m_psurface->SetColorKey(Color::Black());
-
             for (int qindex = 0; qindex < 100; qindex++) {
                 InitPoly(qindex);
             }
@@ -670,8 +668,6 @@ public:
                 new CursorSurfaceSite()
             );
 
-        psurfaceCursor->SetColorKey(Color::Black());
-
         m_pimageCursor =
            new TransformImage(
                 new ConstantImage(
@@ -775,8 +771,6 @@ public:
 				true,
 				Color( 0, 0, 0 ),
 				"fxmine", true );
-		psurface->SetColorKey(Color(0, 0, 0));
-		psurface->SetEnableColorKey(true);
 
 
 

@@ -226,7 +226,7 @@ public:
 
         if (ChatIsNonCriticalMessage(pchatinfo))
         {
-            trekClient.PostText(false, CensorBadWords (pchatinfo->GetMessage()));
+            trekClient.PostPlainText(false, CensorBadWords (pchatinfo->GetMessage()));
         }
         else
         {

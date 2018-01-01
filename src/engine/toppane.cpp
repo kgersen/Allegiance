@@ -100,11 +100,6 @@ void TopPane::Evaluate()
 										sizeNew,
 										new TopPaneSurfaceSite( this ) );
 			}
-
-            if (m_bColorKey) 
-			{
-                m_psurface->SetColorKey(Color(0, 0, 0));
-            }
         }
     }
 }

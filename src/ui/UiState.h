@@ -1,35 +1,59 @@
 #pragma once
 
-#include "ui.h"
+#ifndef __MODULE__
+#define __MODULE__ "Ui"
+#endif
+#include "model.h"
 
-/*template <class PropertiesContainerType>
-class UiState {
+#include <functional>
+#include <list>
+#include <memory>
+
+#include "Exposer.h"
+
+class UiObjectContainer : public IObject {
 
 private:
-    std::string m_name;
-    PropertiesContainerType m_properties;
+    std::map<std::string, std::shared_ptr<Exposer>> m_map;
 
 public:
-    UiState(std::string name, PropertiesContainerType properties);
+    UiObjectContainer(std::map<std::string, std::shared_ptr<Exposer>> map) :
+        m_map(map)
+    {
+    }
 
-    std::string GetName() const;
+    template <typename Type>
+    const Type& Get(std::string key) const {
+        auto found = m_map.find(key);
+        if (found == m_map.end()) {
+            throw std::runtime_error("Key not found: " + key);
+        }
 
-    PropertiesContainerType& GetProperties() const;
+        return (const Type&)(*found->second);
+    }
+
+    std::shared_ptr<Exposer> GetExposer(std::string key) const {
+        auto found = m_map.find(key);
+        if (found == m_map.end()) {
+            throw std::runtime_error("Key not found: " + key);
+        }
+        return found->second;
+    }
+
+    TRef<StringValue> GetString(std::string key) const {
+        return Get<TRef<StringValue>>(key);
+    }
+
+    TRef<Boolean> GetBoolean(std::string key) const {
+        return Get<TRef<Boolean>>(key);
+    }
+
+    TRef<Number> GetNumber(std::string key) const {
+        return Get<TRef<Number>>(key);
+    }
 
 };
 
-typedef TStaticValue<UiState<UiObjectContainer>> UiStateValue;
-
-// Maybe remove when we really don't care about mdl logging anymore
-class ModifiableUiStateName {
-public:
-    static ZString GetName() { return "ModifiableState"; }
-};
-
-void Write(IMDLBinaryFile* pmdlFile, const UiState& value);
-ZString GetString(int indent, const UiState& value);
-ZString GetFunctionName(const UiState& value);
-typedef TModifiableValue<UiState<UiObjectContainer>, ModifiableUiStateName> UiStateModifiableValue;*/
 
 // Maybe remove when we really don't care about mdl logging anymore
 class ModifiableUiStateName {
@@ -43,7 +67,7 @@ private:
     std::string m_name;
 public:
     using UiObjectContainer::UiObjectContainer;
-    UiState(std::string name, std::map<std::string, boost::any> map = {}) :
+    UiState(std::string name, std::map<std::string, std::shared_ptr<Exposer>> map = {}) :
         m_name(name),
         UiObjectContainer(map)
     {}
@@ -64,7 +88,7 @@ public:
 
 class SimpleUiState : public UiState {
 public:
-    SimpleUiState(std::string name, std::map<std::string, boost::any> map = {}) :
+    SimpleUiState(std::string name, std::map<std::string, std::shared_ptr<Exposer>> map = {}) :
         UiState(name, map)
     {
     }
@@ -89,9 +113,10 @@ protected:
     }
 
 public:
-
-    UiList(std::list<EntryType> list) :
-        m_list(list) 
+    template<class... T>
+    UiList(std::list<EntryType> list, T ... values) :
+        m_list(list),
+        Value(values...)
     {}
 
     const std::list<EntryType>& GetList() {
@@ -127,3 +152,34 @@ public:
 
 typedef UiList<TRef<UiObjectContainer>> ContainerList;
 typedef UiList<TRef<Image>> ImageList;
+
+
+template <typename ResultEntryType, typename OriginalEntryType>
+class MappedList : public UiList<ResultEntryType> {
+private:
+    std::function<ResultEntryType(OriginalEntryType, TRef<Number>)> m_callback;
+
+public:
+    MappedList(const TRef<UiList<OriginalEntryType>>& list, std::function<ResultEntryType(OriginalEntryType, TRef<Number>)> callback) :
+        m_callback(callback),
+        UiList({}, list)
+    {
+    }
+
+    TRef<UiList<OriginalEntryType>> GetSourceList() {
+        return (TRef<UiList<OriginalEntryType>>)(UiList<OriginalEntryType>*)GetChild(0);
+    }
+
+    void Evaluate() override {
+        std::list<ResultEntryType> list;
+        int i = 0;
+        for (auto entry : GetSourceList()->GetList()) {
+            TRef<Number> index = new Number((float)i);
+
+            list.push_back(m_callback(entry, index));
+            ++i;
+        }
+
+        GetListInternal() = list;
+    }
+};

@@ -82,7 +82,6 @@ public:
 class StringImageCorrected : public Image {
 private:
     Justification     m_justification;
-    TRef<IEngineFont> m_pfont;
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -94,20 +93,21 @@ private:
     ColorValue*  GetColor() { return  ColorValue::Cast(GetChild(1)); }
     Number* GetWidth() { return Number::Cast(GetChild(2)); }
     Number* GetLineSeparation() { return Number::Cast(GetChild(3)); }
+    FontValue* GetFont() { return FontValue::Cast(GetChild(4)); }
 
 public:
     StringImageCorrected(
         Justification justification,
-        IEngineFont*  pfont,
+        FontValue*  pfont,
         ColorValue*   pcolor,
         Number*       pwidth,
         StringValue*  pstring,
         Number*       pSeparation
     ) :
         Image(pstring, pcolor, pwidth, pSeparation),
-        m_justification(justification),
-        m_pfont(pfont)
+        m_justification(justification)
     {
+        AddChild(pfont);
     }
 
     ZString BreakLine(ZString& str, int width)
@@ -127,7 +127,7 @@ public:
         // Figure out how many characters fit on the line
         //
 
-        int nchar = m_pfont->GetMaxTextLength(str, width, true);
+        int nchar = GetFont()->GetValue()->GetMaxTextLength(str, width, true);
 
         //
         // Chop off at the newline
@@ -196,9 +196,11 @@ public:
         int     xsize = 0;
         int     ysize = 0;
 
+        IEngineFont* pfont = GetFont()->GetValue();
+
         while (!str.IsEmpty()) {
             ZString strLine = BreakLine(str, fWidth);
-            WinPoint size = m_pfont->GetTextExtent(strLine);
+            WinPoint size = pfont->GetTextExtent(strLine);
 
             xsize = std::max(xsize, size.X());
             ysize += size.Y();
@@ -219,10 +221,11 @@ public:
         ZAssert(!pcontext->GetYAxisInversion());
 
         const Color& color = GetColor()->GetValue();
+        IEngineFont* pfont = GetFont()->GetValue();
 
         while (!str.IsEmpty()) {
             ZString  strLine = BreakLine(str, fWidth);
-            WinPoint size = m_pfont->GetTextExtent(strLine);
+            WinPoint size = pfont->GetTextExtent(strLine);
             int      x;
 
             if (m_justification == JustifyLeft()) {
@@ -239,7 +242,7 @@ public:
             }
 
             pcontext->DrawString(
-                m_pfont,
+                pfont,
                 color,
                 Point(
                 (float)x,
@@ -485,5 +488,5 @@ TRef<Image> ImageTransform::Lazy(std::function<TRef<Image>()> callback)
 
 TRef<Image> ImageTransform::String(FontValue * font, ColorValue * color, Number * width, StringValue * string, Justification justification, Number* pLineSeparation)
 {
-    return new StringImageCorrected(justification, font->GetValue(), color, width, string, pLineSeparation);
+    return new StringImageCorrected(justification, font, color, width, string, pLineSeparation);
 }
