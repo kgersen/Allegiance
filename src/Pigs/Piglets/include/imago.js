@@ -98,7 +98,7 @@ function OnStateMissionList(eStatePrevious) {
 
 // step 3...
 function OnStateWaitingForMission(eStatePrevious) {
-    KillAllTimers()
+    KillAllTimers();
 	DisplayStateTransition(eStatePrevious);
 	if (PigState_CreatingMission == eStatePrevious) {
 		Trace("Creating JoinTimer()\n");

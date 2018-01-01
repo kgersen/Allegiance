@@ -36,19 +36,26 @@ function OnReceiveChat(strText, objShip) {
 function OnStateFlying(eStatePrevious) {
 	DisplayStateTransition(eStatePrevious);
 	KillAllTimers();
-  Ship.Thrust(ThrustUp,ThrustForward);
-  Ship.Boost(true);
+  // I think Ship.Thrust might be making the bomber fly up when it gets to the base.. Weird...??!!
+  
+  Delay("Ship.Thrust(ThrustUp,ThrustForward)");
+  Delay("Ship.Boost(true)");
+  
   CreateTimer(2, "UpdateTargetTimer()", -1, "UpdateTargetTimer");
 }
 
 function CheckBoost(targetDistance){
   if(targetDistance > 600){
-    Ship.Boost(true);
+    Delay("Ship.Boost(true)");
   } else {
-    Ship.Boost(false);
+    Delay("Ship.Boost(false)");
   }
 }
 function CheckFireMissile(targetDistance) {
+  // Missiles need to be done through the same firing mechnisim as shooting.
+  // This pattern does not work with autopilot.
+  return;
+  
   if(targetDistance){
     var missileLock = Ship.MissileLock;
     var missileRange = Ship.MissileRange;
@@ -59,7 +66,16 @@ function CheckFireMissile(targetDistance) {
     //  Ship.FireMissile(true);
     //}
     if (targetDistance < Ship.MissileRange){
+      // Breaking autopilot
       Ship.FireMissile(true);
+    } else {
+      //Ship.FireMissile(false);
+    }
+    
+    if (targetDistance < 600){
+      Ship.DropMine(true);
+    } else {
+      //Ship.DropMine(false);
     }
   }
 }
@@ -79,7 +95,6 @@ function FindTarget() {
   if(nearEnemyStationIdx > -1 && Ship.BaseHullType.HasCapability(512)){
     foundTarget = {stationTarget: stationlist(nearEnemyStationIdx)};
   } else if (nearEnemyIdx > -1) {
-    foundTarget = shiplist(nearEnemyIdx)
     foundTarget = {shipTarget: shiplist(nearEnemyIdx)};
   }
   return foundTarget;
@@ -94,30 +109,25 @@ function UpdateTargetTimer() {
 		KillTimers();
 		return;
 	} 
-  
-  // Check Run Away
-  if (Ship.Fraction < 0.25) {
-		KillTimers();
-		Ship.GotoStationID(MyGarrison.ObjectID);								
-		Ship.Boost(true);
-    return;
-	} 
-  
+   
   // Check for the latest ship or station targets
   var found = FindTarget();
-  if(found.shipTarget && (!PREVIOUS_TARGET.shipTarget || PREVIOUS_TARGET.shipTarget != found.shipTarget)){
-    Ship.AttackShip(found.shipTarget);
-  }
-  if(found.stationTarget && (!PREVIOUS_TARGET.stationTarget || PREVIOUS_TARGET.stationTarget != found.stationTarget)){
-    Ship.AttackStation(found.stationTarget);
-  }
-  
+
   var someTarget = found.shipTarget || found.stationTarget
   if(someTarget){
     var targetDistance = Range2Ship(someTarget);
     
     CheckFireMissile(targetDistance);
     CheckBoost(targetDistance);
+    
+    if(found.shipTarget != PREVIOUS_TARGET.shipTarget){
+      Ship.AttackShip(found.shipTarget);
+    }
+    if(found.stationTarget != PREVIOUS_TARGET.stationTarget){
+      Ship.AttackStation(found.stationTarget);
+    }
+    
+    
     CheckRunAway(targetDistance);
   } else {
     CheckRunAway();
@@ -136,7 +146,7 @@ function CheckRunAway(targetDistance) {
 	}
   var goHome = false;
    
-	if (Ship.Fraction < 0.15) {
+	if (Ship.Fraction < 0.20) {
 		if (DebugSpam) Game.SendChat("Critical damage! heading home NOW");		
     goHome=true;
 	}
@@ -164,8 +174,8 @@ function CheckRunAway(targetDistance) {
   if(goHome){
     var stationlist = Ship.Sector.Stations;
     var mystationIdx = FindNearestFriendlyStation(stationlist);
-    Ship.GotoStationID(stationlist(mystationIdx).ObjectID);
-		Ship.Boost(true);
+    Delay("Ship.GotoStationID(" + stationlist(mystationIdx).ObjectID + ")");
+    Delay("Ship.Boost(true)");
 		KillTimers();		
   }  
 }

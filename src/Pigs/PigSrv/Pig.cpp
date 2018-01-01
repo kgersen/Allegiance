@@ -1976,8 +1976,7 @@ bool CPig::HitTreasureEvent(Time now, IshipIGC* ship, ItreasureIGC* treasure)
 //imago 10/14
 void CPig::GameOver(SideID iWinner)
 {
-	 if (GetCurrentState() == PigState_Flying)
-		SetCurrentState(PigState_WaitingForMission);
+	SetCurrentState(PigState_WaitingForMission);
 }
 
 

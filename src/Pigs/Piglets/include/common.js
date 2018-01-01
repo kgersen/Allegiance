@@ -41,6 +41,17 @@ function KillAllTimers() {
         Properties("CheckFireMissileTimer").Kill();
 }
 
+function KillTimer(timerName) {
+    if ("object" == typeof (Properties(timerName)))
+        Properties(timerName).Kill();
+}
+
+function Delay(action) {
+    KillTimer(action);
+    Properties(action) = undefined;
+    CreateTimer(0.1, action, 1, action);
+}
+
 function dump(arr,level) {
 	var dumped_text = "";
 	if(!level) level = 0;
