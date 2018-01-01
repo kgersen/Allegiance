@@ -740,12 +740,14 @@ private:
     TRef<ISoundInstance> m_pMainThrusterInteriorSound;
     TRef<ISoundInstance> m_pTurnThrusterInteriorSound;
     TRef<ISoundInstance> m_pAfterburnerInteriorSound;
+	TRef<ISoundInstance> m_pSideThrustInteriorSound;
 
     // sounds used outside of a ship
     TRef<ISoundInstance> m_pExteriorSound;
     TRef<ISoundInstance> m_pMainThrusterExteriorSound;
     TRef<ISoundInstance> m_pTurnThrusterExteriorSound;
     TRef<ISoundInstance> m_pAfterburnerExteriorSound;
+	TRef<ISoundInstance> m_pSideThrustExteriorSound;
     TRef<ISoundInstance> m_pMiningSound;
 
     // weapon sounds for each mount
@@ -933,6 +935,12 @@ private:
             }
         }
     };
+
+	//Sidethrusters
+	bool PlaySidethrust()
+	{
+		return m_pship->GetStateM() & (backwardButtonIGC | leftButtonIGC | rightButtonIGC);
+	}
 
     void PlayWeaponSounds()
     {
@@ -1299,6 +1307,14 @@ public:
                 PlaySoundIf(m_pAfterburnerInteriorSound, 
                     GetAfterburnerSoundID(true), 
                     m_psourceEngine, AfterburnerPower() > 0.0f);
+				//Sidethrusters
+				if (m_pship->GetHullType()->HasCapability(c_habmFighter))
+				{	//if its a small ship, play small ship sound
+					PlaySoundIf(m_pSideThrustInteriorSound, SidethrustInteriorSound, GetSoundSource(), PlaySidethrust());
+				}
+				else { //else play capship sound
+					PlaySoundIf(m_pSideThrustInteriorSound, CapSidethrustInteriorSound, GetSoundSource(), PlaySidethrust());
+				}
             }
 
             //
@@ -1316,7 +1332,14 @@ public:
                 GetAfterburnerSoundID(false), 
                 m_psourceEngine,
                 AfterburnerPower() > 0.0f);
-
+			//Sidethrusters
+			if (m_pship->GetHullType()->HasCapability(c_habmFighter))
+			{	//if its a small ship, play small ship sound
+				PlaySoundIf(m_pSideThrustInteriorSound, SidethrustExteriorSound, GetSoundSource(), PlaySidethrust());
+			}
+			else { //else play capship sound
+				PlaySoundIf(m_pSideThrustInteriorSound, CapSidethrustExteriorSound, GetSoundSource(), PlaySidethrust());
+			}
             UpdateEngineSoundLevels(dwElapsedTime);
 
             // if we are inside of the ship...
@@ -2602,8 +2625,6 @@ IObject*    WinTrekClient::LoadRadarIcon(const char* szName)
     {
         psurface = GetModeler()->LoadSurface(ZString(szName) + "bmp", true);
         assert (psurface);
-
-        //psurface->SetColorKey(Color(0, 0, 0));
     }
     else
         psurface = NULL;
@@ -2911,6 +2932,25 @@ void WinTrekClient::DestroyTeleportProbe(IprobeIGC* pprobe)
     }
 }
 
+void WinTrekClient::PostPlainText(bool bCritical, const char* pszText)
+{
+    if (GetWindow()->GetConsoleImage())
+    {
+        assert(pszText);
+
+        if (bCritical)
+        {
+            PlaySoundEffect(newCriticalMsgSound);
+            GetWindow()->GetConsoleImage()->GetConsoleData()->SetCriticalTipText(pszText);
+        }
+        else
+        {
+            PlaySoundEffect(newNonCriticalMsgSound);
+            GetWindow()->GetConsoleImage()->GetConsoleData()->SetTipText(pszText);
+        }
+    }
+}
+
 void WinTrekClient::PostText(bool bCritical, const char* pszText, ...)
 {
     if (GetWindow()->GetConsoleImage())
@@ -2924,16 +2964,7 @@ void WinTrekClient::PostText(bool bCritical, const char* pszText, ...)
         _vsnprintf(bfr, size, pszText, vl);
         va_end(vl);
 
-        if (bCritical) 
-        {
-            PlaySoundEffect(newCriticalMsgSound);
-            GetWindow()->GetConsoleImage()->GetConsoleData()->SetCriticalTipText(bfr);
-        }
-        else
-        {
-            PlaySoundEffect(newNonCriticalMsgSound);
-            GetWindow()->GetConsoleImage()->GetConsoleData()->SetTipText(bfr);
-        }
+        PostPlainText(bCritical, bfr);
     }
 }
 

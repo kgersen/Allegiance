@@ -1915,7 +1915,7 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                         IstationIGC*    pstation = (IstationIGC*)((ImodelIGC*)m_commandTargets[c_cmdPlan]);
                         if (pstation->GetBaseStationType()->HasCapability(c_sabmTeleportUnload))
                         {
-                            //Are we close enough to mine our target asteroid? // mmf incorrect comment
+                            //Are we close enough to teleport offload (at refinery)?
                             Vector  dp = pstation->GetPosition() - positionMe;
                             float   distance2 = dp.LengthSquared();
                             float   radius = pstation->GetRadius() + GetRadius() + 100.0f;
@@ -2101,12 +2101,21 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                 {
                     minedOre = capacity - m_fOre;
                     {
-                        ImodelIGC*  pmodel = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
+                        ImodelIGC*  pmodel = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster | c_ttCowardly,
                                                         NULL, NULL, NULL, NULL, c_sabmUnload);
+                        if (!pmodel) //no safe station available
+                            pmodel = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster,
+                                NULL, NULL, NULL, NULL, c_sabmUnload);
 
+                        if (pmodel) {
+                            if (pasteroid->GetOre() < capacity * 0.5f) {        //Don't reserve the rock and go back, if it's almost mined out
+                                SetCommand(c_cmdAccepted, pmodel, c_cidGoto);   // Also sets c_cmdCurrent and c_cmdPlan
+                            }
+                            else
+                                SetCommand(c_cmdPlan, pmodel, c_cidGoto);       // c_cmdAccepted unchanged - will come back
+                        }
                         //If we can't find a place to unload ... stick around here for lack of a better place to go
-                        if (pmodel)
-                            SetCommand(c_cmdPlan, pmodel, c_cidGoto);
+
 						// mmf added else and debugf
 						// else debugf("mmf %-20s no place to unload staying here, I am at %f %f %f\n",
 						// 						GetName(), GetPosition().x, GetPosition().y, GetPosition().z);
@@ -2183,12 +2192,12 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
 
         if (m_commandTargets[c_cmdPlan] == NULL)
         {
-            if ((m_pilotType < c_ptCarrier) && (m_commandIDs[c_cmdPlan] != c_cidDoNothing))
+            if (m_pilotType < c_ptCarrier) //&& (m_commandIDs[c_cmdPlan] != c_cidDoNothing))
             {
                 switch (m_pilotType)
                 {
                     case c_ptMiner:
-                        Complain(droneWhereToSound, "Miner requesting He3 asteriod.");
+                        Complain(droneWhereToSound, "Miner requesting He3 asteroid.");
                         break;
 
                     case c_ptBuilder:

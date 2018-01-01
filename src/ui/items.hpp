@@ -25,7 +25,7 @@ public:
     {
     }
 
-    IEventSource* GetEventSource(std::string string) {
+    TRef<IEventSource> GetEventSource(std::string string) {
         auto found = m_mapEventSources.find(string);
         if (found != m_mapEventSources.end()) {
             return found->second;
@@ -36,7 +36,7 @@ public:
         return pEventSource;
     }
 
-    PointEvent::Source* GetPointEventSource(std::string string) {
+    TRef<PointEvent::Source> GetPointEventSource(std::string string) {
         auto found = m_mapPointEventSources.find(string);
         if (found != m_mapPointEventSources.end()) {
             return found->second;
@@ -160,9 +160,12 @@ public:
 
 template<typename A>
 TRef<TStaticValue<A>> wrapValue(sol::object a) {
-    TStaticValue<A>* converted_a;
+    TRef<TStaticValue<A>> converted_a;
     if (a.is<A>()) {
         converted_a = new TStaticValue<A>(a.as<A>());
+    }
+    else if (a.is<TRef<TStaticValue<A>>>()) {
+        return a.as<TRef<TStaticValue<A>>>();
     }
     else if (a.is<TStaticValue<A>*>()) {
         converted_a = a.as<TStaticValue<A>*>();
@@ -171,8 +174,7 @@ TRef<TStaticValue<A>> wrapValue(sol::object a) {
         // force a cast, this sometimes still works, exception otherwise
         converted_a = new TStaticValue<A>(a.as<A>());
     }
-    TRef<TStaticValue<A>> refcounted = converted_a;
-    return refcounted;
+    return converted_a;
 };
 
 template<>
@@ -181,16 +183,22 @@ TRef<StringValue> wrapValue<ZString>(sol::object a) {
         return (TRef<StringValue>)new StringValue(ZString(a.as<std::string>().c_str()));
     }
 
-    StringValue* converted_a;
-    if (a.is<StringValue*>()) {
-        converted_a = a.as<StringValue*>();
+    typedef ZString A;
+    TRef<TStaticValue<A>> converted_a;
+    if (a.is<A>()) {
+        converted_a = new TStaticValue<A>(a.as<A>());
+    }
+    else if (a.is<TRef<TStaticValue<A>>>()) {
+        return a.as<TRef<TStaticValue<A>>>();
+    }
+    else if (a.is<TStaticValue<A>*>()) {
+        converted_a = a.as<TStaticValue<A>*>();
     }
     else {
         // force a cast, this sometimes still works, exception otherwise
-        converted_a = new StringValue(a.as<ZString>());
+        converted_a = new TStaticValue<A>(a.as<A>());
     }
-    TRef<StringValue> refcounted = converted_a;
-    return refcounted;
+    return converted_a;
 };
 
 TRef<StringValue> wrapString(sol::object a) {

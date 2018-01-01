@@ -31,13 +31,6 @@ const WORD RLELengthMask = 0x3fff;
 //////////////////////////////////////////////////////////////////////////////
 TRef<IFunction> CreateFrameImageFactory();
 
-TRef<Image> CreateFrameImage(
-    Number*  pframe,
-    Surface* psurface,
-    int      xframes,
-    int      yframes
-);
-
 //////////////////////////////////////////////////////////////////////////////
 //
 // FrameImageButtonpane

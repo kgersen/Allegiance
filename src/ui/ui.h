@@ -9,27 +9,70 @@
 #include "image.h"
 #include "engine.h"
 
-#define SOL_CHECK_ARGUMENTS 1
+#include "Exposer.h"
 
-#include "sol.hpp"
+#include "UiState.h"
 
-namespace sol {
+#include "ui_types.h"
+
+template <typename T>
+class TypeExposer : public Exposer {
+    //T m_object;
+
+public:
+    TypeExposer(const T& obj) : Exposer(obj) {
+    }
+
+    static std::shared_ptr<TypeExposer<T>> Create(const T& obj) {
+        return std::shared_ptr<TypeExposer<T>>(new TypeExposer(obj));
+    }
+
+    sol::object ExposeSolObject(lua_State* L) {
+        return sol::make_object<T>(L, *std::static_pointer_cast<T>(m_pobject));
+    }
+
+    operator T() const {
+        return m_object;
+    }
+};
+
+template <typename T>
+class TStaticValueExposer : public TypeExposer<TRef<TStaticValue<T>>> {
+    typedef TRef<TStaticValue<T>> ExposedType;
+
+public:
+    TStaticValueExposer(const ExposedType& obj) : TypeExposer(obj) {
+    }
+
+    static std::shared_ptr<TStaticValueExposer<T>> CreateStatic(const T& value) {
+        return std::shared_ptr<TStaticValueExposer<T>>(new TStaticValueExposer<T>(new TStaticValue<T>(value)));
+    }
+
+    //static std::shared_ptr<TStaticValueExposer<T>> CreateModifiable(const T& value) {
+    //    return std::shared_ptr<T>(new TypeExposer(TRef(new TModifiableValue<T>(value))));
+    //}
+};
+
+typedef TStaticValueExposer<bool> BooleanExposer;
+typedef TStaticValueExposer<float> NumberExposer;
+typedef TStaticValueExposer<ZString> StringExposer;
+
+class Exposed {
+    sol::object m_object;
+    sol::state m_lua;
+
+public:
     template <typename T>
-    struct unique_usertype_traits<TRef<T>> {
-        typedef T type;
-        typedef TRef<T> actual_type;
-        static const bool value = true;
+    Exposed(T arg) {
+        m_object = sol::make_object<T>(m_lua, arg);
+    }
 
-        static bool is_null(const actual_type& value) {
-            return value == nullptr;
-        }
+    sol::object GetSolObject(lua_State* L) {
+        return sol::make_object<sol::object>(L, m_object);
+    }
 
-        static type* get(const actual_type& p) {
-            T* result = p;
-            return result;
-        }
-    };
-}
+};
+
 
 class CallbackSink : public IEventSink {
 private:
@@ -61,4 +104,3 @@ public:
 };
 
 #include "UiEngine.h"
-#include "UiState.h"

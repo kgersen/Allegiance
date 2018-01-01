@@ -1656,36 +1656,15 @@ private:
         SurfaceType     stype, 
         SurfaceSite*    psite
     ) {
-//        PrivatePalette* pprivatePalette; CastTo(pprivatePalette, psurface->GetPalette());
-
-		// Construct the pixel format, including any alpha due to color keying.
+        // always a straight up format copy. Everything supported by the source should be supported by the target
 		PixelFormat * pixelFormat;
+        pixelFormat = psurface->GetPixelFormat();
 
-		if( psurface->HasColorKey() == false )
-		{
-			// No colour key, just a straight copy of the pixel format.
-			pixelFormat = psurface->GetPixelFormat();
-		}
-		else
-		{
-			// For now we just handle two explicit cases. 16 bit with 1 bit alpha or full 32 bit.
-			pixelFormat = psurface->GetPixelFormat();
-			if( ( pixelFormat->PixelBytes() == 2 ) &&
-				( CD3DDevice9::Get()->GetDevFlags()->bSupportsA1R5G6B6Format == true ) )
-			{
-				pixelFormat = new PixelFormat( D3DFMT_A1R5G5B5 );
-			}
-			else
-			{
-				pixelFormat = new PixelFormat( D3DFMT_A8R8G8B8 );
-			}
-		}
         return
             AddSurface(
                 CreatePrivateSurface(
                     this,
                     pixelFormat,
-//                    pprivatePalette,
                     size,
                     stype,
                     psite

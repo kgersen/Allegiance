@@ -136,19 +136,12 @@ ZString ConstantImage::GetString(int indent)
     return
           "ImportImage(\""
         + m_str + "\", "
-        + GetString(m_psurface->HasColorKey()) + ")";
+        + ")";
 }
 
 ZString ConstantImage::GetFunctionName()
 {
     return "ImportImage";
-}
-
-void ConstantImage::Write(IMDLBinaryFile* pmdlFile)
-{
-    pmdlFile->WriteReference("ImportImage");
-    TRef<ZFile> pfile = pmdlFile->WriteBinary();
-    m_psurface->Write(pfile);
 }
 
 //Imago 6/24/09 - removed the color hit-check check, see modeler.cpp(2520), these problems are related.
@@ -161,26 +154,6 @@ MouseResult ConstantImage::HitTest(IInputProvider* pprovider, const Point& point
 
     return MouseResult();
 }
-
-/*
-MouseResult ConstantImage::HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured)
-{
-    if (m_bounds.GetRect().Inside(point)) {
-        if (m_psurface->HasColorKey()) {
-            bool bHit = m_psurface->GetColor(WinPoint((int)point.X(), (int)point.Y())) != m_psurface->GetColorKey();
-            m_psurface->ReleasePointer();
-            
-            if (bHit) {
-                return MouseResultHit();
-            }
-        } else {
-            return MouseResultHit();
-        }
-    }
-
-    return MouseResult();
-}
-*/
 
 
 
@@ -628,7 +601,6 @@ AnimatedImage::AnimatedImage(Number* ptime, Surface* psurfaceSource, int nRows, 
     m_psurfaces.SetCount(nRows * nCols);
 
     if (m_psurfaces.GetCount() == 1) {
-        psurfaceSource->SetColorKey(Color(0, 0, 0));
         m_psurfaces.Set(0, psurfaceSource);
     } else {
         for (int row = 0; row < nRows; row++) {
@@ -641,16 +613,9 @@ AnimatedImage::AnimatedImage(Number* ptime, Surface* psurfaceSource, int nRows, 
                 TRef<Surface> psurfaceTextureSource =
                     psurfaceSource->CreateCompatibleSurface(WinPoint(size, size), SurfaceType2D());
 
-				// Set the colour key, and store in the vector of surfaces.
-                psurfaceTextureSource->SetColorKey(Color(0, 0, 0));
-
 				ZAssert(size == w && size == h);
 
-				// Fill the new texture with the colour key.
-//                psurfaceTextureSource->FillSurfaceWithColorKey();
-
 				// Copy in a portion of the original image into the new texture.
-//				psurfaceTextureSource->BitBlt(	WinPoint(0, 0), psurfaceSource, WinRect(x, y, x + size, y + size) );
 				psurfaceTextureSource->CopySubsetFromSrc( WinPoint(0, 0), psurfaceSource, WinRect(x, y, x + size, y + size) );
 
                 m_psurfaces.Set(index, psurfaceTextureSource);
@@ -676,21 +641,7 @@ TRef<Surface> AnimatedImage::GetSurface()
 
 MouseResult AnimatedImage::HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured)
 {
-    //  , AnimatedImage should be a vector of images instead of a vector of psurfaces
-
-    Surface* psurface = GetSurface();
-
-    bool bHit =
-           (!psurface->HasColorKey())
-        || psurface->GetColor(WinPoint((int)point.X(), (int)point.Y())) != psurface->GetColorKey();
-
-    psurface->ReleasePointer();
-
-    if (bHit) {
-        return MouseResultHit();
-    }
-
-    return MouseResult();
+    return MouseResultHit();
 }
 
 //////////////////////////////////////////////////////////////////////////////

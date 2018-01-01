@@ -56,6 +56,14 @@ public:
             return StringTransform::Concat(wrapString(a), wrapString(b));
         };
 
+        table["Slice"] = [](const TRef<StringValue>& string, const TRef<Number>& start, const TRef<Number>& length) {
+            return StringTransform::Slice(string, start, length);
+        };
+
+        table["Equals"] = [](TRef<StringValue> const& a, TRef<StringValue> const& b) {
+            return StringTransform::Equals(a, b);
+        };
+
         table["Switch"] = [](sol::object value, sol::table table, sol::optional<sol::object> valueDefault) {
             int count = table.size();
 
@@ -67,18 +75,7 @@ public:
                 valueDefaultNonOptional = new StringValue(ZString(""));
             }
 
-            if (value.is<TStaticValue<ZString>>() || value.is<std::string>()) {
-                //the wrapped value is a ZString, the unwrapped value a std::string
-                std::map<ZString, TRef<StringValue>> mapOptions;
-
-                table.for_each([&mapOptions](sol::object key, sol::object entry_value) {
-                    std::string strKey = key.as<std::string>();
-                    mapOptions[strKey.c_str()] = wrapString(entry_value);
-                });
-
-                return (TRef<StringValue>)new ValueToMappedValue<ZString, ZString>(wrapString(value), mapOptions, valueDefaultNonOptional);
-            }
-            else if (value.is<Number>() || value.is<float>()) {
+            if (value.is<TRef<Number>>() || value.is<float>()) {
                 //float/int problems are likely
                 std::map<float, TRef<StringValue>> mapOptions;
 
@@ -89,7 +86,18 @@ public:
 
                 return (TRef<StringValue>)new ValueToMappedValue<ZString, float>(wrapValue<float>(value), mapOptions, valueDefaultNonOptional);
             }
-            else if (value.is<Boolean>() || value.is<bool>()) {
+            else if (value.is<TRef<TStaticValue<ZString>>>() || value.is<std::string>()) {
+                //the wrapped value is a ZString, the unwrapped value a std::string
+                std::map<ZString, TRef<StringValue>> mapOptions;
+
+                table.for_each([&mapOptions](sol::object key, sol::object entry_value) {
+                    std::string strKey = key.as<std::string>();
+                    mapOptions[strKey.c_str()] = wrapString(entry_value);
+                });
+
+                return (TRef<StringValue>)new ValueToMappedValue<ZString, ZString>(wrapString(value), mapOptions, valueDefaultNonOptional);
+            }
+            else if (value.is<TRef<Boolean>>() || value.is<bool>()) {
                 std::map<bool, TRef<StringValue>> mapOptions;
 
                 table.for_each([&mapOptions](sol::object key, sol::object entry_value) {
@@ -102,9 +110,14 @@ public:
             throw std::runtime_error("Expected value argument of String.Switch to be either a wrapped or unwrapped bool, int, or string");
         };
 
-        context.GetLua().new_usertype<StringValue>("StringValue", 
-            sol::meta_function::concatenation, [](sol::object a, sol::object b) {
-                return StringTransform::Concat(wrapString(a), wrapString(b));
+        context.GetLua().new_usertype<TRef<StringValue>>("StringValue", 
+            sol::meta_function::concatenation, [](const TRef<StringValue>& a, const TRef<StringValue>& b) {
+                return StringTransform::Concat(a, b);
+            }
+        );
+        context.GetLua().new_usertype<TRef<SimpleModifiableValue<ZString>>>("StringValue",
+            sol::meta_function::concatenation, [](const TRef<StringValue>& a, const TRef<StringValue>& b) {
+                return StringTransform::Concat(a, b);
             }
         );
 

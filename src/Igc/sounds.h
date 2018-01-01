@@ -506,6 +506,13 @@ DEFSOUND(salChangeSides)
 DEFSOUND(salEnemyJoiners)
 DEFSOUND(salEnemyLeaves)
 
+
+//Sidethrusters
+DEFSOUND(SidethrustInterior)
+DEFSOUND(SidethrustExterior)
+DEFSOUND(CapSidethrustInterior)
+DEFSOUND(CapSidethrustExterior)
+
 // pigs
 DEFSOUND(oink1) // Pig response
 DEFSOUND(oink2) // Pig response

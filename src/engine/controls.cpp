@@ -569,7 +569,7 @@ void StringPane::Paint(Surface* psurface)
 	}
 
 	WinPoint origin = WinPoint( nXStart, 0 ) + psurface->GetOffset();
-	m_pfont->DrawString(	origin,
+	m_pfont->DrawStringScreenSpace(	origin,
 							strClipped, 
 							IsSelected() ? m_textColorSelected : m_textColor );
 
@@ -846,7 +846,7 @@ public:
 		//psurface->DrawString(m_pfont, m_textColor, WinPoint(0, 0), m_strClipped);
 
 		WinPoint origin = psurface->GetOffset();
-		m_pfont->DrawString(	origin,
+		m_pfont->DrawStringScreenSpace(	origin,
 								m_strClipped, 
 								m_textColor );								
 
@@ -946,22 +946,25 @@ void AnimatedImagePane::Paint(Surface* psurface)
         TRef<Context> pcontext = psurface->GetContext();
 
         if (pcontext) {
-            pcontext->Clip(
+            pcontext->PushState();
+            /*pcontext->Clip(
                 Rect(
                     offset.X(),
                     m_ysizeSurface - (offset.Y() + YSize()),
                     offset.X() + XSize(),
                     m_ysizeSurface - offset.Y()
                 )
-            );
+            );*/
             pcontext->Translate(
                 Point(
                     offset.X(),
+                    //offset.Y()
                     m_ysizeSurface - offset.Y() - m_rect.YMax()
                 )
             );
 
             GetImage()->Render(pcontext);
+            pcontext->PopState();
 
             psurface->ReleaseContext(pcontext);
         }

@@ -4279,6 +4279,11 @@ class IsideIGC : public IbaseIGC
 
 		//Xynth Adding function to return number of players on a side
 		virtual int GetNumPlayersOnSide(void) const = 0;
+
+        //Territory clusters
+        virtual void UpdateTerritory() = 0;
+        virtual ClusterListIGC GetTerritory() = 0;
+        virtual bool IsTerritory(IclusterIGC* pcluster) = 0;
 };
 
 class IcivilizationIGC : public IbaseIGC
@@ -4808,6 +4813,7 @@ class IIgcSite : public IObject
         virtual void KillBuildingEffectEvent(IbuildingEffectIGC* pbe) {}
         virtual void KillMineEvent(ImineIGC* pmine) {}
         virtual void KillTreasureEvent(ItreasureIGC* ptreasure) { ptreasure->Terminate(); }
+        virtual void PostPlainText(bool bCritical, const char* pszText) {}
         virtual void PostText(bool bCritical, const char* pszText, ...) {}
         virtual void PostNotificationText(ImodelIGC* pmodel, bool bCritical, const char* pszText, ...) {}
         virtual void EjectPlayer(ImodelIGC* pmodelCredit) {}

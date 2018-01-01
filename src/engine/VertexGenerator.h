@@ -25,6 +25,7 @@ public:
 		ePDBT_UITexVB = 0,
 		ePDBT_UIFillVB,
 		ePDBT_UIFontVB,
+        ePDBT_UIFont2VB,
 		
 		// 3D dynamic buffers.
 		ePDBT_D3DVB,

@@ -18,6 +18,7 @@ CVertexGenerator::SPredefinedDynamicBufferConfig CVertexGenerator::m_sDynBufferC
 	{ CVBIBManager::eBT_VertexDynamic, 4096, sizeof(UIVERTEX), D3DFVF_UIVERTEX },
 	{ CVBIBManager::eBT_VertexDynamic, 4096, sizeof(UICOLOURFILLVERTEX), D3DFVF_UICOLOURVERT },
 	{ CVBIBManager::eBT_VertexDynamic, 12288, sizeof(UIFONTVERTEX), D3DFVF_UIFONTVERTEX },
+    { CVBIBManager::eBT_VertexDynamic, 12288, sizeof(UIFONTVERTEX2), D3DFVF_UIFONTVERTEX2 },
 	{ CVBIBManager::eBT_VertexDynamic, 4096, sizeof(UIVERTEX), D3DFVF_UIVERTEX },
 	{ CVBIBManager::eBT_VertexDynamic, 4096, sizeof(UIFONTVERTEX), D3DFVF_UIFONTVERTEX },
 };

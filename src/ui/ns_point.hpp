@@ -26,16 +26,10 @@ public:
             return (TRef<SimpleModifiableValue<Point>>)new SimpleModifiableValue<Point>(Point(x, y));
         };
         
-        table["X"] = [](PointValue* pPoint) {
-            if (!pPoint) {
-                throw std::runtime_error("Argument should not be null");
-            }
+        table["X"] = [](const TRef<PointValue>& pPoint) {
             return PointTransform::X(pPoint);
         };
-        table["Y"] = [](PointValue* pPoint) {
-            if (!pPoint) {
-                throw std::runtime_error("Argument should not be null");
-            }
+        table["Y"] = [](const TRef<PointValue>& pPoint) {
             return PointTransform::Y(pPoint);
         };
         m_pLua->set("Point", table);

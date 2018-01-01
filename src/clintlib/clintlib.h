@@ -1141,7 +1141,7 @@ public:
                             name, pcluster->GetName());
                     else
                         sprintf(bfr, "Ripcording to %s", name);
-                    PostText(true, bfr);
+                    PostPlainText(true, bfr);
                 }
 
                 if (pmodelRipcordDest != pship->GetRipcordModel())
@@ -2020,8 +2020,11 @@ public:
             assert(pptDispenser);
             assert(pptDispenser->GetGroupID() >= 0);
 
-            if (!pstation->CanBuy(pptDispenser))
+            if (!pstation->CanBuy(pptDispenser) ||
+                pptDispenser->GetPartMask() == c_pbm2) //ignore int pulse probes
+            {
                 pptDispenser = NULL;
+            }
         }
         else
             pptDispenser = NULL;
