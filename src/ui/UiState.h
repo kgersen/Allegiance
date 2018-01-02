@@ -105,21 +105,21 @@ typedef TModifiableValue<std::shared_ptr<UiState>, ModifiableUiStateName> UiStat
 template <typename EntryType>
 class UiList : public Value {
 private:
-    std::list<EntryType> m_list;
+    std::vector<EntryType> m_list;
 
 protected:
-    std::list<EntryType>& GetListInternal() {
+    std::vector<EntryType>& GetListInternal() {
         return m_list;
     }
 
 public:
     template<class... T>
-    UiList(std::list<EntryType> list, T ... values) :
+    UiList(std::vector<EntryType> list, T ... values) :
         m_list(list),
         Value(values...)
     {}
 
-    const std::list<EntryType>& GetList() {
+    const std::vector<EntryType>& GetList() {
         return m_list;
     }
 
@@ -171,7 +171,7 @@ public:
     }
 
     void Evaluate() override {
-        std::list<ResultEntryType> list;
+        std::vector<ResultEntryType> list;
         int i = 0;
         for (auto entry : GetSourceList()->GetList()) {
             TRef<Number> index = new Number((float)i);
