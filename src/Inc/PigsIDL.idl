@@ -192,7 +192,7 @@ enum dispid_PigsIDL
   dispid_Goto,
   dispid_GotoStationID,
   dispid_Boost,
-
+  dispid_CdKey,
   dispid_PigsIDL_End = dispid_PigsIDL_Begin + 0x1000
 };
 
@@ -1352,6 +1352,9 @@ interface IPigAccount : IDispatch
 
   [propget, id(dispid_Password), helpstring("Gets the account password.")]
   HRESULT Password([out, retval] BSTR* pbstrPassword);
+
+  [propget, id(dispid_CdKey), helpstring("Gets the account CDKEY.")]
+  HRESULT CdKey([out, retval] BSTR* pbstrCdKey);
 
 }; // End: interface IPigAccount : IDispatch
 

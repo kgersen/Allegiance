@@ -2195,6 +2195,11 @@ STDMETHODIMP CPig::Logon()
   // Copy the pig account name and password to the connection parameters
 	Strcpy(ci.szName, OLE2CA(m_bstrName));
 
+	// TODO: pass in the CDKey from m_spAccount
+	BSTR bstrCdKey;
+	m_spAccount->get_CdKey(&bstrCdKey);
+	printf("%S logging in, CDKey is {%S}, TODO: Pass the CDKey during login.\n", m_bstrName, bstrCdKey);
+
 	//imago 10/14
 	/*CComBSTR bstrPW;
 	RETURN_FAILED(m_spAccount->get_Password(&bstrPW));
