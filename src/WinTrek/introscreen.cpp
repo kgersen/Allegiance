@@ -6,6 +6,7 @@
 #include "CreateGameDialog.h"
 
 #include "ui.h"
+#include "downloader.h"
 
 extern bool CheckNetworkDevices(ZString& strDriverURL);
 
@@ -289,6 +290,13 @@ private:
 
     TRef<CreateGameDialogPopup> m_pcreateDialog;
 
+    std::shared_ptr<DownloadHandle> m_pConfigDownload;
+
+    static const int STEP_CONFIG_DOWNLOAD = 1;
+    static const int STEP_CONFIG_READ = 2;
+    static const int STEP_LOBBY_LOGIN = 3;
+    static const int STEP_LOBBY_MISSIONLIST = 4;
+
 public:
     LoginHelper() :
         m_state(new UiStateModifiableValue(LoggedOutState(new UiStateValue(NoErrorState()), GetLoginSink())))
@@ -376,7 +384,7 @@ public:
         trekClient.GetClientEventSource()->AddSink(m_pClientEventSink);
 
         m_state->SetValue(LoggingInState());
-        m_state->GetValue().as<LoggingInState>()->SetStep(1, "Connecting to the lobby");
+        m_state->GetValue().as<LoggingInState>()->SetStep(STEP_CONFIG_DOWNLOAD, "Downloading configuration file");
 
         ZString name = trekClient.GetSavedCharacterName();
 
@@ -395,9 +403,44 @@ public:
         CallsignTagInfo callSignTagInfo;
         ZString characterName = callSignTagInfo.Render(name);
 
-        Async([this, characterName]() {
-            PathString pathConfig(PathString::GetCurrentDirectory() + "allegiance.txt");
-            trekClient.GetCfgInfo().Load(pathConfig);
+        char configPath[MAX_PATH];
+        lstrcpy(configPath, "http://allegiance.zaphop.com/allegiance.txt");
+
+        HKEY hKey;
+
+        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        {
+            DWORD cbValue = MAX_PATH;
+            char szConfig[MAX_PATH];
+            szConfig[0] = '\0';
+            ::RegQueryValueEx(hKey, "CfgFile", NULL, NULL, (LPBYTE)&szConfig, &cbValue);
+            // if it didn't succeed, we'll just use the default above
+            if (lstrlen(szConfig) > 0)
+                lstrcpy(configPath, szConfig);
+        }
+
+        if (ZString(configPath).Find("http://") == -1)
+        {
+            StartConfigRead(characterName, configPath, "Using local lobby configuration. Reading lobby configuration");
+        }
+        else {
+            m_pConfigDownload = Downloader().Download(configPath);
+            m_pConfigDownload->AddCallback([this, characterName]() {
+                try {
+                    PathString pathLocalConfig(m_pConfigDownload->GetResultFilePath().c_str());
+                    StartConfigRead(characterName, pathLocalConfig, "Downloaded lobby configuration. Reading lobby configuration");
+                }
+                catch (const DownloadException& e) {
+                    SetLoginError(std::string("Configuration: ") + e.what());
+                }
+            });
+        }
+    }
+
+    void StartConfigRead(ZString characterName, PathString pathLocalConfig, std::string strStepMessage) {
+        m_state->GetValue().as<LoggingInState>()->SetStep(STEP_CONFIG_READ, strStepMessage);
+        Async([this, characterName, pathLocalConfig]() {
+            trekClient.GetCfgInfo().Load(pathLocalConfig);
 
             BaseClient::ConnectInfo ci;
             DWORD cbZoneTicket = 0;
@@ -408,12 +451,13 @@ public:
 
             ZeroMemory(&ci.ftLastArtUpdate, sizeof(ci.ftLastArtUpdate));
 
-            ((BaseClient*)&trekClient)->ConnectToLobby(&ci);
+            m_state->GetValue().as<LoggingInState>()->SetStep(STEP_LOBBY_LOGIN, "Connecting to the lobby");
+            HRESULT success = ((BaseClient*)&trekClient)->ConnectToLobby(&ci);
             if (!trekClient.m_fmLobby.IsConnected()) {
                 SetLoginError("Failed to connect to the lobby.");
                 return;
             }
-            m_state->GetValue().as<LoggingInState>()->SetStep(2, "Connected to the lobby. Waiting for the server list.");
+            m_state->GetValue().as<LoggingInState>()->SetStep(STEP_LOBBY_MISSIONLIST, "Connected to the lobby. Waiting for the server list.");
         });
     }
 
