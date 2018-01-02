@@ -94,13 +94,13 @@ public:
     }
 };
 
-typedef TStaticValue<UiState> UiStateValue;
+typedef TStaticValue<std::shared_ptr<UiState>> UiStateValue;
 
 // Maybe remove when we really don't care about mdl logging anymore
-void Write(IMDLBinaryFile* pmdlFile, const UiState& value);
-ZString GetString(int indent, const UiState& value);
-ZString GetFunctionName(const UiState& value);
-typedef TModifiableValue<UiState, ModifiableUiStateName> UiStateModifiableValue;
+void Write(IMDLBinaryFile* pmdlFile, const std::shared_ptr<UiState>& value);
+ZString GetString(int indent, const std::shared_ptr<UiState>& value);
+ZString GetFunctionName(const std::shared_ptr<UiState>& value);
+typedef TModifiableValue<std::shared_ptr<UiState>, ModifiableUiStateName> UiStateModifiableValue;
 
 template <typename EntryType>
 class UiList : public Value {
