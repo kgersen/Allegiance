@@ -245,6 +245,7 @@ public:
 
     virtual Engine*         GetEngine() = 0;
     virtual ZString         GetArtPath() = 0;
+    virtual std::shared_ptr<IFileLoader>         GetFileLoader() = 0;
 
     // KGJV 32B - move this to abstrat class modeler
     virtual TRef<ZFile> GetFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError, bool getHighresVersion) = 0; // BT - 10/17 - HighRes Textures

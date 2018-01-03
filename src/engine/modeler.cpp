@@ -2188,6 +2188,11 @@ public:
         m_pathStr = pathStr;
     }
 
+    std::shared_ptr<IFileLoader> GetFileLoader()
+    {
+        return m_pFileLoader;
+    }
+
     ZString GetArtPath()
     {
         return m_pathStr;
