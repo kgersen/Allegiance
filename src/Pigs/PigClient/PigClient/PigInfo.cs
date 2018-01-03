@@ -18,16 +18,25 @@ namespace WpfApp1
                 return default(T);
             }
         }
-        public PigInfo(PigsLib.IPig p)
+        public PigInfo(PigsLib.IPig p, string scriptName)
         {
             this.p = p;
+            ScriptName = scriptName;
             Launch = new CommandWrapper(() => p.Launch(), () => true);
-            Logoff = new CommandWrapper(() => Try(()=> { p.Logoff(); return ""; }), () => true);
+            Logoff = new CommandWrapper(() => Try(() => { p.Logoff(); return ""; }), () => true);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         private PigsLib.IPig p;
+        private string _scriptName;
+
+        public string ScriptName { get => _scriptName; private set {
+                _scriptName = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ScriptName"));
+            }
+        }
+
         public PigsLib.IPig Pig
         {
             get { return p; }
@@ -38,12 +47,12 @@ namespace WpfApp1
             }
         }
 
-        public string Name { get { return Try(() => p?.Name); }}
+        public string Name { get { return Try(() => p?.Name); } }
 
         public string State { get { return Try(() => p?.PigStateName ?? ""); } }
-        public string GameName {get => Try(() => p?.Game.Name ?? ""); }
-        public int Money{ get => Try(() => p.Money);}
-        public string Hull { get => Try(() => p.Ship?.HullType?.Name ?? "");}
+        public string GameName { get => Try(() => p?.Game.Name ?? ""); }
+        public int Money { get => Try(() => p.Money); }
+        public string Hull { get => Try(() => p.Ship?.HullType?.Name ?? ""); }
         //public string Position { get => Try(() => p?.Ship?.Position?.DisplayString ?? "");}
         //public string Velocity { get => Try(() => p?.Ship?.Velocity?.DisplayString ?? ""); }
         public string TeamName { get => Try(() => p?.Ship?.Team?.Name ?? ""); }
