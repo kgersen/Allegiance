@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
-        Title="PigClient" Height="359" Width="618">
+        Title="Pig Client" Height="359" Width="618" Icon="pig-face.png">
     <Grid>
         <Button IsEnabled="{Binding Path=pigButtonEnable}" Content="Create Pig" HorizontalAlignment="Left" Margin="10,67,0,0" VerticalAlignment="Top" Width="90" Click="CreatePig_Click"/>
         <Button Content="Connect" HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top" Width="90" Click="Connect_Click"/>

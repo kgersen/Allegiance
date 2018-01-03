@@ -145,5 +145,8 @@
   <ItemGroup>
     <Resource Include="Setup.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="pig-face.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
