@@ -1,6 +1,8 @@
 #ifndef _Model_h_
 #define _Model_h_
 
+#include <memory>
+
 #include "bounds.h"
 #include "context.h"
 #include "value.h"
@@ -8,6 +10,8 @@
 #include <input.h>
 #include <tref.h>
 #include <tvector.h>
+
+#include "FileLoader.h"
 
 class Context;
 class D3DVertex;
@@ -235,7 +239,8 @@ public:
     // Modeler members
     //
 
-    virtual void            SetSite(ModelerSite* psite) = 0;
+    virtual void            SetSite(ModelerSite* psite) = 0; 
+    virtual void SetFileLoader(const std::shared_ptr<IFileLoader>& loader) = 0;
     virtual void            SetArtPath(const PathString& pathStr) = 0;
 
     virtual Engine*         GetEngine() = 0;

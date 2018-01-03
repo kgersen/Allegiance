@@ -18,10 +18,7 @@
 #include "valuetransform.h"
 #include "DX9PackFile.h"
 
-#ifdef STEAMSECURE
-# include "steam_api.h"
-# include <AllegianceSecurity.h>
-#endif
+#include "FileLoader.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -2147,6 +2144,7 @@ private:
     TRef<Engine>			m_pengine;
     TRef<ModelerSite>		m_psite;
     PathString				m_pathStr;
+    std::shared_ptr<IFileLoader> m_pFileLoader;
 	ImportImageFactory *	m_pImageFactory;			// This allows us to pass extra parameters into the image factory.
 
 #ifdef STEAMSECURE
@@ -2179,6 +2177,11 @@ public:
     {
         m_psite = psite;
 	}
+
+    void SetFileLoader(const std::shared_ptr<IFileLoader>& loader)
+    {
+        m_pFileLoader = loader;
+    }
 
     void SetArtPath(const PathString& pathStr)
     {
@@ -2428,138 +2431,19 @@ public:
 
 	TRef<ZFile> GetFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError, bool getHighresVersion)
 	{
-		ZString strExtension = pathStr.GetExtension();
-		ZString strToTryOpen;// yp Your_Persona October 7 2006 : TextureFolder Patch
-		ZString strToTryOpenFromDev;// KGJV - 'dev' subfolder
-		ZString strPackFile; // doofus - Filename for pack searching.
-		ZString strToTryOpenFromSteamDLC; // BT - STEAM
+        ZString strExtension = pathStr.GetExtension();
+        ZString strToOpen = pathStr;
 
-		ZString strToOpen;
-		TRef<ZFile> pfile = NULL;
+        if (strExtension.IsEmpty()) {
+            strToOpen = strToOpen + "." + strExtensionArg;
+        }
 
-		if (!strExtension.IsEmpty()) {
-			if (!strExtensionArg.IsEmpty()) // KGJV 32B - ignore empty strExtensionArg
-				if (strExtension.ToLower() != strExtensionArg.ToLower()) { // KGJV 32B - ignore case
-					return NULL;
-				}
-			strPackFile = pathStr;
-			strToOpen = m_pathStr + pathStr;
-			strToTryOpenFromDev = m_pathStr + "dev/" + pathStr;
-			strToTryOpen = m_pathStr + "Textures/" + pathStr;
-			strToTryOpenFromSteamDLC = ZString(m_pathStr + "SteamDLC/") + ZString(pathStr);
+        //if we aren't allowed to throw errors, check if the file exists
+        if (bError == false && m_pFileLoader->HasFile(strToOpen) == false) {
+            return nullptr;
+        }
 
-		}
-		else {
-			strPackFile = ZString(pathStr) + ("." + strExtensionArg);
-			strToOpen = ZString(m_pathStr + pathStr) + ("." + strExtensionArg);
-			strToTryOpenFromDev = ZString(m_pathStr + "dev/" + pathStr) + ("." + strExtensionArg);
-			strToTryOpen = ZString(m_pathStr + "Textures/" + pathStr) + ("." + strExtensionArg);
-			strToTryOpenFromSteamDLC = ZString(m_pathStr + "SteamDLC/") + ZString(pathStr) + ("." + strExtensionArg);
-		}
-		DWORD dwFileSize;
-		void * pPackFile;
-		pPackFile = CDX9PackFile::LoadFile(&strPackFile[0], &dwFileSize);
-		if ((pPackFile != NULL) && (dwFileSize > 0))
-		{
-			pfile = new ZPackFile(strPackFile, pPackFile, dwFileSize);
-		}
-
-		// BT - STEAM
-		if (pfile == NULL &&
-			(strToTryOpenFromSteamDLC.Right(17) != "newgamescreen.mdl")) //newgamescreen needs to be ACSS-protected, so don't open it from mods
-		{
-			pfile = new ZFile(strToTryOpenFromSteamDLC, OF_READ | OF_SHARE_DENY_WRITE);
-
-			if (!pfile->IsValid())
-				pfile = NULL;
-
-
-#ifdef STEAMSECURE
-			// When building release mode, then enforce the artwork checksums on any MDL that is loaded by the engine.
-			else if (m_fileHashTable.DoesFileHaveHash(strToTryOpenFromSteamDLC) == true)
-				pfile = NULL;
-#endif
-		}
-
-		// yp Your_Persona October 7 2006 : TextureFolder Patch
-		// BT - 10/17 - HighRes Textures
-		if ((pfile == NULL) && getHighresVersion == true &&
-			(strToTryOpen.Right(7) == "bmp.mdl")) // if its a texture, try loading from the strToTryOpen
-		{
-			pfile = new ZFile(strToTryOpen, OF_READ | OF_SHARE_DENY_WRITE);
-			// mmf modified Y_P's logic
-			if (!pfile->IsValid())
-			{
-				pfile = NULL;
-			}
-		}
-
-        bool bFileSteamHashInvalid = false;
-
-		if (!pfile) // if we dont have a file here, then load regularly.
-		{
-			// mmf #if this out for release.  I left the strtoTryOpenFromDev code in above
-
-			// pkk - Use same conditional compilation like on registry keys
-#ifdef _ALLEGIANCE_PROD_
-			pfile = new ZFile(strToOpen, OF_READ | OF_SHARE_DENY_WRITE);
-#else
-			// KGJV try dev folder 1st
-			pfile = new ZFile(strToTryOpenFromDev, OF_READ | OF_SHARE_DENY_WRITE);
-			if (!pfile->IsValid()) {
-				pfile = new ZFile(strToOpen, OF_READ | OF_SHARE_DENY_WRITE);
-		}
-			else {
-				if (g_bMDLLog) {
-					ZDebugOutput("'dev' file found for " + pathStr + "\n");
-				}
-			}
-#endif     
-
-			// mmf added debugf but will still have it call assert
-			if (!pfile->IsValid()) {
-				ZDebugOutput("Could not open the artwork file " + strToOpen + "\n");
-				// this may fail/crash if strToOpen is fubar, but we are about to ZRAssert anyway
-			}
-			else
-			{
-
-#ifdef STEAMSECURE
-
-				// BT - STEAM - Do the security checksum  on the loaded file here. Steam DRM wrapper will ensure that the Allegiance exe is not
-				// tampered with, so basic checksums are all that is required.
-				if (m_fileHashTable.IsHashCorrect(strToOpen, pfile) == false)
-				{
-					// Cause the calls downward to fail out.
-					pfile = new ZFile("failsauce.nope");
-                    bFileSteamHashInvalid = true;
-				}
-#endif
-			}
-		}
-
-		//Imago 11/09/09 - Provide a helpful message box for this common error
-		if (bError && !pfile->IsValid() && m_psite) {
-			PostMessageA(GetActiveWindow(), WM_SYSCOMMAND, SC_MINIMIZE, 0);
-
-#ifdef STEAMSECURE
-			// BT - STEAM - Queue up a full content re-verify in case the user has a corrupted file.
-            // Rock - verification can be disabled with a command line toggle
-			if (g_bMDLLog == false && SteamUser() != nullptr && SteamUser()->BLoggedOn() == true)
-				SteamApps()->MarkContentCorrupt(false);
-#endif 
-
-            if (bFileSteamHashInvalid) {
-                MessageBoxA(GetDesktopWindow(), "Artwork file failed to validate: " + strToOpen + ", we have queued up an installation reverification. Check your Steam App in the downloads section for details..", "Allegiance: Fatal modeler error", MB_ICONERROR);
-            }
-            else {
-                MessageBoxA(GetDesktopWindow(), "Artwork file contained an error: " + strToOpen + ", we have queued up an installation reverification. Check your Steam App in the downloads section for details..", "Allegiance: Fatal modeler error", MB_ICONERROR);
-            }
-			exit(0);
-		}
-		ZRetailAssert(!(bError && !pfile->IsValid() && m_psite));
-
-		return pfile->IsValid() ? pfile : NULL;
+        return m_pFileLoader->GetFile(strToOpen);
 	}
 
 	// BT - 10/17 - HighRes Textures

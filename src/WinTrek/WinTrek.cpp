@@ -25,6 +25,8 @@ class QuickChatNode : public IMDLObject {};
 #include <D3DDevice9.h>
 #include <DX9PackFile.h>
 
+#include "FileLoader.h"
+
 // Tell the linker that my DLL should be delay loaded
 //#pragma comment(linker, "/DelayLoad:icqmapi.dll")
 
@@ -2758,9 +2760,19 @@ public:
 		debugf("Setting art path to: %s\n", (PCC) strArtPath);
 
 		// Now set the art path, performed after initialise, else Modeler isn't valid.
-		GetModeler()->SetArtPath(strArtPath);
 
-        UiEngine::SetGlobalArtPath((std::string)strArtPath);
+        auto pFileLoader = CreateSecureFileLoader(
+        {
+            strArtPath + "/Textures",
+            strArtPath
+        },
+            strArtPath
+        );
+        GetModeler()->SetFileLoader(pFileLoader);
+
+        GetModeler()->SetArtPath(strArtPath); //todo remove
+
+        UiEngine::SetGlobalFileLoader(pFileLoader);
 
         if (g_bLuaDebug) {
             UiEngine::m_stringLogPath = (std::string)"lua.log";
