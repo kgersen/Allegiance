@@ -1348,7 +1348,6 @@ public:
     TRef<IMenuItem>            m_pitemToggleStars;
     TRef<IMenuItem>            m_pitemToggleEnvironment;
     TRef<IMenuItem>			   m_pitemToggleUseOldUi;
-	TRef<IMenuItem>			   m_pitemToggleHighResTextures; // BT - 10/17 - HighRes Textures
     TRef<IMenuItem>            m_pitemToggleRoundRadar;
     TRef<IMenuItem>            m_pitemToggleLinearControls;
     TRef<IMenuItem>            m_pitemToggleLargeDeadZone;
@@ -1456,9 +1455,6 @@ public:
     HWND  m_hwndVTEdit;
 
     bool m_bUseOldUi;
-
-	// BT - 10/17 - HighRes Textures
-	bool m_bUseHighResTextures;
 
     //
     // Input
@@ -2743,7 +2739,6 @@ public:
 		m_iMouseAccel(0), //#215
 		m_bShowInventoryPane(true), // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
 		m_bShowSectorMapPane(true),  // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
-		m_bUseHighResTextures(true), // BT - 10/17 - HighRes Textures
         m_bUseOldUi(false)
     {
         HRESULT hr;
@@ -2790,7 +2785,7 @@ public:
         );
         GetModeler()->SetFileLoader(pFileLoader);
 
-        GetModeler()->SetArtPath(strArtPath); //todo remove
+        GetModeler()->SetArtPath(strArtPath); //some functionality relies on the artpath
 
         UiEngine::SetGlobalFileLoader(pFileLoader);
 
@@ -3058,11 +3053,6 @@ public:
         m_bFFAutoCenter			 = (LoadPreference("FFAutoCenter",			0) != 0); //Imago #187
 		m_iMouseAccel			 = LoadPreference("MouseAcceleration",     0) % 3; // Imago #215 //#282 bugfix
 		m_iWheelDelay			 = LoadPreference("WheelDelay",            2) % 5; //Spunky #282
-
-		// BT - 10/17 - HighRes Textures
-		m_bUseHighResTextures    = (LoadPreference("HighResTextures",		1) != 0);
-
-		m_pmodeler->SetHighResTextures(m_bUseHighResTextures);
 
         m_bUseOldUi = (LoadPreference("OldUi", 1) != 0);
 
@@ -4181,8 +4171,6 @@ public:
 	#define idmMouseAccel		820
 	#define idmWheelDelay		821 //Spunky #282
 
-	#define idmHighResTextures	822	// BT - 10/17 - HighRes Textures
-
     #define idmOldUi	        823
 
 	// BT - STEAM
@@ -4698,9 +4686,6 @@ public:
                 m_pitemToggleLensFlare             = pmenu->AddMenuItem(idmToggleLensFlare,             GetLensFlareMenuString()            ,	'F');
                 m_pitemToggleBidirectionalLighting = pmenu->AddMenuItem(idmToggleBidirectionalLighting, GetBidirectionalLightingMenuString(),	'B');
                 m_pitemStyleHUD                    = pmenu->AddMenuItem(idmStyleHUD,                    GetStyleHUDMenuString()             ,	'H'); //Imago 6/30/09 adjust new dx9 settings in game
-				
-				// BT - 10/17 - HighRes Textures
-				m_pitemToggleHighResTextures	   = pmenu->AddMenuItem(idmHighResTextures,				GetHighResTexturesString(),				'X');
 
                 //Rock: Disabled for release
                 //m_pitemToggleUseOldUi     = pmenu->AddMenuItem(idmOldUi, GetOldUiMenuString(), 'G');
@@ -5487,25 +5472,6 @@ public:
 
     }
 
-	// BT - 10/17 - HighRes Textures
-	void ToggleHighResTextures()
-	{
-		m_bUseHighResTextures = !m_bUseHighResTextures;
-
-		SavePreference("HighResTextures", m_bUseHighResTextures);
-
-		GetWindow()->GetModeler()->SetHighResTextures(m_bUseHighResTextures);
-
-		if (m_pitemToggleHighResTextures != NULL) {
-			m_pitemToggleHighResTextures->SetString(GetHighResTexturesString());
-		}
-
-		m_pmessageBox = CreateMessageBox("Enabling or Disabling the High Resolution Textures will require you to restart Allegiance.", NULL, true, false);
-        m_pmessageBox->GetEventSource()->AddSink(new CloseNotificationSink(this));
-		GetWindow()->GetPopupContainer()->OpenPopup(m_pmessageBox, false);
-
-	}
-
 	//Imago 7/8/09 #24
     void ToggleShowGrid()
     {
@@ -6169,12 +6135,6 @@ public:
         return "Use old UI: " + ZString(m_bUseOldUi ? "On" : "Off");
     }
 
-	// BT - 10/17 - HighRes Textures
-	ZString GetHighResTexturesString()
-	{
-		return "Use High Resolution Textures: " + ZString(m_bUseHighResTextures ? "On" : "Off");
-	}
-
     ZString GetEnableFeedbackMenuString()
     {
         return (m_bEnableFeedback ? "Force Feedback Enabled " : "Force Feedback Disabled ");
@@ -6448,11 +6408,6 @@ public:
             case idmToggleEnvironment:
                 ToggleEnvironment();
                 break;
-
-				// BT - 10/17 - HighRes Textures
-			case idmHighResTextures:
-				ToggleHighResTextures();
-				break;
 
             case idmOldUi:
                 ToggleOldUi();

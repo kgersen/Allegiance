@@ -248,7 +248,7 @@ public:
     virtual std::shared_ptr<IFileLoader>         GetFileLoader() = 0;
 
     // KGJV 32B - move this to abstrat class modeler
-    virtual TRef<ZFile> GetFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError, bool getHighresVersion) = 0; // BT - 10/17 - HighRes Textures
+    virtual TRef<ZFile> GetFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError) = 0;
 
     virtual INameSpace*     CreateNameSpace(const ZString& str)                        = 0;
     virtual INameSpace*     CreateNameSpace(const ZString& str, INameSpace* pnsParent) = 0;
@@ -256,11 +256,7 @@ public:
     virtual void            UnloadNameSpace(const ZString& str)                        = 0;
     virtual void            UnloadNameSpace(INameSpace* pns)                           = 0;
 
-	// BT - 10/17 - HighRes Textures
-	virtual void			SetHighResTextures(bool m_bUseHighResTextures) = 0;
-	virtual bool			GetUseHighResTextures() = 0;
-
-    virtual TRef<ZFile>     LoadFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError = true, bool useHighres = true)                 = 0; // BT - 10/17 - HighRes Textures
+    virtual TRef<ZFile>     LoadFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError = true)                 = 0;
     virtual HBITMAP         LoadBitmap(const PathString& pathStr, bool bError = true)               = 0;
     virtual TRef<Image>     LoadImage(const ZString& pathStr, bool bColorKey, bool bError = true, bool bSystemMem = false )   = 0;
     virtual TRef<Surface>   LoadSurface(const ZString& pathStr, bool bColorKey, bool bError = true, bool bSystemMem = false ) = 0;

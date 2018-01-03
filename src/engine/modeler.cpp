@@ -638,8 +638,7 @@ public:
         ZString  str    = GetString((IObject*)stack.Pop());
         bool     b      = GetBoolean((IObject*)stack.Pop());
 
-		// BT - 10/17 - HighRes Textures
-        TRef<ZFile> zf = m_pmodeler->GetFile(str,"",true, m_pmodeler->GetUseHighResTextures());
+        TRef<ZFile> zf = m_pmodeler->GetFile(str,"",true);
 		ZFile * pFile = (ZFile*) zf;
 		
 		D3DXIMAGE_INFO fileInfo;
@@ -2158,13 +2157,11 @@ private:
 	bool					m_bHintColorKey;			// Surface requires colour keying.
 	bool					m_bHintSystemMemory;
 	bool					m_bHintUIImage;
-	bool					m_bUseHighResTextures;
 
 public:
     ModelerImpl(Engine* pengine) :
         m_pengine(pengine),
-        m_pathStr("."),
-		m_bUseHighResTextures(true) // BT - 10/17 - HighRes Textures
+        m_pathStr(".")
 		{
         m_psite = new ModelerSiteImpl();
         InitializeNameSpace();
@@ -2422,19 +2419,7 @@ public:
         return m_pengine;
 	}
 
-	// BT - 10/17 - HighRes Textures
-	void SetHighResTextures(bool bUseHighResTextures)
-	{
-		m_bUseHighResTextures = bUseHighResTextures;
-	}
-
-	// BT - 10/17 - HighRes Textures
-	bool GetUseHighResTextures()
-	{
-		return m_bUseHighResTextures;
-	}
-
-	TRef<ZFile> GetFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError, bool getHighresVersion)
+	TRef<ZFile> GetFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError)
 	{
         ZString strExtension = pathStr.GetExtension();
         ZString strToOpen = pathStr;
@@ -2451,10 +2436,9 @@ public:
         return m_pFileLoader->GetFile(strToOpen);
 	}
 
-	// BT - 10/17 - HighRes Textures
-    TRef<ZFile> LoadFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError, bool highRes)
+    TRef<ZFile> LoadFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError)
     {
-        return GetFile(pathStr, strExtensionArg, bError, highRes);
+        return GetFile(pathStr, strExtensionArg, bError);
     }
 
 
@@ -2491,11 +2475,7 @@ public:
         // Is the image already loaded?
         //
 
-		// BT - 10/17 - HighRes Textures
 		ZString namespaceName = str;
-
-		if (m_bUseHighResTextures == true)
-			namespaceName += "-highres";
 
         TRef<INameSpace> pns = GetCachedNameSpace(namespaceName);
 
@@ -2575,7 +2555,7 @@ public:
         bool& bAnimation,
         bool bError
     ) {
-        TRef<ZFile> pfile = GetFile(pathStr, "x", bError, false); // BT - 10/17 - HighRes Textures
+        TRef<ZFile> pfile = GetFile(pathStr, "x", bError);
 
         if (pfile) {
             return ::ImportXFile(this, pfile, pnumberFrame, bAnimation);
@@ -2615,34 +2595,17 @@ public:
 	
     INameSpace* GetNameSpace(const ZString& str, bool bError, bool bSystemMem)
     {
-		// BT - 10/17 - HighRes Textures
 		TRef<INameSpace> pns;
 		
 		ZString namespaceName = str;
 
-		// if it's something that could have a high-res version...
-		if (str.Right(3) == "bmp")
-		{
-			if (m_bUseHighResTextures == true)
-			{
-				namespaceName += "-highres";
-				pns = GetCachedNameSpace(str + "-highres");
-			}
-			else
-			{
-				pns = GetCachedNameSpace(str);
-			}
-		}
-		else
-		{
-			pns = GetCachedNameSpace(str);
-		}
+        pns = GetCachedNameSpace(str);
 
 		if (pns)
 			return pns;
 
 
-		TRef<ZFile> pfile = GetFile(str, "mdl", bError, m_bUseHighResTextures);
+		TRef<ZFile> pfile = GetFile(str, "mdl", bError);
 
 
 		if (pfile != NULL)
