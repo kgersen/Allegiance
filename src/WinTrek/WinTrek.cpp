@@ -3032,7 +3032,7 @@ public:
 
 		m_pmodeler->SetHighResTextures(m_bUseHighResTextures);
 
-        m_bUseOldUi = (LoadPreference("OldUi", 1) != 0);
+        m_bUseOldUi = (LoadPreference("OldUi", 0) != 0);
 
         //
         // Initial screen size
@@ -4670,8 +4670,7 @@ public:
 				// BT - 10/17 - HighRes Textures
 				m_pitemToggleHighResTextures	   = pmenu->AddMenuItem(idmHighResTextures,				GetHighResTexturesString(),				'X');
 
-                //Rock: Disabled for release
-                //m_pitemToggleUseOldUi     = pmenu->AddMenuItem(idmOldUi, GetOldUiMenuString(), 'G');
+                m_pitemToggleUseOldUi     = pmenu->AddMenuItem(idmOldUi, GetOldUiMenuString(), 'G');
  				
 				break;
 
