@@ -2759,13 +2759,33 @@ public:
 
 		debugf("Setting art path to: %s\n", (PCC) strArtPath);
 
-		// Now set the art path, performed after initialise, else Modeler isn't valid.
 
-        auto pFileLoader = CreateSecureFileLoader(
+        std::vector<ZString> vArtPaths;
         {
-            strArtPath + "/Textures",
-            strArtPath
-        },
+            //Go through the mod directory and add each directory in there
+
+            std::string search_path = "./Mods/*";
+            WIN32_FIND_DATA fd;
+            HANDLE hFind = ::FindFirstFile(search_path.c_str(), &fd);
+            if (hFind != INVALID_HANDLE_VALUE) {
+                do {
+                    if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && fd.cFileName[0] != '.') {
+                        vArtPaths.push_back(ZString("./Mods/") + fd.cFileName);
+                    }
+                } while (::FindNextFile(hFind, &fd));
+                ::FindClose(hFind);
+            }
+        }
+
+        //old and deprecated highres directory
+        vArtPaths.push_back(strArtPath + "/Textures");
+
+        //main artwork directory
+        vArtPaths.push_back(strArtPath);
+
+        // Now set the art path, performed after initialise, else Modeler isn't valid.
+        auto pFileLoader = CreateSecureFileLoader(
+            vArtPaths,
             strArtPath
         );
         GetModeler()->SetFileLoader(pFileLoader);
