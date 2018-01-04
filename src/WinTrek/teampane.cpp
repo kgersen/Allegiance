@@ -341,8 +341,6 @@ public:
                   //
               default:                                                                // WLP 2005 - view lobby
                   m_pimageTab = GetModeler()->LoadImage("btnteamlobbybmp", true);     // WLP 2005 - view lobby
-                  m_pimageTab->CalcBounds();
-                  m_pimageTab->GetSurface()->SetColorKey(pside->GetColor());
               }
 
               /*if (!trekClient.m_fm.IsConnected()) {
