@@ -3054,7 +3054,7 @@ public:
 		m_iMouseAccel			 = LoadPreference("MouseAcceleration",     0) % 3; // Imago #215 //#282 bugfix
 		m_iWheelDelay			 = LoadPreference("WheelDelay",            2) % 5; //Spunky #282
 
-        m_bUseOldUi = (LoadPreference("OldUi", 1) != 0);
+        m_bUseOldUi = (LoadPreference("OldUi", 0) != 0);
 
         //
         // Initial screen size
@@ -4687,8 +4687,7 @@ public:
                 m_pitemToggleBidirectionalLighting = pmenu->AddMenuItem(idmToggleBidirectionalLighting, GetBidirectionalLightingMenuString(),	'B');
                 m_pitemStyleHUD                    = pmenu->AddMenuItem(idmStyleHUD,                    GetStyleHUDMenuString()             ,	'H'); //Imago 6/30/09 adjust new dx9 settings in game
 
-                //Rock: Disabled for release
-                //m_pitemToggleUseOldUi     = pmenu->AddMenuItem(idmOldUi, GetOldUiMenuString(), 'G');
+                m_pitemToggleUseOldUi     = pmenu->AddMenuItem(idmOldUi, GetOldUiMenuString(), 'G');
  				
 				break;
 
