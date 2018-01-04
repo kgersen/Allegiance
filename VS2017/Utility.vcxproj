@@ -60,7 +60,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\Inc;..\src\_Utility;..\src\WinTrek;..\src\ZLib;..\src\Guids;..\src\Zone;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\Lib\AllegianceSecurity;..\src\lib\Steam;..\src\Inc;..\src\_Utility;..\src\WinTrek;..\src\ZLib;..\src\Guids;..\src\Zone;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -78,7 +78,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <ClCompile>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\Inc;..\src\_Utility;..\src\WinTrek;..\src\ZLib;..\src\Guids;..\src\Zone;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\Lib\AllegianceSecurity;..\src\lib\Steam;..\src\Inc;..\src\_Utility;..\src\WinTrek;..\src\ZLib;..\src\Guids;..\src\Zone;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;DEBUG;SRVLOG;_AFXDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
@@ -106,6 +106,7 @@
     <ClCompile Include="..\src\_Utility\CollisionQueue.cpp" />
     <ClCompile Include="..\src\_Utility\CRC.cpp" />
     <ClCompile Include="..\src\_Utility\Endpoint.cpp" />
+    <ClCompile Include="..\src\_Utility\FileLoader.cpp" />
     <ClCompile Include="..\src\_Utility\HitTest.cpp" />
     <ClCompile Include="..\src\_Utility\KDnode.cpp" />
     <ClCompile Include="..\src\_Utility\KDroot.cpp" />
@@ -119,6 +120,7 @@
   <ItemGroup>
     <ClInclude Include="..\src\Inc\MessageVersion.h" />
     <ClInclude Include="..\src\_Utility\CRC.h" />
+    <ClInclude Include="..\src\_Utility\FileLoader.h" />
     <ClInclude Include="..\src\_Utility\listwrappers.h" />
     <ClInclude Include="..\src\_Utility\pch.h" />
     <ClInclude Include="..\src\_Utility\Utility.h" />
