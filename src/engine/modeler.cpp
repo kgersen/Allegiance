@@ -2146,11 +2146,6 @@ private:
     std::shared_ptr<IFileLoader> m_pFileLoader;
 	ImportImageFactory *	m_pImageFactory;			// This allows us to pass extra parameters into the image factory.
 
-#ifdef STEAMSECURE
-    // BT - STEAM
-	FileHashTable			m_fileHashTable;
-#endif
-
     TMap<ZString, TRef<INameSpace> > m_mapNameSpace;
 
 	// Hints. Modeler flags referenced during resource loading.
