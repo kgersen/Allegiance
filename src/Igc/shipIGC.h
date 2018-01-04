@@ -2488,13 +2488,12 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         WarningMask         m_warningMask;
 
 		bool				m_stayDocked;  //Xynth #48 8/10
-        bool                m_bGettingAmmo; //for wingman AI
-        char                m_dodgeCooldown; //for wingman AI
-        char                m_checkCooldown; //for wingman AI defend FindTarget()s
-        WingmanBehaviourBitMask m_wingmanBehaviour;
-        Time                m_targetFirstNotSeen;
+        bool                m_bGettingAmmo; // wingman AI
+        char                m_dodgeCooldown; // wingman AI
+        char                m_checkCooldown; // wingman AI - defend FindTarget()s
+        WingmanBehaviourBitMask m_wingmanBehaviour; // wingman AI
+        Time                m_targetFirstNotSeen; // wingman AI
         
-
 		float				m_repair; //Xynth amount of nanning performed by ship
 		AchievementMask		m_achievementMask;
 
