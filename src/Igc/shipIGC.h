@@ -1649,7 +1649,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 
                     case c_cidDefend:
                     {
-                        bLegal = (m_pilotType >= c_ptWingman); // || m_pilotType >= c_ptPlayer);
+                        bLegal = (m_pilotType == c_ptWingman || m_pilotType >= c_ptPlayer);
                     }
                     break;
 

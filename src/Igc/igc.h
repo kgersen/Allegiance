@@ -677,10 +677,10 @@ enum STAGE // Keep in sync with AGCGameStage in AGCIDL.h
 */
 typedef unsigned char PilotType;
 const PilotType c_ptMiner       =  0;
+const PilotType c_ptWingman     =  2;
 const PilotType c_ptLayer       =  5;
 const PilotType c_ptBuilder     =  6;
-const PilotType c_ptCarrier     =  8;
-const PilotType c_ptWingman     =  9;
+const PilotType c_ptCarrier     =  9;
 const PilotType c_ptPlayer      = 10;
 const PilotType c_ptCheatPlayer = 11;
 

@@ -1992,17 +1992,18 @@ static bool ModelHasTargetPriority(ImodelIGC* pmodel, IshipIGC* pship) {
     return false;
 }
 
-static IshipIGC* FindTargetShip(IshipIGC* pOwnShip, const Vector* pposition, float &distance, int ttMask, PilotType pilotType, bool minPilotType) {
+static IshipIGC* FindTargetShip(IshipIGC* pOwnShip, const Vector* pposition, float &distance, int ttMask, char pilotType) {
     ZAssert(pOwnShip);
+    ZAssert(pilotType >= -2);
     if (!pposition)
         pposition = &(pOwnShip->GetPosition());
     IshipIGC* pMinDistShip = NULL;
     for (ShipLinkIGC* l = pOwnShip->GetCluster()->GetShips()->first(); l != NULL; l = l->next()) {
         IshipIGC* s = l->data();
         ZAssert(s);
-        if ((pilotType == NA || 
-            (!minPilotType && s->GetPilotType() == pilotType) ||
-            (minPilotType && s->GetPilotType() >= pilotType)) &&
+        if ((pilotType == NA ||
+            (pilotType == -2 && (s->GetPilotType() == c_ptWingman || s->GetPilotType() >= c_ptPlayer)) ||
+            (s->GetPilotType() == pilotType)) &&
             (((ttMask & c_ttFriendly) && s->GetSide() == pOwnShip->GetSide()) ||
             ((ttMask & c_ttEnemy) && s->GetSide() != pOwnShip->GetSide() && pOwnShip->CanSee(s))))
         {
@@ -2340,7 +2341,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                                     shouldReturn = true;
                                 else if (distToProtectee > 2200.0f) {
                                     float dist = 2500.0f;
-                                    IshipIGC* pTarget = FindTargetShip(this, &(m_commandTargets[c_cmdAccepted]->GetPosition()), dist, c_ttEnemy | c_ttNearest, c_ptWingman, true);
+                                    IshipIGC* pTarget = FindTargetShip(this, &(m_commandTargets[c_cmdAccepted]->GetPosition()), dist, c_ttEnemy | c_ttNearest, -2);
                                     if (pTarget && dist < (distToProtectee - 1000.0f)) {
                                         GetMyMission()->GetIgcSite()->SendChatf(this, CHAT_TEAM, GetSide()->GetObjectID(),
                                             droneInTransitSound,
@@ -2646,7 +2647,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                         else {
                             m_checkCooldown = 200;
                             float dist = 1500.0f; //max distance and returned actual distance
-                            IshipIGC* pTarget = FindTargetShip(this, &(m_commandTargets[c_cmdAccepted]->GetPosition()), dist, c_ttEnemy | c_ttNearest, c_ptWingman, true);
+                            IshipIGC* pTarget = FindTargetShip(this, &(m_commandTargets[c_cmdAccepted]->GetPosition()), dist, c_ttEnemy | c_ttNearest, -2);
                             if (pTarget) {
                                 GetMyMission()->GetIgcSite()->SendChatf(this, CHAT_TEAM, GetSide()->GetObjectID(),
                                     droneInTransitSound,
@@ -2655,7 +2656,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                             }
                             else if ((GetPosition()-m_commandTargets[c_cmdPlan]->GetPosition()).Length() > 1000.0f) {
                                 float dist = 1000.0f;
-                                IshipIGC* pAttacker = FindTargetShip(this, NULL, dist, c_ttEnemy | c_ttNearest, c_ptWingman, true);
+                                IshipIGC* pAttacker = FindTargetShip(this, NULL, dist, c_ttEnemy | c_ttNearest, -2);
                                 if (pAttacker) {
                                     bWingmanUseAfterburner = true;
                                 }
