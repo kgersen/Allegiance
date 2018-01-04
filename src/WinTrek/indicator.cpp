@@ -264,9 +264,8 @@ public:
                             }
                             else
                             {
-                                //See if a friendly ship can spot the target
                                 bLeadIndicator = false;
-                                /* KGJV- 4/9/9 reactivated this */ 
+                                //See if a friendly relay station can spot the target
                                 for (StationLinkIGC*   psl = pcluster->GetStations()->first(); (psl != NULL); psl = psl->next())
                                 {
                                     IstationIGC*   ps = psl->data();
@@ -279,7 +278,7 @@ public:
                                     }
                                 }
                                 
-
+                                //See if a friendly relay ship can spot the target
                                 if (!bLeadIndicator)
                                 {
                                     for (ShipLinkIGC*   psl = pcluster->GetShips()->first(); (psl != NULL); psl = psl->next())
