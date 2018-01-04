@@ -8538,7 +8538,7 @@ public:
                             buttonsM |= forwardButtonIGC;
                         if (m_ptrekInput->IsTrekKeyDown(TK_ThrustBackward, bAllowKeyboardMovement))
                             buttonsM |= backwardButtonIGC;
-						 if (m_ptrekInput->IsTrekKeyDown(TK_FireBooster, bAllowKeyboardMovement))
+                        if (m_ptrekInput->IsTrekKeyDown(TK_FireBooster, bAllowKeyboardMovement))
                             buttonsM |= afterburnerButtonIGC;
 
                         if (fAutoPilot)
@@ -8957,22 +8957,6 @@ public:
             colorHUDshadows = colorHUDshadows * 0.65f;
             colorHUDshadows.SetAlpha(alphaless);
             m_pcolorHUDshadows->SetValue(colorHUDshadows);
-
-            //------------------------------------------------------------------------------
-            // Interception point for handling training missions
-            // =================================================
-            // This call is to be made when we are running a training mission to check to
-            // see if mission goals have been accomplished, and prevent the player from
-            // running off into space wherever appropriate. The function called will
-            // maintain the state, and provide guidance and restrictions as applicable.
-            //------------------------------------------------------------------------------
-
-            Training::HandleMission ();
-
-            //------------------------------------------------------------------------------
-            // End interception for training missions
-            //------------------------------------------------------------------------------
-
 		} else {
 
 			// //-Imago 7/13/09 we're not actually in a sector playing the game...
@@ -8988,6 +8972,22 @@ public:
         trekClient.CheckServerLag(Time::Now());
         if (trekClient.m_fm.IsConnected())
             trekClient.SendMessages();
+        else {
+            //------------------------------------------------------------------------------
+            // Interception point for handling training missions
+            // =================================================
+            // This call is to be made when we are running a training mission to check to
+            // see if mission goals have been accomplished, and prevent the player from
+            // running off into space wherever appropriate. The function called will
+            // maintain the state, and provide guidance and restrictions as applicable.
+            //------------------------------------------------------------------------------
+
+            Training::HandleMission();
+
+            //------------------------------------------------------------------------------
+            // End interception for training missions
+            //------------------------------------------------------------------------------
+        }
 
         trekClient.m_pCoreIGC->Update(now);
 
@@ -11196,6 +11196,11 @@ public:
         //bool newButton4 = m_ptrekInput->GetButton(3); // !!! was next weapon
         //bool newButton5 = m_ptrekInput->GetButton(4); // !!! was vector lock
         bool newButton6 = m_ptrekInput->IsTrekKeyDown(TK_MatchSpeed , bReadKeyboard);
+
+        if (newButton3) {
+            trekClient.trekThrottle = 1.0f;
+            bThrottleChange = !trekClient.joyThrottle;
+        }
 
         if (bInternalCamera)
         {

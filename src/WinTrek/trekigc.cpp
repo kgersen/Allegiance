@@ -57,6 +57,11 @@ class ClusterSiteImpl : public ClusterSite
                     l->data()->Release();
                     delete l;
                 }
+                while (l = m_enemyScanners.first())  //intentional assignment
+                {
+                    l->data()->Release();
+                    delete l;
+                }
             }
             m_pGroupScene   = NULL;
             m_pposterImage  = NULL;
@@ -284,21 +289,28 @@ class ClusterSiteImpl : public ClusterSite
             if (sid == trekClient.GetSideID() ||
 				trekClient.GetSide()->AlliedSides(trekClient.GetCore()->GetSide(sid),trekClient.GetSide())) //ALLY SCAN 7/13/09 imago
                 AddIbaseIGC((BaseListIGC*)&(m_scanners), scannerNew);
+            else if (!trekClient.m_fm.IsConnected())
+                AddIbaseIGC((BaseListIGC*)&(m_enemyScanners), scannerNew);
         }
         virtual void                    DeleteScanner(SideID   sid, IscannerIGC* scannerOld)
         {
             assert (sid >= 0);
             assert (sid < c_cSidesMax);
             assert (scannerOld);
-            if (sid == trekClient.GetSideID() || 
-				trekClient.GetSide()->AlliedSides(trekClient.GetCore()->GetSide(sid),trekClient.GetSide())) //ALLY SCAN 7/13/09 imago
+            if (sid == trekClient.GetSideID() ||
+                trekClient.GetSide()->AlliedSides(trekClient.GetCore()->GetSide(sid), trekClient.GetSide())) //ALLY SCAN 7/13/09 imago
                 DeleteIbaseIGC((BaseListIGC*)&(m_scanners), scannerOld);
+            else if (!trekClient.m_fm.IsConnected())
+                DeleteIbaseIGC((BaseListIGC*)&(m_enemyScanners), scannerOld);
+                
         }
         virtual const ScannerListIGC*      GetScanners(SideID   sid) const
         {
             assert (sid >= 0);
             assert (sid < c_cSidesMax);
 
+            if (!trekClient.m_fm.IsConnected() && sid != trekClient.GetSide()->GetObjectID()) // Doesn't account for allies
+                return &m_enemyScanners;
             return &(m_scanners);
         }
 
@@ -429,6 +441,7 @@ class ClusterSiteImpl : public ClusterSite
         TRef<ExplosionGeo>      m_pexplosionGeo;
         TRef<PulseGeo>          m_pPulseGeo;
         ScannerListIGC          m_scanners;
+        ScannerListIGC          m_enemyScanners;
         TRef<Geo>               m_pgeoEnvironment;
         AssetMask               m_assetmask;
         AssetMask               m_assetmaskLastWarning;
@@ -1989,10 +2002,12 @@ class ThingSiteImpl : public ThingSitePrivate
 
             if (pcluster)
             {
-                if (((ma & c_mtPredictable) && trekClient.m_fm.IsConnected()) || !m_bSideVisibility)
+                if ((ma & c_mtPredictable) || !m_bSideVisibility)
                 {
                     m_sideVisibility.fVisible(true);
 					m_sideVisibility.CurrentEyed(true);  //Xynth #100 7/2010
+                    m_enemySideVisibility.fVisible(true);
+                    m_enemySideVisibility.CurrentEyed(true);
 
                     switch (pmodel->GetObjectType())
                     {
@@ -2117,11 +2132,85 @@ class ThingSiteImpl : public ThingSitePrivate
                         }
                     }
                 //}
-					m_sideVisibility.CurrentEyed(currentEye);
-					currentEye = currentEye || (m_sideVisibility.fVisible() && (pmodel->GetAttributes() & c_mtPredictable));
-					m_sideVisibility.fVisible(currentEye);        
+
+                    if (!trekClient.m_fm.IsConnected()) {
+                        if (pmodel->GetObjectType() == OT_ship) {
+                            IshipIGC* pShip = (IshipIGC*)pmodel;
+                            if (!m_sideVisibility.CurrentEyed() && currentEye) {
+                                debugf(">>UpdateSideVis for %s\n", pmodel->GetName());
+                                PlayerInfo* ppi = (PlayerInfo*)(pShip->GetPrivateData());
+                                if (ppi) {
+                                    ShipStatus ss = ppi->GetShipStatus();
+                                    ss.SetStateTime(trekClient.m_lastUpdate.clock());
+                                    ss.SetDetected(true);
+                                    ss.SetSectorID(pcluster->GetObjectID());
+                                    ss.SetState(c_ssFlying);
+                                    ss.SetHullID(((IshipIGC*)pmodel)->GetHullType()->GetObjectID());
+                                    if (pmodel->GetCluster())
+                                        ss.SetState(c_ssFlying);
+                                    ppi->SetShipStatus(ss);
+                                }
+                            }
+                            else if (m_sideVisibility.CurrentEyed() && !currentEye) {
+                                debugf(">>UpdateSideVis for %s - hide\n", pmodel->GetName());
+                                PlayerInfo* ppi = (PlayerInfo*)(pShip->GetPrivateData());
+                                if (ppi) {
+                                    ShipStatus ss = ppi->GetShipStatus();
+                                    ss.SetDetected(false);
+                                    ss.SetUnknown();
+                                    ppi->SetShipStatus(ss);
+                                }
+                            }
+                        }
+                    }
+
+                    m_sideVisibility.CurrentEyed(currentEye);
+                    currentEye = currentEye || (m_sideVisibility.fVisible() && (pmodel->GetAttributes() & c_mtPredictable));
+                    m_sideVisibility.fVisible(currentEye);
 			
 			}
+            if (!trekClient.m_fm.IsConnected()) {
+                // Done with player side, now update visibilities for the enemy -- ignore allies for now
+                currentEye = false;
+                if ((pmodel->GetSide() != trekClient.GetSide()) ||
+                    (m_enemySideVisibility.pLastSpotter() && m_enemySideVisibility.pLastSpotter()->InScannerRange(pmodel))) //&& trekClient.GetSide() != m_enemySideVisibility.pLastSpotter()->GetSide()) ||
+                {
+                    currentEye = true;
+                }
+                else
+                {
+                    //do it the hard way
+                    for (ScannerLinkIGC* l = pcluster->GetClusterSite()->GetScanners(1)->first(); (l != NULL); l = l->next())
+                    {
+                        IscannerIGC*   s = l->data();
+
+                        if (s->InScannerRange(pmodel))
+                        {
+                            currentEye = true;
+                            m_enemySideVisibility.pLastSpotter(s);
+                            break;
+                        }
+                    }
+                }
+                m_enemySideVisibility.CurrentEyed(currentEye);
+                currentEye = currentEye || (m_enemySideVisibility.fVisible() && (pmodel->GetAttributes() & c_mtPredictable));
+                m_enemySideVisibility.fVisible(currentEye);
+
+                
+                if (pmodel->GetObjectType() == OT_ship) {
+                    IshipIGC* pShip = (IshipIGC*)pmodel;
+                    if (pShip == trekClient.GetShip()) {
+                        // let the player know if he is eyed
+                        PlayerInfo* ppi = (PlayerInfo*)(pShip->GetPrivateData());
+                        if (ppi) {
+                            ShipStatus ss = ppi->GetShipStatus();
+                            ss.SetDetected(currentEye); // For UI eye
+                            ppi->SetShipStatus(ss);
+                        }
+                    }
+                }
+            }
+
         }
 
         bool GetSideVisibility(IsideIGC* side)
@@ -2130,26 +2219,36 @@ class ThingSiteImpl : public ThingSitePrivate
 
             if (Training::IsTraining ())
             {
-                if ((trekClient.GetShip()->GetSide() != side) && (Training::GetTrainingMissionID() != Training::c_TM_6_Practice_Arena) && (Training::GetTrainingMissionID() != Training::c_TM_10_Free_Flight))
-                    return false;
+                //if ((trekClient.GetShip()->GetSide() != side) && (Training::GetTrainingMissionID() != Training::c_TM_6_Practice_Arena) && (Training::GetTrainingMissionID() != Training::c_TM_10_Free_Flight))
+                //    return false;
+                if (side != trekClient.GetSide())
+                    return m_enemySideVisibility.fVisible();
             }
             return m_sideVisibility.fVisible();
         }
 
 		bool GetCurrentEye(IsideIGC* side)
         {
-            assert (side);            
+            assert (side);
+            if (!trekClient.m_fm.IsConnected() && side != trekClient.GetSide())
+                return m_enemySideVisibility.CurrentEyed();
 			return m_sideVisibility.CurrentEyed();
         }
 
         void SetSideVisibility(IsideIGC* side, bool fVisible)
         {
-            if (m_bSideVisibility && 
-				(side == trekClient.GetSide()))// || (side->AlliedSides(side,trekClient.GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz) ) ) //imago viz ALLY VISIBILITY 7/11/09
-			{
-				m_sideVisibility.fVisible(fVisible);
-				m_sideVisibility.CurrentEyed(fVisible);
-			}
+            if (m_bSideVisibility) {
+                if (side == trekClient.GetSide()) // || (side->AlliedSides(side,trekClient.GetSide()) && trekClient.MyMission()->GetMissionParams().bAllowAlliedViz) ) ) //imago viz ALLY VISIBILITY 7/11/09
+                {
+                    m_sideVisibility.fVisible(fVisible);
+                    m_sideVisibility.CurrentEyed(fVisible);
+                }
+                else if (!trekClient.m_fm.IsConnected())
+                {
+                    m_enemySideVisibility.fVisible(fVisible);
+                    m_enemySideVisibility.CurrentEyed(fVisible);
+                }
+            }
             if (fVisible)
             {
                 switch (m_pmodel->GetObjectType())
@@ -2312,6 +2411,7 @@ class ThingSiteImpl : public ThingSitePrivate
         TRef<TEvent<float>::SourceImpl>   m_peventSourceAleph;
 
         SideVisibility              m_sideVisibility;
+        SideVisibility              m_enemySideVisibility;
         TRef<VisibleGeo>            m_pvisibleGeoBolt;
         TRef<ThingGeo>              m_pthing;
         TRef<Geo>                   m_pthingGeo;
@@ -2692,6 +2792,27 @@ void WinTrekClient::ChangeStation(IshipIGC*  pship, IstationIGC* pstationOld, Is
 		{
             if (pstationOld == NULL)
 			{
+                if (!m_fm.IsConnected()) {
+                    // Go over the ship's parts and give the side the tech bits for any equipment onboard
+                    TechTreeBitMask ttbm;
+                    ttbm.ClearAll();
+                    for (PartLinkIGC* ppl = pship->GetParts()->first(); (ppl != NULL); ppl = ppl->next())
+                    {
+                        IpartIGC*   ppart = ppl->data();
+
+                        ttbm |= ppart->GetPartType()->GetEffectTechs();
+                        if (pship->GetSide()->IsNewDevelopmentTechs(ppart->GetPartType()->GetEffectTechs()))
+                        {
+                            // send message that player secured new tech
+                            PostText(true, "%s has secured %s", pship->GetName(), ppart->GetPartType()->GetName());
+                        }
+                    }
+
+                    IsideIGC*   pside = pship->GetSide();
+                    assert(pside);
+                    pside->ApplyDevelopmentTechs(ttbm);
+                }
+
                 ConsoleImage*   pconsole = GetWindow()->GetConsoleImage();
                 if (pconsole)
                 {
@@ -2720,7 +2841,7 @@ void WinTrekClient::ChangeStation(IshipIGC*  pship, IstationIGC* pstationOld, Is
 
                     if (GetWindow()->GetCameraMode() != TrekWindow::cmExternalOverride && (pstationNew->GetSide() == trekClient.GetSide()))
                     {
-                        if ((!Training::IsTraining ()) || (Training::GetTrainingMissionID () != Training::c_TM_5_Command_View))
+                        //if ((!Training::IsTraining ()) || (Training::GetTrainingMissionID () != Training::c_TM_5_Command_View))
                         {
                             GetWindow()->SetViewMode(trekClient.GetShip()->IsGhost() 
                                 ? TrekWindow::vmCommand : TrekWindow::vmHangar);
@@ -3874,6 +3995,13 @@ bool WinTrekClient::UseRipcord(IshipIGC* pship, ImodelIGC*  pmodel)
             ((IstationIGC*)pmodel)->Launch(pship);
         else
         {
+            //debug
+            const char* name = pship->GetName();
+            const char* modelName = pmodel->GetName();
+            float r1 = pship->GetRadius();
+            float r2 = pmodel->GetRadius();
+            //
+
             float   r = pmodel->GetRadius() + pship->GetRadius() + 25.0f;
             Vector  v = Vector::RandomDirection();
             Orientation o(v);
@@ -3895,8 +4023,19 @@ bool WinTrekClient::UseRipcord(IshipIGC* pship, ImodelIGC*  pmodel)
         }
         
         if (pship == trekClient.GetShip()) {
-            trekClient.PlaySoundEffect(jumpSound, static_cast<ImodelIGC*>(pship)); //Not using trekClient. messes up system sound over time. Persistent after quiting Allegiance.
+            trekClient.PlaySoundEffect(jumpSound, static_cast<ImodelIGC*>(pship)); //Not using trekClient's PlaySoundEffect messes up system sound over time. Persistent after quiting Allegiance.
             trekClient.PostText(true, "");
+        }
+
+        //Set the player data for the minimap
+        if (pship->SeenBySide(trekClient.GetSide())) {
+            PlayerInfo* ppi = (PlayerInfo*)(((IshipIGC*)pship)->GetPrivateData());
+            if (ppi) {
+                ShipStatus ss = ppi->GetShipStatus();
+                ZAssert(pmodel->GetCluster());
+                ss.SetSectorID(pmodel->GetCluster()->GetObjectID());
+                ppi->SetShipStatus(ss);
+            }
         }
 
         return true;
@@ -4002,6 +4141,13 @@ void WinTrekClient::TerminateModelEvent(ImodelIGC* pmodel)
     BaseClient::TerminateModelEvent(pmodel);
 }
 
+bool WinTrekClient::HandlePickDefaultOrder(IshipIGC* pship) {
+    if (!m_fm.IsConnected()) {
+        return Training::HandlePickDefaultOrder(pship);
+    }
+    return false;
+}
+
 bool WinTrekClient::DockWithStationEvent(IshipIGC* pShip, IstationIGC* pStation)
 {
     if (!m_fm.IsConnected())
@@ -4012,16 +4158,115 @@ bool WinTrekClient::DockWithStationEvent(IshipIGC* pShip, IstationIGC* pStation)
 		pShip->SetStateBits(keyMaskIGC, 0);  //Xynth #210 8/2010
         if ((pShip != GetShip ()) || Training::ShipLanded ())
         {
-            // how to make the miners empty out and reset their mission
             IstationIGC*    pOldStation = pShip->GetStation ();
             pShip->SetStation (pStation);
-            pShip->SetStation (pOldStation);
 
-            // now send the ship back out the other side
-            pStation->Launch (pShip);
+            if (pShip == GetShip()) {
+                // let anyone who can see us know that we are docked
+                if ((pShip->GetSide() == GetSide() || pShip->GetSide()->AlliedSides(pShip->GetSide(), GetSide())) || // #ALLY Imago 7/8/09 VISIBILITY?
+                    (pShip->SeenBySide(GetSide()) && pStation->SeenBySide(GetSide())))
+                {
+                    SideID      sideID = pShip->GetSide()->GetObjectID();
+                    PlayerInfo* ppi = (PlayerInfo*)pShip->GetPrivateData();
+                    ShipStatus ss = ppi->GetShipStatus();
+
+                    ss.SetStateTime(m_lastUpdate.clock());
+                    ss.SetState(c_ssDocked);
+                    ss.SetParentID(NA);
+                    ss.SetStationID(pStation->GetObjectID());
+
+                    ppi->SetShipStatus(ss);
+
+                    /*//Adjust the ship status for all of the children as well
+                    {
+                        for (ShipLinkIGC* psl = pShip->GetChildShips()->first(); (psl != NULL); psl = psl->next()) {
+                            IshipIGC*   pship = psl->data();
+                            PlayerInfo* ppi2 = (PlayerInfo*)pship->GetPrivateData();
+                            ShipStatus ss2 = ppi->GetShipStatus();
+                            ss2.SetStateTime(m_lastUpdate.clock());
+                            ss2.SetStationID(pStation->GetObjectID());
+                            ppi2->SetShipStatus(ss2);
+                        }
+                    }*/
+                }
+            }
+            else {
+                //relaunch miners
+                pShip->SetStation (pOldStation);
+                pStation->Launch (pShip);
+            }
 		}
     }
     return true;
+}
+
+bool WinTrekClient::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship, float tCollision) {
+    if (!m_fm.IsConnected())
+    {
+        trekClient.RestoreLoadoutOnCarrier(pship);
+
+        pship->SetAmmo(SHRT_MAX);
+        pship->SetFuel(FLT_MAX);
+        pship->SetEnergy(pship->GetHullType()->GetMaxEnergy());
+        pship->SetFraction(1.0f);
+        {
+            IshieldIGC* pshield = (IshieldIGC*)(pship->GetMountedPart(ET_Shield, 0));
+            if (pshield)
+                pshield->SetFraction(1.0f);
+        }
+
+        const Orientation&  orientation = pshipCarrier->GetOrientation();
+
+        float   vLaunch = m_pCoreIGC->GetFloatConstant(c_fcidExitStationSpeed);
+
+        Vector  position = pshipCarrier->GetPosition();
+        Vector  velocity = pshipCarrier->GetVelocity();
+
+        position.x += random(-0.5f, 0.5f);
+        position.y += random(-0.5f, 0.5f);
+        position.z += random(-0.5f, 0.5f);
+
+        IhullTypeIGC*   phtCarrier = pshipCarrier->GetBaseHullType();
+
+        Orientation         orientationBfr;
+        const Orientation*  porientation;
+        if (phtCarrier->GetLaunchSlots() == 0)
+        {
+            position -= orientation.GetBackward() * (pshipCarrier->GetRadius() + pship->GetRadius() + vLaunch * 0.5f);
+            velocity -= orientation.GetBackward() * vLaunch;
+
+            porientation = &orientation;
+        }
+        else
+        {
+            short   slot = pshipCarrier->GetLaunchSlot();
+
+            position += phtCarrier->GetLaunchPosition(slot) * orientation;
+
+            Vector  forward = phtCarrier->GetLaunchDirection(slot) * orientation;
+
+            position += forward * (pship->GetRadius() + vLaunch * 0.5f);
+            velocity += forward * vLaunch;
+
+            orientationBfr = orientation;
+            orientationBfr.TurnTo(forward);
+
+            porientation = &orientationBfr;
+        }
+
+        pship->SetPosition(position);
+        pship->SetVelocity(velocity);
+        pship->SetOrientation(*porientation);
+
+        IclusterIGC*    pcluster = pship->GetCluster();
+        pcluster->RecalculateCollisions(tCollision, pship, NULL);
+
+        if (pship == trekClient.GetShip()) {
+            PlayNotificationSound(salRepairedAtCarrierSound, GetShip());
+            OverrideCamera(pshipCarrier);
+        }
+    }
+    return true; 
 }
 
 void WinTrekClient::KillShipEvent(Time now, IshipIGC* pShip, ImodelIGC* pLauncher, float flAmount, const Vector& p1, const Vector& p2)
@@ -4033,8 +4278,10 @@ void WinTrekClient::KillShipEvent(Time now, IshipIGC* pShip, ImodelIGC* pLaunche
 
         if (pShip == GetShip())
             Training::ShipDied (pLauncher);
-        else
-            BaseClient::KillShipEvent (now, pShip, pLauncher, flAmount, p1, p2);
+        else {
+            BaseClient::KillShipEvent(now, pShip, pLauncher, flAmount, p1, p2);
+            Training::ShipKilled(pShip, pLauncher);
+        }
     }
 }
 
@@ -4090,6 +4337,50 @@ void WinTrekClient::DamageShipEvent(Time now,
     }
 }
 
+void WinTrekClient::KillStationEvent(IstationIGC* pStation, ImodelIGC* pLauncher, float amount)
+{
+    debugf("%s KillStationEvent\n", pStation->GetName());
+    if (!m_fm.IsConnected())
+    {
+        pStation->GetCluster()->GetClusterSite()->AddExplosion(pStation, c_etLargeStation);
+        
+        pStation->GetCluster()->GetClusterSite()->AddExplosion(pStation,
+            pStation->GetStationType()->HasCapability(c_sabmFlag)
+            ? c_etLargeStation
+            : c_etSmallStation);
+
+        if (pStation->GetSide() == trekClient.GetSide())
+            trekClient.PlaySoundEffect(pStation->GetStationType()->GetDestroyedSound());
+        else
+            trekClient.PlaySoundEffect(pStation->GetStationType()->GetEnemyDestroyedSound());
+
+        trekClient.PostText(true, START_COLOR_STRING "%s" END_COLOR_STRING " has destroyed " START_COLOR_STRING "%s's %s" END_COLOR_STRING,
+            (PCC)ConvertColorToString(pLauncher ? pLauncher->GetSide()->GetColor() : Color::White()),
+            (pLauncher ? pLauncher->GetName() : "Unknown"),
+            (PCC)ConvertColorToString(pStation ? pStation->GetSide()->GetColor() : Color::White()),
+            (pStation ? pStation->GetSide()->GetName() : "unknown side"),
+            (pStation ? pStation->GetName() : "unknown station")
+        );
+        /*trekClient.PostText(true, "The " START_COLOR_STRING "%s" END_COLOR_STRING " station has been destroyed.",
+            (PCC)ConvertColorToString(pStation ? pStation->GetSide()->GetColor() : Color::White()),
+            (pStation ? pStation->GetName() : "Unknown station")
+        );*/
+
+        Training::KillStationEvent(pStation, pLauncher);
+
+        if (GetShip()->GetStation() == pStation) {
+            //played docked at this station, launch
+            GetShip()->SetStation(NULL);
+            pStation->Launch(GetShip());
+        }
+
+        pStation->Terminate();
+
+        if (pLauncher)
+            pLauncher->GetSide()->AddBaseKill();
+    }
+}
+
 void WinTrekClient::HitWarpEvent(IshipIGC* ship, IwarpIGC* warp)
 {
     //
@@ -4140,6 +4431,22 @@ void WinTrekClient::HitWarpEvent(IshipIGC* ship, IwarpIGC* warp)
                                   (ship->GetRadius() + 5.0f) * backward);
                 if (ship == trekClient.GetShip())
                     trekClient.PlaySoundEffect(jumpSound, static_cast<ImodelIGC*>(ship));
+
+                //Reset the ship's trail
+                assert(ship->GetThingSite());
+                ship->GetThingSite()->SetTrailColor(ship->GetSide()->GetColor());
+
+                //Set the player data for the minimap
+                if (ship->SeenBySide(trekClient.GetSide())) {
+                    PlayerInfo* ppi = (PlayerInfo*)(((IshipIGC*)ship)->GetPrivateData());
+                    if (ppi) {
+                        ShipStatus ss = ppi->GetShipStatus();
+                        ss.SetStateTime(m_lastUpdate.clock());
+                        ss.SetSectorID(cluster->GetObjectID());
+                        ss.SetState(c_ssFlying);
+                        ppi->SetShipStatus(ss);
+                    }
+                }
 
                 {
                     Time    t = ship->GetLastUpdate();
