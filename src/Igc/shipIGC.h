@@ -717,6 +717,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         }
         virtual void                 SetCommand(Command i, ImodelIGC* target, CommandID cid)
         {
+            //debugf("%s: SetCommand(%d, %s, %d)\n", GetName(), i, target ? target->GetName() : "NULL", cid);
             assert (i >= 0);
             assert (i < c_cmdMax);
 
@@ -753,6 +754,9 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                         m_fractionLastOrder = m_fraction;
                         m_timeRanAway = GetMyLastUpdate();
                         m_bRunningAway = false;
+                        m_bGettingAmmo = false;
+                        m_targetFirstNotSeen = 0;
+                        m_checkCooldown = 0;
                     }
                     break;
 
@@ -1630,6 +1634,10 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                     {
                         bLegal = ((m_pilotType == c_ptWingman) ||
                                   (m_pilotType >= c_ptPlayer)) && (type != OT_warp) && (type != OT_treasure) && !bFriendly;
+                        if (bLegal && type == OT_ship) {
+                            IshipIGC* s = (IshipIGC*)pmodel;
+                            bLegal = (s->GetPilotType() == c_ptMiner || s->GetCluster()); // Don't try to fight docked ships
+                        }
                     }
                     break;
 
@@ -1641,7 +1649,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 
                     case c_cidDefend:
                     {
-                        bLegal = (m_pilotType >= c_ptPlayer);
+                        bLegal = (m_pilotType >= c_ptWingman); // || m_pilotType >= c_ptPlayer);
                     }
                     break;
 
@@ -1849,6 +1857,19 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 		{
 			return m_stayDocked;
 		}
+        void                        SetGettingAmmo(bool gettingAmmo)
+        {
+            m_bGettingAmmo = gettingAmmo;
+        }
+        void                        SetWingmanBehaviour(WingmanBehaviourBitMask wingmanBehaviour)
+        {
+            m_wingmanBehaviour = wingmanBehaviour;
+        }
+        WingmanBehaviourBitMask      GetWingmanBehaviour()
+        {
+            return m_wingmanBehaviour;
+        }
+        
 		virtual void AddRepair(float repair)
 		{
 			m_repair += repair; //Xynth amount of nanning performed by ship as a fraction of hull repaired
@@ -2262,17 +2283,21 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 
                 case c_ptWingman:
                 {
-                    ImodelIGC*  pmodel = FindTarget(this,
-                                                    c_ttEnemy | c_ttShip | c_ttNearest,
-                                                    NULL, pcluster, &position, NULL, 0);
+                    fGaveOrder = GetMyMission()->GetIgcSite()->HandlePickDefaultOrder(this); // for training missions / co-op
 
-                    if (pmodel)
-                    {
-                        SetCommand(c_cmdAccepted, pmodel, c_cidAttack);
-                        fGaveOrder = true;
-                        GetMyMission()->GetIgcSite()->SendChatf(this, CHAT_TEAM, GetSide()->GetObjectID(),
-                                                                droneInTransitSound,
-                                                                "Attacking %s", GetModelName(pmodel));
+                    if (!fGaveOrder) {
+                        ImodelIGC*  pmodel = FindTarget(this,
+                            c_ttEnemy | c_ttShip | c_ttNearest,
+                            NULL, pcluster, &position, NULL, 0);
+
+                        if (pmodel)
+                        {
+                            SetCommand(c_cmdAccepted, pmodel, c_cidAttack);
+                            fGaveOrder = true;
+                            GetMyMission()->GetIgcSite()->SendChatf(this, CHAT_TEAM, GetSide()->GetObjectID(),
+                                droneInTransitSound,
+                                "Attacking %s", GetModelName(pmodel));
+                        }
                     }
                 }
                 break;
@@ -2463,6 +2488,13 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         WarningMask         m_warningMask;
 
 		bool				m_stayDocked;  //Xynth #48 8/10
+        bool                m_bGettingAmmo; //for wingman AI
+        char                m_dodgeCooldown; //for wingman AI
+        char                m_checkCooldown; //for wingman AI defend FindTarget()s
+        WingmanBehaviourBitMask m_wingmanBehaviour;
+        Time                m_targetFirstNotSeen;
+        
+
 		float				m_repair; //Xynth amount of nanning performed by ship
 		AchievementMask		m_achievementMask;
 
