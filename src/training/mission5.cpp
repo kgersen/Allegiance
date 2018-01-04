@@ -90,7 +90,7 @@ namespace Training
         IclusterIGC*    pCluster = pCore->GetCluster(GetStartSectorID ());
 
         // set up the ship
-        trekClient.ResetClusterScanners(pShip->GetSide());
+        //trekClient.ResetClusterScanners(pShip->GetSide());
 
         // put the ship in the station
         pShip->SetStation (pStation);
