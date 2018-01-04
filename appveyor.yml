@@ -1,0 +1,9 @@
+version: 1.0.{build}
+image: Visual Studio 2017
+configuration:
+- FZDebug
+- FZRetail
+build:
+  project: VS2017/Allegiance.sln
+  parallel: true
+  verbosity: minimal
