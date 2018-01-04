@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -25,20 +26,51 @@ namespace WpfApp1
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         PigsLib.PigSession session = null;
-
+        private int PigSrvLatestProcessId = 0 ;
+        private Process pigSrv;
         private IObservable<Unit> refreshTicker;
         private IDisposable refreshSub;
+        private IDisposable fixCrashedPigSrv;
         bool _refreshEnabled = true;
         public MainWindow()
         {
             InitializeComponent();
             this.DataContext = this;
-            refreshTicker = Observable.Return(Unit.Default).Delay(TimeSpan.FromSeconds(1)).Repeat().SkipWhile(u => _refreshEnabled);
-            refreshSub = refreshTicker.Subscribe(u =>
+            refreshTicker = Observable.Interval(TimeSpan.FromSeconds(1)).Select(x => Unit.Default);
+            refreshSub = refreshTicker.SkipWhile(u => !_refreshEnabled).Subscribe(u =>
             {
                 foreach (var pig in pigInfos)
                 {
-                    pig.Refresh();
+                    if(session != null)
+                    {
+                        pig.Refresh();
+                    }
+                }
+            });
+            fixCrashedPigSrv = refreshTicker.ObserveOnDispatcher(System.Windows.Threading.DispatcherPriority.Normal).Subscribe(u =>
+            {
+                if(pigSrv == null && session != null)
+                {
+                    pigSrv = System.Diagnostics.Process.GetProcessById((int)session.ProcessID);                 
+                }
+                if(pigSrv != null && pigSrv.HasExited)
+                {
+                    log("PigSrv Exited!");
+                    session = null;
+                    pigSrv = null;
+                    PigSrvLatestProcessId = 0;
+                    var scripts = pigInfos.Select(x => x.ScriptName).ToList();
+                    pigInfos.Clear();
+                    Connect_Click(null, null);
+                    if (RestorePigsEnabled)
+                    {
+                        log($"Restoring {scripts.Count} Pigs");
+                        foreach (var script in scripts)
+                        {
+                            pigScript = script;
+                            CreatePig_Click(null, null);
+                        }
+                    }
                 }
             });
         }
@@ -87,7 +119,7 @@ namespace WpfApp1
         }
 
         ObservableCollection<PigInfo> _pigInfos = new ObservableCollection<PigInfo>();
-
+        private bool _restorePigsEnabled = true;
 
         public ObservableCollection<PigInfo> pigInfos
         {
@@ -103,9 +135,13 @@ namespace WpfApp1
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("RefreshEnabled"));
             } }
 
+        public bool RestorePigsEnabled { get => _restorePigsEnabled; set { _restorePigsEnabled = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("RestorePigsEnabled"));
+            } }
+
         void log(string text)
         {
-            logText += string.Format("{0}\n", text);
+            logText += string.Format("{0}: {1}\n",DateTime.UtcNow, text);
         }
 
         private void EnableEvents_Click(object sender, RoutedEventArgs e)
@@ -130,6 +166,7 @@ namespace WpfApp1
             if (session != null)
             {
                 session = null;
+                PigSrvLatestProcessId = 0;
                 logText = "";
             }
             pigInfos.Clear();
@@ -173,21 +210,14 @@ namespace WpfApp1
                     {
                         pigScript = newScripts.First();
                     }
-                    pigInfos.Clear();
-                    //for (int i = 0; i < session.Pigs.Count; i++)
-                    //{
-                    //    pigInfos.Add(new PigInfo(session.Pigs[i]));
-                    //}
-                   
-                      }
+                    pigInfos.Clear();                 
+                }
             }
         }
 
         private void CreatePig_Click(object sender, RoutedEventArgs e)
         {
             pigButtonEnable = false;
-           
-            
             if (session != null)
             {
                 try
@@ -197,9 +227,8 @@ namespace WpfApp1
                     log(String.Format("Request returned: {0}", pig));
                     if (pig != null)
                     {
-                        pigInfos.Add(new PigInfo( pig ));
+                        pigInfos.Add(new PigInfo( pig, pigScript ));
                         log(String.Format("pig {0} : State {1}", pig.Name, pig.PigStateName));
-                        RefreshPigs_Click(sender, e);
                     }
                 }
                 catch (Exception ex)
@@ -213,11 +242,6 @@ namespace WpfApp1
         private void Session_OnEvent(AGCLib.IAGCEvent pEvent)
         {
             log(String.Format("Event {0}", pEvent));
-        }
-
-        private void RefreshPigs_Click(object sender, RoutedEventArgs e)
-        {
-            _refreshEnabled = !_refreshEnabled;
         }
     }
 }

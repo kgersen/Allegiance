@@ -785,6 +785,8 @@ HRESULT CPig::ThreadCreatePig(CPig::XThreadParams* ptp, CComObject<CPig>*& pPig)
   pPig->m_spAccount = spAccount;
   RETURN_FAILED(spAccount->get_Name(&pPig->m_bstrName));
 
+  RETURN_FAILED(spAccount->get_CdKey(&pPig->m_bstrCdKey));
+
   // Create an instance of a behavior object attached to the pig
   CComObject<CPigBehaviorScript>* pBehavior = NULL;
   RETURN_FAILED(pBehavior->CreateInstance(&pBehavior));
@@ -2192,8 +2194,15 @@ STDMETHODIMP CPig::Logon()
   BaseClient::GetCfgInfo().strClubLobby   = ci.strServer;
   BaseClient::GetCfgInfo().strPublicLobby = ci.strServer;
 
+  printf("%S logging in, CDKey is {%S}.\n", m_bstrName, m_bstrCdKey);
+  // Send the CDKey when we log in.
+  char cCdKey[MAX_PATH];
+  StrCpy(cCdKey, OLE2CA(m_bstrCdKey));
+  BaseClient::SetCDKey(cCdKey);
   // Copy the pig account name and password to the connection parameters
 	Strcpy(ci.szName, OLE2CA(m_bstrName));
+
+
 
 	//imago 10/14
 	/*CComBSTR bstrPW;

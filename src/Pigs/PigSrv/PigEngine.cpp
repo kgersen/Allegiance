@@ -433,6 +433,7 @@ void CPigEngine::ProcessScriptDirChanges()
         {
           RemoveInvokeCommands(pType);
           pType->SetBaseNonExistant();
+		  printf("Script %S has a base behavior that doesn't exist.", pType->GetScriptFileName());
         }
       }
     }
@@ -461,6 +462,7 @@ void CPigEngine::ProcessScriptDirChanges()
 
         RemoveInvokeCommands(pType);
         pType->SetRecursionError();
+		printf("Script %S has recursive base behavior which is an error.", pType->GetScriptFileName());
         break;
       }
     }
@@ -494,6 +496,7 @@ void CPigEngine::ProcessScriptDirChanges()
         {
           RemoveInvokeCommands(pType);
           pType->SetBaseError();
+		  printf("Script %S has an error in its base behavior.", pType->GetScriptFileName());
         }
       }
     }
@@ -534,12 +537,13 @@ void CPigEngine::AddScriptFile(const WIN32_FIND_DATA* pffd,
     pScript->AddRef();
 
     // Initialize the new object
-    LoadScriptFile(pScript, pffd, strFileName);
+	printf("Loading script %s\n", strFileName.c_str());
+	LoadScriptFile(pScript, pffd, strFileName);
 
     // Add the new object to the map of scripts
     XLock lock(this);
     m_mapScripts.insert(std::make_pair(strFileName, pScript));
-	printf("Loaded script %s\n", strFileName.c_str());
+
   }
 }
 
@@ -569,7 +573,7 @@ void CPigEngine::ReloadScriptFile(const WIN32_FIND_DATA* pffd,
 
   // Remove the script's invoke commands
   RemoveInvokeCommands(pScript);
-
+  printf("Reloading %S ", strFileName);
   // Reload the script file
   LoadScriptFile(pScript, pffd, strFileName);
 }
@@ -773,6 +777,11 @@ HRESULT CPigEngine::get_ArtPath(BSTR* pbstrArtPath)
 
 HRESULT CPigEngine::get_BehaviorTypes(IPigBehaviorTypes** ppBehaviorTypes)
 {
+	// Ensure that the scripts have been loaded
+	{
+		XLock lock(this);
+		RETURN_FAILED(EnsureScriptsAreLoaded());
+	}
   return E_NOTIMPL;
 }
 

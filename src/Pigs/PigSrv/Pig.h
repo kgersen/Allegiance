@@ -351,6 +351,7 @@ protected:
   bool                         m_bInReceive:1;
   // Logon Parameters
   CComBSTR                     m_bstrName;
+  BSTR						   m_bstrCdKey;
   IPigAccountPtr               m_spAccount;
   // Logon Acknowledgement status
   bool                         m_bLogonAck:1;
