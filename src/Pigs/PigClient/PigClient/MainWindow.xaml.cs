@@ -37,7 +37,7 @@ namespace WpfApp1
             InitializeComponent();
             this.DataContext = this;
             refreshTicker = Observable.Interval(TimeSpan.FromSeconds(1)).Select(x => Unit.Default);
-            refreshSub = refreshTicker.SkipWhile(u => _refreshEnabled).Subscribe(u =>
+            refreshSub = refreshTicker.SkipWhile(u => !_refreshEnabled).Subscribe(u =>
             {
                 foreach (var pig in pigInfos)
                 {
