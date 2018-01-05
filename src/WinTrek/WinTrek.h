@@ -160,7 +160,9 @@ class  WinTrekClient :
         virtual void      PlayFFEffect(ForceEffectID effectID, ImodelIGC* model = NULL, LONG lDirection = 0);
         virtual void      PlayVisualEffect(VisualEffectID effectID, ImodelIGC* model = NULL, float fIntensity = 1.0f);
         virtual void      TerminateModelEvent(ImodelIGC*    pmodel);
+        virtual bool      HandlePickDefaultOrder(IshipIGC* pship);
         virtual bool      DockWithStationEvent(IshipIGC* ship, IstationIGC* station);
+        virtual bool      LandOnCarrierEvent(IshipIGC* shipCarrier, IshipIGC* ship, float tCollision);
         virtual void      KillShipEvent(Time now, IshipIGC* ship, ImodelIGC* launcher, float amount, const Vector& p1, const Vector& p2);
         virtual void      DamageShipEvent(Time now,
                                           IshipIGC * pShip,
@@ -170,6 +172,7 @@ class  WinTrekClient :
                                           float flLeakage,
                                           const Vector& p1,
                                           const Vector& p2);
+        virtual void      KillStationEvent(IstationIGC* pStation, ImodelIGC* pLauncher, float amount);
         virtual void      TargetKilled(ImodelIGC*    pmodel);
         virtual void      ShipWarped(IshipIGC* ship, SectorID sidOld, SectorID sidNew);
         virtual void      ActivateTeleportProbe(IprobeIGC* pprobe);
