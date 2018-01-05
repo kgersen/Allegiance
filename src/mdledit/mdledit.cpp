@@ -753,7 +753,7 @@ public:
     {
         //TRef<Surface> psurface = GetModeler()->LoadSurface("fxminebmp", true);
 
-		TRef<ZFile> zf = m_pmodeler->GetFile("fxmine.png","",true, m_pmodeler->GetUseHighResTextures());
+		TRef<ZFile> zf = m_pmodeler->GetFile("fxmine.png","",true);
 
 	ZFile * pFile = (ZFile*) zf;
 		

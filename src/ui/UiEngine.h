@@ -1,5 +1,7 @@
 #pragma once
 
+#include "FileLoader.h"
+
 class UiScreenConfiguration : public UiObjectContainer {
 public:
     UiScreenConfiguration(std::map<std::string, std::shared_ptr<Exposer>> map) :
@@ -16,13 +18,13 @@ class UiEngine : public IObject
 {
 protected:
 
-    static std::string m_stringArtPath;
+    static std::shared_ptr<IFileLoader> m_fileLoader;
 
 public:
 
     static std::string m_stringLogPath;
 
-    static void SetGlobalArtPath(std::string path);
+    static void SetGlobalFileLoader(const std::shared_ptr<IFileLoader>& pLoader);
     static UiEngine* UiEngine::Create(Window* pWindow, Engine* pEngine, ISoundEngine* pSoundEngine, std::function<void(std::string)> funcOpenWebsite);
 
     //virtual Image* LoadImage(std::string path) = 0;
@@ -63,11 +65,11 @@ class LuaScriptContext;
 class Loader {
 
 private:
-    PathFinder m_pathfinder;
     sol::state* m_pLua;
+    std::shared_ptr<IFileLoader> m_pFileLoader;
 
 public:
-    Loader(sol::state& lua, Engine* pEngine, std::vector<std::string> paths);
+    Loader(sol::state& lua, Engine* pEngine, const std::shared_ptr<IFileLoader>& pFileLoader);
     ~Loader();
 
     void InitNamespaces(LuaScriptContext& context);
@@ -98,7 +100,7 @@ private:
     TRef<Engine> m_pEngine;
     TRef<ISoundEngine> m_pSoundEngine;
     Loader m_loader;
-    PathFinder m_pathFinder;
+    std::shared_ptr<IFileLoader> m_pFileLoader;
     std::shared_ptr<UiScreenConfiguration> m_pConfiguration;
     std::function<void(std::string)> m_funcOpenWebsite;
     TRef<SimpleModifiableValue<bool>> m_pHasKeyboardFocus;
@@ -115,7 +117,7 @@ public:
         Window* pWindow,
         Engine* pEngine,
         ISoundEngine* pSoundEngine, 
-        std::string stringArtPath, 
+        const std::shared_ptr<IFileLoader>& pFileLoader,
         const std::shared_ptr<UiScreenConfiguration>& pConfiguration, 
         std::function<void(std::string)> funcOpenWebsite
     );

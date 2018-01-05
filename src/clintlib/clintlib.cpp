@@ -1659,7 +1659,7 @@ void    BaseClient::ResetShip(void)
     m_pmodelServerTarget = NULL;
 }
 
-void    BaseClient::ResetClusterScanners(IsideIGC*  pside)
+/*void    BaseClient::ResetClusterScanners(IsideIGC*  pside)
 {
     SideID  sid = pside->GetObjectID();
 
@@ -1678,7 +1678,7 @@ void    BaseClient::ResetClusterScanners(IsideIGC*  pside)
     {
         //Probes ...
     }
-}
+}*/
 
 void    BaseClient::BuyLoadout(IshipIGC*    pshipLoadout, bool bLaunch)
 {
@@ -1712,6 +1712,13 @@ void    BaseClient::BuyLoadout(IshipIGC*    pshipLoadout, bool bLaunch)
         m_ship->PurchaseShipLoadout (size, static_cast <ShipLoadout*> (ptr));
         m_pClientEventSource->OnPurchaseCompleted (true);
         free(ptr);
+
+        if (bLaunch) {
+            assert(m_ship->GetStation());
+            IstationIGC* s = m_ship->GetStation();
+            m_ship->SetStation(NULL);
+            s->Launch(m_ship);
+        }
     }
 }
 
@@ -2905,6 +2912,12 @@ void BaseClient::KillMissileEvent(ImissileIGC*            pmissile, const Vector
     else
         pmissile->Disarm();
 }
+void BaseClient::KillTreasureEvent(ItreasureIGC* ptreasure)
+{
+    if (!m_fm.IsConnected()) {
+        ptreasure->Terminate();
+    }
+}
 void BaseClient::KillShipEvent(Time now, IshipIGC* pShip, ImodelIGC* pLauncher, float flAmount, const Vector& p1, const Vector& p2)
 {
     if (!m_fm.IsConnected())
@@ -2919,7 +2932,7 @@ void BaseClient::KillShipEvent(Time now, IshipIGC* pShip, ImodelIGC* pLauncher, 
                 IpartIGC*   p = plink->data();
 
                 if (randomInt(0, 4) == 0)
-                    CreateTreasureLocal(now, pShip, p, p->GetPartType(), p1, 100.0f);
+                    CreateTreasureLocal(now, pShip, p, p->GetPartType(), p1, 100.0f, 60.0f);
                 p->Terminate();
             }
 
@@ -2933,7 +2946,7 @@ void BaseClient::KillShipEvent(Time now, IshipIGC* pShip, ImodelIGC* pLauncher, 
 
                     if (randomInt(0, 4) == 0)
                         CreateTreasureLocal(now, pShip, ammo, pptAmmo, p1, 100.0f, 30.0f);
-                    pShip->SetAmmo(0);
+                    //pShip->SetAmmo(0); //What's the point .. let's not trigger reload here
                 }
             }
             //Ditto for fuel
@@ -2946,7 +2959,7 @@ void BaseClient::KillShipEvent(Time now, IshipIGC* pShip, ImodelIGC* pLauncher, 
 
                     if (randomInt(0, 4) == 0)
                         CreateTreasureLocal(now, pShip, fuel, pptFuel, p1, 100.0f, 30.0f);
-                    pShip->SetFuel(0.0f);
+                    //pShip->SetFuel(0.0f);
                 }
             }
         }
@@ -3008,8 +3021,7 @@ void BaseClient::KillShipEvent(Time now, IshipIGC* pShip, ImodelIGC* pLauncher, 
 void BaseClient::DamageStationEvent(IstationIGC* pStation,
                                     ImodelIGC* pLauncher,
                                     DamageTypeID type, 
-                                    float flAmount,
-                                    float flLeakage)
+                                    float amount)
 {
     if ((NULL != pStation->GetCluster()) &&
         (pStation->GetCluster() == GetCluster()))
@@ -3021,26 +3033,13 @@ void BaseClient::DamageStationEvent(IstationIGC* pStation,
     }
 }
 
-
-void BaseClient::KillStationEvent(IstationIGC* pStation,
-                                  ImodelIGC* pLauncher,
-                                  float flAmount,
-                                  float flLeakage)
-{
-    if (!m_fm.IsConnected())
-    {
-        pStation->GetCluster()->GetClusterSite()->AddExplosion(pStation, c_etLargeStation);
-        pStation->Terminate();
-    }
-}
-
 void BaseClient::FireMissile(IshipIGC* pShip,
                             ImagazineIGC* pMagazine,
                             Time timeFired,
                             ImodelIGC* pTarget,
                             float flLock)
 {
-    assert (pShip == m_ship);
+    assert (pShip == m_ship || !m_fm.IsConnected());
 
     if (pTarget &&
         ((pTarget->GetCluster() != m_ship->GetCluster()) ||
@@ -3159,14 +3158,18 @@ void BaseClient::FireMissile(IshipIGC* pShip,
         //
         if (Reload(pShip, pMagazine, ET_Magazine))
         {
-            PlayNotificationSound(salReloadingMissilesSound, GetShip());
-            PlaySoundEffect(startReloadSound, GetShip());
-            PostText(false, "Reloading missiles...");
+            if (pShip == m_ship) {
+                PlayNotificationSound(salReloadingMissilesSound, GetShip());
+                PlaySoundEffect(startReloadSound, GetShip());
+                PostText(false, "Reloading missiles...");
+            }
         }
         else
         {
-            PlayNotificationSound(salMissilesDepletedSound, GetShip());
-            PostText(false, "Missiles depleted.");
+            if (pShip == m_ship) {
+                PlayNotificationSound(salMissilesDepletedSound, GetShip());
+                PostText(false, "Missiles depleted.");
+            }
         }
     }
 }
@@ -3175,7 +3178,7 @@ void BaseClient::FireExpendable(IshipIGC* pShip,
                                 IdispenserIGC* pDispenser,
                                 Time timeFired)
 {
-    assert (pShip == m_ship);
+    assert(pShip == m_ship || !m_fm.IsConnected());
 
     this->PlayFFEffect(effectFire, pShip);
 
@@ -3185,19 +3188,21 @@ void BaseClient::FireExpendable(IshipIGC* pShip,
     IexpendableTypeIGC* pet = pDispenser->GetExpendableType();
     ObjectType type = pet->GetObjectType();
 
-    switch (type)
-    {
-    case OT_chaffType:
-        this->PlaySoundEffect(deployChaffSound, pShip);
-        break;
+    if (pShip == m_ship) {
+        switch (type)
+        {
+        case OT_chaffType:
+            this->PlaySoundEffect(deployChaffSound, pShip);
+            break;
 
-    case OT_mineType:
-        this->PlaySoundEffect(deployMineSound, pShip);
-        break;
+        case OT_mineType:
+            this->PlaySoundEffect(deployMineSound, pShip);
+            break;
 
-    case OT_probeType:
-        this->PlaySoundEffect(deployProbeSound, pShip);
-        break;
+        case OT_probeType:
+            this->PlaySoundEffect(deployProbeSound, pShip);
+            break;
+        }
     }
 
     if (!m_fm.IsConnected())
@@ -3209,7 +3214,7 @@ void BaseClient::FireExpendable(IshipIGC* pShip,
         {
             assert (type == OT_chaffType);
 
-            //Drop the chaff "behind" the player's ship
+            //Drop the chaff "behind" the ship
 
             DataChaffIGC   dataChaff;
 
@@ -3224,7 +3229,30 @@ void BaseClient::FireExpendable(IshipIGC* pShip,
                                                                   OT_chaff,
                                                                   &dataChaff,
                                                                   sizeof(dataChaff)));
-            assert (c != NULL);
+            assert(c != NULL);
+
+            //Confuse any missiles lauched at the ship
+            for (MissileLinkIGC*  pml = pCluster->GetMissiles()->first(); (pml != NULL); pml = pml->next()) {
+                ImissileIGC*    pmissile = pml->data();
+                if (pmissile->GetTarget() == pShip)
+                {
+                    //A missile aimed at me .. does the chaff work?
+                    float   chaff = ((IchaffTypeIGC*)pet)->GetChaffStrength();
+                    float   missile = pmissile->GetMissileType()->GetChaffResistance();
+
+                    //The following is equivalent to random(0, chaff) > random(0, missile)
+                    float   cm = chaff * missile;
+                    float   f = (chaff > missile)
+                        ? (cm - 0.5f * missile * missile)
+                        : (0.5f * chaff * chaff);
+
+                    if (random(0.0f, cm) <= f) {
+                        //Missile lost lock
+                        pmissile->SetTarget(c);
+                    }
+                }
+            }
+
             c->Release();
         }
         else
@@ -3305,22 +3333,24 @@ void BaseClient::FireExpendable(IshipIGC* pShip,
         //
         if (Reload(pShip, pDispenser, pet->GetEquipmentType()))
         {
-            switch (pet->GetObjectType())
-            {
-            case OT_chaffType:
-                PlayNotificationSound(salReloadingChaffSound, GetShip());
-                PostText(false, "Reloading chaff...");
-                break;
+            if (pShip == m_ship) {
+                switch (pet->GetObjectType())
+                {
+                case OT_chaffType:
+                    PlayNotificationSound(salReloadingChaffSound, GetShip());
+                    PostText(false, "Reloading chaff...");
+                    break;
 
-            default:
-                PlayNotificationSound(salReloadingDispenserSound, GetShip());
-                PostText(false, "Reloading dispenser...");
-                break;
+                default:
+                    PlayNotificationSound(salReloadingDispenserSound, GetShip());
+                    PostText(false, "Reloading dispenser...");
+                    break;
+                }
+
+                PlaySoundEffect(startReloadSound, GetShip());
             }
-
-            PlaySoundEffect(startReloadSound, GetShip());
         }
-        else
+        else if (pShip == m_ship)
         {
             switch (pet->GetObjectType())
             {
@@ -3342,7 +3372,7 @@ bool BaseClient::Reload(IshipIGC* pship, IlauncherIGC* plauncher, EquipmentType 
 {
     int         nReloads = 0;
 
-    if (pship == m_ship)
+    if (pship == m_ship || !m_fm.IsConnected())
     {
         const int   c_MaxReloads = 8;
         ReloadData  reloads[c_MaxReloads];
@@ -3608,6 +3638,27 @@ bool BaseClient::Reload(IshipIGC* pship, IlauncherIGC* plauncher, EquipmentType 
                 pfmDrop->mount = plauncher->GetMountID();
 
                 plauncher->Terminate();
+            }
+        }
+        else {
+            if (plauncher && (plauncher->GetAmount() == 0))
+                plauncher->Terminate();
+            if (nReloads <= 0 && type == ET_Weapon && pship->GetPilotType() == c_ptWingman) {
+                debugf("Wingman %s out of ammo.\n", pship->GetName());
+
+                int ttMask = c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster;
+                if (pship->GetHullType()->GetCapabilities() & c_habmLandOnCarrier)
+                    ttMask |= c_ttShip;
+                ImodelIGC*  pmodel = FindTarget(pship, ttMask,
+                    NULL, NULL, NULL, NULL, c_sabmReload);
+                debugf("found %s\n", pmodel ? pmodel->GetName() : "NULL");
+
+                if (pmodel) {
+                    pship->SetCommand(c_cmdPlan, pmodel, c_cidGoto);
+                    m_pCoreIGC->GetIgcSite()->SendChat(pship, CHAT_TEAM, GetSide()->GetObjectID(),
+                        NA, "Out of ammo, I'm getting resupplies."); //salNoAmmoSound
+                    pship->SetGettingAmmo(true);
+                }
             }
         }
     }
