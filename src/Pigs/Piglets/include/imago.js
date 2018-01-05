@@ -98,6 +98,7 @@ function OnStateMissionList(eStatePrevious) {
 
 // step 3...
 function OnStateWaitingForMission(eStatePrevious) {
+    gameRunning = false;
     KillAllTimers();
 	DisplayStateTransition(eStatePrevious);
 	if (PigState_CreatingMission == eStatePrevious) {
@@ -156,10 +157,13 @@ function OnStateDocked(eStatePrevious) {
     KillTimers();
     if (gameRunning == true) {
         CreateTimer(2.0, "onStateDockedTimeElapsed(true)", -1, "onStateDockedTimeElapsedTimer");
+    } else {
+        CreateTimer(16.0, "onStateDockedTimeElapsed(true)", -1, "onStateDockedTimeElapsedTimer");
     }
 }
 
 function onStateDockedTimeElapsed(safe) {
+    gameRunning = true;
     eStatePrevious = latest_OnStateDocked_eStatePrevious;
     Timer.Kill();
     IsTargetClose = false;
