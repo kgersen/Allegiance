@@ -169,7 +169,7 @@ public:
        // TRef<Surface> psurface = GetEngine()->CreateSurface(hbitmap);
         //ZVerify(::DeleteObject(hbitmap));
 		
-		TRef<ZFile> zf = GetModeler()->GetFile(strInput,"",false, GetModeler()->GetUseHighResTextures());
+		TRef<ZFile> zf = GetModeler()->GetFile(strInput,"",false);
 		ZFile * pFile = (ZFile*) zf;
 		D3DXIMAGE_INFO fileInfo;
 		D3DXGetImageInfoFromFileInMemory(pFile->GetPointer(),pFile->GetLength(),&fileInfo );

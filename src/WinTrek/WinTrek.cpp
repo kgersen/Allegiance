@@ -25,6 +25,8 @@ class QuickChatNode : public IMDLObject {};
 #include <D3DDevice9.h>
 #include <DX9PackFile.h>
 
+#include "FileLoader.h"
+
 // Tell the linker that my DLL should be delay loaded
 //#pragma comment(linker, "/DelayLoad:icqmapi.dll")
 
@@ -1346,7 +1348,6 @@ public:
     TRef<IMenuItem>            m_pitemToggleStars;
     TRef<IMenuItem>            m_pitemToggleEnvironment;
     TRef<IMenuItem>			   m_pitemToggleUseOldUi;
-	TRef<IMenuItem>			   m_pitemToggleHighResTextures; // BT - 10/17 - HighRes Textures
     TRef<IMenuItem>            m_pitemToggleRoundRadar;
     TRef<IMenuItem>            m_pitemToggleLinearControls;
     TRef<IMenuItem>            m_pitemToggleLargeDeadZone;
@@ -1454,9 +1455,6 @@ public:
     HWND  m_hwndVTEdit;
 
     bool m_bUseOldUi;
-
-	// BT - 10/17 - HighRes Textures
-	bool m_bUseHighResTextures;
 
     //
     // Input
@@ -2741,7 +2739,6 @@ public:
 		m_iMouseAccel(0), //#215
 		m_bShowInventoryPane(true), // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
 		m_bShowSectorMapPane(true),  // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
-		m_bUseHighResTextures(true), // BT - 10/17 - HighRes Textures
         m_bUseOldUi(false)
     {
         HRESULT hr;
@@ -2757,10 +2754,40 @@ public:
 
 		debugf("Setting art path to: %s\n", (PCC) strArtPath);
 
-		// Now set the art path, performed after initialise, else Modeler isn't valid.
-		GetModeler()->SetArtPath(strArtPath);
 
-        UiEngine::SetGlobalArtPath((std::string)strArtPath);
+        std::vector<ZString> vArtPaths;
+        {
+            //Go through the mod directory and add each directory in there
+
+            std::string search_path = "./Mods/*";
+            WIN32_FIND_DATA fd;
+            HANDLE hFind = ::FindFirstFile(search_path.c_str(), &fd);
+            if (hFind != INVALID_HANDLE_VALUE) {
+                do {
+                    if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && fd.cFileName[0] != '.') {
+                        vArtPaths.push_back(ZString("./Mods/") + fd.cFileName);
+                    }
+                } while (::FindNextFile(hFind, &fd));
+                ::FindClose(hFind);
+            }
+        }
+
+        //old and deprecated highres directory
+        vArtPaths.push_back(strArtPath + "/Textures");
+
+        //main artwork directory
+        vArtPaths.push_back(strArtPath);
+
+        // Now set the art path, performed after initialise, else Modeler isn't valid.
+        auto pFileLoader = CreateSecureFileLoader(
+            vArtPaths,
+            strArtPath
+        );
+        GetModeler()->SetFileLoader(pFileLoader);
+
+        GetModeler()->SetArtPath(strArtPath); //some functionality relies on the artpath
+
+        UiEngine::SetGlobalFileLoader(pFileLoader);
 
         if (g_bLuaDebug) {
             UiEngine::m_stringLogPath = (std::string)"lua.log";
@@ -3026,11 +3053,6 @@ public:
         m_bFFAutoCenter			 = (LoadPreference("FFAutoCenter",			0) != 0); //Imago #187
 		m_iMouseAccel			 = LoadPreference("MouseAcceleration",     0) % 3; // Imago #215 //#282 bugfix
 		m_iWheelDelay			 = LoadPreference("WheelDelay",            2) % 5; //Spunky #282
-
-		// BT - 10/17 - HighRes Textures
-		m_bUseHighResTextures    = (LoadPreference("HighResTextures",		1) != 0);
-
-		m_pmodeler->SetHighResTextures(m_bUseHighResTextures);
 
         m_bUseOldUi = (LoadPreference("OldUi", 1) != 0);
 
@@ -3648,43 +3670,11 @@ public:
         PostMessage(WM_CLOSE);
     }
 
-    class CloseSink : public IIntegerEventSink {
-    public:
-        TrekWindowImpl* m_pwindow;
-
-        CloseSink(TrekWindowImpl* pwindow) :
-            m_pwindow(pwindow)
-        {
-        }
-
-        bool OnEvent(IIntegerEventSource* pevent, int value)
-        {
-            if (value == IDOK)
-                m_pwindow->DoClose();
-            else
-                m_pwindow->CloseMessageBox ();
-            return false;
-        }
-    };
-
     TRef<IMessageBox> m_pmessageBox;
 
     void StartClose()
     {
-        if (m_pmessageBox == NULL) {
-            m_pmessageBox = CreateMessageBox("Quit Allegiance?", NULL, true, true);
-            m_pmessageBox->GetEventSource()->AddSink(new CloseSink(this));
-            GetPopupContainer()->OpenPopup(m_pmessageBox, false);
-            m_ptrekInput->SetFocus(false);
-        }
-
-        //
-        // Make sure the window isn't minimized
-        //
-
-        if (!GetFullscreen()) {
-            OnCaptionRestore();
-        }
+		DoClose();
     }
 
     bool OnEvent(IIntegerEventSource* pevent, int value)
@@ -4148,8 +4138,6 @@ public:
 	#define idmMouseSensDown	819
 	#define idmMouseAccel		820
 	#define idmWheelDelay		821 //Spunky #282
-
-	#define idmHighResTextures	822	// BT - 10/17 - HighRes Textures
 
     #define idmOldUi	        823
 
@@ -4666,12 +4654,8 @@ public:
                 m_pitemToggleLensFlare             = pmenu->AddMenuItem(idmToggleLensFlare,             GetLensFlareMenuString()            ,	'F');
                 m_pitemToggleBidirectionalLighting = pmenu->AddMenuItem(idmToggleBidirectionalLighting, GetBidirectionalLightingMenuString(),	'B');
                 m_pitemStyleHUD                    = pmenu->AddMenuItem(idmStyleHUD,                    GetStyleHUDMenuString()             ,	'H'); //Imago 6/30/09 adjust new dx9 settings in game
-				
-				// BT - 10/17 - HighRes Textures
-				m_pitemToggleHighResTextures	   = pmenu->AddMenuItem(idmHighResTextures,				GetHighResTexturesString(),				'X');
 
-                //Rock: Disabled for release
-                //m_pitemToggleUseOldUi     = pmenu->AddMenuItem(idmOldUi, GetOldUiMenuString(), 'G');
+                m_pitemToggleUseOldUi     = pmenu->AddMenuItem(idmOldUi, GetOldUiMenuString(), 'G');
  				
 				break;
 
@@ -5455,25 +5439,6 @@ public:
 
     }
 
-	// BT - 10/17 - HighRes Textures
-	void ToggleHighResTextures()
-	{
-		m_bUseHighResTextures = !m_bUseHighResTextures;
-
-		SavePreference("HighResTextures", m_bUseHighResTextures);
-
-		GetWindow()->GetModeler()->SetHighResTextures(m_bUseHighResTextures);
-
-		if (m_pitemToggleHighResTextures != NULL) {
-			m_pitemToggleHighResTextures->SetString(GetHighResTexturesString());
-		}
-
-		m_pmessageBox = CreateMessageBox("Enabling or Disabling the High Resolution Textures will require you to restart Allegiance.", NULL, true, false);
-        m_pmessageBox->GetEventSource()->AddSink(new CloseNotificationSink(this));
-		GetWindow()->GetPopupContainer()->OpenPopup(m_pmessageBox, false);
-
-	}
-
 	//Imago 7/8/09 #24
     void ToggleShowGrid()
     {
@@ -6137,12 +6102,6 @@ public:
         return "Use old UI: " + ZString(m_bUseOldUi ? "On" : "Off");
     }
 
-	// BT - 10/17 - HighRes Textures
-	ZString GetHighResTexturesString()
-	{
-		return "Use High Resolution Textures: " + ZString(m_bUseHighResTextures ? "On" : "Off");
-	}
-
     ZString GetEnableFeedbackMenuString()
     {
         return (m_bEnableFeedback ? "Force Feedback Enabled " : "Force Feedback Disabled ");
@@ -6416,11 +6375,6 @@ public:
             case idmToggleEnvironment:
                 ToggleEnvironment();
                 break;
-
-				// BT - 10/17 - HighRes Textures
-			case idmHighResTextures:
-				ToggleHighResTextures();
-				break;
 
             case idmOldUi:
                 ToggleOldUi();
@@ -8539,7 +8493,7 @@ public:
                             buttonsM |= forwardButtonIGC;
                         if (m_ptrekInput->IsTrekKeyDown(TK_ThrustBackward, bAllowKeyboardMovement))
                             buttonsM |= backwardButtonIGC;
-						 if (m_ptrekInput->IsTrekKeyDown(TK_FireBooster, bAllowKeyboardMovement))
+                        if (m_ptrekInput->IsTrekKeyDown(TK_FireBooster, bAllowKeyboardMovement))
                             buttonsM |= afterburnerButtonIGC;
 
                         if (fAutoPilot)
@@ -8958,22 +8912,6 @@ public:
             colorHUDshadows = colorHUDshadows * 0.65f;
             colorHUDshadows.SetAlpha(alphaless);
             m_pcolorHUDshadows->SetValue(colorHUDshadows);
-
-            //------------------------------------------------------------------------------
-            // Interception point for handling training missions
-            // =================================================
-            // This call is to be made when we are running a training mission to check to
-            // see if mission goals have been accomplished, and prevent the player from
-            // running off into space wherever appropriate. The function called will
-            // maintain the state, and provide guidance and restrictions as applicable.
-            //------------------------------------------------------------------------------
-
-            Training::HandleMission ();
-
-            //------------------------------------------------------------------------------
-            // End interception for training missions
-            //------------------------------------------------------------------------------
-
 		} else {
 
 			// //-Imago 7/13/09 we're not actually in a sector playing the game...
@@ -8989,6 +8927,22 @@ public:
         trekClient.CheckServerLag(Time::Now());
         if (trekClient.m_fm.IsConnected())
             trekClient.SendMessages();
+        else {
+            //------------------------------------------------------------------------------
+            // Interception point for handling training missions
+            // =================================================
+            // This call is to be made when we are running a training mission to check to
+            // see if mission goals have been accomplished, and prevent the player from
+            // running off into space wherever appropriate. The function called will
+            // maintain the state, and provide guidance and restrictions as applicable.
+            //------------------------------------------------------------------------------
+
+            Training::HandleMission();
+
+            //------------------------------------------------------------------------------
+            // End interception for training missions
+            //------------------------------------------------------------------------------
+        }
 
         trekClient.m_pCoreIGC->Update(now);
 
@@ -11197,6 +11151,11 @@ public:
         //bool newButton4 = m_ptrekInput->GetButton(3); // !!! was next weapon
         //bool newButton5 = m_ptrekInput->GetButton(4); // !!! was vector lock
         bool newButton6 = m_ptrekInput->IsTrekKeyDown(TK_MatchSpeed , bReadKeyboard);
+
+        if (newButton3) {
+            trekClient.trekThrottle = 1.0f;
+            bThrottleChange = !trekClient.joyThrottle;
+        }
 
         if (bInternalCamera)
         {

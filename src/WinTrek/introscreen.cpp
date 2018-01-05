@@ -6,6 +6,7 @@
 #include "CreateGameDialog.h"
 
 #include "ui.h"
+#include "downloader.h"
 
 extern bool CheckNetworkDevices(ZString& strDriverURL);
 
@@ -74,17 +75,18 @@ private:
 public:
     LoggedInState(IEventSink* sinkLogout, IEventSink* sinkCreateGame) :
         UiState("Logged in", {
+            { "Callsign", TypeExposer<std::string>::Create(std::string(trekClient.GetNameLogonZoneServer())) },
             { "Mission list", TypeExposer<TRef<ContainerList>>::Create(new ContainerList({})) },
             { "Server list", TypeExposer<TRef<ContainerList>>::Create(new ContainerList({})) },
             { "Core list", TypeExposer<TRef<ContainerList>>::Create(new ContainerList({})) },
             { "Logout", TypeExposer<TRef<IEventSink>>::Create(sinkLogout) },
             { "Create mission dialog", TypeExposer<TRef<IEventSink>>::Create(sinkCreateGame) },
             { "Create mission", TypeExposer<TRef<TEvent<ZString, ZString, ZString>::Sink>>::Create(new CallbackValueSink<ZString, ZString, ZString>([this](ZString serverName, ZString coreName, ZString missionName) {
-                auto server = this->FindServer(serverName);
-                auto core = this->FindCore(coreName);
+                auto server = this->GetServer(serverName);
+                auto core = this->GetCore(coreName);
 
                 ServerCoreInfo serverinfo = server->Get<ServerCoreInfo>("ServerCoreInfo");
-                StaticCoreInfo coreinfo = server->Get<StaticCoreInfo>("StaticCoreInfo");
+                StaticCoreInfo coreinfo = core->Get<StaticCoreInfo>("StaticCoreInfo");
 
                 trekClient.CreateMissionReq(
                     serverinfo.szName,
@@ -93,7 +95,23 @@ public:
                     missionName
                 );
                 return true;
-            })) }
+            })) },
+            { "Server has core", TypeExposer<std::function<TRef<Boolean>(const TRef<StringValue>&, const TRef<StringValue>&)>>::Create([this](const TRef<StringValue>& server_name, const TRef<StringValue>& core_name) {
+
+                return new TransformedValue2<bool, ZString, ZString>([this](ZString server_name, ZString core_name) {
+                    auto server = this->FindServer(server_name);
+                    auto core = this->FindCore(core_name);
+
+                    if (!server || !core) {
+                        return false;
+                    }
+
+                    uint32 server_bitmask = (uint32)server->Get<ServerCoreInfo>("ServerCoreInfo").dwCoreMask;
+                    uint32 core_bitmask = core->Get<uint32>("Bitmask");
+
+                    return (bool)(server_bitmask & core_bitmask);
+                }, server_name, core_name);
+            }) }
         })
     {}
 
@@ -112,7 +130,15 @@ public:
             ++current_iterator;
         }
 
-        throw std::runtime_error("Core not found");
+        return nullptr;
+    }
+
+    TRef<UiObjectContainer> GetCore(ZString coreName) {
+        auto core = FindCore(coreName);
+        if (!core) {
+            throw std::runtime_error("Core not found");
+        }
+        return core;
     }
 
     TRef<UiObjectContainer> FindServer(ZString name) {
@@ -130,7 +156,15 @@ public:
             ++current_iterator;
         }
 
-        throw std::runtime_error("Server not found");
+        return nullptr;
+    }
+
+    TRef<UiObjectContainer> GetServer(ZString name) {
+        auto server = FindServer(name);
+        if (!server) {
+            throw std::runtime_error("Server not found");
+        }
+        return server;
     }
 
     void SetMissionList(List* plist) {
@@ -228,8 +262,8 @@ public:
 
             current_modifiablelist->Insert(i, new UiObjectContainer({
                 { "Name", StringExposer::CreateStatic(trekClient.CfgGetCoreName(pitem.cbIGCFile)) },
-                //{ "Bitmask", (uint32)(1 << i) },
-                //{ "StaticCoreInfo", (StaticCoreInfo)pitem }
+                { "Bitmask", TypeExposer<uint32>::Create(1 << i) },
+                { "StaticCoreInfo", TypeExposer<StaticCoreInfo>::Create(pitem) }
             }));
         }
     }
@@ -256,26 +290,7 @@ public:
 
             current_modifiablelist->Insert(i, new UiObjectContainer({
                 { "Name", StringExposer::CreateStatic(pitem.szName) },
-                //{ "ServerCoreInfo", (ServerCoreInfo)pitem },
-                { "Has core", TypeExposer<std::function<void(std::string)>>::Create([bitmaskServer, this](std::string core_name) {
-                    auto listCores = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Core list")->GetList();
-
-                    auto current_iterator = listCores.begin();
-
-                    while (current_iterator != listCores.end()) {
-                        std::string current_core_name = (*current_iterator)->Get<TRef<StringValue>>("Name")->GetValue();
-
-                        if (core_name == current_core_name) {
-                            uint32 core_bitmask = (*current_iterator)->Get<uint32>("Bitmask");
-
-                            return (bool)(bitmaskServer & core_bitmask);
-                        }
-
-                        ++current_iterator;
-                    }
-
-                    throw std::runtime_error("Core was not found in core list");
-                }) }
+                { "ServerCoreInfo", TypeExposer<ServerCoreInfo>::Create(pitem) }
             }));
         }
     }
@@ -289,9 +304,16 @@ private:
 
     TRef<CreateGameDialogPopup> m_pcreateDialog;
 
+    std::shared_ptr<DownloadHandle> m_pConfigDownload;
+
+    static const int STEP_CONFIG_DOWNLOAD = 1;
+    static const int STEP_CONFIG_READ = 2;
+    static const int STEP_LOBBY_LOGIN = 3;
+    static const int STEP_LOBBY_MISSIONLIST = 4;
+
 public:
     LoginHelper() :
-        m_state(new UiStateModifiableValue(LoggedOutState(new UiStateValue(NoErrorState()), GetLoginSink())))
+        m_state(new UiStateModifiableValue(std::make_shared<LoggedOutState>(new UiStateValue(std::make_shared<NoErrorState>()), GetLoginSink())))
     {
 
     }
@@ -327,7 +349,7 @@ public:
     void SetLoginError(std::string message) {
         trekClient.GetClientEventSource()->RemoveSink(m_pClientEventSink);
         m_pClientEventSink = nullptr;
-        m_state->SetValue(LoggedOutState(new UiStateValue(YesErrorState(message)), this->GetLoginSink()));
+        m_state->SetValue(std::make_shared<LoggedOutState>(new UiStateValue(std::make_shared<YesErrorState>(message)), this->GetLoginSink()));
     }
 
     void Async(std::function<void()> callback) {
@@ -346,7 +368,7 @@ public:
     }
 
     void Logout() {
-        if (m_state->GetValue().GetName() != "Logged in") {
+        if (m_state->GetValue()->GetName() != "Logged in") {
             ZAssert(false);
             return;
         }
@@ -363,11 +385,11 @@ public:
             m_pServerlistChangedSink = nullptr;
         }
 
-        m_state->SetValue(LoggedOutState(new UiStateValue(NoErrorState()), this->GetLoginSink()));
+        m_state->SetValue(std::make_shared<LoggedOutState>(new UiStateValue(std::make_shared<NoErrorState>()), this->GetLoginSink()));
     }
 
     void Login() {
-        if (m_state->GetValue().GetName() != "Logged out") {
+        if (m_state->GetValue()->GetName() != "Logged out") {
             ZAssert(false);
             return;
         }
@@ -375,8 +397,8 @@ public:
         m_pClientEventSink = IClientEventSink::CreateDelegate(this);
         trekClient.GetClientEventSource()->AddSink(m_pClientEventSink);
 
-        m_state->SetValue(LoggingInState());
-        m_state->GetValue().as<LoggingInState>()->SetStep(1, "Connecting to the lobby");
+        m_state->SetValue(std::make_shared<LoggingInState>());
+        m_state->GetValue()->as<LoggingInState>()->SetStep(STEP_CONFIG_DOWNLOAD, "Downloading configuration file");
 
         ZString name = trekClient.GetSavedCharacterName();
 
@@ -395,9 +417,44 @@ public:
         CallsignTagInfo callSignTagInfo;
         ZString characterName = callSignTagInfo.Render(name);
 
-        Async([this, characterName]() {
-            PathString pathConfig(PathString::GetCurrentDirectory() + "allegiance.txt");
-            trekClient.GetCfgInfo().Load(pathConfig);
+        char configPath[MAX_PATH];
+        lstrcpy(configPath, "http://allegiance.zaphop.com/allegiance.txt");
+
+        HKEY hKey;
+
+        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        {
+            DWORD cbValue = MAX_PATH;
+            char szConfig[MAX_PATH];
+            szConfig[0] = '\0';
+            ::RegQueryValueEx(hKey, "CfgFile", NULL, NULL, (LPBYTE)&szConfig, &cbValue);
+            // if it didn't succeed, we'll just use the default above
+            if (lstrlen(szConfig) > 0)
+                lstrcpy(configPath, szConfig);
+        }
+
+        if (ZString(configPath).Find("http://") == -1)
+        {
+            StartConfigRead(characterName, configPath, "Using local lobby configuration. Reading lobby configuration");
+        }
+        else {
+            m_pConfigDownload = Downloader().Download(configPath);
+            m_pConfigDownload->AddCallback([this, characterName]() {
+                try {
+                    PathString pathLocalConfig(m_pConfigDownload->GetResultFilePath().c_str());
+                    StartConfigRead(characterName, pathLocalConfig, "Downloaded lobby configuration. Reading lobby configuration");
+                }
+                catch (const DownloadException& e) {
+                    SetLoginError(std::string("Configuration: ") + e.what());
+                }
+            });
+        }
+    }
+
+    void StartConfigRead(ZString characterName, PathString pathLocalConfig, std::string strStepMessage) {
+        m_state->GetValue()->as<LoggingInState>()->SetStep(STEP_CONFIG_READ, strStepMessage);
+        Async([this, characterName, pathLocalConfig]() {
+            trekClient.GetCfgInfo().Load(pathLocalConfig);
 
             BaseClient::ConnectInfo ci;
             DWORD cbZoneTicket = 0;
@@ -408,22 +465,23 @@ public:
 
             ZeroMemory(&ci.ftLastArtUpdate, sizeof(ci.ftLastArtUpdate));
 
-            ((BaseClient*)&trekClient)->ConnectToLobby(&ci);
+            m_state->GetValue()->as<LoggingInState>()->SetStep(STEP_LOBBY_LOGIN, "Connecting to the lobby");
+            HRESULT success = ((BaseClient*)&trekClient)->ConnectToLobby(&ci);
             if (!trekClient.m_fmLobby.IsConnected()) {
                 SetLoginError("Failed to connect to the lobby.");
                 return;
             }
-            m_state->GetValue().as<LoggingInState>()->SetStep(2, "Connected to the lobby. Waiting for the server list.");
+            m_state->GetValue()->as<LoggingInState>()->SetStep(STEP_LOBBY_MISSIONLIST, "Connected to the lobby. Waiting for the server list.");
         });
     }
 
     void OnLostConnection(const char * szReason) override {};
     void OnLogonLobby() override {
-        if (m_state->GetValue().GetName() != "Logging in") {
+        if (m_state->GetValue()->GetName() != "Logging in") {
             ZAssert(false);
             return;
         }
-        m_state->GetValue().as<LoggingInState>()->SetStep(3, "Logged in to the lobby. Waiting for server/core list");
+        m_state->GetValue()->as<LoggingInState>()->SetStep(3, "Logged in to the lobby. Waiting for server/core list");
 
         Async([this]() {
             trekClient.ServerListReq();
@@ -468,21 +526,21 @@ public:
             ZAssert(false);
         }
         m_pServerlistChangedSink = new CallbackSink([this]() {
-            if (m_state->GetValue().GetName() != "Logged in") {
+            if (m_state->GetValue()->GetName() != "Logged in") {
                 ZAssert(false);
                 return false;
             }
-            m_state->GetValue().as<LoggedInState>()->SetMissionList(trekClient.GetMissionList());
+            m_state->GetValue()->as<LoggedInState>()->SetMissionList(trekClient.GetMissionList());
             return true;
         });
 
         List* plist = trekClient.GetMissionList();
         plist->GetChangedEvent()->AddSink(m_pServerlistChangedSink);
 
-        m_state->SetValue(LoggedInState(this->GetLogoutSink(), this->GetShowNewGamePopupSink()));
-        m_state->GetValue().as<LoggedInState>()->SetMissionList(plist);
-        m_state->GetValue().as<LoggedInState>()->SetCoreList(cCores, pcores);
-        m_state->GetValue().as<LoggedInState>()->SetServerList(cServers, pservers);
+        m_state->SetValue(std::make_shared<LoggedInState>(this->GetLogoutSink(), this->GetShowNewGamePopupSink()));
+        m_state->GetValue()->as<LoggedInState>()->SetMissionList(plist);
+        m_state->GetValue()->as<LoggedInState>()->SetCoreList(cCores, pcores);
+        m_state->GetValue()->as<LoggedInState>()->SetServerList(cServers, pservers);
     };
 
     TRef<IEventSink> GetShowNewGamePopupSink() {
