@@ -191,22 +191,7 @@ namespace Training
             }
             trekClient.SaveLoadout(pShip);
         }
-        Mount   cargo = -c_maxCargo;
-        while (cargo < 0) {
-            debugf(" cargo %d: %s\n", cargo, (pShip->GetMountedPart(NA, cargo) ? pShip->GetMountedPart(NA, cargo)->GetPartType()->GetName() : "NULL"));
-            cargo++;
-        }
-        if (pShip->GetMountedPart(ET_Weapon, 0)) {
-            IweaponIGC* wpn = (IweaponIGC*)pShip->GetMountedPart(ET_Weapon, 0);
-            if (wpn->GetProjectileType()->GetAbsoluteF())
-                debugf(" GetProjectileType AbsoluteF\n");
-            else
-                debugf(" GetProjectileType not AbsoluteF\n");
-        }
-        else
-            debugf(" no wpn\n");
-        debugf(" ScannerRange: %f\n", pShip->GetHullType()->GetScannerRange());
-        
+
         ZAssert(pShip->GetPilotType() != c_ptWingman || pShip->GetMountedPart(ET_Weapon, 0)); // wingmen need a weapon. Check the team's tech bits.
 
         // Set behaviour
@@ -268,9 +253,6 @@ namespace Training
 
     void        CreateDroneAction::SetCreatedBehaviour(WingmanBehaviourBitMask wingmanBehaviour)
     {
-        if (wingmanBehaviour & c_wbbmRunAt30Hull) {
-            debugf("Setting c_wbbmRunAt30Hull for %s\n", (LPCSTR)m_name);
-        }
         m_wingmanBehaviour = wingmanBehaviour;
     }
 
