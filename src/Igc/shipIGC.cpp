@@ -2315,7 +2315,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
         {
             m_dtTimeBetweenComplaints = c_dtTimeBetweenComplaints;
 
-            if (m_pilotType == c_ptWingman || m_pilotType == c_ptCheatPlayer)  { // || (m_pilotType == c_ptCheatPlayer && m_commandIDs[c_cmdPlan] != c_cidGoto)) {
+            if ((m_pilotType == c_ptWingman || m_pilotType == c_ptCheatPlayer) && m_mountedWeapons[0] != NULL)  { // || (m_pilotType == c_ptCheatPlayer && m_commandIDs[c_cmdPlan] != c_cidGoto)) {
                 if (m_commandTargets[c_cmdPlan]->GetCluster() == GetCluster())
                 {
                     if (m_commandIDs[c_cmdPlan] == c_cidAttack)

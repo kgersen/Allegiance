@@ -3054,7 +3054,7 @@ public:
 		m_iMouseAccel			 = LoadPreference("MouseAcceleration",     0) % 3; // Imago #215 //#282 bugfix
 		m_iWheelDelay			 = LoadPreference("WheelDelay",            2) % 5; //Spunky #282
 
-        m_bUseOldUi = (LoadPreference("OldUi", 0) != 0);
+        m_bUseOldUi = (LoadPreference("OldUi", 1) != 0);
 
         //
         // Initial screen size
