@@ -2086,19 +2086,20 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                         cid = c_cidDefend;
                         if (m_pshipParent == NULL)
                         {
-                            if (type == OT_ship)
-                            {
-                                IhullTypeIGC*   pht = ((IshipIGC*)pmodel)->GetBaseHullType();
-                                if (pht && m_myHullType.GetHullType())
+                            if (m_myHullType.GetHullType()) {
+                                if (type == OT_ship)
                                 {
-                                    if ( (pht->HasCapability(c_habmLifepod) && m_myHullType.GetHullType()->HasCapability(c_habmRescue)) ||
-                                         (pht->HasCapability(c_habmRescue) && m_myHullType.GetHullType()->HasCapability(c_habmLifepod)) )
-                                        cid = c_cidPickup;
+                                    IhullTypeIGC*   pht = ((IshipIGC*)pmodel)->GetBaseHullType();
+                                    if (pht)
+                                    {
+                                        if ((pht->HasCapability(c_habmLifepod) && m_myHullType.GetHullType()->HasCapability(c_habmRescue)) ||
+                                            (pht->HasCapability(c_habmRescue) && m_myHullType.GetHullType()->HasCapability(c_habmLifepod)))
+                                            cid = c_cidPickup;
+                                        else if (pht->HasCapability(c_habmCarrier) && m_myHullType.GetHullType()->HasCapability(c_habmLandOnCarrier))
+                                            cid = c_cidGoto;
+                                    }
                                 }
-                            }
-                            else if (m_myHullType.GetHullType())
-                            {
-                                if (type == OT_station)
+                                else if (type == OT_station)
                                 {
                                     StationAbilityBitMask   sabm = ((IstationIGC*)pmodel)->GetStationType()->GetCapabilities();
                                     HullAbilityBitMask      habm = m_myHullType.GetCapabilities();

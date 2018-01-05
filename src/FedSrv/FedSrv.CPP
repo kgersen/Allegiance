@@ -12753,12 +12753,12 @@ void FedSrvSiteBase::AlliedRearm(IshipIGC* pship, bool bLaunch) { //Imago 8/10/0
 
 bool FedSrvSiteBase::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship, float tCollision)
 {
-    CFSPlayer*  pfsPlayer = ((CFSShip*)(pship->GetPrivateData()))->GetPlayer();
+    CFSShip* pfsShip = (CFSShip*)pship->GetPrivateData();
 
     ImissionIGC*    pMission = pship->GetMission();
     TechTreeBitMask  ttbm = pship->GetSide()->GetDevelopmentTechs() | pship->GetSide()->GetBuildingTechs();
 
-    //Now ... go through the players ship and restore the expendables that are
+    //Now ... go through the ship and restore the expendables that are
     //free and partially gone
     {
         //refill parts backwards so that newly added parts will not be revisited
@@ -12773,83 +12773,52 @@ bool FedSrvSiteBase::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship,
         }
     }
 
-    //Copy the list of desired parts
-    IpartTypeIGC*   ptDesired[c_maxCargo + 3];      //Must be kept sync'd with
-    memcpy(ptDesired, pfsPlayer->GetDesiredLoadout(), sizeof(ptDesired));
+    if (pfsShip->IsPlayer()) {
+        //Copy the list of desired parts
+        IpartTypeIGC*   ptDesired[c_maxCargo + 3];      //Must be kept sync'd with
+        memcpy(ptDesired, pfsShip->GetPlayer()->GetDesiredLoadout(), sizeof(ptDesired));
 
-    //Go through and fill any holes with the desired parts
-    {
-        ErasePart(pship, ET_Magazine, 0, ptDesired);
-        ErasePart(pship, ET_Dispenser, 0, ptDesired);
-        ErasePart(pship, ET_ChaffLauncher, 0, ptDesired);
-        for (Mount i = 0; (i < c_maxCargo); i++)
-            ErasePart(pship, NA, -1 - i, ptDesired);
-    }
-
-    {
-        IpartTypeIGC*   ptFuel = (pship->GetMountedPart(ET_Afterburner, 0) != NULL)
-                                 ? pMission->GetFuelPack()
-                                 : NULL;
-
-        IpartTypeIGC*   ptAmmo = NULL;
+        //Go through and fill any holes with the desired parts
         {
-            for (Mount i = pship->GetHullType()->GetMaxWeapons() - 1; (i >= 0); i--)
-            {
-                IweaponIGC* pw = (IweaponIGC*)(pship->GetMountedPart(ET_Weapon, i));
-                if (pw && (pw->GetAmmoPerShot() != 0))
-                {
-                    ptAmmo = pMission->GetAmmoPack();
-                    break;
-                }
-            }
+            ErasePart(pship, ET_Magazine, 0, ptDesired);
+            ErasePart(pship, ET_Dispenser, 0, ptDesired);
+            ErasePart(pship, ET_ChaffLauncher, 0, ptDesired);
+            for (Mount i = 0; (i < c_maxCargo); i++)
+                ErasePart(pship, NA, -1 - i, ptDesired);
         }
 
-        bool    bBuyFuel = true;
-
-        // Remount launcher parts if they are depleted AaronMoore 1/10 (Imago)
-        for (int i = 0; i < 3; i++)
         {
-            if ((i == 0 && pship->GetMountedPart(ET_Magazine, 0) == NULL) ||
-                (i == 1 && pship->GetMountedPart(ET_Dispenser, 0) == NULL) ||
-                (i == 2 && pship->GetMountedPart(ET_ChaffLauncher, 0) == NULL))
+            IpartTypeIGC*   ptFuel = (pship->GetMountedPart(ET_Afterburner, 0) != NULL)
+                ? pMission->GetFuelPack()
+                : NULL;
+
+            IpartTypeIGC*   ptAmmo = NULL;
             {
-                IpartTypeIGC*   pt = ptDesired[i];
- 
-                if (pt)
+                for (Mount i = pship->GetHullType()->GetMaxWeapons() - 1; (i >= 0); i--)
                 {
-                    // Upgrade part if posible
-                    while (true)
+                    IweaponIGC* pw = (IweaponIGC*)(pship->GetMountedPart(ET_Weapon, i));
+                    if (pw && (pw->GetAmmoPerShot() != 0))
                     {
-                        IpartTypeIGC*   ptNext = pt->GetSuccessorPartType();
-                        if (ptNext && (ptNext->GetRequiredTechs() <= ttbm))
-                            pt = ptNext;
-                        else
-                            break;
+                        ptAmmo = pMission->GetAmmoPack();
+                        break;
                     }
-                    pship->CreateAndAddPart(pt, 0, SHRT_MAX);
-
-                    // Remove this part from the desired list so it is not added again into cargo
-                    ptDesired[i] = NULL;
                 }
             }
-        }
-		//end AaaronMoore 1/10
-        
 
-        int     iDesired = 0;
-        for (Mount i = 0; (i < c_maxCargo); i++)
-        {
-            IpartIGC*   ppart = pship->GetMountedPart(NA, -1 - i);
-            if (ppart == NULL)
+            bool    bBuyFuel = true;
+
+            // Remount launcher parts if they are depleted AaronMoore 1/10 (Imago)
+            for (int i = 0; i < 3; i++)
             {
-                //Shove an instance of the first part left in the
-                //desired part list into the slot
-                while (iDesired < c_maxCargo + 3)
+                if ((i == 0 && pship->GetMountedPart(ET_Magazine, 0) == NULL) ||
+                    (i == 1 && pship->GetMountedPart(ET_Dispenser, 0) == NULL) ||
+                    (i == 2 && pship->GetMountedPart(ET_ChaffLauncher, 0) == NULL))
                 {
-                    IpartTypeIGC*   pt = ptDesired[iDesired++];
+                    IpartTypeIGC*   pt = ptDesired[i];
 
-                    if (pt && (pt->GetRequiredTechs() <= ttbm))
+                    if (pt)
                     {
+                        // Upgrade part if posible
                         while (true)
                         {
                             IpartTypeIGC*   ptNext = pt->GetSuccessorPartType();
@@ -12858,24 +12827,57 @@ bool FedSrvSiteBase::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship,
                             else
                                 break;
                         }
+                        pship->CreateAndAddPart(pt, 0, SHRT_MAX);
 
-                        ppart = pship->CreateAndAddPart(pt, -1 - i, SHRT_MAX);
-                        assert (ppart->GetPrice() == 0);
-                        break;
+                        // Remove this part from the desired list so it is not added again into cargo
+                        ptDesired[i] = NULL;
                     }
                 }
+            }
+            //end AaaronMoore 1/10
 
+
+            int     iDesired = 0;
+            for (Mount i = 0; (i < c_maxCargo); i++)
+            {
+                IpartIGC*   ppart = pship->GetMountedPart(NA, -1 - i);
                 if (ppart == NULL)
                 {
-                    if (bBuyFuel && ptFuel)
+                    //Shove an instance of the first part left in the
+                    //desired part list into the slot
+                    while (iDesired < c_maxCargo + 3)
                     {
-                        pship->CreateAndAddPart(ptFuel, -1 - i, SHRT_MAX);
-                        bBuyFuel = (ptAmmo == NULL);
+                        IpartTypeIGC*   pt = ptDesired[iDesired++];
+
+                        if (pt && (pt->GetRequiredTechs() <= ttbm))
+                        {
+                            while (true)
+                            {
+                                IpartTypeIGC*   ptNext = pt->GetSuccessorPartType();
+                                if (ptNext && (ptNext->GetRequiredTechs() <= ttbm))
+                                    pt = ptNext;
+                                else
+                                    break;
+                            }
+
+                            ppart = pship->CreateAndAddPart(pt, -1 - i, SHRT_MAX);
+                            assert(ppart->GetPrice() == 0);
+                            break;
+                        }
                     }
-                    else if (ptAmmo)
+
+                    if (ppart == NULL)
                     {
-                        pship->CreateAndAddPart(ptAmmo, -1 - i, SHRT_MAX);
-                        bBuyFuel = true;
+                        if (bBuyFuel && ptFuel)
+                        {
+                            pship->CreateAndAddPart(ptFuel, -1 - i, SHRT_MAX);
+                            bBuyFuel = (ptAmmo == NULL);
+                        }
+                        else if (ptAmmo)
+                        {
+                            pship->CreateAndAddPart(ptAmmo, -1 - i, SHRT_MAX);
+                            bBuyFuel = true;
+                        }
                     }
                 }
             }
@@ -12950,8 +12952,19 @@ bool FedSrvSiteBase::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship,
         pfmLaunch->position = position;
         pfmLaunch->velocity = velocity;
         pfmLaunch->orientation.Set(*porientation);
-        pfmLaunch->cookie = pfsPlayer->NewCookie();
+        if (pfsShip->IsPlayer())
+            pfmLaunch->cookie = pfsShip->GetPlayer()->NewCookie();
         g.fm.SendMessages(GetGroupSectorFlying(pship->GetCluster()), FM_GUARANTEED, FM_FLUSH);
+    }
+
+    if (pship->GetAutopilot()) {
+        if (pship->GetCommandTarget(c_cmdAccepted) == (ImodelIGC*)pshipCarrier && pship->GetCommandID(c_cmdAccepted) == c_cidGoto) {
+            pship->SetCommand(c_cmdAccepted, pshipCarrier, c_cidDefend);
+            if (pship->GetPilotType() >= c_ptPlayer)
+                pship->SetCommand(c_cmdPlan, pshipCarrier, c_cidDefend);
+        }
+        else
+            pship->SetCommand(c_cmdPlan, NULL, c_cidNone); // drones will do c_cmdAccepted
     }
 
     return true;
