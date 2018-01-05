@@ -174,6 +174,7 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
     <ClCompile Include="..\src\WinTrek\CreateGameDialog.h" />
     <ClCompile Include="..\src\WinTrek\ddstream.cpp" />
     <ClCompile Include="..\src\WinTrek\ddvideo.cpp" />
+    <ClCompile Include="..\src\WinTrek\downloader.cpp" />
     <ClCompile Include="..\src\WinTrek\gameoverscreen.cpp" />
     <ClCompile Include="..\src\WinTrek\gamescreen.cpp" />
     <ClCompile Include="..\src\WinTrek\gamesite.cpp" />
@@ -230,6 +231,7 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
     <ClInclude Include="..\src\WinTrek\consoledata.h" />
     <ClInclude Include="..\src\WinTrek\ddstream.h" />
     <ClInclude Include="..\src\WinTrek\ddvideo.h" />
+    <ClInclude Include="..\src\WinTrek\downloader.h" />
     <ClInclude Include="..\src\WinTrek\gamesite.h" />
     <ClInclude Include="..\src\WinTrek\gametypes.h" />
     <ClInclude Include="..\src\WinTrek\hudimage.h" />

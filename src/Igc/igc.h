@@ -774,6 +774,19 @@ const ExpendableAbilityBitMask  c_eabmShootOnlyTarget = 0x1000;
 const ExpendableAbilityBitMask  c_eabmRescue          = c_sabmRescue;     //0x2000 Rescue lifepods that collide with it
 const ExpendableAbilityBitMask  c_eabmRescueAny       = c_sabmRescueAny;  //0x4000 Rescue any lifepod that collide with it
 
+typedef short WingmanBehaviourBitMask;
+const WingmanBehaviourBitMask   c_wbbmStrafe = 0x01;
+const WingmanBehaviourBitMask   c_wbbmUseMissiles = 0x02;
+const WingmanBehaviourBitMask   c_wbbmUseMines = 0x04; //needs mines already equipped
+//const WingmanBehaviourBitMask   c_wbbmUseChaff = 0x08;
+const WingmanBehaviourBitMask   c_wbbmRunAt30Hull = 0x10;
+const WingmanBehaviourBitMask   c_wbbmRunAt60Hull = 0x20;
+const WingmanBehaviourBitMask   c_wbbmInRangeAggressive = 0x40;
+const WingmanBehaviourBitMask   c_wbbmTempSectorAggressive = 0x80;
+//const WingmanBehaviourBitMask   c_wbbmSectorAggressive = 0x08;
+//const WingmanBehaviourBitMask   c_wbbmPreferCloseCombat = 0x20;
+//const WingmanBehaviourBitMask   c_wbbmStrafePattern = 0x20;
+
 typedef short AchievementMask;
 const AchievementMask c_achmProbeKill = 0x01;
 const AchievementMask c_achmProbeSpot = 0x02;
@@ -979,7 +992,7 @@ const int c_cbGamePassword = 17;
 //------------------------------------------------------------------------------
 #define IGC_STATIC_CORE_FILENAME    "static_core"
 #define IGC_ENCRYPT_CORE_FILENAME   "zone_core"
-#define IGC_TRAINING_CORE_FILENAME  "PCore012"
+#define IGC_TRAINING_CORE_FILENAME  "PCore014"
 
 
 const float c_fMissionBriefingCountdown = 15.0f; // seconds
@@ -1889,8 +1902,9 @@ struct  DataBuoyIGC
     SectorID            clusterID;
     BuoyType            type;
     BuoyID              buoyID;
+    bool                visible;
 
-    DataBuoyIGC (void) {buoyID = NA;}
+    DataBuoyIGC(void) { buoyID = NA; visible = true; }
 };
 
 struct  DataProjectileTypeIGC : public DataObjectIGC
@@ -3355,6 +3369,9 @@ class IshipIGC : public IscannerIGC
         virtual void                AdjustRipcordDebt(float delta) = 0;
 		virtual void				SetStayDocked(bool stayDock) = 0; //Xynth #48 8/2010
 		virtual bool				GetStayDocked(void) const =0; //Xynth #48
+        virtual void                SetGettingAmmo(bool gettingAmmo) = 0;
+        virtual void                SetWingmanBehaviour(WingmanBehaviourBitMask wingmanBehaviour) = 0;
+        virtual WingmanBehaviourBitMask GetWingmanBehaviour() = 0;
 		virtual void				AddRepair(float repair) = 0;
 		virtual float				GetRepair(void) const = 0;
 		virtual void				SetAchievementMask(AchievementMask am) = 0;
@@ -4837,6 +4854,7 @@ class IIgcSite : public IObject
                                    IclusterIGC* pclusterOld,
                                    IclusterIGC* pclusterNew)  {}    //changing clusters
         virtual void CommandChangedEvent(Command i, IshipIGC * pship, ImodelIGC* ptarget, CommandID cid) {};
+        virtual bool HandlePickDefaultOrder(IshipIGC* pship) { return false; }
 
         virtual void Preload(const char*    pszModelName,
                              const char*    pszFileName) {};

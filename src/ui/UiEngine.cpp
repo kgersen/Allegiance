@@ -27,10 +27,10 @@ void WriteLog(const std::string &text)
     log_file << text << std::endl;
 }
 
-std::string UiEngine::m_stringArtPath;
-void UiEngine::SetGlobalArtPath(std::string path)
+std::shared_ptr<IFileLoader> UiEngine::m_fileLoader;
+void UiEngine::SetGlobalFileLoader(const std::shared_ptr<IFileLoader>& pLoader)
 {
-    m_stringArtPath = path;
+    m_fileLoader = pLoader;
 }
 
 class UiScreenConfigurationImpl : public UiScreenConfiguration {
@@ -65,8 +65,8 @@ std::shared_ptr<UiScreenConfiguration> UiScreenConfiguration::Create(std::string
     return std::make_shared<UiScreenConfigurationImpl>(path, map);
 }
 
-Loader::Loader(sol::state& lua, Engine* pEngine, std::vector<std::string> paths)
-    : m_pathfinder(paths)
+Loader::Loader(sol::state& lua, Engine* pEngine, const std::shared_ptr<IFileLoader>& pFileLoader)
+    : m_pFileLoader(pFileLoader)
 {
     m_pLua = &lua;        
 }
@@ -111,12 +111,13 @@ void Loader::InitNamespaces(LuaScriptContext& context) {
 }
 
 sol::function Loader::LoadScript(std::string subpath) {
-    std::string path = m_pathfinder.FindPath(subpath);
-    if (path == "") {
+    if (m_pFileLoader->HasFile(subpath.c_str()) == false) {
         throw std::runtime_error("File not found: " + subpath);
     }
 
-    sol::load_result script = m_pLua->load_file(path);
+    ZString path = m_pFileLoader->GetFilePath(subpath.c_str());
+
+    sol::load_result script = m_pLua->load_file(std::string(path));
     if (script.valid() == false) {
         sol::error error = script;
         throw error;
@@ -192,19 +193,13 @@ T Executor::Execute(sol::function script, TArgs ... args) {
     }
 };
 
-LuaScriptContext::LuaScriptContext(Window* pWindow, Engine* pEngine, ISoundEngine* pSoundEngine, std::string stringArtPath, const std::shared_ptr<UiScreenConfiguration>& pConfiguration, std::function<void(std::string)> funcOpenWebsite) :
+LuaScriptContext::LuaScriptContext(Window* pWindow, Engine* pEngine, ISoundEngine* pSoundEngine, const std::shared_ptr<IFileLoader>& pFileLoader, const std::shared_ptr<UiScreenConfiguration>& pConfiguration, std::function<void(std::string)> funcOpenWebsite) :
     m_pWindow(pWindow),
     m_pEngine(pEngine),
     m_pSoundEngine(pSoundEngine),
     m_pConfiguration(pConfiguration),
-    m_loader(Loader(m_lua, pEngine, {
-        stringArtPath + "/PBUI",
-        stringArtPath
-    })),
-    m_pathFinder(PathFinder({
-        stringArtPath + "/PBUI",
-        stringArtPath
-    })),
+    m_loader(Loader(m_lua, pEngine, pFileLoader)),
+    m_pFileLoader(pFileLoader),
     m_funcOpenWebsite(funcOpenWebsite),
     m_executor(Executor()),
     m_pHasKeyboardFocus(new SimpleModifiableValue<bool>(false)),
@@ -223,11 +218,11 @@ sol::function LuaScriptContext::LoadScript(std::string path) {
 }
 
 std::string LuaScriptContext::FindPath(std::string path) {
-    std::string full_path = m_pathFinder.FindPath(path);
-    if (full_path == "") {
+    if (m_pFileLoader->HasFile(path.c_str()) == false) {
         throw std::runtime_error("File path not found: " + path);
     }
-    return full_path;
+    ZString full_path = m_pFileLoader->GetFilePath(path.c_str());
+    return std::string(full_path);
 }
 
 Engine* LuaScriptContext::GetEngine() {
@@ -425,7 +420,7 @@ public:
     };
 
     TRef<Image> InnerLoadImageFromLua(const std::shared_ptr<UiScreenConfiguration>& screenConfiguration) {
-        std::unique_ptr<LuaScriptContext> pContext = std::make_unique<LuaScriptContext>(m_pWindow, m_pEngine, m_pSoundEngine, m_stringArtPath, screenConfiguration, m_funcOpenWebsite);
+        std::unique_ptr<LuaScriptContext> pContext = std::make_unique<LuaScriptContext>(m_pWindow, m_pEngine, m_pSoundEngine, m_fileLoader, screenConfiguration, m_funcOpenWebsite);
 
         Executor* executor = pContext->GetExecutor();
 
