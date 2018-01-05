@@ -3,6 +3,8 @@ image: Visual Studio 2017
 configuration:
 - FZDebug
 - FZRetail
+before_build:
+  - nuget restore
 build:
   project: VS2017/Allegiance.sln
   parallel: true
