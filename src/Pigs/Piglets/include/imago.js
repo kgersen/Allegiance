@@ -147,15 +147,16 @@ function OnStateTeamList(eStatePrevious) {
 		JoinTeam(CivSelection);
 	}
 }
-
+var gameRunning = false;
 // step 5...
 var latest_OnStateDocked_eStatePrevious = PigState_WaitingForMission;
 function OnStateDocked(eStatePrevious) {
     latest_OnStateDocked_eStatePrevious = eStatePrevious;
 	DisplayStateTransition(eStatePrevious);
     KillTimers();
-
-    CreateTimer(18.0, "onStateDockedTimeElapsed(true)", -1, "onStateDockedTimeElapsedTimer");
+    if (gameRunning == true) {
+        CreateTimer(2.0, "onStateDockedTimeElapsed(true)", -1, "onStateDockedTimeElapsedTimer");
+    }
 }
 
 function onStateDockedTimeElapsed(safe) {
@@ -174,20 +175,21 @@ function buyShipSetSkillsLaunch(safe) {
 
         var objHullTypes = HullTypes;
 
-        var fRand = Random() % 5;
-        Trace("Random : " + fRand);
+        var fRand = Random() % 4;
+        Trace("Random : " + fRand + " \n");
         if (fRand >= 3) ShipSelection = "Scout";
-        if (fRand >= 2) ShipSelection = "Adv Stl Fighter";
-        if (fRand >= 1) ShipSelection = "Interceptor";
-        if (fRand >= 0) ShipSelection = "Adv Fighter";
+        else if (fRand >= 2) ShipSelection = "Adv Stl Fighter";
+        else if (fRand >= 1) ShipSelection = "Interceptor";
+        else if (fRand >= 0) ShipSelection = "Adv Fighter";
 
         var realShipSelection = ShipSelection;
         if (Money && Money >= 500) {
             Trace("Money... " + Money + " \n");
             realShipSelection = "Bomber";
         }
-        
+        Trace("Requesting ship : " + realShipSelection + "\n");
         var iHull = SelectBestHull(objHullTypes, realShipSelection, "Fighter");
+        Trace("Buying ship : " + objHullTypes(iHull).Name + "\n");
         Ship.BuyHull(objHullTypes(iHull));
         Trace("Launching into space...\n");
         SetSkills(ShootSkill, TurnSkill, GotoSkill);
@@ -196,7 +198,8 @@ function buyShipSetSkillsLaunch(safe) {
 }
 
 function OnMissionStarted() {
-    Trace("OnMissionStarted()! launching into space...\n");
+    Trace("OnMissionStarted()\n");
+    gameRunning = true;
     buyShipSetSkillsLaunch(true);
 }
 
