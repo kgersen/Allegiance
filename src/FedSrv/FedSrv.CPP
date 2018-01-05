@@ -5985,7 +5985,10 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		// is correct, then, we are going to make an async call to the Lobby to get the player's rank, then the return from that call will finally trigger the 
 		// SQL Done state on the pQuery and let the user login.
 
-		if (g.bUseSteamAuthentication == true)
+		if (g.bUseSteamAuthentication == true 
+			// If the user's CDKey matches the botAuthenticationGUID from the registry, then this login is a bot, so we can bypass all 
+			// the steam security.
+			&& strcmp(pqd->szCDKey, g.szBotAuthenticationGuid) != 0)
 		{
 			memcpy(pqd->steamAuthTicket, pfmLogon->steamAuthTicket, pfmLogon->steamAuthTicketLength);
 			pqd->steamAuthTicketLength = pfmLogon->steamAuthTicketLength;
@@ -9511,6 +9514,18 @@ void LoadSettings()
 		DWORD cbApiKey = sizeof(g.szApiKey);
 		RegQueryValueExA(hKey, "ApiKey", NULL, &dwType, (unsigned char*)g.szApiKey, &cbApiKey);
 
+		// BT - STEAM
+		g.szBotAuthenticationGuid[0] = '\0';
+		DWORD cbBotAuthenticationGuid = sizeof(g.szBotAuthenticationGuid);
+		RegQueryValueExA(hKey, "BotAuthenticationGuid", NULL, &dwType, (unsigned char*)g.szBotAuthenticationGuid, &cbBotAuthenticationGuid);
+
+		// If no BotAuthenticationGuid was defined, then set this to some random GUID to ensure that no one guesses the bot auth GUID.
+		if (strlen(g.szBotAuthenticationGuid) == 0)
+		{
+			UUID newId;
+			UuidCreate(&newId);
+			::UuidToString(&newId, (RPC_CSTR*)&g.szBotAuthenticationGuid);
+		}
 
 		/* pkk May 6th: Disabled bandwidth patch
 		// w0dk4 Bandwidth Patch
