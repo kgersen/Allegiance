@@ -65,7 +65,8 @@ namespace Training
     m_commanderID (NA),
     m_pChatCondition (0),
     m_bSkipPostSlideShow (false),
-    m_commandViewEnabled(false)
+    m_commandViewEnabled(false),
+    m_killCount(43)
     {
         // get the window pointer
         TrekWindow* pWindow = GetWindow ();
@@ -98,6 +99,13 @@ namespace Training
         std::list<Condition*>::iterator end = m_WaitConditionList.end ();
         while (pWaitConditionIterator != end)
             delete (*pWaitConditionIterator++);
+
+        std::list<RespawnData*>::iterator pRespawnDataIterator = m_RespawnList.begin();
+        std::list<RespawnData*>::iterator endR = m_RespawnList.end();
+        while (pRespawnDataIterator != endR) {
+            delete((*pRespawnDataIterator)->pspawnCDA);
+            delete(*pRespawnDataIterator++);
+        }
 
         // get the window pointer
         TrekWindow* pWindow = GetWindow ();
@@ -134,7 +142,7 @@ namespace Training
     {
         // set up the ship
         IshipIGC*   pShip = trekClient.GetShip ();
-        trekClient.ResetClusterScanners(trekClient.GetShip()->GetSide());
+        //trekClient.ResetClusterScanners(trekClient.GetShip()->GetSide()); //very much not needed - station initialize already adds scanners
         pShip->SetOrientation(Orientation (Vector (1.0f, 0.0f, 0.0f), Vector (0.0f, 0.0f, 1.0f)));
         pShip->SetPosition(Vector(0.0f, 0.0f, 0.0f));
         pShip->SetCluster(trekClient.GetCore()->GetCluster(GetStartSectorID ()));
@@ -174,6 +182,54 @@ namespace Training
             // goals only if it is running.
             if (not Time::IsPaused ())
             {
+                // Respawn mechanism
+                char skipGroup = NA;
+                for each (RespawnData* rd in m_RespawnList) {
+                    if (!trekClient.GetCore()->GetShip(rd->pspawnCDA->GetShipID()) && Time::Now() > rd->tDestroyed + rd->downtime) { //ship is destroyed && ready to respawn
+                        if (rd->tDestroyed == 0)
+                            rd->tDestroyed = Time::Now();
+                        else {
+                            if (rd->spawnGroup == NA) {
+                                rd->pspawnCDA->Execute();
+                                rd->tDestroyed = 0;
+                            }
+                            else if (rd->spawnGroup != skipGroup) {
+                                std::list<RespawnData*> spawnGroup;
+                                spawnGroup.push_front(rd);
+                                bool waveReady = true;
+                                for each (RespawnData* rdOther in m_RespawnList) {
+                                    if (rdOther->spawnGroup == rd->spawnGroup && rdOther->pspawnCDA->GetShipID() != rd->pspawnCDA->GetShipID()) {
+                                        if (trekClient.GetCore()->GetShip(rdOther->pspawnCDA->GetShipID())) { // other ship is alive
+                                            waveReady = false;
+                                            break;
+                                        }
+                                        else { // other ship is destroyed
+                                            if (rdOther->tDestroyed == 0)
+                                                rdOther->tDestroyed = Time::Now();
+                                            if (Time::Now() > rdOther->tDestroyed + rdOther->downtime)
+                                                spawnGroup.push_back(rdOther);
+                                            else {
+                                                waveReady = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                if (waveReady) {
+                                    for each (RespawnData* rdgm in spawnGroup) {
+                                        ZAssert(!trekClient.GetCore()->GetShip(rdgm->pspawnCDA->GetShipID()));
+                                        rdgm->pspawnCDA->Execute();
+                                        rdgm->tDestroyed = 0;
+                                    }
+                                    break; // Enough time to spawn other ships next time ..
+                                }
+                                skipGroup = rd->spawnGroup; //groups get added in sequence, so only need to remember last
+                            }
+                        }
+                    }
+                }
+                    
+
                 // Check to see if there is a wait condition.
                 std::list<Condition*>::iterator pWaitConditionIterator = m_WaitConditionList.begin ();
                 std::list<Condition*>::iterator end = m_WaitConditionList.end ();
@@ -235,6 +291,45 @@ namespace Training
     {
         // XXX I don't remember if order is important, but look at ResetAction to see if it is
         m_WaitConditionList.push_front (pWaitCondition);
+    }
+
+    void TrainingMission::AddRespawn(CreateDroneAction* pCreateDroneAction, float downtime, char spawnGroup, bool spawnOnAdd) {
+        RespawnData* rd = new RespawnData();
+        rd->pspawnCDA = pCreateDroneAction;
+        rd->downtime = downtime;
+        rd->spawnGroup = spawnGroup;
+
+        bool spawned = false;
+        if (spawnOnAdd) {
+            ImodelIGC* existingShip = trekClient.GetCore()->GetModel(OT_ship, rd->pspawnCDA->GetShipID());
+            if (!existingShip) {
+                rd->pspawnCDA->Execute();
+                spawned = true;
+            }
+            rd->tDestroyed = 0;
+        }
+        else
+            rd->tDestroyed = Time::Now();
+        if (!spawned) {
+            if (rd->pspawnCDA->GetCommandTargetType() == OT_buoy) {
+                ImodelIGC* pmodel = trekClient.GetCore()->GetModel(OT_buoy, rd->pspawnCDA->GetCommandTargetID());
+                ZAssert(pmodel);
+                if (pmodel) {
+                    ((IbuoyIGC*)pmodel)->AddConsumer();
+                    rd->pspawnCDA->SetAddedConsumer();
+                }
+            }
+        }
+
+        m_RespawnList.push_front(rd);
+    }
+
+    void TrainingMission::RemoveRespawn(ShipID shipID) {
+        for each (RespawnData* rd in m_RespawnList)
+            if (rd->pspawnCDA->GetShipID() == shipID) {
+                delete(rd->pspawnCDA);
+                m_RespawnList.remove(rd);
+            }
     }
 
     //------------------------------------------------------------------------------
@@ -414,6 +509,55 @@ namespace Training
     }
 
     //------------------------------------------------------------------------------
+    void        TrainingMission::ShipKilled(IshipIGC* pShip, ImodelIGC* pLauncher)
+    {
+        ZAssert(pShip);
+        ZAssert(pShip != trekClient.GetShip());
+        if (pLauncher->GetSide() == trekClient.GetSide() && pShip->GetPilotType() == c_ptWingman) {
+            m_killCount++;
+        }
+    }
+
+    //------------------------------------------------------------------------------
+    bool        TrainingMission::HandlePickDefaultOrder(IshipIGC* pShip)
+    {
+        return false;
+    }
+
+    //------------------------------------------------------------------------------
+    void            TrainingMission::KillStationEvent(IstationIGC* pStation, ImodelIGC* pLauncher)
+    {
+        assert(pStation);
+        IsideIGC* pside = pStation->GetSide();
+        debugf("TrainingMission::KillStationEvent for %s, side: %s\n",pStation->GetName(), pside ? pside->GetName() : "NULL");
+
+        if (pStation->GetSide() == trekClient.GetSide() && pStation->GetBaseStationType()->HasCapability(c_sabmRestart)) {
+            bool stationRemaining = false;
+            for (StationLinkIGC* l = pStation->GetSide()->GetStations()->first(); l != NULL; l = l->next()) {
+                IstationIGC* s = l->data();
+                if ((s != pStation) && s->GetBaseStationType()->HasCapability(c_sabmRestart)) {
+                    stationRemaining = true;
+                    break;
+                }
+            }
+            if (!stationRemaining) {
+                trekClient.PostText(true, "Your side's stations have all been destroyed!");
+                debugf("Your side's stations have all been destroyed!\n");
+
+                //End training in 4 seconds
+                // clean up the wait conditions
+                std::list<Condition*>::iterator pWaitConditionIterator = m_WaitConditionList.begin();
+                std::list<Condition*>::iterator end = m_WaitConditionList.end();
+                while (pWaitConditionIterator != end)
+                    delete (*pWaitConditionIterator++);
+                // add new wait condition
+                m_pCondition = new Goal(new ElapsedTimeCondition(4.0f));
+                m_pCondition->Start();
+            }
+        }
+    }
+
+    //------------------------------------------------------------------------------
     IshipIGC*   TrainingMission::GetCommanderShip (void) const
     {
         return trekClient.GetCore ()->GetShip (m_commanderID);
@@ -508,7 +652,7 @@ namespace Training
 
 
         // stuff for creating the sides
-        static const float  fSideColors[c_cSidesMax][3] =
+        /*static const float  fSideColors[c_cSidesMax][3] =
                             {
                                 {200.0f/255.0f,  15.0f/255.0f, 200.0f/255.0f},  //purple
                                 {  8.0f/255.0f, 184.0f/255.0f, 184.0f/255.0f},  //teal
@@ -516,7 +660,14 @@ namespace Training
                                 {184.0f/255.0f, 184.0f/255.0f,  50.0f/255.0f},  //icky yellow
                                 {184.0f/255.0f,  92.0f/255.0f,   0.0f/255.0f},  //icky orange
                                 {123.0f/255.0f,  61.0f/255.0f,  61.0f/255.0f}   //icky magenta
-                            };
+                            }; // Changed because it doesn't match F6 colors*/
+        static const float fSideColors[c_cSidesMax][3] =
+                { { 188.0f / 255.0f, 160.0f / 255.0f,   0.0f / 255.0f }, //Gold
+                { 0.0f / 255.0f, 138.0f / 255.0f, 217.0f / 255.0f }, //Blue
+                { 156.0f / 255.0f,  16.0f / 255.0f, 102.0f / 255.0f }, //Purple
+                { 50.0f / 255.0f, 140.0f / 255.0f,  20.0f / 255.0f }, //icky yellow
+                { 255.0f / 255.0f, 145.0f / 255.0f, 145.0f / 255.0f }, //icky orange
+                { 50.0f / 255.0f, 200.0f / 255.0f, 125.0f / 255.0f } };//icky magenta1*/
         static const char*  szSideNames[c_cSidesMax] =
                             {
                                 "Iron League",
@@ -527,6 +678,12 @@ namespace Training
                                 "Midnight Runners"
                             };
         static CivID        civs[c_cSidesMax] = {25, 35, 18, 25, 35, 18};
+
+        if (GetMissionID() == 8) //c_TM_8_Nanite
+        {
+            szSideNames[0] = "Rixian Unity";
+            civs[0] = 201;
+        }
 
         assert (sizeofArray(szSideNames) == c_cSidesMax);
         assert (sizeofArray(civs) == c_cSidesMax);
@@ -647,24 +804,38 @@ namespace Training
     //------------------------------------------------------------------------------
     void        TrainingMission::DefaultLoadout (IshipIGC* pShip)
     {
-        // install all the preferred part types
-        const IhullTypeIGC* pHullType = pShip->GetHullType ();
-        for (PartTypeLinkIGC* pPartTypeLink = pHullType->GetPreferredPartTypes()->first (); pPartTypeLink != NULL; pPartTypeLink = pPartTypeLink->next ())
-        {
-            IpartTypeIGC*   pPartType = pPartTypeLink->data ();
-            EquipmentType   equipmentType = pPartType->GetEquipmentType();
-            Mount           mountMax = (equipmentType == ET_Weapon) ? pHullType->GetMaxWeapons () : 1;
-            for (Mount i = 0; i < mountMax; i++)
-                if ((pShip->GetMountedPart (equipmentType, i) == NULL) && pHullType->CanMount (pPartType, i))
-                    pShip->CreateAndAddPart (pPartType, i, 0x7fff);
+        IstationIGC* pstation = NULL;
+        for (StationLinkIGC* l = pShip->GetSide()->GetStations()->first(); l!=NULL; l=l->next())
+            if (l->data()->GetStationType()->GetCapabilities() & c_sabmLand) {
+                pstation = l->data();
+                break;
+            }
+        if (pstation) {
+            debugf("DefaultLoadout station %s found for %s\n",pstation->GetName(), pShip->GetName());
+            Money   refund = pShip->GetValue();
+            trekClient.BuyDefaultLoadout(pShip, pstation, NULL, &refund);
         }
+        else {
+            debugf("DefaultLoadout station NOT found for %s\n", pShip->GetName());
+            // install all the preferred part types
+            const IhullTypeIGC* pHullType = pShip->GetHullType();
+            for (PartTypeLinkIGC* pPartTypeLink = pHullType->GetPreferredPartTypes()->first(); pPartTypeLink != NULL; pPartTypeLink = pPartTypeLink->next())
+            {
+                IpartTypeIGC*   pPartType = pPartTypeLink->data();
+                EquipmentType   equipmentType = pPartType->GetEquipmentType();
+                Mount           mountMax = (equipmentType == ET_Weapon) ? pHullType->GetMaxWeapons() : 1;
+                for (Mount i = 0; i < mountMax; i++)
+                    if ((pShip->GetMountedPart(equipmentType, i) == NULL) && pHullType->CanMount(pPartType, i))
+                        pShip->CreateAndAddPart(pPartType, i, 0x7fff);
+            }
 
-        // fill the empty cargo slots
-        AddPartToShip (pShip, 24, -1, 0x7fff);  //ammo
-        AddPartToShip (pShip, 24, -2, 0x7fff);  // ammo
-        AddPartToShip (pShip, 25, -3, 0x7fff);  // fuel
-        AddPartToShip (pShip, 150, -4, 0x7fff); // missiles
-        AddPartToShip (pShip, 150, -5, 0x7fff); // missiles
+            // fill the empty cargo slots
+            AddPartToShip(pShip, 24, -1, 0x7fff);  // ammo
+            AddPartToShip(pShip, 24, -2, 0x7fff);  // ammo
+            AddPartToShip(pShip, 25, -3, 0x7fff);  // fuel
+            AddPartToShip(pShip, 150, -4, 0x7fff); // missiles
+            AddPartToShip(pShip, 150, -5, 0x7fff); // missiles
+        }
 
         // if there's a shield, make sure its charged
         IshieldIGC* pShield = static_cast<IshieldIGC*> (pShip->GetMountedPart (ET_Shield, 0));
