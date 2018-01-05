@@ -226,6 +226,18 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ui", "Ui.vcxproj", "{77F306
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PigClient", "..\src\Pigs\PigClient\PigClient\PigClient.csproj", "{01700303-9A0C-46B5-B0B8-0E810BE2BC58}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "behaviors", "behaviors", "{BF8AC383-1D38-4416-883B-89451029DD09}"
+	ProjectSection(SolutionItems) = preProject
+		..\src\Pigs\Piglets\aaa.pig = ..\src\Pigs\Piglets\aaa.pig
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "include", "include", "{F30397F8-3802-44A1-BE7D-F86B1DD6DAF1}"
+	ProjectSection(SolutionItems) = preProject
+		..\src\Pigs\Piglets\include\AutoStartCustomGame.js = ..\src\Pigs\Piglets\include\AutoStartCustomGame.js
+		..\src\Pigs\Piglets\include\common.js = ..\src\Pigs\Piglets\include\common.js
+		..\src\Pigs\Piglets\include\imago.js = ..\src\Pigs\Piglets\include\imago.js
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -905,6 +917,8 @@ Global
 		{53812B2F-C263-4528-BA9B-C3D87884D52D} = {3173AB63-87BD-45F5-83C3-EFA1F81A76F0}
 		{52C64275-DA32-486B-AB61-A617E5A07E0A} = {3173AB63-87BD-45F5-83C3-EFA1F81A76F0}
 		{01700303-9A0C-46B5-B0B8-0E810BE2BC58} = {3173AB63-87BD-45F5-83C3-EFA1F81A76F0}
+		{BF8AC383-1D38-4416-883B-89451029DD09} = {3173AB63-87BD-45F5-83C3-EFA1F81A76F0}
+		{F30397F8-3802-44A1-BE7D-F86B1DD6DAF1} = {BF8AC383-1D38-4416-883B-89451029DD09}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {50D5DBD5-BA52-4482-9F62-10968E5B27C6}
