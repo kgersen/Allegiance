@@ -2,7 +2,7 @@
 using System.Windows.Input;
 using PigsLib;
 
-namespace WpfApp1
+namespace PigClient
 {
 
     public class CommandWrapper : ICommand
