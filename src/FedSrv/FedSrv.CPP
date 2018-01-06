@@ -9524,7 +9524,12 @@ void LoadSettings()
 		{
 			UUID newId;
 			UuidCreate(&newId);
-			::UuidToString(&newId, (RPC_CSTR*)&g.szBotAuthenticationGuid);
+			CHAR* szUuid = NULL;
+			::UuidToString(&newId, (RPC_CSTR*)&szUuid);
+			char pork[1024];
+			strcpy(g.szBotAuthenticationGuid, szUuid);
+			::RpcStringFree((RPC_CSTR*)&szUuid);
+			szUuid = NULL;
 		}
 
 		/* pkk May 6th: Disabled bandwidth patch
