@@ -1157,6 +1157,31 @@ HRESULT CPig::ProcessAppMessage(FEDMESSAGE* pfm)
         }
         break;
       }
+	  case FM_S_POSITIONREQ:
+	  {
+		  CASTPFM(pfmPositionRequest, S, POSITIONREQ, pfm);
+		  // If the are joining our team and I'm the leader
+		  if (pfmPositionRequest->iSide == BaseClient::GetSideID() && BaseClient::MyPlayerInfo()->IsTeamLeader()) {
+				// if AutoAccept is off
+			  FMD_S_MISSIONDEF myMissionDef = BaseClient::MyMission()->GetMissionDef();
+			  if (myMissionDef.rgfAutoAccept[BaseClient::GetSideID()] == false) {
+				  // Accept them if my are in our squad
+				  // get the squadTag
+				  ZString myTag = ZString(BaseClient::MyPlayerInfo()->CharacterName()).RightOf("@");
+				  ZString theirTag = ZString(BaseClient::FindPlayer(pfmPositionRequest->shipID)->CharacterName()).RightOf("@");
+				  if (myTag == theirTag) {
+					  // Let them pass
+					  BaseClient::SetMessageType(c_mtGuaranteed);
+					  BEGIN_PFM_CREATE(*BaseClient::GetNetwork(), pfmPositionAck, C, POSITIONACK)
+					  END_PFM_CREATE
+					  pfmPositionAck->iSide = pfmPositionRequest->iSide;
+					  pfmPositionAck->shipID = pfmPositionRequest->shipID;
+					  BaseClient::SendMessages();
+				  }
+			  }
+		  }
+		  break;
+	  }
   }
 #endif // _DEBUG
 
@@ -2670,6 +2695,16 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
 				pfmSetTeamInfo->sideID = civSide;
 				pfmSetTeamInfo->squadID = NA;
 				strcpy(pfmSetTeamInfo->SideName,OLE2CA(bstrTeamOrPlayer));
+				BaseClient::SendMessages();
+			}
+			// Turn off AutoAccept
+			{
+				//AUTO_ACCEPT
+				BaseClient::SetMessageType(c_mtGuaranteed);
+				BEGIN_PFM_CREATE(*BaseClient::GetNetwork(), pfmSetAutoAccept, CS, AUTO_ACCEPT)
+					END_PFM_CREATE
+				pfmSetAutoAccept->iSide = civSide;
+				pfmSetAutoAccept->fAutoAccept = false;
 				BaseClient::SendMessages();
 			}
 			
