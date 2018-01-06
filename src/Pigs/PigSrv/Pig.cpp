@@ -2554,7 +2554,7 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
     // Find a team with the specified name, if any
     for (SideID i = 0; i < BaseClient::MyMission()->NumSides(); ++i)
     {
-			if (!_stricmp(OLE2CA(bstrTeamOrPlayer), BaseClient::MyMission()->SideName(i)))
+	  if (!_stricmp(OLE2CA(bstrTeamOrPlayer), BaseClient::MyMission()->SideName(i)))
       {
         if (0 < BaseClient::MyMission()->SideAvailablePositions(i))
         {
@@ -2572,7 +2572,32 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
     // Error
     if (NA == idSide)
     {
-      return Error("Specified team not found or has no positions available", IID_IPig);
+		// try an empty team. Or a team where the leader is the same squad as me
+		for (SideID i = 0; i < BaseClient::MyMission()->NumSides(); ++i)
+		{
+			// if Empty team
+			if (BaseClient::MyMission()->SideLeaderShipID(i) == -1) // should be -1 if no leader
+			{
+				idSide = i;
+				break;
+			}
+			else { // check if the leader is the same squad as me
+				ShipID leaderShipId = BaseClient::MyMission()->SideLeaderShipID(i);
+				PlayerInfo* leaderPlayerInfo = BaseClient::FindPlayer(leaderShipId);
+				// get the squadTag
+				ZString leaderName = ZString(leaderPlayerInfo->CharacterName());
+				ZString leaderTag = leaderName.RightOf("@");
+				ZString myTag = ZString(OLE2CA(m_bstrName)).RightOf("@");
+				if (myTag == leaderTag) {
+					idSide = i;
+					break;
+				}
+			}
+		}
+		if (NA == idSide)
+		{
+			return Error("Specified team not found or has no positions available", IID_IPig);
+		}
     }
   }
   else
@@ -2637,6 +2662,17 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
 				pfmChangeCiv->random = false;
 				BaseClient::SendMessages();
 			}
+			if (BSTRLen(bstrTeamOrPlayer)) {
+				// set the team name
+				BaseClient::SetMessageType(c_mtGuaranteed);
+				BEGIN_PFM_CREATE(*BaseClient::GetNetwork(), pfmSetTeamInfo, CS, SET_TEAM_INFO)
+				END_PFM_CREATE
+				pfmSetTeamInfo->sideID = civSide;
+				pfmSetTeamInfo->squadID = NA;
+				strcpy(pfmSetTeamInfo->SideName,OLE2CA(bstrTeamOrPlayer));
+				BaseClient::SendMessages();
+			}
+			
 		}
   }
   else

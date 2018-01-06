@@ -145,7 +145,7 @@ function OnStateTeamList(eStatePrevious) {
 	DisplayStateTransition(eStatePrevious);
 	if (PigState_JoiningTeam != eStatePrevious) {
 		Trace("Attempting to JoinTeam\n");
-		JoinTeam(CivSelection);
+		JoinTeam(CivSelection, "Oinkers");
 	}
 }
 var gameRunning = false;
