@@ -80,7 +80,7 @@ namespace PigClient
                 {
                     friendsToAdd++;
                 }
-                else if (hostileCount > 0 && friendlyCount / hostileCount > idealRatio && friendlyCount > _minPigs +1)
+                else if (hostileCount > 0 && friendlyCount > _minPigs && friendlyCount / hostileCount > decreaseRatio )
                 {
                     friendsToAdd--;
                 }
@@ -100,11 +100,12 @@ namespace PigClient
                     var toRemove = pigInfos.LastOrDefault(p => p.Pig.PigStateName == "Flying" || p.Pig.PigStateName == "Docked");
                     if (toRemove != null)
                     {
+                        toRemove.Pig.Shutdown();
+                        pigInfos.Remove(toRemove);
+                        toRemove.Pig = null;
                         // Neither of these currently work
                         /*toRemove.Pig.Logoff();
                         toRemove.Pig.QuitGame();
-                        pigInfos.Remove(toRemove);
-                        toRemove.Pig = null;
                         */
                     }
                 }
