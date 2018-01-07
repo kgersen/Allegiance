@@ -16,7 +16,7 @@ var ServerAddr = "127.0.0.1";
 var KillGoal = 99;
 var DebugSpam = true;
 
-var CivSelection = "Iron Coalition,Dreghklar,Belters,Rixan,Gigacorp,Bios,Ga'Taraan,Technoflux,Draconium";  //blank for Random
+var CivSelection = "Rixian,Rixian,Iron Coalition,Dreghklar,Belters,Rixan,Gigacorp,Bios,Ga'Taraan,Technoflux,Draconium";  //blank for Random
 var ShipSelection = "Interceptor";
 var ShootSkill = 0.05;
 var TurnSkill = 0.05;
