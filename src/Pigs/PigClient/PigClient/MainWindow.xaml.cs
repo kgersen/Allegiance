@@ -95,7 +95,7 @@ namespace PigClient
                     log("Adding pig to keep it painful");
                     CreatePig_Click(null, null);
                 }
-                else
+                else if (x < 0)
                 {
                     var toRemove = pigInfos.LastOrDefault(p => p.Pig.PigStateName == "Flying" || p.Pig.PigStateName == "Docked");
                     if (toRemove != null)

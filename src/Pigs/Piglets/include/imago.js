@@ -126,12 +126,12 @@ function OnStateWaitingForMission(eStatePrevious) {
 }
 // step 4.1 (if mission owner)
 function StartGameTimer() {
-    Timer.Kill();
     Trace("killed timer, Attempting to StartGame\n");
     if (IsMissionOwner()) { //|| it.item().Ships.Count < MissionParams.MinTeamPlayers) {
         Game.SendChat("Launching...", 1301);
         StartGame();
     }
+    Timer.Kill(); // kill at the end so that we try to StartGame again if it failed before
 }
 
 var gameRunning = false;
