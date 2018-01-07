@@ -2709,6 +2709,41 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
 			}
 			
 		}
+
+		if (BaseClient::MyPlayerInfo()->IsMissionOwner()) {
+			// Make the mission configuration what the Pigs Like.
+			
+			MissionParams currentMissionParams = BaseClient::MyMission()->GetMissionParams();
+			BaseClient::SetMessageType(c_mtGuaranteed);
+
+
+			BEGIN_PFM_CREATE_ALLOC(*BaseClient::GetNetwork(), pfmMissionParams, CS, MISSIONPARAMS)
+			END_PFM_CREATE
+			pfmMissionParams->missionparams.Reset();
+			
+			strcpy(pfmMissionParams->missionparams.strGameName, "Pig Pen");
+			strcpy(pfmMissionParams->missionparams.szIGCStaticFile, currentMissionParams.szIGCStaticFile);
+			strcpy(pfmMissionParams->missionparams.szCustomMapFile, currentMissionParams.szCustomMapFile);
+			pfmMissionParams->missionparams.nTotalMaxPlayersPerGame = currentMissionParams.nTotalMaxPlayersPerGame;
+			pfmMissionParams->missionparams.bEjectPods = false;
+			pfmMissionParams->missionparams.bAllowDevelopments = false;
+			pfmMissionParams->missionparams.fStartCountdown = 9.0f;
+			pfmMissionParams->missionparams.fRestartCountdown = 9.0f;
+			pfmMissionParams->missionparams.mmMapType = c_mmBrawl;
+			pfmMissionParams->missionparams.bAllowEmptyTeams = true;
+			pfmMissionParams->missionparams.dtGameLength = 60.0f * 60.0f; // 1 hour
+			pfmMissionParams->missionparams.iMaxImbalance = 32767; // 32767 = N/A
+			printf("Attempting to change the mission paramerters\n");
+			ZString errorMsg = ZString(pfmMissionParams->missionparams.Invalid(true));
+			if (errorMsg.IsEmpty()) {
+				printf("No error message from InValid()\n");
+			}
+			else {
+				printf(errorMsg);
+			}
+			BaseClient::GetNetwork()->QueueExistingMsg((FEDMESSAGE *)pfmMissionParams);
+			PFM_DEALLOC(pfmMissionParams);
+		}
   }
   else
   {
