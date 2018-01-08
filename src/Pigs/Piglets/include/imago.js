@@ -96,58 +96,44 @@ function OnStateMissionList(eStatePrevious) {
 	RoundCount++;
 }
 
-// step 3...
-function OnStateWaitingForMission(eStatePrevious) {
-    gameRunning = false;
-    KillAllTimers();
-	DisplayStateTransition(eStatePrevious);
-	if (PigState_CreatingMission == eStatePrevious) {
-		Trace("Creating JoinTimer()\n");
-		CreateTimer(3, "JoinTimer()", -1, "JoinTimer");
-	}
-	if (PigState_Flying == eStatePrevious) {
-		GameController = IsMissionOwner();
-		if (GameController) {
-			RoundCount++;
-			CreateTimer(3, "ChatStartGameTimer()", -1, "ChatStartGameTimer");
-			CreateTimer(33, "StartGameTimer()", -1, "StartGameTimer");
-		}
-		Game.SendChat("My skillz: "+(ShootSkill * 100)+"%");
-	}
-}
-function JoinTimer() {
-	Timer.Kill();
-	Trace("killed timer, Attempting to JoinTeam\n");
-	JoinTeam(CivSelection);
-}
-function StartGameTimer() {
-	Timer.Kill();
-	Trace("killed timer, Attempting to StartGame\n");
-	GameController = IsMissionOwner();
-	for (var it = new Enumerator(Game.Teams); !it.atEnd(); it.moveNext()) {
-		if (!GameController || it.item().Ships.Count < MissionParams.MinTeamPlayers) {
-			Game.SendChat("Aborting launch...",1301); //voJustASecSound
-			if(GameController && "object" != typeof(Properties("AutoStartGameTimer")) && "object" != typeof(Properties("AutoStartGameDelay")))
-				CreateTimer(1.0, "AutoStartGame_Tick()", -1, "AutoStartGameTimer");
-			return;
-		}
-	}
-	StartGame();
-}
-function ChatStartGameTimer() {
-	Timer.Kill();
-	Trace("killed timer, Attempting to SendChat\n");
-	Game.SendChat("Auto-restarting round #"+RoundCount+" in 30 seconds...",1308); //voRematchSound
-}
 
-// step 4...
+
+
+
+// step 3...
 function OnStateTeamList(eStatePrevious) {
 	DisplayStateTransition(eStatePrevious);
 	if (PigState_JoiningTeam != eStatePrevious) {
 		Trace("Attempting to JoinTeam\n");
-		JoinTeam(CivSelection);
+        JoinTeam(CivSelection, "Oinkers");
 	}
 }
+
+// step 4...
+function OnStateWaitingForMission(eStatePrevious) {
+    gameRunning = false;
+    KillAllTimers();
+    DisplayStateTransition(eStatePrevious);
+
+    if (PigState_Flying == eStatePrevious) {
+        Game.SendChat("My skills: " + (ShootSkill * 100) + "%");
+    }
+
+    if (IsMissionOwner()) {
+        Game.SendChat("Starting in 45", 1301);
+        CreateTimer(45, "StartGameTimer()", -1, "StartGameTimer");
+    }
+}
+// step 4.1 (if mission owner)
+function StartGameTimer() {
+    Trace("killed timer, Attempting to StartGame\n");
+    if (IsMissionOwner()) { //|| it.item().Ships.Count < MissionParams.MinTeamPlayers) {
+        Game.SendChat("Launching...", 1301);
+        StartGame();
+    }
+    Timer.Kill(); // kill at the end so that we try to StartGame again if it failed before
+}
+
 var gameRunning = false;
 // step 5...
 var latest_OnStateDocked_eStatePrevious = PigState_WaitingForMission;

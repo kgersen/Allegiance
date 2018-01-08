@@ -39,6 +39,7 @@ function KillAllTimers() {
     KillTimers();
     if ("object" == typeof (Properties("CheckFireMissileTimer")))
         Properties("CheckFireMissileTimer").Kill();
+    KillTimer("onStateDockedTimeElapsedTimer");
 }
 
 function KillTimer(timerName) {

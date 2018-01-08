@@ -1157,6 +1157,31 @@ HRESULT CPig::ProcessAppMessage(FEDMESSAGE* pfm)
         }
         break;
       }
+	  case FM_S_POSITIONREQ:
+	  {
+		  CASTPFM(pfmPositionRequest, S, POSITIONREQ, pfm);
+		  // If the are joining our team and I'm the leader
+		  if (pfmPositionRequest->iSide == BaseClient::GetSideID() && BaseClient::MyPlayerInfo()->IsTeamLeader()) {
+				// if AutoAccept is off
+			  FMD_S_MISSIONDEF myMissionDef = BaseClient::MyMission()->GetMissionDef();
+			  if (myMissionDef.rgfAutoAccept[BaseClient::GetSideID()] == false) {
+				  // Accept them if my are in our squad
+				  // get the squadTag
+				  ZString myTag = ZString(BaseClient::MyPlayerInfo()->CharacterName()).RightOf("@");
+				  ZString theirTag = ZString(BaseClient::FindPlayer(pfmPositionRequest->shipID)->CharacterName()).RightOf("@");
+				  if (myTag == theirTag) {
+					  // Let them pass
+					  BaseClient::SetMessageType(c_mtGuaranteed);
+					  BEGIN_PFM_CREATE(*BaseClient::GetNetwork(), pfmPositionAck, C, POSITIONACK)
+					  END_PFM_CREATE
+					  pfmPositionAck->iSide = pfmPositionRequest->iSide;
+					  pfmPositionAck->shipID = pfmPositionRequest->shipID;
+					  BaseClient::SendMessages();
+				  }
+			  }
+		  }
+		  break;
+	  }
   }
 #endif // _DEBUG
 
@@ -2554,7 +2579,7 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
     // Find a team with the specified name, if any
     for (SideID i = 0; i < BaseClient::MyMission()->NumSides(); ++i)
     {
-			if (!_stricmp(OLE2CA(bstrTeamOrPlayer), BaseClient::MyMission()->SideName(i)))
+	  if (!_stricmp(OLE2CA(bstrTeamOrPlayer), BaseClient::MyMission()->SideName(i)))
       {
         if (0 < BaseClient::MyMission()->SideAvailablePositions(i))
         {
@@ -2572,7 +2597,32 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
     // Error
     if (NA == idSide)
     {
-      return Error("Specified team not found or has no positions available", IID_IPig);
+		// try an empty team. Or a team where the leader is the same squad as me
+		for (SideID i = 0; i < BaseClient::MyMission()->NumSides(); ++i)
+		{
+			// if Empty team
+			if (BaseClient::MyMission()->SideLeaderShipID(i) == -1) // should be -1 if no leader
+			{
+				idSide = i;
+				break;
+			}
+			else { // check if the leader is the same squad as me
+				ShipID leaderShipId = BaseClient::MyMission()->SideLeaderShipID(i);
+				PlayerInfo* leaderPlayerInfo = BaseClient::FindPlayer(leaderShipId);
+				// get the squadTag
+				ZString leaderName = ZString(leaderPlayerInfo->CharacterName());
+				ZString leaderTag = leaderName.RightOf("@");
+				ZString myTag = ZString(OLE2CA(m_bstrName)).RightOf("@");
+				if (myTag == leaderTag) {
+					idSide = i;
+					break;
+				}
+			}
+		}
+		if (NA == idSide)
+		{
+			return Error("Specified team not found or has no positions available", IID_IPig);
+		}
     }
   }
   else
@@ -2637,6 +2687,62 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
 				pfmChangeCiv->random = false;
 				BaseClient::SendMessages();
 			}
+			if (BSTRLen(bstrTeamOrPlayer)) {
+				// set the team name
+				BaseClient::SetMessageType(c_mtGuaranteed);
+				BEGIN_PFM_CREATE(*BaseClient::GetNetwork(), pfmSetTeamInfo, CS, SET_TEAM_INFO)
+				END_PFM_CREATE
+				pfmSetTeamInfo->sideID = civSide;
+				pfmSetTeamInfo->squadID = NA;
+				strcpy(pfmSetTeamInfo->SideName,OLE2CA(bstrTeamOrPlayer));
+				BaseClient::SendMessages();
+			}
+			// Turn off AutoAccept
+			{
+				//AUTO_ACCEPT
+				BaseClient::SetMessageType(c_mtGuaranteed);
+				BEGIN_PFM_CREATE(*BaseClient::GetNetwork(), pfmSetAutoAccept, CS, AUTO_ACCEPT)
+					END_PFM_CREATE
+				pfmSetAutoAccept->iSide = civSide;
+				pfmSetAutoAccept->fAutoAccept = false;
+				BaseClient::SendMessages();
+			}
+			
+		}
+
+		if (BaseClient::MyPlayerInfo()->IsMissionOwner()) {
+			// Make the mission configuration what the Pigs Like.
+			
+			MissionParams currentMissionParams = BaseClient::MyMission()->GetMissionParams();
+			BaseClient::SetMessageType(c_mtGuaranteed);
+
+
+			BEGIN_PFM_CREATE_ALLOC(*BaseClient::GetNetwork(), pfmMissionParams, CS, MISSIONPARAMS)
+			END_PFM_CREATE
+			pfmMissionParams->missionparams.Reset();
+			
+			strcpy(pfmMissionParams->missionparams.strGameName, "Pig Pen");
+			strcpy(pfmMissionParams->missionparams.szIGCStaticFile, currentMissionParams.szIGCStaticFile);
+			strcpy(pfmMissionParams->missionparams.szCustomMapFile, currentMissionParams.szCustomMapFile);
+			pfmMissionParams->missionparams.nTotalMaxPlayersPerGame = currentMissionParams.nTotalMaxPlayersPerGame;
+			pfmMissionParams->missionparams.bEjectPods = false;
+			pfmMissionParams->missionparams.bAllowDevelopments = false;
+			pfmMissionParams->missionparams.fStartCountdown = 9.0f;
+			pfmMissionParams->missionparams.fRestartCountdown = 9.0f;
+			pfmMissionParams->missionparams.mmMapType = c_mmBrawl;
+			pfmMissionParams->missionparams.bAllowEmptyTeams = true;
+			pfmMissionParams->missionparams.dtGameLength = 60.0f * 60.0f; // 1 hour
+			pfmMissionParams->missionparams.iMaxImbalance = 32767; // 32767 = N/A
+			printf("Attempting to change the mission paramerters\n");
+			ZString errorMsg = ZString(pfmMissionParams->missionparams.Invalid(true));
+			if (errorMsg.IsEmpty()) {
+				printf("No error message from InValid()\n");
+			}
+			else {
+				printf(errorMsg);
+			}
+			BaseClient::GetNetwork()->QueueExistingMsg((FEDMESSAGE *)pfmMissionParams);
+			PFM_DEALLOC(pfmMissionParams);
 		}
   }
   else
