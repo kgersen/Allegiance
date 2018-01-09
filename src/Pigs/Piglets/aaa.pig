@@ -10,9 +10,9 @@
 // Settings
 
 
-var GameName = "Local Dev";
+var GameName = "Bot DM Test";
 var ServerName = "LocalDev";
-var ServerAddr = "127.0.0.1";
+var ServerAddr = "52.176.109.28";
 var KillGoal = 99;
 var DebugSpam = true;
 
