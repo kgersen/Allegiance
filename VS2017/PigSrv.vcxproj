@@ -59,6 +59,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <IncludePath>$(DXSDK_DIR)\Include;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);</IncludePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
+    <IncludePath>$(DXSDK_DIR)\Include;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -93,17 +96,17 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\Pigs\PigSrv;..\src\Inc;..\src\Test\Inc;..\src\zlib;..\src\_Utility;..\src\AGC;..\src\Guids;..\src\Zone;..\src\engine;..\src\lobby;$(OutDir);$(OutDir)..\PigsLib;$(OutDir)..\..\Guids;$(OutDir)..\..\Test\TCObj;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\Pigs\PigSrv;..\src\Inc;..\src\Test\Inc;..\src\zlib;..\src\_Utility;..\src\AGC;..\src\Guids;..\src\Zone;..\src\engine;..\src\Igc;..\src\lobby;$(OutDir);$(OutDir)..\PigsLib;$(OutDir)..\..\Guids;$(OutDir)..\..\Test\TCObj;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <PreprocessorDefinitions>_ATL_STATIC_REGISTRY;STRICT;_WINDOWS;WIN32;_AFXDLL;_CRT_SECURE_NO_DEPRECATE;AGC_HOST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;_ATL_STATIC_REGISTRY;STRICT;_WINDOWS;WIN32;_AFXDLL;_CRT_SECURE_NO_DEPRECATE;AGC_HOST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>$(OutDir)..\..\Test\TCLib\TCLib.lib;$(OutDir)..\PigGUID\PigGUID.lib;$(OutDir)..\..\Guids\AGCGuid.lib;$(OutDir)..\..\ZLib\ZLib.lib;$(OutDir)..\..\Engine\Engine.lib;$(OutDir)..\..\_utility\Utility.lib;$(OutDir)..\..\IGC\IGC.lib;$(OutDir)..\..\ClintLib\ClintLib.lib;$(OutDir)..\..\Guids\Guids.lib;..\src\Lib\DirectPlay\dxguid.lib;lz32.lib;wininet.lib;netapi32.lib;winmm.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\src\Lib\AllegianceSecurity\AllegianceSecurity.lib;..\src\Lib\Steam\steam_api.lib;$(OutDir)..\..\Test\TCLib\TCLib.lib;$(OutDir)..\PigGUID\PigGUID.lib;$(OutDir)..\..\Guids\AGCGuid.lib;$(OutDir)..\..\ZLib\ZLib.lib;$(OutDir)..\..\Engine\Engine.lib;$(OutDir)..\..\_utility\Utility.lib;$(OutDir)..\..\IGC\IGC.lib;$(OutDir)..\..\ClintLib\ClintLib.lib;$(OutDir)..\..\Guids\Guids.lib;..\src\Lib\DirectPlay\dxguid.lib;lz32.lib;wininet.lib;netapi32.lib;winmm.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TypeLibraryFile>$(TargetDir)/$(ProjectName).tlb</TypeLibraryFile>
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
