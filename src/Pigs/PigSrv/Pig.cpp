@@ -2721,7 +2721,7 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
 			END_PFM_CREATE
 			pfmMissionParams->missionparams.Reset();
 			
-			strcpy(pfmMissionParams->missionparams.strGameName, "Pig Pen");
+			strcpy(pfmMissionParams->missionparams.strGameName, currentMissionParams.strGameName);
 			strcpy(pfmMissionParams->missionparams.szIGCStaticFile, currentMissionParams.szIGCStaticFile);
 			strcpy(pfmMissionParams->missionparams.szCustomMapFile, currentMissionParams.szCustomMapFile);
 			pfmMissionParams->missionparams.nTotalMaxPlayersPerGame = currentMissionParams.nTotalMaxPlayersPerGame;
@@ -2743,13 +2743,16 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
 			}
 			BaseClient::GetNetwork()->QueueExistingMsg((FEDMESSAGE *)pfmMissionParams);
 			PFM_DEALLOC(pfmMissionParams);
+			printf("JoinTeam:: PFM_DEALLOC(pfmMissionParams)\n");
 		}
   }
   else
   {
+	  printf("JoinTeam:: The team did not accept you\n");
     SetCurrentState(PigState_TeamList);
     return Error("The team did not accept you", IID_IPig);
   }
+  printf("JoinTeam:: return S_OK\n");
   return S_OK;
 }
 
