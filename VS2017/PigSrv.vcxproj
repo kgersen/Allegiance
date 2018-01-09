@@ -66,7 +66,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\Pigs\PigSrv;..\src\Inc;..\src\Test\Inc;..\src\zlib;..\src\_Utility;..\src\AGC;..\src\Guids;..\src\Zone;..\src\engine;..\src\Igc;..\src\lobby;$(OutDir);$(OutDir)..\PigsLib;$(OutDir)..\..\Guids;$(OutDir)..\..\Test\TCObj;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NOMINMAX;_ATL_STATIC_REGISTRY;_DEBUG;DEBUG;STRICT;_WINDOWS;WIN32;_AFXDLL;_CRT_SECURE_NO_DEPRECATE;AGC_HOST;_ATL_DEBUG_INTERFACES;_ATL_DEBUG_QI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;_TEST;ALLSRV_STANDALONE;FEDSRV;AGC_HOST;DEBUG;_DEBUG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;WIN;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -75,6 +75,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <ExceptionHandling>Async</ExceptionHandling>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -99,7 +100,8 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
       <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\Pigs\PigSrv;..\src\Inc;..\src\Test\Inc;..\src\zlib;..\src\_Utility;..\src\AGC;..\src\Guids;..\src\Zone;..\src\engine;..\src\Igc;..\src\lobby;$(OutDir);$(OutDir)..\PigsLib;$(OutDir)..\..\Guids;$(OutDir)..\..\Test\TCObj;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <PreprocessorDefinitions>NOMINMAX;_ATL_STATIC_REGISTRY;STRICT;_WINDOWS;WIN32;_AFXDLL;_CRT_SECURE_NO_DEPRECATE;AGC_HOST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;DEBUG;ALLSRV_STANDALONE;FEDSRV;AGC_HOST;SRVLOG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -188,6 +190,41 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
     <ClCompile Include="..\src\Pigs\PigSrv\PigSrv.cpp" />
     <ClCompile Include="..\src\Pigs\PigSrv\PigTimer.cpp" />
     <ClCompile Include="..\src\Pigs\PigSrv\SrcInc.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="AGC.vcxproj">
+      <Project>{1cbf6569-f71c-422a-81dd-8d30a736db21}</Project>
+    </ProjectReference>
+    <ProjectReference Include="ClintLib.vcxproj">
+      <Project>{557ca42c-aa39-4c44-a998-0452f8c55851}</Project>
+    </ProjectReference>
+    <ProjectReference Include="Igc.vcxproj">
+      <Project>{bf99dcb8-4127-4403-82c9-72190c6abf5f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="PigConfig.vcxproj">
+      <Project>{52c64275-da32-486b-ab61-a617e5a07e0a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="PigGUID.vcxproj">
+      <Project>{9edd4786-4508-4f99-89d1-12fa255ac6a3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="PigsLib.vcxproj">
+      <Project>{4276fb1e-16d0-4463-89ce-2d33d78512b1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="Server.vcxproj">
+      <Project>{05ead557-56b0-4070-83f0-8a2b6fb9c54d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="TCLib.vcxproj">
+      <Project>{1695996c-f698-4509-bf5c-ade10ada67f9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="TCObj.vcxproj">
+      <Project>{caffb3db-eadd-46a1-abae-3a341011b0a6}</Project>
+    </ProjectReference>
+    <ProjectReference Include="Utility.vcxproj">
+      <Project>{3853a2c5-f219-4c7d-841a-9407a7aeae9d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="ZLibrary.vcxproj">
+      <Project>{21c70ca0-24c5-475b-8c47-6f0226a374b0}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

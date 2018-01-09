@@ -9054,10 +9054,23 @@ void StartDefaultGames()
        	// look for a core/map for Map#
 		// -KGJV : should we lock game settings when custom map specified. If so need 'GameParameters#' too ?
 		// removed map# for now
+		// BT - Readded for bots
 		ZString strMap;
-		//wsprintf(cbValueName, "Map%d", iGame);
-		//LoadRegString(hKey, cbValueName, strMap);
-		//strncpy(mp.szCustomMapFile, strMap, c_cbFileName);
+		wsprintf(cbValueName, "Map%d", iGame);
+		LoadRegString(hKey, cbValueName, strMap);
+
+		if (strlen(strMap) > 0 && stricmp("botbrawl", strMap) == 0)
+		{
+			mp.mmMapType = c_mmBrawl;
+			mp.nGoalTeamKills = 100;
+			mp.bAllowDevelopments = false;
+			mp.bObjectModelCreated = true;
+			mp.bClubGame = true;
+			mp.iGoalConquestPercentage = 0;
+			//strncpy(mp.szCustomMapFile, strMap, c_cbFileName);
+		}
+
+		
 
         // KGJV #92 - LockOpen# option  per game
         // dword value - 1 to lockopen

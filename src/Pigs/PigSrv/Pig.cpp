@@ -1143,9 +1143,11 @@ HRESULT CPig::ProcessAppMessage(FEDMESSAGE* pfm)
       debugf("Received %s at time %u\n", g_rgszMsgNames[fmid], Time::Now().clock());
 	*/
 
-#ifdef _DEBUG
   switch (pfm->fmid)
   {
+
+#ifdef _DEBUG
+
       case FM_S_EXPORT:
       {
         // Check for static objects
@@ -1157,33 +1159,38 @@ HRESULT CPig::ProcessAppMessage(FEDMESSAGE* pfm)
         }
         break;
       }
+	 
+#endif // _DEBUG
+
 	  case FM_S_POSITIONREQ:
 	  {
 		  CASTPFM(pfmPositionRequest, S, POSITIONREQ, pfm);
 		  // If the are joining our team and I'm the leader
 		  if (pfmPositionRequest->iSide == BaseClient::GetSideID() && BaseClient::MyPlayerInfo()->IsTeamLeader()) {
-				// if AutoAccept is off
+			  // if AutoAccept is off
 			  FMD_S_MISSIONDEF myMissionDef = BaseClient::MyMission()->GetMissionDef();
 			  if (myMissionDef.rgfAutoAccept[BaseClient::GetSideID()] == false) {
 				  // Accept them if my are in our squad
 				  // get the squadTag
 				  ZString myTag = ZString(BaseClient::MyPlayerInfo()->CharacterName()).RightOf("@");
 				  ZString theirTag = ZString(BaseClient::FindPlayer(pfmPositionRequest->shipID)->CharacterName()).RightOf("@");
-				  if (myTag == theirTag) {
-					  // Let them pass
-					  BaseClient::SetMessageType(c_mtGuaranteed);
-					  BEGIN_PFM_CREATE(*BaseClient::GetNetwork(), pfmPositionAck, C, POSITIONACK)
+
+				  BaseClient::SetMessageType(c_mtGuaranteed);
+				  BEGIN_PFM_CREATE(*BaseClient::GetNetwork(), pfmPositionAck, C, POSITIONACK)
 					  END_PFM_CREATE
 					  pfmPositionAck->iSide = pfmPositionRequest->iSide;
-					  pfmPositionAck->shipID = pfmPositionRequest->shipID;
-					  BaseClient::SendMessages();
-				  }
+				  pfmPositionAck->shipID = pfmPositionRequest->shipID;
+
+				  // If their tag = my tag, then they can join my team.
+				  pfmPositionAck->fAccepted = myTag == theirTag;
+				  
+				  BaseClient::SendMessages();
 			  }
 		  }
 		  break;
 	  }
   }
-#endif // _DEBUG
+
 
   // Keep track of each ship's performance details
   XHeavyShips                   HeavyShips;
@@ -1691,6 +1698,9 @@ void CPig::OnDelRequest(MissionInfo* pMissionInfo, SideID sideID,
     {
       XLock lock(this);
       m_bTeamAccepted = false;
+
+	  printf("join team rejected: %ld\n", reason);
+
       m_evtJoiningTeam.Set();
     }
   }
@@ -2594,6 +2604,8 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
       }
     }
 
+	printf("Found target side: %ld\n", idSide);
+
     // Error
     if (NA == idSide)
     {
@@ -2631,6 +2643,8 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
     idSide = NA;
   }
 
+  printf("Empty team target side: %ld\n", idSide);
+
   // Create and queue the message to the server
   BaseClient::SetMessageType(c_mtGuaranteed);
   BEGIN_PFM_CREATE(*BaseClient::GetNetwork(), pfm, C, POSITIONREQ)
@@ -2650,8 +2664,8 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
 
   // Wait for the acknowledgement event
   if (!WaitInTimerLoop(m_evtJoiningTeam))
-    return S_FALSE;
-
+	return S_FALSE;
+ 
   // Set the state
   if (m_bTeamAccepted)
   {
@@ -2678,25 +2692,31 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
 					break;
 				}
 			}
+
+			FedMessaging &fm = *BaseClient::GetNetwork();
+
+			if (BSTRLen(bstrTeamOrPlayer)) {
+				// set the team name
+				BaseClient::SetMessageType(c_mtGuaranteed);
+				BEGIN_PFM_CREATE(fm, pfmSetTeamInfo, CS, SET_TEAM_INFO)
+					END_PFM_CREATE
+					pfmSetTeamInfo->sideID = civSide;
+				pfmSetTeamInfo->squadID = NA;
+				strcpy(pfmSetTeamInfo->SideName, OLE2CA(bstrTeamOrPlayer));
+
+				//BaseClient::SendMessages();
+			}
+
 			if (civSelection != NA) {
 				BaseClient::SetMessageType(c_mtGuaranteed);
-				BEGIN_PFM_CREATE(*BaseClient::GetNetwork(), pfmChangeCiv, CS, CHANGE_TEAM_CIV)
+				BEGIN_PFM_CREATE(fm, pfmChangeCiv, CS, CHANGE_TEAM_CIV)
 				END_PFM_CREATE
 				pfmChangeCiv->iSide = civSide; 
 				pfmChangeCiv->civID = civSelection;
 				pfmChangeCiv->random = false;
-				BaseClient::SendMessages();
+				//BaseClient::SendMessages();
 			}
-			if (BSTRLen(bstrTeamOrPlayer)) {
-				// set the team name
-				BaseClient::SetMessageType(c_mtGuaranteed);
-				BEGIN_PFM_CREATE(*BaseClient::GetNetwork(), pfmSetTeamInfo, CS, SET_TEAM_INFO)
-				END_PFM_CREATE
-				pfmSetTeamInfo->sideID = civSide;
-				pfmSetTeamInfo->squadID = NA;
-				strcpy(pfmSetTeamInfo->SideName,OLE2CA(bstrTeamOrPlayer));
-				BaseClient::SendMessages();
-			}
+			
 			// Turn off AutoAccept
 			{
 				//AUTO_ACCEPT
@@ -2705,45 +2725,51 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
 					END_PFM_CREATE
 				pfmSetAutoAccept->iSide = civSide;
 				pfmSetAutoAccept->fAutoAccept = false;
-				BaseClient::SendMessages();
+				//BaseClient::SendMessages();
 			}
 			
 		}
 
-		if (BaseClient::MyPlayerInfo()->IsMissionOwner()) {
-			// Make the mission configuration what the Pigs Like.
-			
-			MissionParams currentMissionParams = BaseClient::MyMission()->GetMissionParams();
-			BaseClient::SetMessageType(c_mtGuaranteed);
+		//if (BaseClient::MyPlayerInfo()->IsTeamLeader())  
+		
+		
+		//if (BaseClient::MyPlayerInfo()->IsMissionOwner()) 
+		//{
+		//	// Make the mission configuration what the Pigs Like.
+		//	
+		//	MissionParams currentMissionParams = BaseClient::MyMission()->GetMissionParams();
+		//	BaseClient::SetMessageType(c_mtGuaranteed);
 
+		//	BEGIN_PFM_CREATE_ALLOC(*BaseClient::GetNetwork(), pfmMissionParams, CS, MISSIONPARAMS)
+		//	END_PFM_CREATE
+		//	pfmMissionParams->missionparams.Reset();
+		//	
+		//	//strcpy(pfmMissionParams->missionparams.strGameName, BaseClient::MyMission()->Name());
+		//	strcpy(pfmMissionParams->missionparams.strGameName, "Pig Pen");
+		//	strcpy(pfmMissionParams->missionparams.szIGCStaticFile, currentMissionParams.szIGCStaticFile);
+		//	strcpy(pfmMissionParams->missionparams.szCustomMapFile, currentMissionParams.szCustomMapFile);
+		//	pfmMissionParams->missionparams.nTotalMaxPlayersPerGame = currentMissionParams.nTotalMaxPlayersPerGame;
+		//	pfmMissionParams->missionparams.bEjectPods = false;
+		//	pfmMissionParams->missionparams.bAllowDevelopments = false;
+		//	pfmMissionParams->missionparams.fStartCountdown = 9.0f;
+		//	pfmMissionParams->missionparams.fRestartCountdown = 9.0f;
+		//	pfmMissionParams->missionparams.mmMapType = c_mmBrawl;
+		//	pfmMissionParams->missionparams.bAllowEmptyTeams = true;
+		//	pfmMissionParams->missionparams.dtGameLength = 60.0f * 60.0f; // 1 hour
+		//	pfmMissionParams->missionparams.iMaxImbalance = 32767; // 32767 = N/A
+		//	printf("Attempting to change the mission paramerters\n");
+		//	ZString errorMsg = ZString(pfmMissionParams->missionparams.Invalid(true));
+		//	if (errorMsg.IsEmpty()) {
+		//		printf("No error message from InValid()\n");
+		//	}
+		//	else {
+		//		printf(errorMsg);
+		//	}
+		//	BaseClient::GetNetwork()->QueueExistingMsg((FEDMESSAGE *)pfmMissionParams);
+		//	PFM_DEALLOC(pfmMissionParams);
+		//}
 
-			BEGIN_PFM_CREATE_ALLOC(*BaseClient::GetNetwork(), pfmMissionParams, CS, MISSIONPARAMS)
-			END_PFM_CREATE
-			pfmMissionParams->missionparams.Reset();
-			
-			strcpy(pfmMissionParams->missionparams.strGameName, "Pig Pen");
-			strcpy(pfmMissionParams->missionparams.szIGCStaticFile, currentMissionParams.szIGCStaticFile);
-			strcpy(pfmMissionParams->missionparams.szCustomMapFile, currentMissionParams.szCustomMapFile);
-			pfmMissionParams->missionparams.nTotalMaxPlayersPerGame = currentMissionParams.nTotalMaxPlayersPerGame;
-			pfmMissionParams->missionparams.bEjectPods = false;
-			pfmMissionParams->missionparams.bAllowDevelopments = false;
-			pfmMissionParams->missionparams.fStartCountdown = 9.0f;
-			pfmMissionParams->missionparams.fRestartCountdown = 9.0f;
-			pfmMissionParams->missionparams.mmMapType = c_mmBrawl;
-			pfmMissionParams->missionparams.bAllowEmptyTeams = true;
-			pfmMissionParams->missionparams.dtGameLength = 60.0f * 60.0f; // 1 hour
-			pfmMissionParams->missionparams.iMaxImbalance = 32767; // 32767 = N/A
-			printf("Attempting to change the mission paramerters\n");
-			ZString errorMsg = ZString(pfmMissionParams->missionparams.Invalid(true));
-			if (errorMsg.IsEmpty()) {
-				printf("No error message from InValid()\n");
-			}
-			else {
-				printf(errorMsg);
-			}
-			BaseClient::GetNetwork()->QueueExistingMsg((FEDMESSAGE *)pfmMissionParams);
-			PFM_DEALLOC(pfmMissionParams);
-		}
+		BaseClient::SendMessages();
   }
   else
   {
