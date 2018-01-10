@@ -12,7 +12,8 @@
 //////////////////////////////////////////////////////////////////////////////
 
 const float maxDistance = 100;
-const float distancePerParticle = 1.0f;
+float distancePerParticle = 0.9f;
+float userDistancePerParticle = 0.9f;
 
 class DebrisGeo : public Geo {
 private:
@@ -27,9 +28,12 @@ private:
 
     DebrisDataList m_listData;
     TRef<Surface>  m_psurface;
+	float		   m_timeLast; //time last updated
     float          m_time;
     Vector         m_positionLast;
     float          m_distanceTravelledSinceLastParticle;
+	float		   m_speed;
+	float		   m_userParticleDensity; //user's chosen particle density modifier
 
     Number*    GetTime()     { return Number::Cast(GetChild(0));    }
     Viewport*  GetViewport() { return Viewport::Cast(GetChild(1));  }
@@ -42,9 +46,14 @@ public:
         Geo(ptime, pviewport),
         m_distanceTravelledSinceLastParticle(0.0f)
     {   
+		m_timeLast = GetTime()->GetValue();
         m_positionLast = GetCamera()->GetPosition();
         m_psurface = pmodeler->LoadSurface("debris1bmp", true);
     }
+
+	void setDebrisDensity(float factor) { //this is a percentage multiplier - so 1.2  = 20% more stars
+		userDistancePerParticle = 1.0/factor;
+	}
 
     void Evaluate()
     {
@@ -69,6 +78,24 @@ public:
         //
 
         float length = (m_positionLast - position).Length();
+
+		//
+		// how fast are we going?
+		//
+		if (length != 0.0) { //avoid divide-by-zero if ship is not moving
+			m_speed = (m_timeLast - m_time) / length;
+		} else {
+			m_speed = 0;
+		}
+		
+		//
+		// more stars at lower speed - 0.2 more at 0, ramping down to 50mps
+		//
+		if (m_speed < 50) {
+			distancePerParticle = userDistancePerParticle + (0.2 - 0.004*m_speed);
+		} else {
+			distancePerParticle = userDistancePerParticle;
+		}
 
         if (length > 100) {
             //
@@ -131,6 +158,7 @@ public:
         }
 
         m_positionLast = position;
+		m_timeLast = m_time;
     }
 
     void Render(Context* pcontext)
