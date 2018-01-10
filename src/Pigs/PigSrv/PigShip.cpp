@@ -321,6 +321,10 @@ STDMETHODIMP CPigShip::BuyHull(IAGCHullType* pHullType)
 
   // TODO: Validate the specified pointer some more
 
+  // give our ship some neat autopilot abilities
+  // todo: maybe a better place to put this
+  GetIGC()->SetWingmanBehaviour(c_wbbmStrafe | c_wbbmUseMissiles | c_wbbmUseMines | c_wbbmRunAt30Hull | c_wbbmInRangeAggressive);
+
   // Get the IGC pointer of the specified AGCHullType
   IAGCPrivatePtr spPrivate(pHullType);
   assert(spPrivate->GetIGCVoid());
