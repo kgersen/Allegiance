@@ -92,7 +92,7 @@ public:
 		// more stars at lower speed - 0.2 more at 0, ramping down to 50mps
 		//
 		if (m_speed < 50) {
-			distancePerParticle = userDistancePerParticle + (0.2 - 0.004*m_speed);
+			distancePerParticle = userDistancePerParticle - (0.2 - 0.004*m_speed);
 		} else {
 			distancePerParticle = userDistancePerParticle;
 		}
