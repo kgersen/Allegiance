@@ -923,6 +923,11 @@ void GotLogonDetails(CQLogonStats * pquery)
     pqd->fCanCheat = true;
     #endif
 
+	// If CDKey matches Pig CDKey then they can always cheat
+	if (strcmp(pqd->szCDKey, g.szBotAuthenticationGuid) == 0) {
+		pqd->fCanCheat = true;
+	}
+
     dataship.pilotType = pqd->fCanCheat ? c_ptCheatPlayer : c_ptPlayer;
     dataship.abmOrders = 0;
     dataship.baseObjectID = NA;
