@@ -925,7 +925,7 @@ void GotLogonDetails(CQLogonStats * pquery)
 
 	// If CDKey matches Pig CDKey then they can always cheat
 	if (strcmp(pqd->szCDKey, g.szBotAuthenticationGuid) == 0) {
-		pqd->fCanCheat = true;
+		pqd->fCanCheat = true;  
 	}
 
     dataship.pilotType = pqd->fCanCheat ? c_ptCheatPlayer : c_ptPlayer;
@@ -7626,7 +7626,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       // if the mission has not started yet but is ready to start, start the mission
       if (pfsMission->GetStage() == STAGE_NOTSTARTED)
       {
-        if (pfsMission->FAllReady())
+		  // If all sides are ready, or if the game starter is a bot, then start the game. 
+        if (pfsMission->FAllReady() || strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) == 0) 
         {
             // start the countdown
             pfsMission->StartCountdown(c_fMissionBriefingCountdown);

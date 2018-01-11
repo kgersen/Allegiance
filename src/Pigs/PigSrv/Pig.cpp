@@ -2774,11 +2774,10 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
   }
   else
   {
-	  printf("JoinTeam:: The team did not accept you\n");
     SetCurrentState(PigState_TeamList);
     return Error("The team did not accept you", IID_IPig);
   }
-  printf("JoinTeam:: return S_OK\n");
+
   return S_OK;
 }
 
@@ -2862,6 +2861,14 @@ STDMETHODIMP CPig::IsMissionOwner(BOOL* bOwner)
 {
 	XLock lock(this);
 	CLEAROUT(bOwner, (BOOL)BaseClient::MyPlayerInfo()->IsMissionOwner());
+	return S_OK;
+}
+
+//imago 10/14
+STDMETHODIMP CPig::IsTeamLeader(BOOL* bLeader)
+{
+	XLock lock(this);
+	CLEAROUT(bLeader, (BOOL)BaseClient::MyPlayerInfo()->IsTeamLeader());
 	return S_OK;
 }
 
@@ -3001,12 +3008,22 @@ STDMETHODIMP CPig::StartGame()
 	//if (PigState_WaitingForMission != GetCurrentState())
 		//return Error(IDS_E_STARTGAME_MISSIONLIST, IID_IPig);
 
+	// Make which ever pig calls start game the side leader. Sometimes pigs join out of order so the mission owner is not the side leader.
+	//BaseClient::MyMission()->SetSideLeader(BaseClient::MyPlayerInfo());
+
 	// Validate that the minimum number of players exist on each team
 	for (SideID i = 0; i < BaseClient::MyMission()->NumSides(); ++i)
+	{
+		// Ensure that all sides are ready to launch, even if the humans didn't get a chance to ready up. Pigs wait for no one.
+		//BaseClient::MyMission()->SideForceReady(i);
+
+		//if (BaseClient::MyMission()->SideReady(i) == false)
+		//	return Error(IDS_E_STARTGAME_SIDE_NOT_READY, IID_IPig);
+
 		if (BaseClient::MyMission()->SideNumPlayers(i)
 			< BaseClient::MyMission()->MinPlayersPerTeam())
 			return Error(IDS_E_STARTGAME_MINPLAYERS, IID_IPig);
-
+	}
 
   // Create and queue the message to the server
   BaseClient::SetMessageType(c_mtGuaranteed);

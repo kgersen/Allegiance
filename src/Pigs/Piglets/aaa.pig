@@ -10,9 +10,9 @@
 // Settings
 
 
-var GameName = "Bot DM Test";
-var ServerName = "LocalDev";
-var ServerAddr = "52.176.109.28";
+var GameName = "Perpetual Bot DM";
+var ServerName = "AEast2";
+var ServerAddr = "10.99.96.234";
 var KillGoal = 99;
 var DebugSpam = true;
 
@@ -24,6 +24,10 @@ var GotoSkill = 0.05;
 UpdatesPerSecond = 30;
 
 function OnReceiveChat(strText, objShip) {
+	
+	if (strText == "#check")
+		Game.SendChat("Oink! IsTeamLeader() = " + IsTeamLeader());
+	
 	if (PigStateName != PigState_Flying)
 		return;
 	if (objShip.Team != Ship.Team)
@@ -114,7 +118,7 @@ function UpdateTargetTimer() {
   var found = FindTarget();
 
   var someTarget = found.shipTarget || found.stationTarget
-  if(someTarget){
+  if(someTarget && someTarget.Position != null && Position != null){
     var targetDistance = Range2Ship(someTarget);
     
     CheckFireMissile(targetDistance);

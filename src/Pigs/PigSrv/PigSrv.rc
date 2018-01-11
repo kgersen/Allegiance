@@ -204,6 +204,8 @@ BEGIN
                             "Specified LobbyMode is unsupported or invalid."
     IDS_E_LOBBYMODE_OP_UNSUPPORTED 
                             "The requested operation is not available for the current LobbyMode."
+	IDS_E_STARTGAME_SIDE_NOT_READY
+							"One or more sides is not ready."
 END
 
 #endif    // English (U.S.) resources
