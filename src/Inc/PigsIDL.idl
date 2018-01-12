@@ -557,6 +557,9 @@ interface IPig : IDispatch
   [helpstring("Returns true if player has game control")]
   HRESULT IsMissionOwner([out, retval] BOOL* bOwner);
 
+  [helpstring("Returns true if player is the team leader")]
+  HRESULT IsTeamLeader([out, retval] BOOL* bLeader);
+
   [helpstring("Sets the shoot, turn and goto skills")]
   HRESULT SetSkills([in] float fShoot, [in] float fTurn, [in] float fGoto); //Imago 10/14
 

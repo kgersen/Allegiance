@@ -14,6 +14,8 @@ var LastKill = (new Date).getTime();
 var LastDeath = (new Date).getTime();
 var LastDamage = (new Date).getTime();
 var AboutToDie = false;
+var TickCount = 0;
+var MinTeamPlayers = 1;
 
 // genesis
 function OnStateNonExistant(eStatePrevious) {
@@ -35,6 +37,22 @@ function OnStateMissionList(eStatePrevious) {
 	try {
 		JoinMission(GameName);
 		HasAlreadyJoinedAGame = true;
+		
+		if (IsMissionOwner())
+		{
+			Trace("This pig is the mission owner and will autostart the game.\n");
+			
+			
+		
+			// GameController = true;
+			
+			// var objParams;
+			// objParams.MinTeamPlayers = 1;
+			
+			// AutoStartGame(objParams);
+			// RoundCount++;
+		}
+		
 		return;
 	} catch (e) {
 		if (e.description != "No missions exist on the server." && e.description != "Specified game not found or has no positions available") {
@@ -119,20 +137,88 @@ function OnStateWaitingForMission(eStatePrevious) {
         Game.SendChat("My skills: " + (ShootSkill * 100) + "%");
     }
 
-    if (IsMissionOwner()) {
-        Game.SendChat("Starting in 45", 1301);
-        CreateTimer(45, "StartGameTimer()", -1, "StartGameTimer");
+	Trace("OnStateWaitingForMission::IsMissionOwner() = " + IsMissionOwner() + "\n");
+	Trace("OnStateWaitingForMission::IsTeamLeader() = " + IsTeamLeader() + "\n");
+	
+	KillTimer("DiscoverTeamLeader");
+	KillTimer("GameStartTimer");
+	KillTimer("RestartGame");
+	
+    if (IsTeamLeader()) {
+        //Game.SendChat("Starting in 45", 1301);
+        //CreateTimer(45, "StartGameTimer()", -1, "StartGameTimer");
+		
+		Trace("Starting GameStartTimer, and waiting for players.\n");
+		CreateTimer(1.0, "GameStartTimer_Tick()", -1, "GameStartTimer");
     }
+	else{
+		CreateTimer(1.0, "DiscoverTeamLeader_Tick()", -1, "DiscoverTeamLeader");
+	}
 }
-// step 4.1 (if mission owner)
-function StartGameTimer() {
-    Trace("killed timer, Attempting to StartGame\n");
-    if (IsMissionOwner()) { //|| it.item().Ships.Count < MissionParams.MinTeamPlayers) {
-        Game.SendChat("Launching...", 1301);
-        StartGame();
-    }
-    Timer.Kill(); // kill at the end so that we try to StartGame again if it failed before
+
+function DiscoverTeamLeader_Tick()
+{
+	if (IsTeamLeader())
+	{
+		Timer.Kill();
+		Trace("This pig is now the Team Leader. Starting GameStartTimer, and waiting for players.\n");
+		CreateTimer(1.0, "GameStartTimer_Tick()", -1, "GameStartTimer");
+	}
 }
+
+function GameStartTimer_Tick()
+{
+	TickCount++;
+	
+	if(TickCount % 60 == 0)
+		Game.SendChat("Waiting for some human snacks to join up and click on team ready. Oink.",1301); //voJustASecSound
+	
+	for (var it = new Enumerator(Game.Teams); !it.atEnd(); it.moveNext())
+		if (it.item().Ships.Count < MinTeamPlayers)
+	  		return;
+		
+	Timer.Kill();
+	Game.SendChat("Good luck and have fun. I'm sure you will be delicious. Squeal.",1296); //voEveryoneReadySound
+	CreateTimer(10.0, "GameStartDelay()", -1, "GameStartTimer");
+}
+
+function GameStartDelay() {
+
+	for (var it = new Enumerator(Game.Teams); !it.atEnd(); it.moveNext()) {
+		if (it.item().Ships.Count < MinTeamPlayers) {
+			Game.SendChat("Aborting launch...",1301); //voJustASecSound
+			Timer.Kill();
+			CreateTimer(1.0, "GameStartTimer_Tick()", -1, "GameStartTimer");
+			return;
+		}
+	}
+	Timer.Kill();
+	Trace("Starting game....\n");
+	StartGame();
+	CreateTimer(20.0, "GameRestart()", -1, "RestartGame");
+	
+}
+
+function GameRestart(objParams) {
+	if (PigState_WaitingForMission != PigState)
+		return;
+	
+	Timer.Kill();
+	
+	Game.SendChat("Standby, game will restart when we have some humans to eat...",1301); //voJustASecSound
+	
+	//CreateTimer(1.0, "GameStartTimer_Tick()", -1, "GameRestartTimer");
+}
+
+// // step 4.1 (if mission owner)
+// function StartGameTimer() {
+    // Trace("killed timer, Attempting to StartGame\n");
+    // if (IsMissionOwner()) { //|| it.item().Ships.Count < MinTeamPlayers) {
+        // Game.SendChat("Launching...", 1301);
+        // StartGame();
+    // }
+    // Timer.Kill(); // kill at the end so that we try to StartGame again if it failed before
+// }
 
 var gameRunning = false;
 // step 5...

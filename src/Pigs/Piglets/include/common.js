@@ -107,6 +107,10 @@ function SelectBestHull (hullCollection, strFirstChoice, strSecondChoice) {
 }
 
 function Range2Ship(agcShip) {
+	
+	//Trace("My Position: " + Position + "\n");
+	//Trace("agcShip.Position: " + agcShip.Position + "\n");
+	
     return (Position.Subtract(agcShip.Position).Length);
 }
 
