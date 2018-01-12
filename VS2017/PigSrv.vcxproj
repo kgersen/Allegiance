@@ -102,6 +102,7 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <PreprocessorDefinitions>NOMINMAX;DEBUG;ALLSRV_STANDALONE;FEDSRV;AGC_HOST;SRVLOG;_WIN32;_WINDOWS;_AFXDLL;_CONSOLE;WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>FLAVOR=\"$(ConfigurationName)\";%(PreprocessorDefinitions)</PreprocessorDefinitions>

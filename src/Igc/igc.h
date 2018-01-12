@@ -1249,7 +1249,7 @@ public:
         bStations                       = true ;
         bScoresCount                    = true;
         bSquadGame                      = false;
-        bDrones                         = true ;
+        bDrones                         = false ;
         iResources                      = 0;
         bResourceAmountsVisible         = true ;
         bRandomWormholes                = true ;

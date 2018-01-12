@@ -4560,7 +4560,10 @@ const char*          MyHullType::GetIconName(void) const
 
 HullAbilityBitMask   MyHullType::GetCapabilities(void) const
 {
-    return m_pHullData->habmCapabilities;
+	if (m_pHullData != nullptr)
+		return m_pHullData->habmCapabilities;
+	else
+		return 0;
 }
 bool                 MyHullType::HasCapability(HullAbilityBitMask habm) const
 {

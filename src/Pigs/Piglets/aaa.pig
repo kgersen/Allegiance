@@ -18,9 +18,9 @@ var DebugSpam = true;
 
 var CivSelection = "Rixian,Rixian,Iron Coalition,Dreghklar,Belters,Rixan,Gigacorp,Bios,Ga'Taraan,Technoflux,Draconium";  //blank for Random
 var ShipSelection = "Interceptor";
-var ShootSkill = 0.05;
-var TurnSkill = 0.05;
-var GotoSkill = 0.05;
+var ShootSkill = 1.0;
+var TurnSkill = 1.0;
+var GotoSkill = 1.0;
 UpdatesPerSecond = 30;
 
 function OnReceiveChat(strText, objShip) {
@@ -42,8 +42,8 @@ function OnStateFlying(eStatePrevious) {
 	KillAllTimers();
   // I think Ship.Thrust might be making the bomber fly up when it gets to the base.. Weird...??!!
   
-  Delay("Ship.Thrust(ThrustUp,ThrustForward)");
-  Delay("Ship.Boost(true)");
+  //Delay("Ship.Thrust(ThrustUp,ThrustForward)");
+  //Delay("Ship.Boost(true)");
   
   CreateTimer(2, "UpdateTargetTimer()", -1, "UpdateTargetTimer");
 }
@@ -96,7 +96,7 @@ function FindTarget() {
   var nearEnemyStationIdx = FindNearestEnemyStation(stationlist);
   
   var foundTarget = {stationTarget: undefined, shipTarget: undefined};
-  if(nearEnemyStationIdx > -1 && Ship.BaseHullType.HasCapability(512)){
+  if(nearEnemyStationIdx > -1 && Ship.BaseHullType != null && Ship.BaseHullType.HasCapability(512)){
     foundTarget = {stationTarget: stationlist(nearEnemyStationIdx)};
   } else if (nearEnemyIdx > -1) {
     foundTarget = {shipTarget: shiplist(nearEnemyIdx)};
@@ -108,7 +108,7 @@ var PREVIOUS_TARGET = {};
 function UpdateTargetTimer() {
 
   // Check lifepod
-  if (Ship.BaseHullType.HasCapability(4)) {
+  if (Ship.BaseHullType != null && Ship.BaseHullType.HasCapability(4)) {
 		NeedPickup();
 		KillTimers();
 		return;
@@ -143,7 +143,7 @@ function CheckRunAway(targetDistance) {
   targetDistance = (targetDistance || 10000);
   var TargetIsClose = targetDistance < 1400
 
-	if (Ship.BaseHullType.HasCapability(4)) {
+	if (Ship.BaseHullType != null && Ship.BaseHullType.HasCapability(4)) {
 		NeedPickup();
 		KillTimers();	
 		return;

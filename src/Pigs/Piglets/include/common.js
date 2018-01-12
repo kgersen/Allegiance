@@ -1,8 +1,37 @@
 //imagotrigger@gmail.com 10/14 originally from Matthew Lee, 1999 Microsoft
 
+// Constants
+var c_habmLifepod 			= 0x04;
+var c_habmCaptureThreat 	= 0x08;
+var c_habmFighter 			= 0x80;
+var c_habmThreatToStation 	= 0x200;
+
+
 
 function DisplayStateTransition(eStatePrevious) {
     Trace("State changed from " + StateName(eStatePrevious) + " to " + PigStateName + "\n");
+}
+
+function CanCalculatePosition(targetPosition)
+{
+	return typeof Position !== 'undefined' && targetPosition != null && typeof targetPosition.Position !== 'undefined';
+}
+
+function ShouldBeTargeted(potentialTarget)
+{
+	if(!potentialTarget)
+		return false;
+	
+	if(typeof potentialTarget === 'undefined')
+		return false;
+	
+	if(!potentialTarget.BaseHullType)
+		return false;
+	
+	if(potentialTarget.BaseHullType == null)
+		return false;
+	
+	return potentialTarget.BaseHullType != null && (potentialTarget.BaseHullType + '').toLowerCase().indexOf("pod") == -1;
 }
 
 function NeedPickup() {
@@ -12,7 +41,7 @@ function NeedPickup() {
 	var objShips = Ship.Sector.Ships;
 	var iShip = FindNearestFriend(objShips);
 	if (iShip != -1) nearestFriend = objShips(iShip);
-	if (nearestFriend) {
+	if (nearestFriend && CanCalculatePosition(nearestFriend) && CanCalculatePosition(MyGarrison)) {
 		var range = Range2Ship(nearestFriend);
 		var range2 = Range2Ship(MyGarrison);
 		Trace("In NeedPickup()...ship "+range+" vs station "+range2+"\n");
@@ -119,7 +148,25 @@ function FindNearestEnemy(shipCollection) {
 	var e = new Enumerator (shipCollection);
 	for (var i=0; !e.atEnd(); e.moveNext(), i++) {
 		var ship = e.item();
-		if (ship && ship.Team != Ship.Team && !ship.BaseHullType.HasCapability(4)) { //c_habmLifepod
+		
+		// if (ship && ship.Team != Ship.Team)
+		// {
+			// Trace("ship = " + ship + "\n");
+			// Trace("ship.BaseHullType = " + ship.BaseHullType + "\n");
+			
+			// if(ship.BaseHullType != null && typeof ship.BaseHullType.GetObjectType === "function")
+				// Trace("ship.BaseHullType.GetObjectType = " + ship.BaseHullType.GetObjectType() + "\n");
+			
+			// if(ship.BaseHullType != null && typeof ship.BaseHullType.HasCapability !== "function")
+				// Trace("typeof ship.BaseHullType.HasCapability = **** Not Present *****!\n");
+			// else
+				// Trace("typeof ship.BaseHullType.HasCapability = Ok\n");
+			
+			// Trace("CanCalculatePosition(ship) = " + CanCalculatePosition(ship) + "\n");
+			// Trace("ShouldBeTargeted(ship) = " + ShouldBeTargeted(ship) + "\n");
+		// }
+		
+		if (ship && ship.Team != Ship.Team && CanCalculatePosition(ship) && ShouldBeTargeted(ship) ) { //c_habmLifepod
 			var range = Range2Ship(ship);
 			if (range < Dist) {
 				Dist = range;
@@ -135,7 +182,7 @@ function FindNearestFriend(shipCollection) {
 	var e = new Enumerator (shipCollection);
 	for (var i=0; !e.atEnd(); e.moveNext(), i++) {
 		var ship = e.item();
-		if (ship && ship.Team == Ship.Team && !ship.BaseHullType.HasCapability(4)) { //c_habmLifepod
+		if (ship && ship.Team == Ship.Team && CanCalculatePosition(ship) && ShouldBeTargeted(ship)) { 
 			var range = Range2Ship(ship);
 			if (range < Dist) {
 				Dist = range;
@@ -152,7 +199,7 @@ function FindNearestFriendlyStation(stationCollection) {
 
     for (var i =0; !e.atEnd(); e.moveNext(), i++) {
         x = e.item();
-        if (x.Team == Ship.Team) {
+        if (x.Team == Ship.Team && CanCalculatePosition(x)) {
             var range = Range2Ship(x);
             if (range < Dist) {
                 Dist = range;
@@ -168,7 +215,7 @@ function FindNearestEnemyStation(stationCollection) {
 
     for (var i = 0; !e.atEnd(); e.moveNext(), i++) {
         x = e.item();
-        if (x.Team != Ship.Team) {
+        if (x.Team != Ship.Team && CanCalculatePosition(x)) {
             var range = Range2Ship(x);
             if (range < Dist) {
                 Dist = range;
@@ -183,7 +230,7 @@ function IsTargetValid(shipCollection,objTarget) {
 	var e = new Enumerator (shipCollection);
 	for (; !e.atEnd(); e.moveNext()) {
 		var ship = e.item();
-		if (ship && ship.Team != Ship.Team && !ship.BaseHullType.HasCapability(4) && ship.ObjectID == objTarget.ObjectID)
+		if (ship && ship.Team != Ship.Team && ShouldBeTargeted(ship) && ship.ObjectID == objTarget.ObjectID)
 			return true;
 	}
 	return false;

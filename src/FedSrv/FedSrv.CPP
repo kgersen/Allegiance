@@ -6717,9 +6717,27 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       if (NA == iSide)
         iSide = pfsMission->PickNewSide(pfsPlayer, false, 0);
 
-      IsideIGC* psideReq = pMission->GetSide(iSide);
-      if (psideReq)
-        pfsMission->RequestPosition(pfsPlayer, psideReq, false);
+	  IsideIGC* psideReq = pMission->GetSide(iSide);
+
+	  if (pMission->GetMissionParams()->bDrones == true && iSide == 0 && strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) != 0)
+	  {
+		  //deny the request: Only bots are allowed on this team.
+		  BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
+			  END_PFM_CREATE
+			  pfmDelPosReq->shipID = pfsPlayer->GetShipID();
+		  pfmDelPosReq->iSide = iSide;
+
+		  pfmDelPosReq->reason = DPR_BotsOnTeam0Only;
+
+		  g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
+		  break;
+	  }
+
+      
+	  if (psideReq)
+	  {
+		  pfsMission->RequestPosition(pfsPlayer, psideReq, false);
+	  }
       else
       {
         //deny the request: side no longer exists
@@ -7621,7 +7639,10 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
     {
       // the player better be the mission owner for this mission
       TrapHackBoot(pfsMission);
-      TrapHackBoot(pfsMission->GetOwner() == pfsPlayer);
+
+	  // Let bots start the game even if they are not the mission owner.
+	  if (strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) != 0)
+		TrapHackBoot(pfsMission->GetOwner() == pfsPlayer);
 
       // if the mission has not started yet but is ready to start, start the mission
       if (pfsMission->GetStage() == STAGE_NOTSTARTED)
@@ -9073,6 +9094,7 @@ void StartDefaultGames()
 			mp.bObjectModelCreated = true;
 			mp.bClubGame = true;
 			mp.iGoalConquestPercentage = 0;
+			mp.bDrones = true;
 			//strncpy(mp.szCustomMapFile, strMap, c_cbFileName);
 		}
 

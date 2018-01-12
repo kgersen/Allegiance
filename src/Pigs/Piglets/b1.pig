@@ -177,7 +177,7 @@ function UpdateTargetTimer() {
 				return;
 			}
 		}
-		if (CurrentTarget && Range2Ship(CurrentTarget) > 2250000) { //1500m ... 562500 = 750m  //TODO skillz
+		if (CurrentTarget && Position != null && CurrentTarget.Position != null && Range2Ship(CurrentTarget) > 2250000) { //1500m ... 562500 = 750m  //TODO skillz
 			if (newtarget != CurrentTarget) {
 				CurrentTarget = newtarget;
 				if (DebugSpam) Game.SendChat("My updated target (distance) is: "+CurrentTarget.Name);
