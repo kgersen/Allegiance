@@ -23,9 +23,12 @@ namespace PigClient
             this.p = p;
             ScriptName = scriptName;
             Launch = new CommandWrapper(() => p.Launch(), () => true);
-            Logoff = new CommandWrapper(() => Try(() => { p.Logoff(); return ""; }), () => true);
+            Logoff = new CommandWrapper(() => Try(() => { RemovePig(); return ""; }), () => true);
         }
 
+        public delegate void LogoffEvent(PigInfo pig);
+
+        public event LogoffEvent OnLogOff;
         public event PropertyChangedEventHandler PropertyChanged;
 
         private PigsLib.IPig p;
@@ -79,6 +82,17 @@ namespace PigClient
         //        return disply;
         //    }
         //}
+
+
+        public void RemovePig()
+        {
+            lock (this)
+            {
+                Pig.Shutdown();
+                Pig = null;
+                OnLogOff?.Invoke(this);
+            }
+        }
 
         public ICommand Logoff { get; set; }
         public ICommand Launch { get; set; }
