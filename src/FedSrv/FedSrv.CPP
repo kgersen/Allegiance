@@ -935,6 +935,11 @@ void GotLogonDetails(CQLogonStats * pquery)
     TRef<IshipIGC> pship = (IshipIGC *) g.trekCore->CreateObject(g.timeNow,
                           OT_ship, &dataship, sizeof(dataship));
 
+	// If CDKey matches Pig CDKey then give them super powers
+	if (strcmp(pqd->szCDKey, g.szBotAuthenticationGuid) == 0) {
+		pship->SetWingmanBehaviour(c_wbbmStrafe | c_wbbmUseMissiles | c_wbbmUseMines | c_wbbmRunAt30Hull | c_wbbmInRangeAggressive);
+	}
+
 	// BT - STEAM
 	CSteamID steamID;
 	steamID.SetFromUint64(pqd->steamID);
