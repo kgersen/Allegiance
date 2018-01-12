@@ -97,16 +97,15 @@ namespace PigClient
                 }
                 else if (x < 0)
                 {
-                    var toRemove = pigInfos.LastOrDefault(p => p.Pig.PigStateName == "Flying" || p.Pig.PigStateName == "Docked");
+                    var Rand = new Random(Environment.TickCount);
+                    var toRemove = pigInfos.Skip(1) // don't want to empty the team
+                                    .Where(p => p.Pig.PigStateName == "Flying" || p.Pig.PigStateName == "Docked")
+                                    .OrderBy(p => Rand.Next())
+                                    .FirstOrDefault();
                     if (toRemove != null)
                     {
-                        toRemove.Pig.Shutdown();
+                        toRemove.RemovePig();
                         pigInfos.Remove(toRemove);
-                        toRemove.Pig = null;
-                        // Neither of these currently work
-                        /*toRemove.Pig.Logoff();
-                        toRemove.Pig.QuitGame();
-                        */
                     }
                 }
             });
@@ -358,7 +357,9 @@ namespace PigClient
                     log(String.Format("Request returned: {0}", pig));
                     if (pig != null)
                     {
-                        pigInfos.Add(new PigInfo(pig, pigScript));
+                        var pi = new PigInfo(pig, pigScript);
+                        pigInfos.Add(pi);
+                        pi.OnLogOff += Pi_OnLogOff;
                         log(String.Format("pig {0} : State {1}", pig.Name, pig.PigStateName));
                     }
                 }
@@ -368,6 +369,12 @@ namespace PigClient
                 }
             }
             pigButtonEnable = true;
+        }
+
+        private void Pi_OnLogOff(PigInfo pig)
+        {
+            pig.OnLogOff -= Pi_OnLogOff;
+            pigInfos.Remove(pig);
         }
 
         private void Session_OnEvent(AGCLib.IAGCEvent pEvent)
