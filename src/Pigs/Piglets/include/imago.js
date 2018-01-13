@@ -29,17 +29,17 @@ function OnStateNonExistant(eStatePrevious) {
 	}
 }
 
-var ShootSkill = 0.50;
-var TurnSkill = 0.50;
-var GotoSkill = 0.50;
+var ShootSkill = 0.70;
+var TurnSkill = 0.70;
+var GotoSkill = 0.70;
 // step 2...
 function OnStateMissionList(eStatePrevious) {
 	
     DisplayStateTransition(eStatePrevious);
     // reset skills before a game
-    ShootSkill = 0.50;
-    TurnSkill = 0.50;
-    GotoSkill = 0.50;
+    ShootSkill = 0.70;
+    TurnSkill = 0.70;
+    GotoSkill = 0.70;
 	try {
 		JoinMission(GameName);
 		HasAlreadyJoinedAGame = true;
@@ -185,7 +185,7 @@ function GameStartTimer_Tick()
 		
 	Timer.Kill();
 	Game.SendChat("Good luck and have fun. I'm sure you will be delicious. Squeal.",1296); //voEveryoneReadySound
-	CreateTimer(10.0, "GameStartDelay()", -1, "GameStartTimer");
+	CreateTimer(30.0, "GameStartDelay()", -1, "GameStartTimer");
 }
 
 function GameStartDelay() {

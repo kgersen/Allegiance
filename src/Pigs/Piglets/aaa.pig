@@ -181,7 +181,9 @@ function CheckRunAway(targetDistance) {
   }  
 }
 
+var canChatTaunt = true;
 function OnShipDamaged(objShip, objModel, fAmount, fLeakage, objV1, objV2) {
+
   return;
 }
 
@@ -189,11 +191,13 @@ function OnShipKilled(objShip, objModel, fAmount, objV1, objV2) {
 	if ((!objShip) || (!Ship) || (!objModel))
 		return;
 	if (objModel.ObjectID == Ship.ObjectID) {
-		var tnow = (new Date).getTime();
-		var delta =  tnow - LastKill;
-		LastKill = tnow;		
-		if (delta > 500)	
-			if (DebugSpam) Game.SendChat("Yesss.. pwned you!");
+      if(canChatTaunt==true){
+        canChatTaunt = false;
+        // here we can pick from a chat from anything approperate
+        if (DebugSpam) Game.SendChat("Yesss.. pwned you!");
+      
+        CreateTimer(5, "canChatTaunt=true;", 1, "canChatReset");
+      }  
 	}
 	if (objShip.ObjectID == Ship.ObjectID) {
 		var bht = objShip.BaseHullType;
@@ -204,6 +208,11 @@ function OnShipKilled(objShip, objModel, fAmount, objV1, objV2) {
 			ShootSkill += 0.050;
 			TurnSkill += 0.050;
 			GotoSkill += 0.050;
+      
+      if(ShootSkill > 1.0) ShootSkill = 1.0;
+      if(TurnSkill > 1.0) TurnSkill = 1.0;
+      if(GotoSkill > 1.0) GotoSkill = 1.0;
+      
 			if (DebugSpam) Game.SendChat("Nooo.. skills increased!");
 		}
 	}
