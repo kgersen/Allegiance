@@ -29,11 +29,17 @@ function OnStateNonExistant(eStatePrevious) {
 	}
 }
 
+var ShootSkill = 0.50;
+var TurnSkill = 0.50;
+var GotoSkill = 0.50;
 // step 2...
 function OnStateMissionList(eStatePrevious) {
 	
-	DisplayStateTransition(eStatePrevious);
-	
+    DisplayStateTransition(eStatePrevious);
+    // reset skills before a game
+    ShootSkill = 0.50;
+    TurnSkill = 0.50;
+    GotoSkill = 0.50;
 	try {
 		JoinMission(GameName);
 		HasAlreadyJoinedAGame = true;

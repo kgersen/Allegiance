@@ -18,9 +18,6 @@ var DebugSpam = true;
 
 var CivSelection = "Rixian,Rixian,Iron Coalition,Dreghklar,Belters,Rixan,Gigacorp,Bios,Ga'Taraan,Technoflux,Draconium";  //blank for Random
 var ShipSelection = "Interceptor";
-var ShootSkill = 1.0;
-var TurnSkill = 1.0;
-var GotoSkill = 1.0;
 UpdatesPerSecond = 30;
 
 function OnReceiveChat(strText, objShip) {
