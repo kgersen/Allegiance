@@ -4774,11 +4774,11 @@ public:
 		*/
 		//LANS - allow off/low/medium/high debris settings
 		//lower numbers = more debris
-		if (m_debrisDensity->GetValue() == 1.0f) { //low -> medium
-			m_debrisDensity->SetValue(0.9f);
-			SavePreference("Debris", "0.9");
+		if (m_debrisDensity->GetValue() == 1.5f) { //low -> medium
+			m_debrisDensity->SetValue(1.0f);
+			SavePreference("Debris", "1.0");
 		}
-		else if (m_debrisDensity->GetValue() == 0.9f) { //medium -> high
+		else if (m_debrisDensity->GetValue() == 1.0f) { //medium -> high
 			m_debrisDensity->SetValue(0.8f);
 			SavePreference("Debris", "0.8");
 		}
@@ -4788,9 +4788,9 @@ public:
 			SavePreference("Debris", "0");
 		}
 		else { //off -> low
-			m_debrisDensity->SetValue(1.0f);
+			m_debrisDensity->SetValue(1.5f);
 			m_pwrapGeoDebris->SetGeo(m_pgeoDebris);
-			SavePreference("Debris", "1.0");
+			SavePreference("Debris", "1.5");
 		}
 		if (m_pitemToggleDebris != NULL) {
 			m_pitemToggleDebris->SetString(GetDebrisMenuString());
@@ -5801,10 +5801,10 @@ public:
 		if (m_debrisDensity->GetValue() == 0.8f) {
 			return c_strHigh;
 		}
-		else if (m_debrisDensity->GetValue() == 0.9f) {
+		else if (m_debrisDensity->GetValue() == 1.0f) {
 			return c_strMed;
 		}
-		else if (m_debrisDensity->GetValue() == 1.0f) {
+		else if (m_debrisDensity->GetValue() == 1.5f) {
 			return c_strLow;
 		}
 		else {
