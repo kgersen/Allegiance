@@ -80,11 +80,12 @@ public:
 		// how fast are we going?
 		//
 		if (length != 0.0) { //avoid divide-by-zero if ship is not moving
-			m_speed = (m_timeLast - m_time) / length;
+			m_speed = (m_time - m_timeLast) / length;
 		} else {
 			m_speed = 0;
 		}
-		
+		m_timeLast = m_time;
+
 		//
 		// more stars at lower speed - 0.3 more at 0, ramping down to 0 more at 75mps
 		//
@@ -157,7 +158,6 @@ public:
         }
 
         m_positionLast = position;
-		m_timeLast = m_time;
     }
 
     void Render(Context* pcontext)
