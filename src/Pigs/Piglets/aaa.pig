@@ -18,9 +18,6 @@ var DebugSpam = true;
 
 var CivSelection = "Rixian,Rixian,Iron Coalition,Dreghklar,Belters,Rixan,Gigacorp,Bios,Ga'Taraan,Technoflux,Draconium";  //blank for Random
 var ShipSelection = "Interceptor";
-var ShootSkill = 1.0;
-var TurnSkill = 1.0;
-var GotoSkill = 1.0;
 UpdatesPerSecond = 30;
 
 function OnReceiveChat(strText, objShip) {
@@ -150,10 +147,6 @@ function CheckRunAway(targetDistance) {
 	}
   var goHome = false;
    
-	if (Ship.Fraction < 0.20) {
-		if (DebugSpam) Game.SendChat("Critical damage! heading home NOW");		
-    goHome=true;
-	}
   
 	if (!Ship.Ammo) {
 		if (DebugSpam) Game.SendChat("No ammo! heading home NOW");
@@ -184,7 +177,9 @@ function CheckRunAway(targetDistance) {
   }  
 }
 
+var canChatTaunt = true;
 function OnShipDamaged(objShip, objModel, fAmount, fLeakage, objV1, objV2) {
+
   return;
 }
 
@@ -192,11 +187,16 @@ function OnShipKilled(objShip, objModel, fAmount, objV1, objV2) {
 	if ((!objShip) || (!Ship) || (!objModel))
 		return;
 	if (objModel.ObjectID == Ship.ObjectID) {
-		var tnow = (new Date).getTime();
-		var delta =  tnow - LastKill;
-		LastKill = tnow;		
-		if (delta > 500)	
-			if (DebugSpam) Game.SendChat("Yesss.. pwned you!");
+      if(canChatTaunt==true){
+        canChatTaunt = false;
+        // here we can pick from a chat from anything approperate
+        
+        if (DebugSpam) {
+          // var taunt = RandomTaunt();
+          //Game.SendChat(taunt.text,-1, taunt.id);
+        }
+        CreateTimer(5, "canChatTaunt=true;", 1, "canChatReset");
+      }  
 	}
 	if (objShip.ObjectID == Ship.ObjectID) {
 		var bht = objShip.BaseHullType;
@@ -207,7 +207,15 @@ function OnShipKilled(objShip, objModel, fAmount, objV1, objV2) {
 			ShootSkill += 0.050;
 			TurnSkill += 0.050;
 			GotoSkill += 0.050;
-			if (DebugSpam) Game.SendChat("Nooo.. skills increased!");
+      
+      if(ShootSkill > 1.0) ShootSkill = 1.0;
+      if(TurnSkill > 1.0) TurnSkill = 1.0;
+      if(GotoSkill > 1.0) GotoSkill = 1.0;
+      
+			if (DebugSpam) {
+       // var yell = RandomYell();
+       // Game.SendChat(yell.text,-1, yell.id);
+      }
 		}
 	}
 }

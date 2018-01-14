@@ -61,30 +61,36 @@ namespace PigClient
                 var friendlyCount = 0;
                 var hostileCount = 0;
                 var shipCount = pig.Game.Ships.Count;
-
-                for (var i = 0; i < shipCount; i++)
+                try
                 {
-                    if (pig.Game.Ships[i].Team.ObjectID == myTeamId)
+
+                    for (var i = 0; i < shipCount; i++)
                     {
-                        friendlyCount++;
+                        if (pig.Game.Ships[i].Team.ObjectID == myTeamId)
+                        {
+                            friendlyCount++;
+                        }
+                        else
+                        {
+                            hostileCount++;
+                        }
                     }
-                    else
+
+                    var idealRatio = _minRatio;
+                    var decreaseRatio = _maxRatio;
+                    if (hostileCount > 0 && friendlyCount / hostileCount < idealRatio || friendlyCount < _minPigs)
                     {
-                        hostileCount++;
+                        friendsToAdd++;
                     }
-                }
+                    else if (hostileCount > 0 && friendlyCount > _minPigs && friendlyCount / hostileCount > decreaseRatio )
+                    {
+                        friendsToAdd--;
+                    }
 
-                var idealRatio = _minRatio;
-                var decreaseRatio = _maxRatio;
-                if (hostileCount > 0 && friendlyCount / hostileCount < idealRatio || friendlyCount < _minPigs)
+                } catch
                 {
-                    friendsToAdd++;
-                }
-                else if (hostileCount > 0 && friendlyCount > _minPigs && friendlyCount / hostileCount > decreaseRatio )
-                {
-                    friendsToAdd--;
-                }
 
+                }
                 return friendsToAdd;
             })
             .ObserveOnDispatcher(System.Windows.Threading.DispatcherPriority.Normal)
