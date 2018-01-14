@@ -143,8 +143,8 @@ function OnStateWaitingForMission(eStatePrevious) {
         Game.SendChat("My skills: " + (ShootSkill * 100) + "%");
     }
 
-	Trace("OnStateWaitingForMission::IsMissionOwner() = " + IsMissionOwner() + "\n");
-	Trace("OnStateWaitingForMission::IsTeamLeader() = " + IsTeamLeader() + "\n");
+	//Trace("OnStateWaitingForMission::IsMissionOwner() = " + IsMissionOwner() + "\n");
+	//Trace("OnStateWaitingForMission::IsTeamLeader() = " + IsTeamLeader() + "\n");
 	
 	KillTimer("DiscoverTeamLeader");
 	KillTimer("GameStartTimer");

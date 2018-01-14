@@ -2604,7 +2604,7 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
       }
     }
 
-	printf("Found target side: %ld\n", idSide);
+	//printf("Found target side: %ld\n", idSide);
 
     // Error
     if (NA == idSide)
@@ -2643,7 +2643,7 @@ STDMETHODIMP CPig::JoinTeam(BSTR bstrCivName, BSTR bstrTeamOrPlayer)
     idSide = NA;
   }
 
-  printf("Empty team target side: %ld\n", idSide);
+  //printf("Empty team target side: %ld\n", idSide);
 
   // Create and queue the message to the server
   BaseClient::SetMessageType(c_mtGuaranteed);
