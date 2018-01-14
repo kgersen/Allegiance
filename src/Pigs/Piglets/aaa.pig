@@ -147,10 +147,6 @@ function CheckRunAway(targetDistance) {
 	}
   var goHome = false;
    
-	if (Ship.Fraction < 0.20) {
-		if (DebugSpam) Game.SendChat("Critical damage! heading home NOW");		
-    goHome=true;
-	}
   
 	if (!Ship.Ammo) {
 		if (DebugSpam) Game.SendChat("No ammo! heading home NOW");
@@ -194,8 +190,11 @@ function OnShipKilled(objShip, objModel, fAmount, objV1, objV2) {
       if(canChatTaunt==true){
         canChatTaunt = false;
         // here we can pick from a chat from anything approperate
-        if (DebugSpam) Game.SendChat("Yesss.. pwned you!");
-      
+        
+        if (DebugSpam) {
+          // var taunt = RandomTaunt();
+          //Game.SendChat(taunt.text,-1, taunt.id);
+        }
         CreateTimer(5, "canChatTaunt=true;", 1, "canChatReset");
       }  
 	}
@@ -213,7 +212,10 @@ function OnShipKilled(objShip, objModel, fAmount, objV1, objV2) {
       if(TurnSkill > 1.0) TurnSkill = 1.0;
       if(GotoSkill > 1.0) GotoSkill = 1.0;
       
-			if (DebugSpam) Game.SendChat("Nooo.. skills increased!");
+			if (DebugSpam) {
+       // var yell = RandomYell();
+       // Game.SendChat(yell.text,-1, yell.id);
+      }
 		}
 	}
 }

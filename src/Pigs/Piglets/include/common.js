@@ -249,3 +249,70 @@ function EndRipCord() {
   Timer.Kill();
 }
 
+var QUICKCHATBYCODE = {
+    // These might not be correct.
+    // They are out of quickchat.mdl !!! See sounds.h for alternative IDs
+    "`ty": { "id": 115, "text": "Yessssss!" },
+    "`tv": { "id": 113, "text": "You'll be sorry you did that" },
+    "`tt": { "id": 114, "text": "You died with dignity." },
+    "`tr": { "id": 112, "text": "Ripcord... Last resort for the desperate." },
+    "`tq": { "id": 111, "text": "Payload delivered!" },
+    "`tp": { "id": 185, "text": "You want a piece of me?" },
+    "`to": { "id": 184, "text": "Oooh ... sorry about that one." },
+    "`tn": { "id": 109, "text": "You have no honor." },
+    "`tl": { "id": 110, "text": "Like lambs to the slaughter." },
+    "`tf": { "id": 107, "text": "How did that feel?" },
+    "`te": { "id": 106, "text": "Easier than shooting fish in a barrel." },
+    "`td": { "id": 105, "text": "Death becomes you." },
+    "`tc": { "id": 104, "text": "Come back and fight!" },
+    "`ta": { "id": 102, "text": "Almost had you." },
+    "`t1": { "id": 108, "text": "You're good but not that good" },
+
+    "`9": { "id": 119, "text": "I'll be on your turret in a few seconds." },
+    "`8": { "id": 118, "text": "I need turret gunners NOW!" },
+    "`7": { "id": 117, "text": "Donate your money to the investor!" },
+    "`6": { "id": 11, "text": "I need help!" },
+    "`5": { "id": 10, "text": "Attack my target!" },
+    "`4": { "id": 47, "text": "Yee-haaaaaw!" },
+    "`3": { "id": 116, "text": "Shhhooot!" },
+    "`2": { "id": 16, "text": "Negative!" },
+    "`1": { "id": 15, "text": "Affirmative!" },
+    "`0": { "id": 120, "text": "Oops" },
+    "`yx": { "id": 48, "text": "Doah." },
+    "`yq": { "id": 230, "text": "Ooooaaaah!" },
+    "`yn": { "id": 50, "text": "Nooooo!" },
+    "`ye": { "id": 231, "text": "Aaaaaaahhh!" },
+    "`ya": { "id": 208, "text": "Deeg" }
+};
+var TAUNTS = [
+    "`ty",
+    "`tv",
+    "`tt",
+    "`tr",
+    "`tq",
+    "`tp",
+    "`to",
+    "`tn",
+    "`tl",
+    "`tf",
+    "`te",
+    "`td",
+    "`tc",
+    "`ta",
+    "`t1"
+];
+var YELL = [
+    "`yx",
+    "`yq",
+    "`yn",
+    "`ye",
+    "`ya"
+];
+function RandomTaunt() {
+    var fRand = Random() % TAUNTS.length;
+    return QUICKCHATBYCODE[TAUNTS[fRand]];
+}
+function RandomYell() {
+    var fRand = Random() % YELL.length;
+    return QUICKCHATBYCODE[YELL[fRand]];
+}
