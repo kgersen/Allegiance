@@ -813,6 +813,9 @@ STDMETHODIMP CPigShip::AttackShip(IAGCShip* pTargetShip, BSTR* pbstrResponse)
 	// Kill any current automatic action, including AutoPilot
 	KillAutoAction();
 
+	// Set the target so that missile lock can be aquired.
+	GetIGC()->SetCommand(c_cmdCurrent, pTarget, c_cidDefault);
+
 	m_pPig->BaseClient::SetAutoPilot(true);
 
 	// Set the Plan command 
@@ -839,6 +842,9 @@ STDMETHODIMP CPigShip::AttackStation(IAGCStation* pTargetStation, BSTR* pbstrRes
 	ImodelIGC* pTarget = reinterpret_cast<ImodelIGC*>(spPrivate->GetIGCVoid());
 	// Kill any current automatic action, including AutoPilot
 	KillAutoAction();
+
+	// Set the target so that missile lock can be aquired.
+	GetIGC()->SetCommand(c_cmdCurrent, pTarget, c_cidDefault);
 
 	m_pPig->BaseClient::SetAutoPilot(true);
 
