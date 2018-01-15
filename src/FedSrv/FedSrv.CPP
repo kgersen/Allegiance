@@ -9100,7 +9100,7 @@ void StartDefaultGames()
 			mp.bClubGame = true;
 			mp.iGoalConquestPercentage = 0;
 			mp.bDrones = true;
-			//strncpy(mp.szCustomMapFile, strMap, c_cbFileName);
+			mp.iMaxImbalance = 0x7fff; // Imalance = N/A
 		}
 
 		
