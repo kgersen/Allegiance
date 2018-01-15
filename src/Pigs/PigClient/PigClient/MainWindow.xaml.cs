@@ -338,6 +338,9 @@ namespace PigClient
                     var newScripts = new List<string>();
                     foreach (var file in di.EnumerateFiles())
                     {
+                        if (file.Extension.ToLower().EndsWith(".js"))
+                            continue;
+
                         var justTheName = file.Name.Replace(".pig", "");
                         newScripts.Add(justTheName);
                     }
