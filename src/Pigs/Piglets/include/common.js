@@ -166,7 +166,7 @@ function FindNearestEnemy(shipCollection) {
 			// Trace("ShouldBeTargeted(ship) = " + ShouldBeTargeted(ship) + "\n");
 		// }
 		
-		if (ship && ship.Team != Ship.Team && CanCalculatePosition(ship) && ShouldBeTargeted(ship) ) { //c_habmLifepod
+        if (ship && ship.Team != Ship.Team && Ship.CanSee(ship) && CanCalculatePosition(ship) && ShouldBeTargeted(ship) ) { //c_habmLifepod
 			var range = Range2Ship(ship);
 			if (range < Dist) {
 				Dist = range;

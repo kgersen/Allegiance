@@ -34,7 +34,7 @@ function OnStateFlying(eStatePrevious) {
     //Delay("Ship.Thrust(ThrustUp,ThrustForward)");
     //Delay("Ship.Boost(true)");
 
-    CreateTimer(2, "UpdateTargetTimer()", -1, "UpdateTargetTimer");
+    CreateTimer(1, "UpdateTargetTimer()", -1, "UpdateTargetTimer");
 }
 
 function CheckBoost(targetDistance) {
