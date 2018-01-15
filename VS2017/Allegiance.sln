@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.12
+VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Doc", "Doc", "{A20534F2-783B-48FF-95FE-FCEC104F86EA}"
 	ProjectSection(SolutionItems) = preProject
@@ -223,18 +223,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ui", "Ui.vcxproj", "{77F306
 		{D619B179-7FC4-4DB6-9794-1D3C75717D15} = {D619B179-7FC4-4DB6-9794-1D3C75717D15}
 		{21C70CA0-24C5-475B-8C47-6F0226A374B0} = {21C70CA0-24C5-475B-8C47-6F0226A374B0}
 		{F81BB9EE-DD86-415E-87E3-B60732EFD72F} = {F81BB9EE-DD86-415E-87E3-B60732EFD72F}
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "behaviors", "behaviors", "{BF8AC383-1D38-4416-883B-89451029DD09}"
-	ProjectSection(SolutionItems) = preProject
-		..\src\Pigs\Piglets\aaa.pig = ..\src\Pigs\Piglets\aaa.pig
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "include", "include", "{F30397F8-3802-44A1-BE7D-F86B1DD6DAF1}"
-	ProjectSection(SolutionItems) = preProject
-		..\src\Pigs\Piglets\include\AutoStartCustomGame.js = ..\src\Pigs\Piglets\include\AutoStartCustomGame.js
-		..\src\Pigs\Piglets\include\common.js = ..\src\Pigs\Piglets\include\common.js
-		..\src\Pigs\Piglets\include\imago.js = ..\src\Pigs\Piglets\include\imago.js
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PigClient", "..\src\Pigs\PigClient\PigClient\PigClient.csproj", "{01700303-9A0C-46B5-B0B8-0E810BE2BC58}"
@@ -944,8 +932,6 @@ Global
 		{6C3FDD5D-0F80-4A18-AA68-FB6348A32AA6} = {3173AB63-87BD-45F5-83C3-EFA1F81A76F0}
 		{53812B2F-C263-4528-BA9B-C3D87884D52D} = {3173AB63-87BD-45F5-83C3-EFA1F81A76F0}
 		{52C64275-DA32-486B-AB61-A617E5A07E0A} = {3173AB63-87BD-45F5-83C3-EFA1F81A76F0}
-		{BF8AC383-1D38-4416-883B-89451029DD09} = {3173AB63-87BD-45F5-83C3-EFA1F81A76F0}
-		{F30397F8-3802-44A1-BE7D-F86B1DD6DAF1} = {BF8AC383-1D38-4416-883B-89451029DD09}
 		{01700303-9A0C-46B5-B0B8-0E810BE2BC58} = {3173AB63-87BD-45F5-83C3-EFA1F81A76F0}
 		{7608E7F9-4D22-4B7A-B498-D6458499F64F} = {3173AB63-87BD-45F5-83C3-EFA1F81A76F0}
 	EndGlobalSection

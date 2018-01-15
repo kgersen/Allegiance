@@ -1717,7 +1717,7 @@ TRef<ThingSite> CPig::CreateThingSite(ImodelIGC* pModel)
 
 TRef<ClusterSite> CPig::CreateClusterSite(IclusterIGC* pCluster)
 {
-  return new ClusterSite();
+  return new CPigsClusterSite(pCluster);
 }
 
 void CPig::ReceiveChat(IshipIGC* pshipSender, ChatTarget ctRecipient,
