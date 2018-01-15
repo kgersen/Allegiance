@@ -1016,16 +1016,6 @@ private:
 		}
 	}
 
-	void SetUsePack(bool bUsePack)
-	{
-		if (g_DX9Settings.mbUseTexturePackFiles != bUsePack)
-		{
-			g_DX9Settings.mbUseTexturePackFiles = bUsePack;
-
-			ForceReset();
-		}
-	}
-
 	void SetAutoGenMipMaps(bool bUseAutoGenMipMaps)
 	{
 		if (g_DX9Settings.m_bAutoGenMipmaps != bUseAutoGenMipMaps)

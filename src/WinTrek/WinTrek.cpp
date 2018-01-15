@@ -23,7 +23,6 @@ class QuickChatNode : public IMDLObject {};
 #include <EngineSettings.h>
 #include <paneimage.h>
 #include <D3DDevice9.h>
-#include <DX9PackFile.h>
 
 #include "FileLoader.h"
 
@@ -140,23 +139,6 @@ float   GetThrottle(ImodelIGC*  pmodel)
 // Misc Helpers
 //
 //////////////////////////////////////////////////////////////////////////////
-//Imago 7/20/09
-TRef<IMessageBox> pmsgBoxPack;
-void DummyPackCreateCallback( int iCurrentFileIndex, int iMaxFileIndex )
-{
-	if (iCurrentFileIndex == -1 && iMaxFileIndex == -1) {
-		GetWindow()->GetPopupContainer()->ClosePopup(pmsgBoxPack);
-		GetWindow()->RestoreCursor();
-	}
-}
-
-DWORD WINAPI DummyPackCreateThreadProc( LPVOID param )
-{
-	ZString strArtwork = ZString(UTL::artworkPath()); //duh
-	CDX9PackFile textures(strArtwork , "CommonTextures" );
-	textures.Create( DummyPackCreateCallback );
-	return 0;
-}
 
 //Imago 7/29/09
 DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
@@ -4728,7 +4710,6 @@ public:
 				m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V'); //Spunky #265 backing out //Imago 7/10
 				// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 				m_pitemMaxTextureSize	= pmenu->AddMenuItem(idmMaxTextureSize,     GetMaxTextureSizeMenuString(),    					  'X');
-				m_pitemPack				= pmenu->AddMenuItem(idmPack  			  , GetPackString()                                     , 'P');
 				break;
 
 			//Imago 7/10 #187
@@ -6205,13 +6186,6 @@ public:
 		ZString strResult = (CD3DDevice9::Get()->GetDeviceSetupParams()->bAutoGenMipmap) ? "Yes" : "No";
 		return "Auto Mipmap (" + strResult + ")";
 	}
-	ZString GetPackString()
-	{
-		if (g_DX9Settings.mbUseTexturePackFiles)
-			return "Use Texture Pack (Yes)";
-		else
-			return "Use Texture Pack (No)";
-	}
 	ZString GetVsyncString()
 	{
 		ZString strResult = (CD3DDevice9::Get()->GetDeviceSetupParams()->bWaitForVSync) ? "On" : "Off";
@@ -6467,23 +6441,6 @@ public:
 					m_pitemMip->SetString(GetMipString());
 				}
 				break;
-
-			case idmPack: { //this apparently doesn't even do anything yet....but we'll let them push it anyways.
-				ZString strArtwork = ZString(UTL::artworkPath()); //duh
-				CDX9PackFile textures(strArtwork, "CommonTextures");
-				if (!textures.Exists() && !g_DX9Settings.mbUseTexturePackFiles) {
-					GetWindow()->SetWaitCursor();
-					pmsgBoxPack = CreateMessageBox("Please wait while the texture pack file is being created.", NULL, false, false);
-					GetPopupContainer()->OpenPopup(pmsgBoxPack, true);
-					CreateThread(NULL, 0, DummyPackCreateThreadProc, NULL, THREAD_PRIORITY_HIGHEST, 0);
-				}
-				GetEngine()->SetUsePack(!g_DX9Settings.mbUseTexturePackFiles);
-				SavePreference("UseTexturePack", g_DX9Settings.mbUseTexturePackFiles);
-				if (m_pitemPack != NULL) {
-					m_pitemPack->SetString(GetPackString());
-				}
-				break;
-						  }
 
 			case idmVsync:
 				//only does anything if the device is fullscreen...but we'll let them push it anyways.
