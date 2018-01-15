@@ -1,4 +1,4 @@
-﻿
+
 /// <reference path="include/Pigs.d.ts" />  
 /// <reference path="include/imago.js" />  
 
