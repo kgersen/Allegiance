@@ -70,6 +70,9 @@ public:
   {    
 	  bool currentEye = false;
 
+	  if (currentCluster == nullptr)
+		  return false;
+
 	  CPigsClusterSite *clusterSite = (CPigsClusterSite *) currentCluster->GetClusterSite();
 	  const ScannerListIGC * scanners = clusterSite->GetScanners(side->GetObjectID());
 
