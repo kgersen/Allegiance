@@ -3,6 +3,7 @@
 /// <reference path="include/imago.js" />  
 
 
+
 // Settings
 var GameName = "Perpetual Bot DM";
 var ServerName = "AEast2";
@@ -16,11 +17,29 @@ var ShipSelection = "Interceptor";
 UpdatesPerSecond = 30;
 
 function OnReceiveChat(strText, objShip) {
-    if (strText == "#check")
-        Game.SendChat("Oink! IsTeamLeader() = " + IsTeamLeader());
+
+    if (strText == "#check") {
+        Game.SendChat("Check baby check!");
+        
+        switch (PigState) {
+            case Enums.PigState.PigState_WaitingForMission:
+                Game.SendChat("Waiting for mission!");
+                break;
+
+            default:
+                Game.SendChat("Couldn't read state... :(");
+                break;
+        }
+        
+        if (PigState == Enums.PigState.PigState_Flying)
+            Game.SendChat(PigState + "==" + Enums.PigState.PigState_Flying);
+        else
+            Game.SendChat(PigState + "!=" + Enums.PigState.PigState_Flying);
+    }
 
     if (PigStateName != PigState_Flying)
         return;
+
     if (objShip.Team != Ship.Team)
         return;
 }

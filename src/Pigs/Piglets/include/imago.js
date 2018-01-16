@@ -16,9 +16,11 @@ var LastDamage = (new Date).getTime();
 var AboutToDie = false;
 var TickCount = 0;
 var MinTeamPlayers = 1;
+var SecondsBeforeGameStart = 30; // Set this back to 30.0 after testing.
 
 // genesis
 function OnStateNonExistant(eStatePrevious) {
+    
 	DisplayStateTransition(eStatePrevious);
 	if (PigState_Terminated == eStatePrevious) {
 		try { Logon(); }
@@ -103,11 +105,9 @@ function OnStateMissionList(eStatePrevious) {
 	objParams.experimental = true;
 	try 
 	{ 
-		objParams.Validate();
-		
-		Trace("Here!\n");
+        objParams.Validate();
+
 		Trace("Attempting to start: " + GameName + "\n");
-		Trace("PORK!\n");
 		
 		CreateMission(ServerName,ServerAddr,objParams); 
 	}
@@ -119,10 +119,6 @@ function OnStateMissionList(eStatePrevious) {
 	AutoStartGame(objParams);
 	RoundCount++;
 }
-
-
-
-
 
 // step 3...
 function OnStateTeamList(eStatePrevious) {
@@ -177,15 +173,15 @@ function GameStartTimer_Tick()
 	TickCount++;
 	
 	if(TickCount % 60 == 0)
-		Game.SendChat("Waiting for some human snacks to join up and click on team ready. Oink.",1301); //voJustASecSound
+		Game.SendChat("Waiting for some food in the trough. Oink.",1301); //voJustASecSound
 	
 	for (var it = new Enumerator(Game.Teams); !it.atEnd(); it.moveNext())
 		if (it.item().Ships.Count < MinTeamPlayers)
 	  		return;
 		
 	Timer.Kill();
-	Game.SendChat("Good luck and have fun. I'm sure you will be delicious. Squeal.",1296); //voEveryoneReadySound
-	CreateTimer(30.0, "GameStartDelay()", -1, "GameStartTimer");
+    Game.SendChat("Some food in the trough. We'll eat in " + SecondsBeforeGameStart + " seconds. I'm sure you will be delicious. Squeal.",1296); //voEveryoneReadySound
+    CreateTimer(SecondsBeforeGameStart, "GameStartDelay()", -1, "GameStartTimer");
 }
 
 function GameStartDelay() {
@@ -263,12 +259,16 @@ function buyShipSetSkillsLaunch(safe) {
         else if (fRand >= 2) ShipSelection = "Adv Stl Fighter";
         else if (fRand >= 1) ShipSelection = "Interceptor";
         else if (fRand >= 0) ShipSelection = "Adv Fighter";
-
+        
         var realShipSelection = ShipSelection;
         if (Money && Money >= 500) {
             Trace("Money... " + Money + " \n");
             realShipSelection = "Bomber";
         }
+
+        // If you want to force the pigs to pick a certain ship, do it right here.
+        //realShipSelection = "Adv Stl Fighter";
+
         Trace("Requesting ship : " + realShipSelection + "\n");
         var iHull = SelectBestHull(objHullTypes, realShipSelection, "Fighter");
         Trace("Buying ship : " + objHullTypes(iHull).Name + "\n");

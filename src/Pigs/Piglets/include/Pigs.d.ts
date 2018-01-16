@@ -18,22 +18,45 @@
 //*/
 //var BehaviorType;
 
-enum PigState {
-    PigState_NonExistant,
-    PigState_LoggingOn,
-    PigState_LoggingOff,
-    PigState_MissionList,
-    PigState_CreatingMission,
-    PigState_JoiningMission,
-    PigState_QuittingMission,
-    PigState_TeamList,
-    PigState_JoiningTeam,
-    PigState_WaitingForMission,
-    PigState_Docked,
-    PigState_Launching,
-    PigState_Flying,
-    PigState_Terminated,
+namespace Enums {
+    enum PigState {
+        PigState_NonExistant,
+        PigState_LoggingOn,
+        PigState_LoggingOff,
+        PigState_MissionList,
+        PigState_CreatingMission,
+        PigState_JoiningMission,
+        PigState_QuittingMission,
+        PigState_TeamList,
+        PigState_JoiningTeam,
+        PigState_WaitingForMission,
+        PigState_Docked,
+        PigState_Launching,
+        PigState_Flying,
+        PigState_Terminated,
+    }
 }
+
+/**
+ * Gets the current state of the pig.
+ * 
+ * This is an enumeration value that may be set to one of:
+ * - PigState_NonExistant
+ * - PigState_LoggingOn
+ * - PigState_LoggingOff
+ * - PigState_MissionList
+ * - PigState_CreatingMission
+ * - PigState_JoiningMission
+ * - PigState_QuittingMission
+ * - PigState_TeamList
+ * - PigState_JoiningTeam
+ * - PigState_WaitingForMission
+ * - PigState_Docked
+ * - PigState_Launching
+ * - PigState_Flying
+ * - PigState_Terminated
+ */
+const PigState: Enums.PigState;
 
 
 
@@ -54,6 +77,9 @@ enum PigState {
  * - PigState_Flying
  * - PigState_Terminated
  */
-declare var PigState: PigState;
+//var Enums: object;
+
+
+
 
    
