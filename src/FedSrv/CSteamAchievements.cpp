@@ -448,7 +448,7 @@ void CSteamAchievements::UpdateCommanderStats(int opponentELO, bool win)
 		
 		numGames += 1;
 		if (playerELO > 0)
-			playerELO = playerELO / numGames;
+			playerELO = floor(playerELO / numGames);
 		else
 			playerELO = 0;
 
