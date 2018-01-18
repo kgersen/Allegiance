@@ -3229,10 +3229,15 @@ void CFSMission::ProcessGameOver()
 
   // award points for commanding
   {
-      for (SideLinkIGC* psl = m_pMission->GetSides()->first(); (psl != NULL); psl = psl->next())
+	  int winnerELO = -1;
+	  int loserELO = -1;
+	  CFSPlayer* theWinner;
+	  CFSPlayer* theLoser;
+	  for (SideLinkIGC* psl = m_pMission->GetSides()->first(); (psl != NULL); psl = psl->next())
       {
           IsideIGC* pside = psl->data();
           SideID    sideID = pside->GetObjectID();
+		  CFSPlayer* theLeader = GetLeader(sideID);
 
           PlayerScoreObject*  ppso = commander[sideID];
           if (ppso)
@@ -3250,8 +3255,35 @@ void CFSMission::ProcessGameOver()
             }
 
             ppso->SetCommanderScore(commandScore * ppso->GetTimePlayed());
+			if (ppso->GetWinner())
+			{
+				if (theLeader)
+				{
+					CSteamAchievements * pSteamAchievements = theLeader->GetSteamAchievements();
+					winnerELO = pSteamAchievements->GetCommELO();
+					theWinner = theLeader;
+
+				}
+			}
+			else
+			{
+				if (theLeader)
+				{
+					CSteamAchievements * pSteamAchievements = theLeader->GetSteamAchievements();
+					loserELO = pSteamAchievements->GetCommELO();
+					theLoser = theLeader;
+				}
+			}
+
           }
-      }
+	  }
+	  if (winnerELO != -1 && loserELO != -1) //steam comm worked
+	  {
+		  CSteamAchievements * pWinAchievements = theWinner->GetSteamAchievements();
+		  pWinAchievements->UpdateCommanderStats(loserELO, true);
+		  CSteamAchievements * pLoseAchievements = theLoser->GetSteamAchievements();
+		  pLoseAchievements->UpdateCommanderStats(winnerELO, false);
+	  }
   }
 
   //Save player scores
