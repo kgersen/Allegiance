@@ -423,7 +423,7 @@ int CSteamAchievements::GetCommELO()
 	bool getSucceed;
 	int playerELO;
 
-	getSucceed = getSucceed && GetStat(EStats::COMM_ELO, &playerELO);
+	getSucceed = GetStat(EStats::COMM_ELO, &playerELO);
 	if (getSucceed)
 		return playerELO;
 	else
