@@ -3812,7 +3812,7 @@ void BaseClient::CreateDummyShip()
     ds.sideID = NA;
     ds.name[0] = '\0';
     //ds.wingID = 0;
-    ds.pilotType = c_ptCheatPlayer;
+    ds.pilotType = c_ptPlayer;
     ds.abmOrders = 0;
     ds.nDeaths = 0;
     ds.nEjections = 0;
