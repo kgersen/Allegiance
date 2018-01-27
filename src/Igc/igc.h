@@ -5629,7 +5629,7 @@ class PlayerScoreObject
 
 		void	AddProbeSpot(void)
 		{
-			m_cProbeSpot++;
+			m_cProbeSpot=1;
 		}
 		void	SetRepair(float repair)
 		{
