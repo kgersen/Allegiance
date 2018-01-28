@@ -3954,7 +3954,7 @@ void    CshipIGC::ResetWaypoint(void)
                 case OT_ship:
                 {
                     IshipIGC* ptargetShip = (IshipIGC*)m_commandTargets[c_cmdPlan];
-                    if (ptargetShip->GetFraction < 0.001) //Exploding ship
+                    if (ptargetShip->GetFraction() < 0.001) //Exploding ship
                         o = Waypoint::c_oGoto;
                     else if (GetHullType()->HasCapability(c_habmLandOnCarrier) &&
                         ptargetShip->GetHullType()->HasCapability(c_habmCarrier))
