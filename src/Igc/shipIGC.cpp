@@ -3953,8 +3953,11 @@ void    CshipIGC::ResetWaypoint(void)
             {
                 case OT_ship:
                 {
-                    if ((GetHullType()->HasCapability(c_habmLandOnCarrier)) &&
-                        ((IshipIGC*)m_commandTargets[c_cmdPlan])->GetHullType()->HasCapability(c_habmCarrier))
+                    IshipIGC* ptargetShip = (IshipIGC*)m_commandTargets[c_cmdPlan];
+                    if (ptargetShip->GetFraction < 0.001) //Exploding ship
+                        o = Waypoint::c_oGoto;
+                    else if (GetHullType()->HasCapability(c_habmLandOnCarrier) &&
+                        ptargetShip->GetHullType()->HasCapability(c_habmCarrier))
                     {
                         o = (m_commandIDs[c_cmdPlan] == c_cidGoto) ? Waypoint::c_oEnter : Waypoint::c_oGoto;
                     }
@@ -4560,7 +4563,8 @@ HullAbilityBitMask   MyHullType::GetCapabilities(void) const
 }
 bool                 MyHullType::HasCapability(HullAbilityBitMask habm) const
 {
-    return (m_pHullData->habmCapabilities & habm) != 0;
+    ZAssert(m_pHullData);
+    return (m_pHullData && (m_pHullData->habmCapabilities & habm));
 }
 const Vector&        MyHullType::GetCockpit(void) const
 {
