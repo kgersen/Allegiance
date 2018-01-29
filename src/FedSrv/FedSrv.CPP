@@ -10890,7 +10890,7 @@ class ThingSiteImpl : public ThingSite
 												ObjectID probeID = s->GetObjectID();
 												ImodelIGC * pProbeModel = s->GetMission()->GetModel(OT_probe, probeID);
 												IprobeIGC * pProbe = (IprobeIGC*)pProbeModel;
-												if (pProbe)
+												if (pProbe && !pSpottedShip->beenSpotted())
 												{
 													IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
 													if (pProbingShip)
@@ -10911,6 +10911,14 @@ class ThingSiteImpl : public ThingSite
 												}
 											}
 										}
+										if (pSpottedShip) //mark ship as novelly spotted
+											pSpottedShip->SpotShip();
+									}
+									else if (OT_probe && pmodel->GetSide() != nullptr) //wasn't a probe but still want to mark it as a novel spot
+									{
+										ObjectID spottedID = pmodel->GetObjectID();
+										IshipIGC* pSpottedShip = pmodel->GetSide()->GetShip(spottedID);
+										pSpottedShip->SpotShip();
 									}
 
 									
@@ -10923,6 +10931,7 @@ class ThingSiteImpl : public ThingSite
 										}
 										sv.fVisible(true);
 										sv.CurrentEyed(true); //Xynth #100 7/2010
+
 									}
 									
 									if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY should be SCAN Imago 7/11/09

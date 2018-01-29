@@ -1874,6 +1874,16 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 		{
 			m_repair += repair; //Xynth amount of nanning performed by ship as a fraction of hull repaired
 		}
+
+		virtual void SpotShip(void)
+		{
+			m_hasBeenSpotted = true;
+		}
+
+		virtual bool beenSpotted(void) const
+		{
+			return m_hasBeenSpotted;
+		}
 		virtual float GetRepair(void) const
 		{
 			return m_repair;
@@ -2497,6 +2507,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         
 		float				m_repair; //Xynth amount of nanning performed by ship
 		AchievementMask		m_achievementMask;
+		bool				m_hasBeenSpotted;
 
 };
 
