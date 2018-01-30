@@ -128,7 +128,6 @@
     <ClCompile Include="..\src\engine\device3d.cpp" />
     <ClCompile Include="..\src\engine\DeviceModesDX9.cpp" />
     <ClCompile Include="..\src\engine\dinput.cpp" />
-    <ClCompile Include="..\src\engine\DX9PackFile.cpp" />
     <ClCompile Include="..\src\engine\engine.cpp" />
     <ClCompile Include="..\src\engine\engineapp.cpp" />
     <ClCompile Include="..\src\engine\enginewindow.cpp" />
@@ -176,7 +175,6 @@
     <ClInclude Include="..\src\engine\D3DDevice9.h" />
     <ClInclude Include="..\src\engine\ddstruct.h" />
     <ClInclude Include="..\src\engine\DeviceModesDX9.h" />
-    <ClInclude Include="..\src\engine\DX9PackFile.h" />
     <ClInclude Include="..\src\engine\engine.h" />
     <ClInclude Include="..\src\engine\engineapp.h" />
     <ClInclude Include="..\src\engine\enginep.h" />

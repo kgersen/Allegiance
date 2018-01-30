@@ -55,7 +55,6 @@ public:
 	virtual void SetMaxTextureSize(int dwMaxTextureSize)					= 0; //yp / imago 7/18/09
 	virtual void SetVSync(bool bEnable)										= 0; //Imago 7/18/09
 	virtual void SetAA(DWORD dwEnable)										= 0; //Imago 7/18/09
-	virtual void SetUsePack(bool bEnable)									= 0; //Imago 7/18/09
 	virtual void SetAutoGenMipMaps(bool bEnable)							= 0; //Imago 7/18/09
 	virtual void Set3DAccelerationImportant(bool b3DAccelerationImportant) = 0;
     virtual void SetFullscreen(bool bFullscreen)                           = 0;

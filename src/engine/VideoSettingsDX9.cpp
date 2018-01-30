@@ -20,7 +20,6 @@
 // NEEDS TO BE LANGUAGE DEPENDENT IF WE GET THAT FAR.
 #include "../Lang/Usa/allegiance/resource.h"
 
-#include "DX9PackFile.h"
 #include "DeviceModesDX9.h"
 #include "LogFile.h"
 
@@ -41,9 +40,6 @@ int GetMaxRate(int index); //imago 7/27/09
 INT_PTR CALLBACK ResPickerDialogProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-INT_PTR CALLBACK ProgressBarDialogProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 void SetModeData( HWND hDlg, int iCurrentDevice );
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -51,9 +47,6 @@ void SetAAData( HWND hDlg, int iCurrentDevice, int iCurrentMode, bool bWindowed 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void SetGFXSettings( HWND hwndDlg, int iMaxTextureSize, bool bAutoGenMipmaps );
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void SetDataSettings( HWND hwndDlg, bool bUseTexturePackFile );
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 int Read3DRegistrySettings( SAdditional3DRegistryData * pRegData, LPCSTR lpSubKey, CLogFile * pLogFile );
@@ -90,9 +83,6 @@ struct SVideoSettingsData
 	// Graphics settings.
 	int						iMaxTextureSize;
 	bool					bAutoGenMipmaps;
-
-	// Data settings.
-	bool					bUseTexturePackFile;
 };
 
 
@@ -128,7 +118,6 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 
 		g_VideoSettings.bWaitForVSync		= false;
 		g_VideoSettings.bAutoGenMipmaps 	= false;
-		g_VideoSettings.bUseTexturePackFile = false;
 		g_VideoSettings.multiSampleType 	= D3DMULTISAMPLE_NONE;
 		g_VideoSettings.iMaxTextureSize		= 0;
 
@@ -152,7 +141,6 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 			::RegQueryValueEx(hKey, "CombatFullscreenYSize", NULL, &dwType, (BYTE*)&y, &dwSize);
 			::RegQueryValueEx(hKey, "UseAntialiasing", NULL, &dwType, (BYTE*)&g_DX9Settings.m_dwAA, &dwSize);
 			//::RegQueryValueEx(hKey, "UseAutoMipMaps", NULL, &dwType, (BYTE*)&g_VideoSettings.bAutoGenMipmaps, &dwSize); // BT - Disable MipMaps for now - Causes animated images (explosions) to not render correctly, and also a crash when restarting the training mission after ESC -> Q when running with -training switch
-			::RegQueryValueEx(hKey, "UseTexturePack", NULL, &dwType, (BYTE*)&g_VideoSettings.bUseTexturePackFile, &dwSize);
 			::RegQueryValueEx(hKey, "UseVSync", NULL, &dwType, (BYTE*)&g_VideoSettings.bWaitForVSync, &dwSize);
 			::RegQueryValueEx(hKey, "MaxTextureSize", NULL, &dwType, (BYTE*)&g_VideoSettings.iMaxTextureSize, &dwSize);
 			//::RegQueryValueEx(hKey, "UseAnisotropic", NULL, &dwType, (BYTE*)&idummy, &dwSize); NYI
@@ -417,7 +405,6 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 	pParams->dwMaxTextureSize = 256 << g_VideoSettings.iMaxTextureSize;
 
 	// Data settings go into the engine settings object.
-	g_DX9Settings.mbUseTexturePackFiles = g_VideoSettings.bUseTexturePackFile;
 	g_DX9Settings.m_bVSync = g_VideoSettings.bWaitForVSync; //imago 7/18/09
 	g_DX9Settings.m_iMaxTextureSize = g_VideoSettings.iMaxTextureSize; //imago 7/18/09
 	g_DX9Settings.m_bAutoGenMipmaps = g_VideoSettings.bAutoGenMipmaps; //imago 7/18/09
@@ -425,12 +412,6 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, bool bRaise, int iAdapter
 
 	// Update the registry settings.
 	Write3DRegistrySettings( lpSubKey);
-
-	// Now handle pack file stuff.
-	if( g_DX9Settings.mbUseTexturePackFiles == true )
-	{
-		SetupTexturePackFile( hInstance, &szArtPath[0], "CommonTextures" );
-	}
 
 	// Tidy up.
 	if( g_VideoSettings.pDevData != NULL )
@@ -531,23 +512,6 @@ void SetGFXSettings( HWND hwndDlg, int iMaxTextureSize, bool bAutoGenMipmaps )
 	SendMessage( hControl, BM_SETCHECK, (bAutoGenMipmaps == true ) ? BST_CHECKED : BST_UNCHECKED, 0 );
 }
 
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// SetDataSettings()
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void SetDataSettings( HWND hwndDlg, bool bUseTexturePackFile )
-{
-	HWND hControl;
-
-	// Set data params.
-	hControl = GetDlgItem( hwndDlg, IDC_USETEXTUREPACK );
-	SendMessage( hControl, BM_SETCHECK, (bUseTexturePackFile == true ) ? BST_CHECKED : BST_UNCHECKED, 0 );
-}
-
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // GetModeData()
 //
@@ -603,10 +567,6 @@ bool GetModeData( HWND hDlg, bool bWriteToRegistry )
 		hControl = GetDlgItem( hDlg, IDC_MAXTEXTURESIZE );
 		g_VideoSettings.iMaxTextureSize = SendMessage( hControl, CB_GETCURSEL, 0, 0 );
 
-		// Get the data settings.
-		hControl = GetDlgItem( hDlg, IDC_USETEXTUREPACK );
-		g_VideoSettings.bUseTexturePackFile = ( SendMessage( hControl, BM_GETCHECK, 0, 0 ) == BST_CHECKED ) ? true : false;
-
 		return true;
 	}
 	return false;
@@ -661,9 +621,6 @@ INT_PTR CALLBACK ResPickerDialogProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 
 				// Set graphics settings.
 				SetGFXSettings( hwndDlg, g_VideoSettings.iMaxTextureSize, g_VideoSettings.bAutoGenMipmaps );
-
-				// Set data settings.
-				SetDataSettings( hwndDlg, g_VideoSettings.bUseTexturePackFile );
 			}
 
 			// Centre the dialog box in the middle of the desktop.
@@ -835,13 +792,6 @@ int Read3DRegistrySettings( SAdditional3DRegistryData * pRegData, LPCSTR lpSubKe
 		::RegQueryValueEx( hKey, "AutoGenMipmaps", 0, 0, 
 			(LPBYTE) &dwBoolValue, &dwDataSize );
 		g_VideoSettings.bAutoGenMipmaps = ( dwBoolValue == 0 ) ? false : true;
-		dwDataSize = 4;
-		::RegQueryValueEx( hKey, "UseTexturePackFile", 0, 0, 
-			(LPBYTE) &dwBoolValue, &dwDataSize );
-		g_VideoSettings.bUseTexturePackFile = ( dwBoolValue == 0 ) ? false : true;
-
-		pLogFile->OutputStringV( "MTS: %d   AGMIP: %d   PACK: %d\n", 
-			g_VideoSettings.iMaxTextureSize, g_VideoSettings.bAutoGenMipmaps, g_VideoSettings.bUseTexturePackFile );
 
 		iRetVal = 1;		// Read existing key.
 		RegCloseKey(hKey);
@@ -873,8 +823,7 @@ int Write3DRegistrySettings( LPCSTR lpSubKey )
 		DWORD	dwDeviceIndex = (DWORD) g_VideoSettings.iCurrentDevice,
 				dwWindowed = g_VideoSettings.bWindowed ? 1 : 0,
 				dwVSync = g_VideoSettings.bWaitForVSync ? 1 : 0,
-				dwAutoGenMipmaps = g_VideoSettings.bAutoGenMipmaps ? 1 : 0,
-				dwUseTexturePack = g_VideoSettings.bUseTexturePackFile ? 1 : 0;
+				dwAutoGenMipmaps = g_VideoSettings.bAutoGenMipmaps ? 1 : 0;
 	
 		g_VideoSettings.pDevData->GetDeviceNameByIndex( (int) dwDeviceIndex, szBuffer, 256 );
 		::RegSetValueEx(	hKey, "DeviceIndex", 0, REG_DWORD,
@@ -914,8 +863,6 @@ int Write3DRegistrySettings( LPCSTR lpSubKey )
 							(const BYTE*)  &g_VideoSettings.iMaxTextureSize, sizeof( DWORD ) );
 		::RegSetValueEx(	hKey, "AutoGenMipmaps", 0, REG_DWORD, 
 							(const BYTE*) &dwAutoGenMipmaps, sizeof( DWORD ) );
-		::RegSetValueEx(	hKey, "UseTexturePackFile", 0, REG_DWORD, 
-							(const BYTE*) &dwUseTexturePack, sizeof( DWORD ) );
 
 		RegCloseKey(hKey);
 	}
@@ -927,7 +874,6 @@ int Write3DRegistrySettings( LPCSTR lpSubKey )
 // Messy bunch of globals...
 HANDLE hPackThread = INVALID_HANDLE_VALUE;
 HWND hProgressCtrl = NULL, hDialog = NULL;
-CDX9PackFile * gPackFile = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PackCreateCallback()
@@ -946,97 +892,6 @@ void PackCreateCallback( int iCurrentFileIndex, int iMaxFileIndex )
 		SendMessage( hProgressCtrl, PBM_SETPOS, iCurrentFileIndex, 0 );
 	}
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// PackCreateThreadProc()
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////
-DWORD WINAPI PackCreateThreadProc( LPVOID param )
-{
-	CDX9PackFile * pPackFile = (CDX9PackFile*) param;
-	pPackFile->Create( PackCreateCallback );
-	return 0;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// SetupTexturePackFile()
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////
-bool SetupTexturePackFile( HINSTANCE hInstance, const char * szDataPath, const char * szPackFileName )
-{
-	bool bRetVal = true;
-	int iRetVal;
-	CDX9PackFile textures( szDataPath, szPackFileName );
-	gPackFile = &textures;
-
-	DWORD dwThreadID;
-	if( textures.Exists() == false )
-	{
-		hPackThread = CreateThread(	NULL,
-									0,
-									PackCreateThreadProc,
-									&textures,
-									CREATE_SUSPENDED,
-									&dwThreadID );
-		ZAssert( hPackThread != INVALID_HANDLE_VALUE );
-
-		// Create Dialog box, then populate with video settings.
-		iRetVal = DialogBox(	hInstance, 
-								MAKEINTRESOURCE( IDD_PROGRESSBAR ), 
-								GetDesktopWindow(), 
-								ProgressBarDialogProc );
-		if( iRetVal == IDCANCEL ) 
-		{
-			// User selected quit.
-			return false;
-		}
-	}
-	return bRetVal;
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// DialogProc()
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////
-INT_PTR CALLBACK ProgressBarDialogProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
-{
-	switch( uMsg )
-	{
-	case WM_INITDIALOG:
-		{
-			hDialog = hwndDlg;
-			hProgressCtrl = GetDlgItem( hwndDlg, IDC_PROGRESS1 );
-			ResumeThread( hPackThread );
-		}
-		break;
-
-    case WM_COMMAND: 
-        switch (LOWORD(wParam)) 
-        { 
-        case IDCANCEL: 
-			gPackFile->SetUserCancelled( true );
-			while( gPackFile->GetPackFileFinished() == false )
-			{
-				Sleep( 30 );		// Give the pack file a chance to finish up.
-			}
-            EndDialog(hwndDlg, wParam); 
-            return TRUE;
-
-		case IDOK:
-			while( gPackFile->GetPackFileFinished() == false )
-			{
-				Sleep( 30 );		// Give the pack file a chance to finish up.
-			}
-            EndDialog(hwndDlg, wParam); 
-            return TRUE;
-        }
-	}
-	return FALSE;
-}
-
 
 //Imago - 7/28/09 this function will return the adapter's Windows desktop refresh rate setting
 				// used to set the maximum refresh rate and avoid any PnP issues (thanks Sgt_Baker)

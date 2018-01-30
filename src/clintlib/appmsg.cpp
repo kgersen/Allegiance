@@ -2174,9 +2174,9 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
 #endif
 
 				// BT - STEAM
-                OnLogonAck(false, false, "The client and server data files are out of sync. Requesting a file reverification from Steam. Please check the Steam app "
+                OnLogonAck(false, false, "The client and server core files are out of sync. Requesting a file reverification from Steam. Please check the Steam app "
 				"for the download status on any updates, and try re-launching the game in a few minutes. If the problem persists, please un-install and re-install again, "
-				"and feel free to reach out to the help line in the forums.");
+				"and feel free to reach out to the help line on Discord or in the forums.");
             }
             else
             {

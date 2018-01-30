@@ -16,7 +16,6 @@
 #include "paneimage.h"
 #include "value.h"
 #include "valuetransform.h"
-#include "DX9PackFile.h"
 
 #include "FileLoader.h"
 
