@@ -66,7 +66,7 @@ namespace Training
     m_pChatCondition (0),
     m_bSkipPostSlideShow (false),
     m_commandViewEnabled(false),
-    m_killCount(43)
+    m_killCount(0)
     {
         // get the window pointer
         TrekWindow* pWindow = GetWindow ();

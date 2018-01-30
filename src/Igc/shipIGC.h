@@ -1874,6 +1874,16 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 		{
 			m_repair += repair; //Xynth amount of nanning performed by ship as a fraction of hull repaired
 		}
+
+		virtual void SpotShip(void)
+		{
+			m_hasBeenSpotted = true;
+		}
+
+		virtual bool beenSpotted(void) const
+		{
+			return m_hasBeenSpotted;
+		}
 		virtual float GetRepair(void) const
 		{
 			return m_repair;
@@ -2086,19 +2096,20 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                         cid = c_cidDefend;
                         if (m_pshipParent == NULL)
                         {
-                            if (type == OT_ship)
-                            {
-                                IhullTypeIGC*   pht = ((IshipIGC*)pmodel)->GetBaseHullType();
-                                if (pht && m_myHullType.GetHullType())
+                            if (m_myHullType.GetHullType()) {
+                                if (type == OT_ship)
                                 {
-                                    if ( (pht->HasCapability(c_habmLifepod) && m_myHullType.GetHullType()->HasCapability(c_habmRescue)) ||
-                                         (pht->HasCapability(c_habmRescue) && m_myHullType.GetHullType()->HasCapability(c_habmLifepod)) )
-                                        cid = c_cidPickup;
+                                    IhullTypeIGC*   pht = ((IshipIGC*)pmodel)->GetBaseHullType();
+                                    if (pht)
+                                    {
+                                        if ((pht->HasCapability(c_habmLifepod) && m_myHullType.GetHullType()->HasCapability(c_habmRescue)) ||
+                                            (pht->HasCapability(c_habmRescue) && m_myHullType.GetHullType()->HasCapability(c_habmLifepod)))
+                                            cid = c_cidPickup;
+                                        else if (pht->HasCapability(c_habmCarrier) && m_myHullType.GetHullType()->HasCapability(c_habmLandOnCarrier))
+                                            cid = c_cidGoto;
+                                    }
                                 }
-                            }
-                            else if (m_myHullType.GetHullType())
-                            {
-                                if (type == OT_station)
+                                else if (type == OT_station)
                                 {
                                     StationAbilityBitMask   sabm = ((IstationIGC*)pmodel)->GetStationType()->GetCapabilities();
                                     HullAbilityBitMask      habm = m_myHullType.GetCapabilities();
@@ -2513,6 +2524,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         
 		float				m_repair; //Xynth amount of nanning performed by ship
 		AchievementMask		m_achievementMask;
+		bool				m_hasBeenSpotted;
 
 };
 

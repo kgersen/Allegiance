@@ -23,7 +23,6 @@ class QuickChatNode : public IMDLObject {};
 #include <EngineSettings.h>
 #include <paneimage.h>
 #include <D3DDevice9.h>
-#include <DX9PackFile.h>
 
 #include "FileLoader.h"
 
@@ -94,6 +93,7 @@ const float g_fJoystickDeadZoneSmallest = 0.04f; //imago added 7/13/09
 const float g_fJoystickDeadZoneSmall = 0.1f;
 const float g_fJoystickDeadZoneLarge = 0.3f;
 
+
 float g_fJoystickDeadZone = g_fJoystickDeadZoneSmall;
 float g_fInverseJoystickDeadZone = g_fJoystickDeadZone - 1.0f;
 
@@ -139,23 +139,6 @@ float   GetThrottle(ImodelIGC*  pmodel)
 // Misc Helpers
 //
 //////////////////////////////////////////////////////////////////////////////
-//Imago 7/20/09
-TRef<IMessageBox> pmsgBoxPack;
-void DummyPackCreateCallback( int iCurrentFileIndex, int iMaxFileIndex )
-{
-	if (iCurrentFileIndex == -1 && iMaxFileIndex == -1) {
-		GetWindow()->GetPopupContainer()->ClosePopup(pmsgBoxPack);
-		GetWindow()->RestoreCursor();
-	}
-}
-
-DWORD WINAPI DummyPackCreateThreadProc( LPVOID param )
-{
-	ZString strArtwork = ZString(UTL::artworkPath()); //duh
-	CDX9PackFile textures(strArtwork , "CommonTextures" );
-	textures.Create( DummyPackCreateCallback );
-	return 0;
-}
 
 //Imago 7/29/09
 DWORD WINAPI DDVidCreateThreadProc( LPVOID param ) {
@@ -1235,8 +1218,9 @@ public:
 
     TRef<JoystickImage>    m_pjoystickImage;
 
-    TRef<Geo>              m_pgeoDebris;
+    TRef<Geo>        m_pgeoDebris;
     TRef<WrapGeo>          m_pwrapGeoDebris;
+	TRef<ModifiableNumber> m_debrisDensity; //LANS
     //TRef<Geo>              m_pgeoTurret;
     //TRef<MatrixTransform>  m_pmtTurret;
     TRef<WrapGeo>          m_pgeoScene;
@@ -3114,8 +3098,8 @@ public:
         //
         // put some Debris into the scene
         //
-
-        m_pgeoDebris = CreateDebrisGeo(GetModeler(), GetTime(), m_pviewport);
+		m_debrisDensity = new ModifiableNumber(atof(LoadPreference("Debris", "1.0"))); //variable debris - LANS
+        m_pgeoDebris = CreateDebrisGeo(GetModeler(), GetTime(), m_pviewport, m_debrisDensity);
 
         //
         // Command View
@@ -3139,6 +3123,11 @@ public:
                 m_pviewport,
                 true
             );
+
+		//LANS - zero out debris if option is off
+		if (m_debrisDensity->GetValue() == 0.0f) {
+			m_pwrapGeoDebris->SetGeo(Geo::GetEmpty());
+		}
 
         UpdateBidirectionalLighting();
 
@@ -3300,8 +3289,6 @@ public:
             ToggleEnvironment();
         if (!LoadPreference("Posters", TRUE))
             TogglePosters();
-        if (!LoadPreference("Debris", TRUE))
-            ToggleDebris();
         if (!LoadPreference("Stars", TRUE))
             ToggleStars();
         if (!LoadPreference("Strobes", TRUE))
@@ -4723,7 +4710,6 @@ public:
 				m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V'); //Spunky #265 backing out //Imago 7/10
 				// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 				m_pitemMaxTextureSize	= pmenu->AddMenuItem(idmMaxTextureSize,     GetMaxTextureSizeMenuString(),    					  'X');
-				m_pitemPack				= pmenu->AddMenuItem(idmPack  			  , GetPackString()                                     , 'P');
 				break;
 
 			//Imago 7/10 #187
@@ -4754,6 +4740,7 @@ public:
 
     void ToggleDebris()
     {
+		/* old stuff
         if (m_pwrapGeoDebris->GetGeo() == Geo::GetEmpty()) {
             m_pwrapGeoDebris->SetGeo(m_pgeoDebris);
             SavePreference("Debris", TRUE);
@@ -4765,6 +4752,30 @@ public:
         if (m_pitemToggleDebris != NULL) {
             m_pitemToggleDebris->SetString(GetDebrisMenuString());
         }
+		*/
+		//LANS - allow off/low/medium/high debris settings
+		//lower numbers = more debris
+		if (m_debrisDensity->GetValue() == 1.5f) { //low -> medium
+			m_debrisDensity->SetValue(1.0f);
+			SavePreference("Debris", "1.0");
+		}
+		else if (m_debrisDensity->GetValue() == 1.0f) { //medium -> high
+			m_debrisDensity->SetValue(0.8f);
+			SavePreference("Debris", "0.8");
+		}
+		else if (m_debrisDensity->GetValue() == 0.8f) { //high -> off
+			m_debrisDensity->SetValue(0.0f);
+			m_pwrapGeoDebris->SetGeo(Geo::GetEmpty());
+			SavePreference("Debris", "0");
+		}
+		else { //off -> low
+			m_debrisDensity->SetValue(1.5f);
+			m_pwrapGeoDebris->SetGeo(m_pgeoDebris);
+			SavePreference("Debris", "1.5");
+		}
+		if (m_pitemToggleDebris != NULL) {
+			m_pitemToggleDebris->SetString(GetDebrisMenuString());
+		}
     }
 
     void ToggleEnvironment()
@@ -5762,7 +5773,25 @@ public:
 
     ZString GetDebrisMenuString()
     {
-        return (m_pwrapGeoDebris->GetGeo() != Geo::GetEmpty())   ? "Debris On " : "Debris Off ";
+		//LANS - multiple debris options
+		static const ZString	c_strLow("Debris Low");
+		static const ZString	c_strMed("Debris Medium");
+		static const ZString	c_strHigh("Debris High");
+		static const ZString	c_strOff("Debris Off");
+
+		if (m_debrisDensity->GetValue() == 0.8f) {
+			return c_strHigh;
+		}
+		else if (m_debrisDensity->GetValue() == 1.0f) {
+			return c_strMed;
+		}
+		else if (m_debrisDensity->GetValue() == 1.5f) {
+			return c_strLow;
+		}
+		else {
+			return c_strOff;
+		}
+        //return (m_pwrapGeoDebris->GetGeo() != Geo::GetEmpty())   ? "Debris On " : "Debris Off ";
     }
 
     ZString GetEnvironmentMenuString()
@@ -6157,13 +6186,6 @@ public:
 		ZString strResult = (CD3DDevice9::Get()->GetDeviceSetupParams()->bAutoGenMipmap) ? "Yes" : "No";
 		return "Auto Mipmap (" + strResult + ")";
 	}
-	ZString GetPackString()
-	{
-		if (g_DX9Settings.mbUseTexturePackFiles)
-			return "Use Texture Pack (Yes)";
-		else
-			return "Use Texture Pack (No)";
-	}
 	ZString GetVsyncString()
 	{
 		ZString strResult = (CD3DDevice9::Get()->GetDeviceSetupParams()->bWaitForVSync) ? "On" : "Off";
@@ -6419,23 +6441,6 @@ public:
 					m_pitemMip->SetString(GetMipString());
 				}
 				break;
-
-			case idmPack: { //this apparently doesn't even do anything yet....but we'll let them push it anyways.
-				ZString strArtwork = ZString(UTL::artworkPath()); //duh
-				CDX9PackFile textures(strArtwork, "CommonTextures");
-				if (!textures.Exists() && !g_DX9Settings.mbUseTexturePackFiles) {
-					GetWindow()->SetWaitCursor();
-					pmsgBoxPack = CreateMessageBox("Please wait while the texture pack file is being created.", NULL, false, false);
-					GetPopupContainer()->OpenPopup(pmsgBoxPack, true);
-					CreateThread(NULL, 0, DummyPackCreateThreadProc, NULL, THREAD_PRIORITY_HIGHEST, 0);
-				}
-				GetEngine()->SetUsePack(!g_DX9Settings.mbUseTexturePackFiles);
-				SavePreference("UseTexturePack", g_DX9Settings.mbUseTexturePackFiles);
-				if (m_pitemPack != NULL) {
-					m_pitemPack->SetString(GetPackString());
-				}
-				break;
-						  }
 
 			case idmVsync:
 				//only does anything if the device is fullscreen...but we'll let them push it anyways.

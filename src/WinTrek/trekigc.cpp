@@ -4265,6 +4265,16 @@ bool WinTrekClient::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship, 
             PlayNotificationSound(salRepairedAtCarrierSound, GetShip());
             OverrideCamera(pshipCarrier);
         }
+
+        if (pship->GetAutopilot()) {
+            if (pship->GetCommandTarget(c_cmdAccepted) == (ImodelIGC*)pshipCarrier && pship->GetCommandID(c_cmdAccepted) == c_cidGoto) {
+                pship->SetCommand(c_cmdAccepted, pshipCarrier, c_cidDefend);
+                if (pship->GetPilotType() >= c_ptPlayer)
+                    pship->SetCommand(c_cmdPlan, pshipCarrier, c_cidDefend);
+            }
+            else
+                pship->SetCommand(c_cmdPlan, NULL, c_cidNone); // drones will do c_cmdAccepted
+        }
     }
     return true; 
 }

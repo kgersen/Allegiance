@@ -1135,11 +1135,13 @@ public:
 
     void AddDebris()
     {
+		TRef<ModifiableNumber> m_mdlDebrisDensity = new ModifiableNumber(1.0f);
         m_pgroupGeo->AddGeo(
             CreateDebrisGeo(
                 GetModeler(),
                 GetTime(),
-                m_pviewport
+                m_pviewport,
+				m_mdlDebrisDensity
             )
         );
     }

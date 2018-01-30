@@ -196,6 +196,7 @@ HRESULT     CshipIGC::Initialize(ImissionIGC* pMission, Time now, const void* da
     m_wingmanBehaviour = c_wbbmUseMissiles | c_wbbmRunAt60Hull;
 	m_repair = 0; //Xynth amount of nanning performed by ship
 	m_achievementMask = 0;
+	m_hasBeenSpotted = false; //Xynth if this ship has been spotted
     
 	return S_OK;
 }
@@ -3958,14 +3959,15 @@ void    CshipIGC::ResetWaypoint(void)
             {
                 case OT_ship:
                 {
-                    o = (m_commandIDs[c_cmdPlan] == c_cidPickup)
+                    if ((GetHullType()->HasCapability(c_habmLandOnCarrier)) &&
+                        ((IshipIGC*)m_commandTargets[c_cmdPlan])->GetHullType()->HasCapability(c_habmCarrier))
+                    {
+                        o = (m_commandIDs[c_cmdPlan] == c_cidGoto) ? Waypoint::c_oEnter : Waypoint::c_oGoto;
+                    }
+                    else 
+                        o = (m_commandIDs[c_cmdPlan] == c_cidPickup)
                         ? Waypoint::c_oEnter
                         : Waypoint::c_oGoto;
-                    if ((GetHullType()->GetCapabilities() & c_habmLandOnCarrier) &&
-                        (((IshipIGC*)m_commandTargets[c_cmdPlan])->GetHullType()->GetCapabilities() & c_habmCarrier))
-                    {
-                        o = Waypoint::c_oEnter;
-                    }
                 }
                 break;
 

@@ -128,7 +128,9 @@ namespace Training
                         }
                     }
                 }
-                else if (dist < minClusterTargetDRel && s->GetFraction() > 0.0f) {
+                else if (dist < minClusterTargetDRel && s->GetFraction() > 0.0f &&
+                    (GetKillCount() > 2 || s->GetPilotType() < c_ptPlayer))
+                {
                     pSameClusterTarget = s;
                     minClusterTargetDRel = (s->GetPilotType() == c_ptMiner ? dist : dist * 1.5); //prefer targeting miners
                 }
@@ -502,7 +504,7 @@ namespace Training
         CreateDroneAction* pCreateEnemy2Action = new CreateDroneAction("Enemy Fighter", enemy2ID, 315, 1, c_ptWingman); //315 == Bios Fighter
         pCreateEnemy2Action->SetCreatedLocation(2082, Vector(-170.0f, 280.0f, -30.0f));
         pCreateEnemy2Action->SetCreatedLocationAtShipID(nmyCarrierID, Vector(0.0f, -70.0f, 30.0f));
-        pCreateEnemy1Action->SetCreatedBehaviour(0);
+        pCreateEnemy2Action->SetCreatedBehaviour(0);
 
         //start spawning enemies
         {
