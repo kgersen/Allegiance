@@ -3377,8 +3377,8 @@ class IshipIGC : public IscannerIGC
 		virtual void				SetAchievementMask(AchievementMask am) = 0;
 		virtual void				ClearAchievementMask(void) = 0;
 		virtual AchievementMask		GetAchievementMask(void) const = 0;
-		virtual void				SpotShip(void) = 0;
-		virtual bool				beenSpotted(void) const = 0;
+		virtual void				MarkPreviouslySpotted(void) = 0;
+		virtual bool				PreviouslySpotted(void) const = 0;
         virtual DamageTrack*        GetDamageTrack(void) = 0;
         virtual void                CreateDamageTrack(void) = 0;
         virtual void                DeleteDamageTrack(void) = 0;
@@ -5631,7 +5631,7 @@ class PlayerScoreObject
 
 		void	AddProbeSpot(void)
 		{
-			m_cProbeSpot+=1;
+			m_cProbeSpot++;
 		}
 		void	SetRepair(float repair)
 		{

@@ -10874,65 +10874,57 @@ class ThingSiteImpl : public ThingSite
 
 								// If the thing is in scanner range
 								if (s->InScannerRange(pmodel)) {
-									//Xynth something was just seen, I want to know if it was a probe that saw it and if this was high value target
-									if (s->GetObjectType() == OT_probe && pmodel->GetSide() != nullptr)
-									{
-										ObjectID spottedID = pmodel->GetObjectID();
-										IshipIGC* pSpottedShip = pmodel->GetSide()->GetShip(spottedID);	
 
-										// Guarding against server crash.
-										if (pSpottedShip != nullptr && pSpottedShip->GetHullType() != nullptr && pSpottedShip->GetHullType()->GetData() != nullptr)
-										{
-											AssetMask am = GetAssetMask(pSpottedShip, pSpottedShip->GetHullType(), false);
-											short hvMask = c_amEnemyMiner | c_amEnemyBuilder | c_amEnemyCapital | c_amEnemyCarrier | c_amEnemyBomber | c_amEnemyAPC | c_amEnemyTeleportShip;
-											if (am & hvMask)
-											{
-												ObjectID probeID = s->GetObjectID();
-												ImodelIGC * pProbeModel = s->GetMission()->GetModel(OT_probe, probeID);
-												IprobeIGC * pProbe = (IprobeIGC*)pProbeModel;
-												if (pProbe && !pSpottedShip->beenSpotted())
-												{
-													IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
-													if (pProbingShip)
-													{
-														CFSShip* pfsShip = (CFSShip *)(pProbingShip->GetPrivateData());
-														if (pfsShip && pfsShip->IsPlayer())
-														{
-															CFSPlayer* pfsPlayer = pfsShip->GetPlayer();
-															if (pfsPlayer)
-															{
-																PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
-																if (pso)
-																	pso->AddProbeSpot();
-																pfsPlayer->GetSteamAchievements()->AwardIGCAchievements(c_achmProbeSpot);
-															}
-														}
-													}
-												}
-											}
-										}
-										if (pSpottedShip) //mark ship as novelly spotted
-											pSpottedShip->SpotShip();
-									}
-									else if (OT_probe && pmodel->GetSide() != nullptr) //wasn't a probe but still want to mark it as a novel spot
-									{
-										ObjectID spottedID = pmodel->GetObjectID();
-										IshipIGC* pSpottedShip = pmodel->GetSide()->GetShip(spottedID);
-										if (pSpottedShip != nullptr)
-											pSpottedShip->SpotShip();
-									}
-
-									
 									bool bSent = false;
                                     //See it
 									if (!pmodel->SeenBySide(pside)) {
                                     	if (!staticVisible)  //Xynth #135 7/2010
-										{											
+										{
                                     		bSent = ShowObject(pside, pmodel);
 										}
 										sv.fVisible(true);
 										sv.CurrentEyed(true); //Xynth #100 7/2010
 
+                                        //Xynth: something was just seen, I want to know if it was a probe that saw it and if this was high value target; Radulfr: You also want to turn it into a ship, so ignore if it isn't one
+                                        if (pmodel->GetObjectType() == OT_ship)
+                                        {
+                                            IshipIGC* pSpottedShip = (IshipIGC*)pmodel;
+                                            if (pSpottedShip)
+                                            {
+                                                if (s->GetObjectType() == OT_probe && pSpottedShip->GetHullType() != nullptr && pSpottedShip->GetHullType()->GetData() != nullptr)
+                                                {
+                                                    AssetMask am = GetAssetMask(pSpottedShip, pSpottedShip->GetHullType(), false);
+                                                    short hvMask = c_amEnemyMiner | c_amEnemyBuilder | c_amEnemyCapital | c_amEnemyCarrier | c_amEnemyBomber | c_amEnemyAPC | c_amEnemyTeleportShip;
+                                                    if (am & hvMask)
+                                                    {
+                                                        ObjectID probeID = s->GetObjectID();
+                                                        ImodelIGC * pProbeModel = s->GetMission()->GetModel(OT_probe, probeID);
+                                                        IprobeIGC * pProbe = (IprobeIGC*)pProbeModel;
+                                                        if (pProbe && !pSpottedShip->PreviouslySpotted())
+                                                        {
+                                                            IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
+                                                            if (pProbingShip)
+                                                            {
+                                                                CFSShip* pfsShip = (CFSShip *)(pProbingShip->GetPrivateData());
+                                                                if (pfsShip && pfsShip->IsPlayer())
+                                                                {
+                                                                    CFSPlayer* pfsPlayer = pfsShip->GetPlayer();
+                                                                    if (pfsPlayer)
+                                                                    {
+                                                                        PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
+                                                                        if (pso)
+                                                                            pso->AddProbeSpot();
+                                                                        pfsPlayer->GetSteamAchievements()->AwardIGCAchievements(c_achmProbeSpot);
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                //mark ship as previously spotted, no matter by whom
+                                                pSpottedShip->MarkPreviouslySpotted();
+                                            }
+                                        }
 									}
 									
 									if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY should be SCAN Imago 7/11/09
