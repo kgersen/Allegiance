@@ -10885,7 +10885,7 @@ class ThingSiteImpl : public ThingSite
 										sv.fVisible(true);
 										sv.CurrentEyed(true); //Xynth #100 7/2010
 
-                                        //Xynth: something was just seen, I want to know if it was a probe that saw it and if this was high value target; Radulfr: You also want to turn it into a ship, so ignore if it isn't one
+                                        //Check for spotted high value targets and award achievements/score -- Not going to work for as intended with more than 2 teams; Why does spotting with probes give points, spotting with a ship not?
                                         if (pmodel->GetObjectType() == OT_ship)
                                         {
                                             IshipIGC* pSpottedShip = (IshipIGC*)pmodel;
