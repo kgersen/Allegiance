@@ -1250,7 +1250,7 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
 			IshipIGC * pIship = ((IshipIGC*)launcher);
             float   repairFraction = -amount * dtmArmor / maxHP;
             if (GetBaseHullType() && (GetBaseHullType()->GetCapabilities() & c_habmThreatToStation))
-                repairFraction *= 2; //double points for nanning a bomber/htt
+                repairFraction *= 2.0f; //double points for nanning a bomber/htt
 			pIship->AddRepair(repairFraction);
 			pIship->SetAchievementMask(c_achmNewRepair);
 		}
