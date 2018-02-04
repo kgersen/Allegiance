@@ -10984,7 +10984,8 @@ class ThingSiteImpl : public ThingSite
 									{
 										ObjectID spottedID = pmodel->GetObjectID();
 										IshipIGC* pSpottedShip = pmodel->GetSide()->GetShip(spottedID);
-										pSpottedShip->SpotShip();
+										if(pSpottedShip != nullptr)
+											pSpottedShip->SpotShip();
 									}
 
 									
