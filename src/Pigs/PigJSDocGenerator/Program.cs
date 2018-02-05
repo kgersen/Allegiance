@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PigJSDocGenerator.Entities;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -33,11 +34,13 @@ namespace PigJSDocGenerator
             WriteJSDocHeader(streamWriterJS);
 
             StreamWriter streamWriterTS = new StreamWriter(outputTsFile, false);
-            WriteTSDocHeader(streamWriterTS);
+            WriteTSDocHeader(Path.GetFileName(inputIdlFile), streamWriterTS);
 
-            FindEnumBlocksAndWriteToFile(streamWriterJS, idlContents);
+            FindEnumBlocksAndWriteToFile(streamWriterJS, streamWriterTS, idlContents);
 
-            FindInterfaceBlocksAndWriteToFile(streamWriterTS, idlContents);
+            FindTypedefBlocksAndWriteToFile(streamWriterTS, idlContents);
+
+            FindInterfaceBlocksAndWriteToFile(streamWriterJS, streamWriterTS, idlContents);
             
             streamWriterJS.Close();
             streamWriterTS.Close();
@@ -45,16 +48,14 @@ namespace PigJSDocGenerator
             return 0;
         }
 
-        private void WriteTSDocHeader(StreamWriter streamWriterTS)
-        {
-            throw new NotImplementedException();
-        }
+       
 
-        private void FindInterfaceBlocksAndWriteToFile(StreamWriter streamWriter, string idlContents)
+        private void FindInterfaceBlocksAndWriteToFile(StreamWriter streamWriterJS, StreamWriter streamWriterTS, string idlContents)
         {
-            // (?<block>\[.*?\].*?interface.*?\{.*?\})
-            Regex interfaceFinder = new Regex(
-                  "(?<block>\\[.*?\\].*?interface.*?\\{.*?\\})",
+            // (?<block>\[.*?\]\s+(?<blocktype>((interface)|(typedef))).*?\{.*?\})
+            Regex blockFinder = new Regex(
+                  "(?<block>\\[.*?\\]\\s+(?<blocktype>((interface)|(typedef)))." +
+                  "*?\\{.*?\\})",
                 RegexOptions.IgnoreCase
                 | RegexOptions.Multiline
                 | RegexOptions.Singleline
@@ -62,10 +63,10 @@ namespace PigJSDocGenerator
                 | RegexOptions.Compiled
                 );
 
-            // \[.*?helpstring\(\"(?<helpstring>.*?)\"\).*?\].*?interface\s+(?<name>.*?)\s+.*?\{(?<lines>.*?)\}
+            // \[(?<attributes>.*?)].*?interface\s+(?<name>.*?)\s+(\:\s+(?<inherits>.*?)$)?.*?\{(?<lines>.*?)\}
             Regex elementFinder = new Regex(
-                  "\\[.*?helpstring\\(\\\"(?<helpstring>.*?)\\\"\\).*?\\].*?int" +
-                  "erface\\s+(?<name>.*?)\\s+.*?\\{(?<lines>.*?)\\}",
+                  "\\[(?<attributes>.*?)].*?interface\\s+(?<name>.*?)\\s+(\\:\\s" +
+                  "+(?<inherits>.*?)$)?.*?\\{(?<lines>.*?)\\}",
                 RegexOptions.IgnoreCase
                 | RegexOptions.Multiline
                 | RegexOptions.Singleline
@@ -73,10 +74,9 @@ namespace PigJSDocGenerator
                 | RegexOptions.Compiled
                 );
 
-            // \[propget.*?helpstring\(\"(?<helpstring>.*?)\"\).*?\].*?HRESULT(?<name>.*?)\((?<parameters>.*?)\);
-            Regex propertyFinder = new Regex(
-                  "\\[propget.*?helpstring\\(\\\"(?<helpstring>.*?)\\\"\\).*?\\]" +
-                  ".*?HRESULT(?<name>.*?)\\((?<parameters>.*?)\\);",
+            // helpstring\(\"(?<helpstring>.*?)\"\)
+            Regex helpstringFinder = new Regex(
+                  "helpstring\\(\\\"(?<helpstring>.*?)\\\"\\)",
                 RegexOptions.IgnoreCase
                 | RegexOptions.Multiline
                 | RegexOptions.Singleline
@@ -84,27 +84,637 @@ namespace PigJSDocGenerator
                 | RegexOptions.Compiled
                 );
 
-            foreach (Match enumMatch in interfaceFinder.Matches(idlContents))
+            List<Signature> signatures = new List<Signature>();
+
+            foreach (Match interfaceMatch in blockFinder.Matches(idlContents))
             {
-                Match elementMatch = elementFinder.Match(enumMatch.Groups["block"].Value);
+                if (interfaceMatch.Groups["blocktype"].Value.Equals("interface", StringComparison.InvariantCultureIgnoreCase) == false)
+                    continue;
+
+                Match elementMatch = elementFinder.Match(interfaceMatch.Groups["block"].Value);
                 if (elementMatch.Success == true)
                 {
-                    string helpstring = elementMatch.Groups["helpstring"].Value;
+                    string helpstring = String.Empty;
+
+                    Match helpstringMatch = helpstringFinder.Match(elementMatch.Groups["attributes"].Value);
+                    if(helpstringMatch.Success == true)
+                        helpstring = helpstringMatch.Groups["helpstring"].Value;
+                    
                     string name = elementMatch.Groups["name"].Value;
+                    string inherits = elementMatch.Groups["inherits"].Value.Trim();
 
-                    string[] enumLines = enumValueFinder.Matches(elementMatch.Groups["enumLines"].Value).OfType<Match>().Select(p => p.Groups["enumValue"].Value).ToArray();
+                    signatures = ParseInterfaceBlock(elementMatch.Groups["lines"].Value);
 
-                    WriteJSDocEnum(streamWriter, helpstring, enumName, enumLines);
+                    WriteTSDocInterface(streamWriterTS, helpstring, name, inherits, signatures);
+
+                    if(name.Equals("IPig") == true)
+                        WriteJSDocInterface(streamWriterJS, helpstring, name, signatures);
                 }
             }
         }
 
-        private void FindEnumBlocksAndWriteToFile(StreamWriter streamWriter, string idlContents)
+        private void WriteJSDocInterface(StreamWriter streamWriter, string helpstring, string name, List<Signature> signatures)
         {
-            // (?<enumBlock>\[.*?\].*?typedef\s+\[v1_enum\]\s+enum.*?\{.*?\})
-            Regex enumBlockFinder = new Regex(
-                  "(?<enumBlock>\\[.*?\\].*?typedef\\s+\\[v1_enum\\]\\s+enum.*?" +
-                  "\\{.*?\\})",
+            streamWriter.WriteLine(@"////////////////////////////////////////////////////////////////////////////////////////////////////");
+            streamWriter.WriteLine($"// This is the global pig object. It is created by the COM layer when the pig script is ");
+            streamWriter.WriteLine($"// loaded by PigSrv. This is your main hook into all things pig.");
+            streamWriter.WriteLine("");
+            streamWriter.WriteLine("/**");
+            streamWriter.WriteLine(" * " + helpstring);
+            streamWriter.WriteLine(" */");
+
+            streamWriter.WriteLine("var Pig = function() { };");
+            streamWriter.WriteLine("");
+
+            bool firstFunction = true;
+
+            foreach (var signature in signatures.OrderBy(p => p.IsFunction))
+            {
+                if (signature.IsFunction == true)  
+                {
+                    if (firstFunction == true)
+                    {
+                        streamWriter.WriteLine("");
+                        streamWriter.WriteLine("");
+                        firstFunction = false;
+                    }
+
+                    streamWriter.Write($"Pig.{signature.Name} = function(");
+
+                    bool isFirstParameter = true;
+                    foreach (var parameter in signature.Paramaters)
+                    {
+                        if (isFirstParameter == false)
+                            streamWriter.Write(", ");
+                        else
+                            isFirstParameter = false;
+
+                        streamWriter.Write(parameter.Name);
+                    }
+
+                    streamWriter.WriteLine(")");
+                    streamWriter.WriteLine("{");
+
+                    streamWriter.Write($"\treturn {signature.Name}(");
+
+                    isFirstParameter = true;
+                    foreach (var parameter in signature.Paramaters)
+                    {
+                        if (isFirstParameter == false)
+                            streamWriter.Write(", ");
+                        else
+                            isFirstParameter = false;
+
+                        streamWriter.Write(parameter.Name);
+                    }
+
+                    streamWriter.WriteLine(");");
+
+                    streamWriter.WriteLine("};");
+                    streamWriter.WriteLine("");
+                }
+                else if (signature.SetProperty == true || signature.GetProperty == true)
+                {
+                    streamWriter.WriteLine($"Pig.{signature.Name} = {signature.Name};");
+                }
+            }
+            streamWriter.WriteLine("");
+            streamWriter.WriteLine("");
+        }
+
+        private void WriteTSDocInterface(StreamWriter streamWriter, string helpstring, string name, string inherits, List<Signature> signatures)
+        {
+            streamWriter.WriteLine(@"////////////////////////////////////////////////////////////////////////////////////////////////////");
+            streamWriter.WriteLine($"// {name} Interface");
+            streamWriter.WriteLine("");
+            streamWriter.WriteLine("/**");
+            streamWriter.WriteLine(" * " + helpstring);
+            streamWriter.WriteLine(" */");
+            streamWriter.Write($"interface {name}");
+
+            if (String.IsNullOrWhiteSpace(inherits) == false)
+            {
+                streamWriter.Write($" extends {inherits}");
+            }
+
+            streamWriter.WriteLine("");
+
+            streamWriter.WriteLine("{");
+
+            foreach (var signature in signatures)
+            {
+                if (signature.IsFunction == true)
+                {
+                    // Helptext block.
+                    streamWriter.WriteLine("\t/**");
+                    streamWriter.WriteLine($"\t * {signature.HelpString}");
+                    streamWriter.WriteLine("\t */");
+
+                    streamWriter.Write($"\t{signature.Name}(");
+
+                    bool firstParameter = true;
+                    foreach (var parameter in signature.Paramaters)
+                    {
+                        if (firstParameter == false)
+                            streamWriter.Write(", ");
+                        else
+                            firstParameter = false;
+
+                        streamWriter.Write($"{parameter.Name}: {parameter.Type}");
+                    }
+
+                    if (String.IsNullOrWhiteSpace(signature.ReturnType) == false)
+                        streamWriter.WriteLine($"): {signature.ReturnType};");
+                    else
+                        streamWriter.WriteLine(");");
+                }
+                else if (signature.SetProperty == true || signature.GetProperty == true)
+                {
+                    // Helptext block.
+                    streamWriter.WriteLine("\t/**");
+                    streamWriter.Write("\t * ");
+
+                    if (signature.SetProperty == false)
+                        streamWriter.Write("READONLY: ");
+
+                    streamWriter.WriteLine($"{signature.HelpString}");
+                    streamWriter.WriteLine("\t */");
+
+                    // Property declaration block.
+                    streamWriter.Write("\t");
+
+                    if (signature.SetProperty == false)
+                        streamWriter.Write("readonly ");
+
+                    streamWriter.WriteLine($"{signature.Name}: {signature.ReturnType};");
+                }
+            }
+
+            streamWriter.WriteLine("}");
+            streamWriter.WriteLine("");
+
+            if (name.Equals("IPig") == true)
+            {
+                streamWriter.WriteLine("/**");
+                streamWriter.WriteLine(" * This is the global pig object. It is created by the COM layer when the pig script is loaded by PigSrv. This is your main hook into all things pig.");
+                streamWriter.WriteLine(" */");
+
+                streamWriter.WriteLine("declare const Pig: IPig;");
+                streamWriter.WriteLine("");
+                streamWriter.WriteLine("");
+            }
+        }
+
+        private List<Signature> ParseInterfaceBlock(string lines)
+        {
+            List<Signature> returnValue = new List<Signature>();
+
+            // \[(?<attribute>.*?)\]\s+HRESULT\s+(?<signature>.*?);
+            Regex signatureFinder = new Regex(
+                  "\\[(?<attribute>.*?)\\]\\s+HRESULT\\s+(?<signature>.*?);",
+                RegexOptions.IgnoreCase
+                | RegexOptions.Multiline
+                | RegexOptions.Singleline
+                | RegexOptions.CultureInvariant
+                | RegexOptions.Compiled
+                );
+
+            // helpstring\(\"(?<helpstring>.*?)\"\)
+            Regex helpstringFinder = new Regex(
+                  "helpstring\\(\\\"(?<helpstring>.*?)\\\"\\)",
+                RegexOptions.IgnoreCase
+                | RegexOptions.Multiline
+                | RegexOptions.Singleline
+                | RegexOptions.CultureInvariant
+                | RegexOptions.Compiled
+                );
+
+            // (?<name>.*?)\((?<parameters>.*?)\)$
+            Regex nameAndParametersFinder = new Regex(
+                  "(?<name>.*?)\\((?<parameters>.*?)\\)$",
+                RegexOptions.IgnoreCase
+                | RegexOptions.Singleline
+                | RegexOptions.CultureInvariant
+                | RegexOptions.Compiled
+                );
+
+            // (?<typeandattributes>.*?)\s+(?<name>[\w\*]+)(,|$)
+            Regex typeAndAttributesAndNameFinder = new Regex(
+                  "(?<typeandattributes>.*?)\\s+(?<name>[\\w\\*]+)(,|$)",
+                RegexOptions.IgnoreCase
+                | RegexOptions.Singleline
+                | RegexOptions.CultureInvariant
+                | RegexOptions.Compiled
+                );
+
+            // \[(?<attributes>.*?)\]\s+(?<type>.*?)$
+            Regex typeAndAttributesFinder = new Regex(
+                  "\\[(?<attributes>.*?)\\]\\s+(?<type>.*?)$",
+                RegexOptions.IgnoreCase
+                | RegexOptions.Multiline
+                | RegexOptions.Singleline
+                | RegexOptions.CultureInvariant
+                | RegexOptions.Compiled
+                );
+
+            //// \[(?<props>.*?)\]
+            //Regex propsFinder = new Regex(
+            //      "\\[(?<props>.*?)\\]",
+            //    RegexOptions.IgnoreCase
+            //    | RegexOptions.Singleline
+            //    | RegexOptions.CultureInvariant
+            //    | RegexOptions.Compiled
+            //    );
+
+            // (\[(?<attributes>.*?)\]\s+)?(?<type>.*?)\s+(?<name>[\w\*]+)(,|$)
+            Regex parameterParser = new Regex(
+                  "(\\[(?<attributes>.*?)\\]\\s+)?(?<type>.*?)\\s+(?<name>[\\w\\*" +
+                  "]+)(,|$)",
+                RegexOptions.IgnoreCase
+                | RegexOptions.Multiline
+                | RegexOptions.Singleline
+                | RegexOptions.CultureInvariant
+                | RegexOptions.Compiled
+                );
+
+            Regex attributeFinder = new Regex(
+                  "\\s*(?<attribute>.*?)(,|$)",
+                RegexOptions.IgnoreCase
+                | RegexOptions.Multiline
+                | RegexOptions.Singleline
+                | RegexOptions.CultureInvariant
+                | RegexOptions.Compiled
+                );
+
+            foreach (Match signatureMatch in signatureFinder.Matches(lines))
+            {
+                Signature signature = new Signature();
+
+                string attributeText = signatureMatch.Groups["attribute"].Value;
+                string signatureText = signatureMatch.Groups["signature"].Value;
+
+                Match helpstringMatch = helpstringFinder.Match(attributeText);
+                if (helpstringMatch.Success == true)
+                    signature.HelpString = helpstringMatch.Groups["helpstring"].Value;
+
+                if (attributeText.ToLower().Contains("propget") == true)
+                    signature.GetProperty = true;
+
+                if (attributeText.ToLower().Contains("propput") == true)
+                    signature.SetProperty = true;
+
+                signature.IsFunction = signature.GetProperty == false && signature.SetProperty == false;
+
+                Match nameAndParametersMatch = nameAndParametersFinder.Match(signatureText);
+                if (nameAndParametersMatch.Success == true)
+                {
+                    signature.Name = nameAndParametersMatch.Groups["name"].Value;
+
+                    //string parameters = nameAndParametersMatch.Groups["parameters"].Value;
+
+                    //foreach (Match propsMatch in propsFinder.Matches(parameters))
+                    //{
+                    //    if (propsMatch.Groups["props"].Value.Contains(",") == false)
+                    //        continue;
+
+                    //    parameters = parameters.Replace(",", "%%%");
+                    //}
+
+                    foreach (Match typeAndAttributesAndNameMatch in typeAndAttributesAndNameFinder.Matches(nameAndParametersMatch.Groups["parameters"].Value))
+                    {
+                        Parameter parameter = new Parameter();
+
+                        string typeAndAttributes = typeAndAttributesAndNameMatch.Groups["typeandattributes"].Value;
+                        parameter.Name = typeAndAttributesAndNameMatch.Groups["name"].Value.Replace("*", "");
+
+                        Match typeAndAttributesMatch = typeAndAttributesFinder.Match(typeAndAttributes);
+                        if (typeAndAttributesMatch.Success == true)
+                        {
+                            parameter.Type = FixupJavascriptType(typeAndAttributesMatch.Groups["type"].Value);
+
+                            foreach (Match attributeMatch in attributeFinder.Matches(typeAndAttributesMatch.Groups["attributes"].Value))
+                            {
+                                parameter.IsOutput |= attributeMatch.Groups["attribute"].Value.Equals("out", StringComparison.InvariantCultureIgnoreCase);
+                                parameter.IsReturnValue |= attributeMatch.Groups["attribute"].Value.Equals("retval", StringComparison.InvariantCultureIgnoreCase);
+
+                                // If the property takes in any arguments, then treat it like a method. 
+                                signature.IsFunction |= attributeMatch.Groups["attribute"].Value.Equals("in", StringComparison.InvariantCultureIgnoreCase);
+                            }
+                        }
+                        else
+                        {
+                            parameter.Type = FixupJavascriptType(typeAndAttributes);
+                            signature.IsFunction |= true;
+                        }
+
+                        if (parameter.IsReturnValue == false)
+                            signature.Paramaters.Add(parameter);
+
+                        signature.ReturnType = parameter.Type;
+
+                    }
+
+
+
+                    //foreach (Match parameterMatch in parameterParser.Matches(nameAndParametersMatch.Groups["parameters"].Value))
+                    //{
+                    //    Parameter parameter = new Parameter();
+                        
+                    //    foreach (Match attributeMatch in attributeFinder.Matches(parameterMatch.Groups["attributes"].Value))
+                    //    {
+                    //        parameter.IsOutput |= attributeMatch.Groups["attribute"].Value.Equals("out", StringComparison.InvariantCultureIgnoreCase);
+                    //        parameter.IsReturnValue |= attributeMatch.Groups["attribute"].Value.Equals("retval", StringComparison.InvariantCultureIgnoreCase);
+
+                    //        // If the property takes in any arguments, then treat it like a method. 
+                    //        signature.IsFunction |= attributeMatch.Groups["attribute"].Value.Equals("in", StringComparison.InvariantCultureIgnoreCase);
+                    //    }
+                        
+                    //    parameter.Name = parameterMatch.Groups["name"].Value;
+                    //    parameter.Type = FixupJavascriptType(parameterMatch.Groups["type"].Value);
+
+                    //    if (parameter.IsReturnValue == false)
+                    //        signature.Paramaters.Add(parameter);
+
+                    //    signature.ReturnType = parameter.Type;
+                    //}
+                }
+
+                MergeSignatureIntoSignatureList(returnValue, signature);
+            }
+
+            return returnValue;
+        }
+
+        //private List<Parameter> ParseParameters(string value)
+        //{
+        //    List<Parameter> returnValue = new List<Parameter>();
+
+        //    string prop = String.Empty;
+        //    string type = String.Empty;
+        //    string name = String.Empty;
+
+        //    string buffer = String.Empty;
+        //    bool foundType = false;
+
+        //    foreach (char c in value)
+        //    {
+        //        if (Char.IsWhiteSpace(c))
+        //            continue;
+
+        //        if(c == ',')
+        //    }
+        //}
+
+        private string FixupJavascriptType(string type)
+        {
+            string returnValue = type.Replace("*", "");
+
+            switch (returnValue)
+            {
+                case "BSTR":
+                    returnValue = "string";
+                    break;
+
+                case "VARIANT_BOOL":
+                    returnValue = "boolean";
+                    break;
+
+                case "DATE":
+                    returnValue = "Date";
+                    break;
+
+                case "short":
+                    returnValue = "number";
+                    break;
+
+                case "long":
+                    returnValue = "number";
+                    break;
+
+                case "int":
+                    returnValue = "number";
+                    break;
+
+                case "float":
+                    returnValue = "number";
+                    break;
+
+                case "FLOAT":
+                    returnValue = "number";
+                    break;
+
+                case "BYTE":
+                    returnValue = "number";
+                    break;
+
+                case "DWORD":
+                    returnValue = "number";
+                    break;
+
+                case "double":
+                    returnValue = "number";
+                    break;
+
+                case "unsigned char":
+                    returnValue = "number";
+                    break;
+
+                case "char":
+                    returnValue = "number";
+                    break;
+
+                case "REFIID":
+                    returnValue = "Guid";
+                    break;
+
+
+                case "VARIANT":
+                    returnValue = "object";
+                    break;
+
+                //case "IUnknown":
+                //    returnValue = "any";
+                //    break;
+
+                case "const void":
+                    returnValue = "object";
+                    break;
+
+                case "void":
+                    returnValue = "object";
+                    break;
+
+                case "PigState":
+                    returnValue = "Enums.PigState";
+                    break;
+
+                case "PigMapType":
+                    returnValue = "Enums.PigMapType";
+                    break;
+
+                case "PigLobbyMode":
+                    returnValue = "Enums.PigLobbyMode";
+                    break;
+
+                case "PigThrust":
+                    returnValue = "Enums.PigThrust";
+                    break;
+
+                case "AGCEventID":
+                    returnValue = "number";
+                    break;
+
+                //case "AGCEventID":
+                //    returnValue = "Enums.AGCEventID";
+                //    break;
+
+                case "AGCObjectType":
+                    returnValue = "Enums.AGCObjectType";
+                    break;
+
+                case "AGCHullAbility":
+                    returnValue = "Enums.AGCHullAbility";
+                    break;
+
+                case "AGCAsteroidAbility":
+                    returnValue = "Enums.AGCAsteroidAbility";
+                    break;
+
+                case "AGCAxis":
+                    returnValue = "Enums.AGCAxis";
+                    break;
+
+                case "AGCEquipmentType":
+                    returnValue = "Enums.AGCEquipmentType";
+                    break;
+
+                case "AGCChatTarget":
+                    returnValue = "Enums.AGCChatTarget";
+                    break;
+
+                case "AGCGameStage":
+                    returnValue = "Enums.AGCGameStage";
+                    break;
+
+                case "FileAttributes":
+                    returnValue = "Enums.FileAttributes";
+                    break;
+
+                case "AGCTreasureType":
+                    returnValue = "Enums.AGCTreasureType";
+                    break;
+                    
+            }
+
+            return returnValue;
+        }
+
+        private void MergeSignatureIntoSignatureList(List<Signature> signatures, Signature signature)
+        {
+            var existingSignature = signatures.FirstOrDefault(p => p.Name == signature.Name);
+
+            if (existingSignature != null)
+            {
+                existingSignature.GetProperty |= signature.GetProperty;
+                existingSignature.SetProperty |= signature.SetProperty;
+
+                if (String.IsNullOrWhiteSpace(existingSignature.HelpString) == true)
+                    existingSignature.HelpString = signature.HelpString;
+
+                if (String.IsNullOrWhiteSpace(existingSignature.ReturnType) == true)
+                    existingSignature.ReturnType = signature.ReturnType;
+
+                existingSignature.Paramaters.AddRange(signature.Paramaters);
+            }
+            else
+            {
+                signatures.Add(signature);
+            }
+        }
+
+        private void FindTypedefBlocksAndWriteToFile(StreamWriter tsDocStreamWriter, string idlContents)
+        {
+            // This one is different from Enum and Interface finders!
+            // (?<block>\[.*?\]\s+(?<blocktype>((interface)|(typedef))).*?;)
+            Regex blockFinder = new Regex(
+                  "(?<block>\\[.*?\\]\\s+(?<blocktype>((interface)|(typedef)))." +
+                  "*?;)",
+                RegexOptions.IgnoreCase
+                | RegexOptions.Multiline
+                | RegexOptions.Singleline
+                | RegexOptions.CultureInvariant
+                | RegexOptions.Compiled
+                );
+
+            // \[.*?helpstring\(\"(?<helpstring>.*?)\"\).*?\].*?typedef\s+(?<type>.*?)\s+(?<alias>\w+)\s*;
+            Regex enumElementFinder = new Regex(
+                  "\\[.*?helpstring\\(\\\"(?<helpstring>.*?)\\\"\\).*?\\].*?typ" +
+                  "edef\\s+(?<type>.*?)\\s+(?<alias>\\w+)\\s*;",
+                RegexOptions.IgnoreCase
+                | RegexOptions.Multiline
+                | RegexOptions.Singleline
+                | RegexOptions.CultureInvariant
+                | RegexOptions.Compiled
+                );
+
+
+            foreach (Match enumMatch in blockFinder.Matches(idlContents))
+            {
+                if (enumMatch.Groups["blocktype"].Value.Equals("typedef", StringComparison.InvariantCultureIgnoreCase) == false)
+                    continue;
+
+                // The block finding regex is also picking up [v1_enum] types, so we want to skip those.
+                if (enumMatch.Groups["block"].Value.Contains("[v1_enum]") == true)
+                    continue;
+
+                Match elementMatch = enumElementFinder.Match(enumMatch.Groups["block"].Value);
+                if (elementMatch.Success == true)
+                {
+                    string helpstring = elementMatch.Groups["helpstring"].Value;
+                    string type = FixupJavascriptType(elementMatch.Groups["type"].Value);
+                    string alias = elementMatch.Groups["alias"].Value;
+                    
+                    WriteTSDocTypeAlias(tsDocStreamWriter, helpstring, type, alias);
+                }
+            }
+            
+            tsDocStreamWriter.WriteLine("");
+            tsDocStreamWriter.WriteLine("");
+        }
+
+        private void WriteTSDocTypeAlias(StreamWriter streamWriter, string helpstring, string type, string alias)
+        {
+            streamWriter.WriteLine(@"////////////////////////////////////////////////////////////////////////////////////////////////////");
+            streamWriter.WriteLine($"// {alias} Alias");
+            streamWriter.WriteLine("");
+
+
+            streamWriter.WriteLine("\t/**");
+            streamWriter.WriteLine("\t * " + helpstring);
+            streamWriter.WriteLine("\t */");
+
+            streamWriter.WriteLine($"\ttype {alias} = {type};");
+            
+            streamWriter.WriteLine("");
+        }
+
+        private void FindEnumBlocksAndWriteToFile(StreamWriter jsDocStreamWriter, StreamWriter tsDocStreamWriter, string idlContents)
+        {
+            //// (?<enumBlock>\[.*?\].*?typedef\s+\[v1_enum\]\s+enum.*?\{.*?\})
+            //Regex enumBlockFinder = new Regex(
+            //      "(?<enumBlock>\\[.*?\\].*?typedef\\s+\\[v1_enum\\]\\s+enum.*?" +
+            //      "\\{.*?\\})",
+            //    RegexOptions.IgnoreCase
+            //    | RegexOptions.Multiline
+            //    | RegexOptions.Singleline
+            //    | RegexOptions.CultureInvariant
+            //    | RegexOptions.Compiled
+            //    );
+
+            // (?<block>\[.*?\]\s+(?<blocktype>((interface)|(typedef))).*?\{.*?\})
+            Regex blockFinder = new Regex(
+                  "(?<block>\\[.*?\\]\\s+(?<blocktype>((interface)|(typedef)))." +
+                  "*?\\{.*?\\})",
                 RegexOptions.IgnoreCase
                 | RegexOptions.Multiline
                 | RegexOptions.Singleline
@@ -133,9 +743,15 @@ namespace PigJSDocGenerator
                 | RegexOptions.Compiled
                 );
 
-            foreach (Match enumMatch in enumBlockFinder.Matches(idlContents))
+            tsDocStreamWriter.WriteLine("declare namespace Enums");
+            tsDocStreamWriter.WriteLine("{");
+
+            foreach (Match enumMatch in blockFinder.Matches(idlContents))
             {
-                Match elementMatch = enumElementFinder.Match(enumMatch.Groups["enumBlock"].Value);
+                if (enumMatch.Groups["blocktype"].Value.Equals("typedef", StringComparison.InvariantCultureIgnoreCase) == false)
+                    continue;
+
+                Match elementMatch = enumElementFinder.Match(enumMatch.Groups["block"].Value);
                 if (elementMatch.Success == true)
                 {
                     string helpstring = elementMatch.Groups["helpstring"].Value;
@@ -143,9 +759,41 @@ namespace PigJSDocGenerator
 
                     string[] enumLines = enumValueFinder.Matches(elementMatch.Groups["enumLines"].Value).OfType<Match>().Select(p => p.Groups["enumValue"].Value).ToArray();
 
-                    WriteJSDocEnum(streamWriter, helpstring, enumName, enumLines);
+                    WriteJSDocEnum(jsDocStreamWriter, helpstring, enumName, enumLines);
+                    WriteTSDocEnum(tsDocStreamWriter, helpstring, enumName, enumLines);
                 }
             }
+
+            tsDocStreamWriter.WriteLine("}");
+            tsDocStreamWriter.WriteLine("");
+            tsDocStreamWriter.WriteLine("");
+        }
+
+        private void WriteTSDocEnum(StreamWriter streamWriter, string helpstring, string enumName, string[] enumLines)
+        {
+            streamWriter.WriteLine(@"////////////////////////////////////////////////////////////////////////////////////////////////////");
+            streamWriter.WriteLine($"// {enumName} Enum");
+            streamWriter.WriteLine("");
+            
+
+            streamWriter.WriteLine("\t/**");
+            streamWriter.WriteLine("\t * " + helpstring);
+            streamWriter.WriteLine("\t */");
+            
+            streamWriter.WriteLine($"\tenum {enumName}");
+            streamWriter.WriteLine("\t\t{");
+
+            foreach (string enumLine in enumLines)
+            {
+                if (enumLine.Length == 0)
+                    continue;
+
+                streamWriter.WriteLine($"\t\t{enumLine},");
+            }
+
+            streamWriter.WriteLine("\t}");
+            
+            streamWriter.WriteLine("");
         }
 
         private void WriteJSDocEnum(StreamWriter streamWriter, string helpstring, string enumName, string[] enumLines)
@@ -153,7 +801,7 @@ namespace PigJSDocGenerator
             streamWriter.WriteLine(@"////////////////////////////////////////////////////////////////////////////////////////////////////");
             streamWriter.WriteLine($"// {enumName} Enum");
             streamWriter.WriteLine("");
-            streamWriter.WriteLine($"Com.{enumName} = function () {{ }};");
+            streamWriter.WriteLine($"Enums.{enumName} = function () {{ }};");
             streamWriter.WriteLine("");
 
             foreach (string enumLine in enumLines)
@@ -161,7 +809,31 @@ namespace PigJSDocGenerator
                 if (enumLine.Length == 0)
                     continue;
 
-                streamWriter.WriteLine($"Com.{enumName}.{enumLine} = {enumLine};");
+                streamWriter.WriteLine($"Enums.{enumName}.{enumLine} = {enumLine};");
+            }
+
+            streamWriter.WriteLine("");
+        }
+
+        private void WriteTSDocHeader(string idlFilename, StreamWriter streamWriter)
+        {
+            streamWriter.WriteLine(@"
+// ***
+// *** 
+// *** This is a generated file. Please do not modify this file by hand or your changes will be lost.
+// ***
+// ***
+
+interface IDispatch { }
+interface IDictionary { }
+interface IUnknown { }
+
+type Guid = string;
+
+");
+            if (idlFilename.Equals("AGCIDL.idl", StringComparison.InvariantCultureIgnoreCase) == true)
+            {
+                streamWriter.WriteLine("/// <reference path='AGCEventsIDL.d.ts' />");
             }
 
             streamWriter.WriteLine("");
@@ -171,18 +843,21 @@ namespace PigJSDocGenerator
         {
             streamWriter.WriteLine(@"
 // ***
-// ** 
+// *** 
 // *** This is a generated file. Please do not modify this file by hand or your changes will be lost.
 // ***
 // ***
 //
-// These values bridge COM Enums and objects defined in PigsIDL into JS compatible code that can be used for intellisense.
-// Include this .js file at the top of your .pig file. Include the .d.ts in your .js with a <reference> element to enable intellisense.
+// These values bridge COM Enums defined in IDL into JS compatible enums that can be used for intellisense.
+// These values are also available at the global level, but I'm putting them into an Enums wrapper so that 
+// intellisense from *IDL.d.ts can be used at design time, but at run time, this file is used to bridge to 
+// the real values.
 
 
-// Com is the top level namespace. All COM based objects and enums will go under this namespace. This will avoid collisions
-// from JS with global COM variables like 'PigState' which has the same name as it's enum. 
-var Com = function () { };
+// Enums is the top level namespace. All Enums will go under this namespace. This will avoid collisions
+// with global COM variables like ""PigState"" which has the same name as the enum. 
+
+var Enums = function () { };
 
 
 ");

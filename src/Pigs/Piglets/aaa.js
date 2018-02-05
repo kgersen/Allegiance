@@ -1,5 +1,5 @@
-
-/// <reference path="include/Pigs.d.ts" />  
+/// <reference path="include/AGCIDL.d.ts" />
+/// <reference path="include/PigsIDL.d.ts" />  
 /// <reference path="include/imago.js" />  
 
 
@@ -17,9 +17,9 @@ var ShipSelection = "Interceptor";
 UpdatesPerSecond = 30;
 
 function OnReceiveChat(strText, objShip) {
-
+    
     if (strText == "#check") {
-        Game.SendChat("Check baby check!");
+        Pig.Game.SendChat("Check baby check! HullTypeCount = " + Pig.HullTypes.Count);
         
         switch (PigState) {
             case Enums.PigState.PigState_WaitingForMission:
