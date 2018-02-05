@@ -10886,38 +10886,33 @@ class ThingSiteImpl : public ThingSite
 										sv.CurrentEyed(true); //Xynth #100 7/2010
 
                                         //Check for spotted high value targets and award achievements/score -- Not going to work for as intended with more than 2 teams; Why does spotting with probes give points, spotting with a ship not?
-                                        if (pmodel->GetObjectType() == OT_ship)
-                                        {
+                                        if (pmodel->GetObjectType() == OT_ship) {
                                             IshipIGC* pSpottedShip = (IshipIGC*)pmodel;
-                                            if (pSpottedShip)
-                                            {
-                                                if (s->GetObjectType() == OT_probe && pSpottedShip->GetHullType() != nullptr && pSpottedShip->GetHullType()->GetData() != nullptr)
-                                                {
-                                                    AssetMask am = GetAssetMask(pSpottedShip, pSpottedShip->GetHullType(), false);
-                                                    short hvMask = c_amEnemyMiner | c_amEnemyBuilder | c_amEnemyCapital | c_amEnemyCarrier | c_amEnemyBomber | c_amEnemyAPC | c_amEnemyTeleportShip;
-                                                    if (am & hvMask)
-                                                    {
-                                                        ObjectID probeID = s->GetObjectID();
-                                                        ImodelIGC * pProbeModel = s->GetMission()->GetModel(OT_probe, probeID);
-                                                        IprobeIGC * pProbe = (IprobeIGC*)pProbeModel;
-                                                        if (pProbe && !pSpottedShip->PreviouslySpotted())
-                                                        {
+                                            if (pSpottedShip && pSpottedShip->GetHullType()->GetData()) { // Guard for exploding ship without data
+                                                AssetMask spottedMask = GetAssetMask(pSpottedShip, pSpottedShip->GetHullType(), false);
+                                                const short hvMask = c_amEnemyMiner | c_amEnemyBuilder | c_amEnemyCapital | c_amEnemyCarrier | c_amEnemyBomber | c_amEnemyAPC | c_amEnemyTeleportShip;
+                                                if (spottedMask & hvMask) {
+                                                    if (s->GetObjectType() == OT_probe) {
+                                                        IprobeIGC* pProbe = (IprobeIGC*)s;
+                                                        if (!pSpottedShip->PreviouslySpotted()) {
                                                             IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
-                                                            if (pProbingShip)
-                                                            {
-                                                                CFSShip* pfsShip = (CFSShip *)(pProbingShip->GetPrivateData());
-                                                                if (pfsShip && pfsShip->IsPlayer())
-                                                                {
-                                                                    CFSPlayer* pfsPlayer = pfsShip->GetPlayer();
-                                                                    if (pfsPlayer)
-                                                                    {
-                                                                        PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
-                                                                        if (pso)
-                                                                            pso->AddProbeSpot();
-                                                                        pfsPlayer->GetSteamAchievements()->AwardIGCAchievements(c_achmProbeSpot);
-                                                                    }
-                                                                }
+                                                            if (pProbingShip && pProbingShip->GetPilotType() == c_ptPlayer) {
+                                                                CFSShip* pfsShip = (CFSShip*)(pProbingShip->GetPrivateData());
+                                                                PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
+                                                                debugf("Adding spotting score by probe.");
+                                                                pso->AddProbeSpot();
+                                                                if (pfsShip->IsPlayer())
+                                                                    pfsShip->GetPlayer()->GetSteamAchievements()->AwardIGCAchievements(c_achmProbeSpot);
                                                             }
+                                                        }
+                                                    }
+                                                    else if (s->GetObjectType() == OT_ship) {
+                                                        IshipIGC* spottingShip = (IshipIGC*)s;
+                                                        if (spottingShip->GetPilotType() == c_ptPlayer) {
+                                                            CFSShip* pfsShip = (CFSShip*)(spottingShip->GetPrivateData());
+                                                            PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
+                                                            debugf("Adding spotting score by ship.");
+                                                            pso->AddProbeSpot();
                                                         }
                                                     }
                                                 }
