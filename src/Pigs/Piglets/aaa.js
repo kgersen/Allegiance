@@ -15,11 +15,11 @@ var DebugSpam = true;
 var CivSelection = "Iron Coalition,Dreghklar,Belters,Rixan,Gigacorp,Bios,Ga'Taraan,Technoflux,Draconium";  //blank for Random
 var ShipSelection = "Interceptor";
 UpdatesPerSecond = 30;
-
+ 
 function OnReceiveChat(strText, objShip) {
     
     if (strText == "#check") {
-        Pig.Game.SendChat("Check baby check! HullTypeCount = " + Pig.HullTypes.Count);
+        Pig.Game.SendChat("Check baby check! HullTypeCount = " + Pig.HullTypes.Count + ", objShip.Name: " + objShip.Name);
         
         switch (PigState) {
             case Enums.PigState.PigState_WaitingForMission:

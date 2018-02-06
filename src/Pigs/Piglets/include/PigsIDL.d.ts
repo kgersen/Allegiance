@@ -9,9 +9,6 @@ interface IDispatch { }
 interface IDictionary { }
 interface IUnknown { }
 
-type Guid = string;
-
-
 
 declare namespace Enums
 {
@@ -129,7 +126,7 @@ interface IPigBehaviorType extends IDispatch
 	/**
 	 * Gets/sets the flag indicating whether or not the script has encountered an error yet.
 	 */
-	AppearsValid(bAppearsValid: boolean): boolean;
+	 AppearsValid(bAppearsValid: boolean): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -143,7 +140,7 @@ interface IPigBehaviorTypes extends ITCCollection
 	/**
 	 * Gets an item from the collection. Takes an argument, index, that is either the 0-relative index into the collection, the name of the behavior, or one of the invoke commands of the behavior.
 	 */
-	Item(pvIndex: object): IPigBehaviorType;
+	 Item(pvIndex: object): IPigBehaviorType;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -199,23 +196,23 @@ interface IPigBehaviorHost extends IDispatch
 	/**
 	 * Useful test method that beeps as specified.
 	 */
-	Beep(nFrequency: number, nDuration: number): number;
+	 Beep(nFrequency: number, nDuration: number): void;
 	/**
 	 * Creates a new pig object with the specified behavior type.
 	 */
-	CreatePig(bstrType: string, bstrCommandLine: string): IPig;
+	 CreatePig(bstrType: string, bstrCommandLine: string): IPig;
 	/**
 	 * Useful test method that echoes the specified text to the debugger output.
 	 */
-	Trace(bstrText: string): string;
+	 Trace(bstrText: string): void;
 	/**
 	 * Gets the textual name of the specified pig state.
 	 */
-	StateName(ePigState: Enums.PigState): string;
+	 StateName(ePigState: Enums.PigState): string;
 	/**
 	 * Generates a random integer between 0 and 32,767.
 	 */
-	Random(): number;
+	 Random(): number;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -261,97 +258,227 @@ interface IPigBehavior extends IDispatch
 	/**
 	 * Creates a new timer object.
 	 */
-	CreateTimer(fInterval: number, bstrEventExpression: string, nRepetitions: number, bstrName: string): IPigTimer;
+	 CreateTimer(fInterval: number, bstrEventExpression: string, nRepetitions: number, bstrName: string): IPigTimer;
 	/**
 	 * Called when this behavior becomes a pig's active behavior.
 	 */
-	OnActivate(pPigDeactived: IPigBehavior): IPigBehavior;
+	 OnActivate(pPigDeactived: IPigBehavior): void;
 	/**
 	 * Called when this behavior is deactivated as a pig's active behavior.
 	 */
-	OnDeactivate(pPigActivated: IPigBehavior): IPigBehavior;
+	 OnDeactivate(pPigActivated: IPigBehavior): void;
 	/**
 	 * Called when the state of the pig has changed to PigState_NonExistant.
 	 */
-	OnStateNonExistant(eStatePrevious: Enums.PigState): Enums.PigState;
+	 OnStateNonExistant(eStatePrevious: Enums.PigState): void;
 	/**
 	 * Called when the state of the pig has changed to PigState_LoggingOn.
 	 */
-	OnStateLoggingOn(eStatePrevious: Enums.PigState): Enums.PigState;
+	 OnStateLoggingOn(eStatePrevious: Enums.PigState): void;
 	/**
 	 * Called when the state of the pig has changed to PigState_LoggingOff.
 	 */
-	OnStateLoggingOff(eStatePrevious: Enums.PigState): Enums.PigState;
+	 OnStateLoggingOff(eStatePrevious: Enums.PigState): void;
 	/**
 	 * Called when the state of the pig has changed to PigState_MissionList.
 	 */
-	OnStateMissionList(eStatePrevious: Enums.PigState): Enums.PigState;
+	 OnStateMissionList(eStatePrevious: Enums.PigState): void;
 	/**
 	 * Called when the state of the pig has changed to PigState_CreatingMission.
 	 */
-	OnStateCreatingMission(eStatePrevious: Enums.PigState): Enums.PigState;
+	 OnStateCreatingMission(eStatePrevious: Enums.PigState): void;
 	/**
 	 * Called when the state of the pig has changed to PigState_JoiningMission.
 	 */
-	OnStateJoiningMission(eStatePrevious: Enums.PigState): Enums.PigState;
+	 OnStateJoiningMission(eStatePrevious: Enums.PigState): void;
 	/**
 	 * Called when the state of the pig has changed to PigState_QuittingMission.
 	 */
-	OnStateQuittingMission(eStatePrevious: Enums.PigState): Enums.PigState;
+	 OnStateQuittingMission(eStatePrevious: Enums.PigState): void;
 	/**
 	 * Called when the state of the pig has changed to PigState_TeamList.
 	 */
-	OnStateTeamList(eStatePrevious: Enums.PigState): Enums.PigState;
+	 OnStateTeamList(eStatePrevious: Enums.PigState): void;
 	/**
 	 * Called when the state of the pig has changed to PigState_JoiningTeam.
 	 */
-	OnStateJoiningTeam(eStatePrevious: Enums.PigState): Enums.PigState;
+	 OnStateJoiningTeam(eStatePrevious: Enums.PigState): void;
 	/**
 	 * Called when the state of the pig has changed to PigState_WaitingForMission.
 	 */
-	OnStateWaitingForMission(eStatePrevious: Enums.PigState): Enums.PigState;
+	 OnStateWaitingForMission(eStatePrevious: Enums.PigState): void;
 	/**
 	 * Called when the state of the pig has changed to PigState_Docked.
 	 */
-	OnStateDocked(eStatePrevious: Enums.PigState): Enums.PigState;
+	 OnStateDocked(eStatePrevious: Enums.PigState): void;
 	/**
 	 * Called when the state of the pig has changed to PigState_Launching.
 	 */
-	OnStateLaunching(eStatePrevious: Enums.PigState): Enums.PigState;
+	 OnStateLaunching(eStatePrevious: Enums.PigState): void;
 	/**
 	 * Called when the state of the pig has changed to PigState_Flying.
 	 */
-	OnStateFlying(eStatePrevious: Enums.PigState): Enums.PigState;
+	 OnStateFlying(eStatePrevious: Enums.PigState): void;
 	/**
 	 * Called when the state of the pig has changed to PigState_Terminated.
 	 */
-	OnStateTerminated(eStatePrevious: Enums.PigState): Enums.PigState;
+	 OnStateTerminated(eStatePrevious: Enums.PigState): void;
 	/**
 	 * Called when the Pig's current mission begins.
 	 */
-	OnMissionStarted();
+	 OnMissionStarted(): void;
 	/**
 	 * Called when the Pig receives chat text.
 	 */
-	OnReceiveChat(bstrText: string, pShipSender: IAGCShip): boolean;
+	 OnReceiveChat(bstrText: string, pShipSender: IAGCShip): boolean;
 	/**
 	 * Called when any ship takes damage.
 	 */
-	OnShipDamaged(pShip: IAGCShip, pModelLauncher: IAGCModel, fAmount: number, fLeakage: number, pVector1: IAGCVector, pVector2: IAGCVector): IAGCVector;
+	 OnShipDamaged(pShip: IAGCShip, pModelLauncher: IAGCModel, fAmount: number, fLeakage: number, pVector1: IAGCVector, pVector2: IAGCVector): void;
 	/**
 	 * Called when any ship is killed.
 	 */
-	OnShipKilled(pShip: IAGCShip, pModelLauncher: IAGCModel, fAmount: number, pVector1: IAGCVector, pVector2: IAGCVector): IAGCVector;
+	 OnShipKilled(pShip: IAGCShip, pModelLauncher: IAGCModel, fAmount: number, pVector1: IAGCVector, pVector2: IAGCVector): void;
 	/**
 	 * Called when the Pig ship is transported to a new Sector.
 	 */
-	OnSectorChange(pSectorOld: IAGCSector, pSectorNew: IAGCSector): IAGCSector;
+	 OnSectorChange(pSectorOld: IAGCSector, pSectorNew: IAGCSector): void;
 	/**
 	 * Called when the Pig ship hits an Aleph.
 	 */
-	OnAlephHit(pAleph: IAGCAleph): IAGCAleph;
+	 OnAlephHit(pAleph: IAGCAleph): void;
 }
 
+
+/**                
+ * These are global objects that are injected by COM into the javascript space. Both IPig and IPigBehavior are available, 
+ * but because you can get a Pig object from IPigBehavior, I am not going to make constants for those here. 
+ */
+
+	/**
+	 * READONLY: Gets the object that describes this class of behavior.
+	 */
+	declare const BehaviorType: IPigBehaviorType;
+	/**
+	 * READONLY: Get the behavior, if any, that serve's as the this one's base class.
+	 */
+	declare const BaseBehavior: IDispatch;
+	/**
+	 * READONLY: Gets the pig player object using this behavior instance.
+	 */
+	declare const Pig: IPig;
+	/**
+	 * READONLY: Gets the object used to access the rest of the Pigs object model.
+	 */
+	declare const Host: IPigBehaviorHost;
+	/**
+	 * READONLY: Gets the indicator of whether or not this behaior is the one currently active for the pig player object.
+	 */
+	declare const IsActive: boolean;
+	/**
+	 * READONLY: Gets the dictionary containing the behavior-defined properties.
+	 */
+	declare const Properties: IDictionary;
+	/**
+	 * READONLY: Gets the timer for which the event expression is currently executing, if any
+	 */
+	declare const Timer: IPigTimer;
+	/**
+	 * READONLY: Gets the command line text used to activate the behvaior, if any.
+	 */
+	declare const CommandLine: string;
+	/**
+	 * Creates a new timer object.
+	 */
+	function CreateTimer(fInterval: number, bstrEventExpression: string, nRepetitions: number, bstrName: string): IPigTimer { }
+	/**
+	 * Called when this behavior becomes a pig's active behavior.
+	 */
+	function OnActivate(pPigDeactived: IPigBehavior): void { }
+	/**
+	 * Called when this behavior is deactivated as a pig's active behavior.
+	 */
+	function OnDeactivate(pPigActivated: IPigBehavior): void { }
+	/**
+	 * Called when the state of the pig has changed to PigState_NonExistant.
+	 */
+	function OnStateNonExistant(eStatePrevious: Enums.PigState): void { }
+	/**
+	 * Called when the state of the pig has changed to PigState_LoggingOn.
+	 */
+	function OnStateLoggingOn(eStatePrevious: Enums.PigState): void { }
+	/**
+	 * Called when the state of the pig has changed to PigState_LoggingOff.
+	 */
+	function OnStateLoggingOff(eStatePrevious: Enums.PigState): void { }
+	/**
+	 * Called when the state of the pig has changed to PigState_MissionList.
+	 */
+	function OnStateMissionList(eStatePrevious: Enums.PigState): void { }
+	/**
+	 * Called when the state of the pig has changed to PigState_CreatingMission.
+	 */
+	function OnStateCreatingMission(eStatePrevious: Enums.PigState): void { }
+	/**
+	 * Called when the state of the pig has changed to PigState_JoiningMission.
+	 */
+	function OnStateJoiningMission(eStatePrevious: Enums.PigState): void { }
+	/**
+	 * Called when the state of the pig has changed to PigState_QuittingMission.
+	 */
+	function OnStateQuittingMission(eStatePrevious: Enums.PigState): void { }
+	/**
+	 * Called when the state of the pig has changed to PigState_TeamList.
+	 */
+	function OnStateTeamList(eStatePrevious: Enums.PigState): void { }
+	/**
+	 * Called when the state of the pig has changed to PigState_JoiningTeam.
+	 */
+	function OnStateJoiningTeam(eStatePrevious: Enums.PigState): void { }
+	/**
+	 * Called when the state of the pig has changed to PigState_WaitingForMission.
+	 */
+	function OnStateWaitingForMission(eStatePrevious: Enums.PigState): void { }
+	/**
+	 * Called when the state of the pig has changed to PigState_Docked.
+	 */
+	function OnStateDocked(eStatePrevious: Enums.PigState): void { }
+	/**
+	 * Called when the state of the pig has changed to PigState_Launching.
+	 */
+	function OnStateLaunching(eStatePrevious: Enums.PigState): void { }
+	/**
+	 * Called when the state of the pig has changed to PigState_Flying.
+	 */
+	function OnStateFlying(eStatePrevious: Enums.PigState): void { }
+	/**
+	 * Called when the state of the pig has changed to PigState_Terminated.
+	 */
+	function OnStateTerminated(eStatePrevious: Enums.PigState): void { }
+	/**
+	 * Called when the Pig's current mission begins.
+	 */
+	function OnMissionStarted(): void { }
+	/**
+	 * Called when the Pig receives chat text.
+	 */
+	function OnReceiveChat(bstrText: string, pShipSender: IAGCShip): boolean { }
+	/**
+	 * Called when any ship takes damage.
+	 */
+	function OnShipDamaged(pShip: IAGCShip, pModelLauncher: IAGCModel, fAmount: number, fLeakage: number, pVector1: IAGCVector, pVector2: IAGCVector): void { }
+	/**
+	 * Called when any ship is killed.
+	 */
+	function OnShipKilled(pShip: IAGCShip, pModelLauncher: IAGCModel, fAmount: number, pVector1: IAGCVector, pVector2: IAGCVector): void { }
+	/**
+	 * Called when the Pig ship is transported to a new Sector.
+	 */
+	function OnSectorChange(pSectorOld: IAGCSector, pSectorNew: IAGCSector): void { }
+	/**
+	 * Called when the Pig ship hits an Aleph.
+	 */
+	function OnAlephHit(pAleph: IAGCAleph): void { }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // IPigBehaviors Interface
 
@@ -373,15 +500,15 @@ interface IPigBehaviorStack extends ITCCollection
 	/**
 	 * Creates a new behavior of the specified type and pushes it onto the top of the behavior stack.
 	 */
-	Push(bstrType: string, bstrCommandLine: string): IPigBehavior;
+	 Push(bstrType: string, bstrCommandLine: string): IPigBehavior;
 	/**
 	 * Pops the top-most behavior off the stack, unless there is only one behavior remaining on the stack.
 	 */
-	Pop();
+	 Pop(): void;
 	/**
 	 * Gets a reference to a behavior on the stack without removing it from the stack.
 	 */
-	Top(nFromTop: number): IPigBehavior;
+	 Top(nFromTop: number): IPigBehavior;
 	/**
 	 * READONLY: Gets the pig object which owns this behavior stack.
 	 */
@@ -419,7 +546,7 @@ interface IPig extends IDispatch
 	/**
 	 * Gets/sets the number of times per second that the IGC layer is updated.
 	 */
-	UpdatesPerSecond(nPerSecond: number): number;
+	 UpdatesPerSecond(nPerSecond: number): void;
 	/**
 	 * READONLY: Gets the collection of hull types available to this pig.
 	 */
@@ -431,47 +558,47 @@ interface IPig extends IDispatch
 	/**
 	 * Logs on to the mission server.
 	 */
-	Logon();
+	 Logon(): void;
 	/**
 	 * Logs off from the lobby server.
 	 */
-	Logoff();
+	 Logoff(): void;
 	/**
 	 * Creates (and joins) a new mission with the specified parameters.
 	 */
-	CreateMission(bstrServerName: string, bstrServerAddr: string, pMissionParams: IPigMissionParams): IPigMissionParams;
+	 CreateMission(bstrServerName: string, bstrServerAddr: string, pMissionParams: IPigMissionParams): void;
 	/**
 	 * Joins a mission, which may be specified by name, by a buddy player, or not at all.
 	 */
-	JoinMission(bstrMissionOrPlayer: string): string;
+	 JoinMission(bstrMissionOrPlayer: string): void;
 	/**
 	 * Requests a position on a team, which may be specified by name, by a buddy player, or not at all.
 	 */
-	JoinTeam(bstrCivName: string, bstrTeamOrPlayer: string): string;
+	 JoinTeam(bstrCivName: string, bstrTeamOrPlayer: string): void;
 	/**
 	 * Quits the current game.
 	 */
-	QuitGame();
+	 QuitGame(): void;
 	/**
 	 * Undocks from the station and enters space.
 	 */
-	Launch();
+	 Launch(): void;
 	/**
 	 * Forces the pig to exit the game.
 	 */
-	Shutdown();
+	 Shutdown(): void;
 	/**
 	 * Returns true if player has game control
 	 */
-	IsMissionOwner(): BOOL;
+	 IsMissionOwner(): BOOL;
 	/**
 	 * Returns true if player is the team leader
 	 */
-	IsTeamLeader(): BOOL;
+	 IsTeamLeader(): BOOL;
 	/**
 	 * Sets the shoot, turn and goto skills
 	 */
-	SetSkills(fShoot: number, fTurn: number, fGoto: number): number;
+	 SetSkills(fShoot: number, fTurn: number, fGoto: number): void;
 	/**
 	 * READONLY: Gets the AGCGame object that the Pig is a member of, if any.
 	 */
@@ -491,62 +618,56 @@ interface IPig extends IDispatch
 	/**
 	 * Sets mission params then starts the game.
 	 */
-	StartCustomGame(pMissionParams: IPigMissionParams): IPigMissionParams;
+	 StartCustomGame(pMissionParams: IPigMissionParams): void;
 	/**
 	 * Starts the game.
 	 */
-	StartGame();
+	 StartGame(): void;
 	/**
 	 * Contains a threshold value, representing an angle in radians, to which each ship's movement is compared.
 	 */
-	ShipAngleThreshold1(rRadians: number): number;
+	 ShipAngleThreshold1(rRadians: number): void;
 	/**
 	 * Contains a threshold value, representing an angle in radians, to which each ship's movement is compared.
 	 */
-	ShipAngleThreshold2(rRadians: number): number;
+	 ShipAngleThreshold2(rRadians: number): void;
 	/**
 	 * Contains a threshold value, representing an angle in radians, to which each ship's movement is compared.
 	 */
-	ShipAngleThreshold3(rRadians: number): number;
+	 ShipAngleThreshold3(rRadians: number): void;
 	/**
 	 * Contains a threshold value, representing a distance, to which each ship's movement is compared.
 	 */
-	ShipDistanceThreshold1(rDistance: number): number;
+	 ShipDistanceThreshold1(rDistance: number): void;
 	/**
 	 * Contains a threshold value, representing a distance, to which each ship's movement is compared.
 	 */
-	ShipDistanceThreshold2(rDistance: number): number;
+	 ShipDistanceThreshold2(rDistance: number): void;
 	/**
 	 * Contains a threshold value, representing a distance, to which each ship's movement is compared.
 	 */
-	ShipDistanceThreshold3(rDistance: number): number;
+	 ShipDistanceThreshold3(rDistance: number): void;
 	/**
 	 * Contains a threshold value, representing ZTime, to which the (heavy_update_time - client_time) is compared.
 	 */
-	ShipsUpdateLatencyThreshold1(nMilliseconds: number): number;
+	 ShipsUpdateLatencyThreshold1(nMilliseconds: number): void;
 	/**
 	 * Contains a threshold value, representing ZTime, to which the (heavy_update_time - client_time) is compared.
 	 */
-	ShipsUpdateLatencyThreshold2(nMilliseconds: number): number;
+	 ShipsUpdateLatencyThreshold2(nMilliseconds: number): void;
 	/**
 	 * Contains a threshold value, representing ZTime, to which the (heavy_update_time - client_time) is compared.
 	 */
-	ShipsUpdateLatencyThreshold3(nMilliseconds: number): number;
+	 ShipsUpdateLatencyThreshold3(nMilliseconds: number): void;
 	/**
 	 * Sends the bytes specified to the connected lobby server, if any. pvBytes is either the name of a file, or a SAFEARRAY of bytes.
 	 */
-	SendBytesToLobby(pvBytes: object, bGuaranteed: boolean): boolean;
+	 SendBytesToLobby(pvBytes: object, bGuaranteed: boolean): void;
 	/**
 	 * Sends the bytes specified to the connected game server, if any. pvBytes is either the name of a file, or a SAFEARRAY of bytes.
 	 */
-	SendBytesToGame(pvBytes: object, bGuaranteed: boolean): boolean;
+	 SendBytesToGame(pvBytes: object, bGuaranteed: boolean): void;
 }
-
-/**
- * This is the global pig object. It is created by the COM layer when the pig script is loaded by PigSrv. This is your main hook into all things pig.
- */
-declare const Pig: IPig;
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // IPigs Interface
@@ -559,7 +680,7 @@ interface IPigs extends ITCCollection
 	/**
 	 * Returns an IPig* from the collection or NULL if the specified named pig does not exist in the collection. Takes an argument, index, which must be the name of a pig in the collection.
 	 */
-	Item(pvIndex: object): IPig;
+	 Item(pvIndex: object): IPig;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -585,19 +706,19 @@ interface IPigTeam extends IDispatch
 	/**
 	 * Gets the collection of players on this team.
 	 */
-	IsAutoAccept(bAutoAccept: boolean): boolean;
+	 IsAutoAccept(bAutoAccept: boolean): void;
 	/**
 	 * Gets/sets the 'ready' flag of this team.
 	 */
-	IsReady(bReady: boolean): boolean;
+	 IsReady(bReady: boolean): void;
 	/**
 	 * Gets/sets the 'force-ready' flag of this team.
 	 */
-	IsForceReady(bForceReady: boolean): boolean;
+	 IsForceReady(bForceReady: boolean): void;
 	/**
 	 * Gets/sets the 'active' flag of this team.
 	 */
-	IsActive(bActive: boolean): boolean;
+	 IsActive(bActive: boolean): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -621,71 +742,71 @@ interface IPigMissionParams extends IDispatch
 	/**
 	 * Validates the properties of the object.
 	 */
-	Validate();
+	 Validate(): void;
 	/**
 	 * Gets/sets the number of teams for the mission.
 	 */
-	TeamCount(nTeamCount: number): number;
+	 TeamCount(nTeamCount: number): void;
 	/**
 	 * Gets/sets the maximum number of players allowed on a team.
 	 */
-	MaxTeamPlayers(nMaxTeamPlayers: number): number;
+	 MaxTeamPlayers(nMaxTeamPlayers: number): void;
 	/**
 	 * Gets/sets the minimum number of players allowed on a team.
 	 */
-	MinTeamPlayers(nMinTeamPlayers: number): number;
+	 MinTeamPlayers(nMinTeamPlayers: number): void;
 	/**
 	 * Gets/sets the map type for the mission.
 	 */
-	MapType(eMapType: Enums.PigMapType): Enums.PigMapType;
+	 MapType(eMapType: Enums.PigMapType): void;
 	/**
 	 * Gets/sets the death match goal.
 	 */
-	TeamKills(nGoalTeamKills: number): number;
+	 TeamKills(nGoalTeamKills: number): void;
 	/**
 	 * Gets/sets the game name for the mission.
 	 */
-	GameName(bstrGameName: string): string;
+	 GameName(bstrGameName: string): void;
 	/**
 	 * Gets/sets the core for the mission.
 	 */
-	CoreName(bstrCoreName: string): string;
+	 CoreName(bstrCoreName: string): void;
 	/**
 	 * Gets/sets the KB Level.
 	 */
-	KillBonus(KBLevel: number): number;
+	 KillBonus(KBLevel: number): void;
 	/**
 	 * Gets/sets Defections allowed.
 	 */
-	Defections(Defections: boolean): boolean;
+	 Defections(Defections: boolean): void;
 	/**
 	 * Gets/sets the number of starting miners.
 	 */
-	Miners(Miners: number): number;
+	 Miners(Miners: number): void;
 	/**
 	 * Gets/sets Developments allowed.
 	 */
-	Developments(Developments: boolean): boolean;
+	 Developments(Developments: boolean): void;
 	/**
 	 * Gets/sets the Conquest goal.
 	 */
-	Conquest(Conquest: number): number;
+	 Conquest(Conquest: number): void;
 	/**
 	 * Gets/sets the Flags goal.
 	 */
-	Flags(Flags: number): number;
+	 Flags(Flags: number): void;
 	/**
 	 * Gets/sets the Artifacts goal.
 	 */
-	Artifacts(Artifacts: number): number;
+	 Artifacts(Artifacts: number): void;
 	/**
 	 * Gets/sets Pods allowed.
 	 */
-	Pods(Pods: boolean): boolean;
+	 Pods(Pods: boolean): void;
 	/**
 	 * Gets/sets Experimental allowed.
 	 */
-	Experimental(Experimental: boolean): boolean;
+	 Experimental(Experimental: boolean): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -699,7 +820,7 @@ interface IPigMissionParamsPrivate extends IUnknown
 	/**
 	 * Gets a stream containing the length-prefixed data structure.
 	 */
-	GetData(): IStream;
+	 GetData(): IStream;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -757,7 +878,7 @@ interface IPigSession extends IDispatch
 	/**
 	 * Gets/sets the session information object.
 	 */
-	SessionInfo(pSessionInfo: ITCSessionInfo): ITCSessionInfo;
+	 SessionInfo(pSessionInfo: ITCSessionInfo): void;
 	/**
 	 * READONLY: Gets the collection of connected sessions.
 	 */
@@ -765,11 +886,11 @@ interface IPigSession extends IDispatch
 	/**
 	 * Gets/sets the directory for script files.
 	 */
-	ScriptDir(bstrScriptDir: string): string;
+	 ScriptDir(bstrScriptDir: string): void;
 	/**
 	 * Gets/sets the directory for artwork files.
 	 */
-	ArtPath(bstrArtPath: string): string;
+	 ArtPath(bstrArtPath: string): void;
 	/**
 	 * READONLY: Gets the collection of behavior scripts.
 	 */
@@ -785,15 +906,15 @@ interface IPigSession extends IDispatch
 	/**
 	 * Creates a new pig object with the specified behavior type.
 	 */
-	CreatePig(bstrType: string, bstrCommandLine: string): IPig;
+	 CreatePig(bstrType: string, bstrCommandLine: string): IPig;
 	/**
 	 * Gets/sets the server on which all pigs will be created.
 	 */
-	MissionServer(bstrServer: string): string;
+	 MissionServer(bstrServer: string): void;
 	/**
 	 * Gets/sets maximum number of pigs that can be created on this server.
 	 */
-	MaxPigs(nMaxPigs: number): number;
+	 MaxPigs(nMaxPigs: number): void;
 	/**
 	 * READONLY: Gets the object that dispenses pig accounts.
 	 */
@@ -809,11 +930,11 @@ interface IPigSession extends IDispatch
 	/**
 	 * Enables the firing of all available events from this session.
 	 */
-	ActivateAllEvents();
+	 ActivateAllEvents(): void;
 	/**
 	 * Disables the firing of all available events from this session.
 	 */
-	DeactivateAllEvents();
+	 DeactivateAllEvents(): void;
 	/**
 	 * READONLY: Gets the event log object.
 	 */
@@ -821,19 +942,19 @@ interface IPigSession extends IDispatch
 	/**
 	 * Contains the server from which pig accounts will be dispensed. When empty, the MissionServer is used. When this property is a period character, the local machine is used.
 	 */
-	AccountServer(bstrServer: string): string;
+	 AccountServer(bstrServer: string): void;
 	/**
 	 * Contains the server on which the pig accounts will be authenticated. When empty, no authentication is performed.
 	 */
-	ZoneAuthServer(bstrServer: string): string;
+	 ZoneAuthServer(bstrServer: string): void;
 	/**
 	 * Contains the maximum amount of time allowed for authentication of pig accounts. Ignored when ZoneAuthServer is an empty string.
 	 */
-	ZoneAuthTimeout(nMilliseconds: number): number;
+	 ZoneAuthTimeout(nMilliseconds: number): void;
 	/**
 	 * Specifies the mode of lobby connection that is used for server connections. Affects the usage of the MissionServer property.
 	 */
-	LobbyMode(eMode: Enums.PigLobbyMode): Enums.PigLobbyMode;
+	 LobbyMode(eMode: Enums.PigLobbyMode): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -847,7 +968,7 @@ interface IPigSessionEvents extends IUnknown
 	/**
 	 * Called when an event is fired for this session.
 	 */
-	OnEvent(pEvent: IAGCEvent): IAGCEvent;
+	 OnEvent(pEvent: IAGCEvent): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -871,11 +992,11 @@ interface IPigTimer extends IPigEvent
 	/**
 	 * Gets/sets the number of interval occurences remaining for this timer.
 	 */
-	RepetitionCount(nRepetitionCount: number): number;
+	 RepetitionCount(nRepetitionCount: number): void;
 	/**
 	 * Gets/sets the time, in seconds, of each timer interval.
 	 */
-	Interval(fInterval: number): number;
+	 Interval(fInterval: number): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -889,115 +1010,115 @@ interface IPigShip extends IAGCShip
 	/**
 	 * Sells all parts loaded onto the ship.
 	 */
-	SellAllParts();
+	 SellAllParts(): void;
 	/**
 	 * Buys the specified hull type.
 	 */
-	BuyHull(pHullType: IAGCHullType): IAGCHullType;
+	 BuyHull(pHullType: IAGCHullType): void;
 	/**
 	 * Buys the default loadout for the current hull type.
 	 */
-	BuyDefaultLoadout();
+	 BuyDefaultLoadout(): void;
 	/**
 	 * Kills the ship.
 	 */
-	CommitSuicide(): string;
+	 CommitSuicide(): string;
 	/**
 	 * Stops all thrusting, throttling, axis turning, and action events.
 	 */
-	AllStop(): string;
+	 AllStop(): string;
 	/**
 	 * Thrusts the ship in the specified direction(s).
 	 */
-	Thrust(e1: Enums.PigThrust, e2: Enums.PigThrust, e3: Enums.PigThrust, e4: Enums.PigThrust, e5: Enums.PigThrust, e6: Enums.PigThrust, e7: Enums.PigThrust): string;
+	 Thrust(e1: Enums.PigThrust, e2: Enums.PigThrust, e3: Enums.PigThrust, e4: Enums.PigThrust, e5: Enums.PigThrust, e6: Enums.PigThrust, e7: Enums.PigThrust): string;
 	/**
 	 * Turns afterburner on/off.
 	 */
-	Boost(bOn: boolean): string;
+	 Boost(bOn: boolean): string;
 	/**
 	 * Begins/ends the firing of the active weapon.
 	 */
-	FireWeapon(bBegin: boolean): string;
+	 FireWeapon(bBegin: boolean): string;
 	/**
 	 * Begins/ends the firing of the missile launcher.
 	 */
-	FireMissile(bBegin: boolean): string;
+	 FireMissile(bBegin: boolean): string;
 	/**
 	 * Begins/ends the dropping of mines (or probes).
 	 */
-	DropMine(bBegin: boolean): string;
+	 DropMine(bBegin: boolean): string;
 	/**
 	 * Activates/deactivates the vector lock.
 	 */
-	LockVector(bLockVector: boolean): string;
+	 LockVector(bLockVector: boolean): string;
 	/**
 	 * Activates/deactivates the rip cording action.
 	 */
-	RipCord(pvParam: object): string;
+	 RipCord(pvParam: object): string;
 	/**
 	 * Cloaks/decloaks the ship.
 	 */
-	Cloak(bCloak: boolean): string;
+	 Cloak(bCloak: boolean): string;
 	/**
 	 * Accepts the queued command.
 	 */
-	AcceptCommand(): string;
+	 AcceptCommand(): string;
 	/**
 	 * Clears the accepted command.
 	 */
-	ClearCommand(): string;
+	 ClearCommand(): string;
 	/**
 	 * Turns the ship the specified number of positive degrees upward.
 	 */
-	PitchUp(fDegrees: number): string;
+	 PitchUp(fDegrees: number): string;
 	/**
 	 * Turns the ship the specified number of positive degrees downward.
 	 */
-	PitchDown(fDegrees: number): string;
+	 PitchDown(fDegrees: number): string;
 	/**
 	 * Turns the ship the specified number of positive degrees to the left.
 	 */
-	YawLeft(fDegrees: number): string;
+	 YawLeft(fDegrees: number): string;
 	/**
 	 * Turns the ship the specified number of positive degrees to the right.
 	 */
-	YawRight(fDegrees: number): string;
+	 YawRight(fDegrees: number): string;
 	/**
 	 * Rolls the ship the specified number of positive degrees to the left
 	 */
-	RollLeft(fDegrees: number): string;
+	 RollLeft(fDegrees: number): string;
 	/**
 	 * Rolls the ship the specified number of positive degrees to the right.
 	 */
-	RollRight(fDegrees: number): string;
+	 RollRight(fDegrees: number): string;
 	/**
 	 * Turns the ship to face the vector, specified by either an object name (VT_BSTR) or an IAGCVector* or IAGCModel* (VT_DISPATCH).
 	 */
-	Face(pvarObject: object, bstrCompletionExpr: string, bstrInterruptionExpr: string, bMatchUpVector: boolean): string;
+	 Face(pvarObject: object, bstrCompletionExpr: string, bstrInterruptionExpr: string, bMatchUpVector: boolean): string;
 	/**
 	 * Defends the specified target.
 	 */
-	Defend(bstrObject: string): string;
+	 Defend(bstrObject: string): string;
 	/**
 	 * Attacks the specified target ship.
 	 */
-	AttackShip(pTarget: IAGCShip): string;
+	 AttackShip(pTarget: IAGCShip): string;
 	/**
 	 * Attacks the specified target station.
 	 */
-	AttackStation(pTarget: IAGCStation): string;
+	 AttackStation(pTarget: IAGCStation): string;
 	/**
 	 * Goto the specified target.
 	 */
-	Goto(bstrObject: string, bFriendly: boolean): string;
+	 Goto(bstrObject: string, bFriendly: boolean): string;
 	/**
 	 * Goto the specified station ID.
 	 */
-	GotoStationID(oid: number): string;
+	 GotoStationID(oid: number): string;
 	/**
 	 * Gets/sets the AutoPilot state.
 	 */
-	AutoPilot(bEngage: boolean): boolean;
+	 AutoPilot(bEngage: boolean): void;
 	/**
 	 * READONLY: Gets the Pig Ship action event object for this ship.
 	 */
@@ -1005,11 +1126,11 @@ interface IPigShip extends IAGCShip
 	/**
 	 * Indicates whether the ship is thrusting in the specified direction.
 	 */
-	IsThrusting(eThrust: Enums.PigThrust): boolean;
+	 IsThrusting(eThrust: Enums.PigThrust): boolean;
 	/**
 	 * Gets/sets the weapon that is active. This must be 0 thru 3, or -1 for the default of 'all weapons'.
 	 */
-	ActiveWeapon(iWeapon: number): number;
+	 ActiveWeapon(iWeapon: number): void;
 	/**
 	 * READONLY: Indicates whether the ship is firing the active weapon.
 	 */
@@ -1045,19 +1166,19 @@ interface IPigShip extends IAGCShip
 	/**
 	 * Gets/sets the ship's throttle. The valid range is 0 to 100.
 	 */
-	Throttle(fThrottle: number): number;
+	 Throttle(fThrottle: number): void;
 	/**
 	 * Gets/sets the ship's pitch speed. The valid range is -100 to 100.
 	 */
-	Pitch(fPitch: number): number;
+	 Pitch(fPitch: number): void;
 	/**
 	 * Gets/sets the ship's yaw speed. The valid range is -100 to 100.
 	 */
-	Yaw(fYaw: number): number;
+	 Yaw(fYaw: number): void;
 	/**
 	 * Gets/sets the ship's roll speed. The valid range is -100 to 100.
 	 */
-	Roll(fRoll: number): number;
+	 Roll(fRoll: number): void;
 	/**
 	 * READONLY: Gets the queued command.
 	 */
@@ -1069,7 +1190,7 @@ interface IPigShip extends IAGCShip
 	/**
 	 * Gets/sets whether the ship automatically accepts queued commands.
 	 */
-	AutoAcceptCommands(bAutoAccept: boolean): boolean;
+	 AutoAcceptCommands(bAutoAccept: boolean): void;
 	/**
 	 * READONLY: Gets the amount of time left until the ripcordind action completes.
 	 */
@@ -1105,19 +1226,19 @@ interface IPigVector extends IDispatch
 	/**
 	 * Gets/sets the x coordinate of the vector.
 	 */
-	X(xArg: number): number;
+	 X(xArg: number): void;
 	/**
 	 * Gets/sets the y coordinate of the vector.
 	 */
-	Y(yArg: number): number;
+	 Y(yArg: number): void;
 	/**
 	 * Gets/sets the z coordinate of the vector.
 	 */
-	Z(zArg: number): number;
+	 Z(zArg: number): void;
 	/**
 	 * Sets the x, y, and z coordinates of the vector.
 	 */
-	SetXYZ(xArg: number, yArg: number, zArg: number): number;
+	 SetXYZ(xArg: number, yArg: number, zArg: number): void;
 	/**
 	 * READONLY: Gets the displayable string representation of the vector.
 	 */
@@ -1183,6 +1304,6 @@ interface IPigHullTypes extends ITCCollection
 	/**
 	 * Returns an IAGCHullType* from the collection or NULL if the specified named hull type does not exist in the collection. Takes an argument, index, which must be either the name of a hull type in the collection or a 0-based index into the collection.
 	 */
-	Item(pvIndex: object): IAGCHullType;
+	 Item(pvIndex: object): IAGCHullType;
 }
 

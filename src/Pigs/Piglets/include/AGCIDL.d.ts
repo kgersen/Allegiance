@@ -9,20 +9,18 @@ interface IDispatch { }
 interface IDictionary { }
 interface IUnknown { }
 
+
 type Guid = string;
-
-
-/// <reference path='AGCEventsIDL.d.ts' />
 
 declare namespace Enums
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// AGCObjectType      // IGC's ObjectType Enum
+// AGCObjectType Enum
 
 	/**
 	 * AGCUniqueID type.
 	 */
-	enum AGCObjectType      // IGC's ObjectType
+	enum AGCObjectType
 		{
 		AGCObjectType_Invalid,
 		AGC_ModelBegin,
@@ -76,12 +74,12 @@ declare namespace Enums
 	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// AGCHullAbility     // IGC's HullAbilityBitMask Enum
+// AGCHullAbility Enum
 
 	/**
 	 * Constants for the AGCHullAbilityBitMask type.
 	 */
-	enum AGCHullAbility     // IGC's HullAbilityBitMask
+	enum AGCHullAbility
 		{
 		AGCHullAbility_Board,
 		AGCHullAbility_Rescue,
@@ -95,12 +93,12 @@ declare namespace Enums
 	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// AGCAsteroidAbility // IGC's AsteroidAbilityBitMask Enum
+// AGCAsteroidAbility Enum
 
 	/**
 	 * Constants for the AGCAsteroidAbilityBitMask type.
 	 */
-	enum AGCAsteroidAbility // IGC's AsteroidAbilityBitMask
+	enum AGCAsteroidAbility
 		{
 		AGCAsteroidAbility_MineHe3,
 		AGCAsteroidAbility_MineIce,
@@ -110,12 +108,12 @@ declare namespace Enums
 	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// AGCAxis            // IGC's Axis Enum
+// AGCAxis Enum
 
 	/**
 	 * Constants for AGCAxis.
 	 */
-	enum AGCAxis            // IGC's Axis
+	enum AGCAxis
 		{
 		AGCAxis_Yaw,
 		AGCAxis_Pitch,
@@ -125,12 +123,12 @@ declare namespace Enums
 	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// AGCEquipmentType   // IGC's EquipmentType Enum
+// AGCEquipmentType Enum
 
 	/**
 	 * Constants for AGCEquipmentType.
 	 */
-	enum AGCEquipmentType   // IGC's EquipmentType
+	enum AGCEquipmentType
 		{
 		AGCEquipmentType_ChaffLauncher,
 		AGCEquipmentType_Weapon,
@@ -144,24 +142,24 @@ declare namespace Enums
 	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// AGCTreasureType    // IGC's TreasureCode Enum
+// AGCTreasureType Enum
 
 	/**
 	 * Constants for AGCTreasureType.
 	 */
-	enum AGCTreasureType    // IGC's TreasureCode
+	enum AGCTreasureType
 		{
 		AGCTreasureType_Part,
 		AGCTreasureType_Development,
 	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// AGCChatTarget      // IGC's ChatTarget Enum
+// AGCChatTarget Enum
 
 	/**
 	 * Constants for AGCChatTarget.
 	 */
-	enum AGCChatTarget      // IGC's ChatTarget
+	enum AGCChatTarget
 		{
 		AGCChat_Everyone,
 		AGCChat_Leaders,
@@ -182,12 +180,12 @@ declare namespace Enums
 	}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// AGCGameStage    // IGC's STAGE Enum
+// AGCGameStage Enum
 
 	/**
 	 * Constants for AGCGameStage.
 	 */
-	enum AGCGameStage    // IGC's STAGE
+	enum AGCGameStage
 		{
 		AGCGameStage_NotStarted,
 		AGCGameStage_Starting,
@@ -316,7 +314,7 @@ interface IAGCEventSink extends IUnknown
 	/**
 	 * Called when an AGC event has been triggered.
 	 */
-	OnEventTriggered(pEvent: IAGCEvent): IAGCEvent;
+	 OnEventTriggered(pEvent: IAGCEvent): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -330,7 +328,7 @@ interface IAGCEventSinkSynchronous extends IUnknown
 	/**
 	 * Called when an AGC event has been triggered.
 	 */
-	OnEventTriggeredSynchronous(pEvent: IAGCEvent): IAGCEvent;
+	 OnEventTriggeredSynchronous(pEvent: IAGCEvent): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -354,23 +352,23 @@ interface IAGCGlobal extends IUnknown
 	/**
 	 * Registers the function that is called to create the object that suports the specified interface
 	 */
-	GetAGCObject(pvIgc: object, riid: Guid, ppUnk: object): object;
+	 GetAGCObject(pvIgc: object, riid: Guid, ppUnk: object): void;
 	/**
 	 * Adds a mapping of an Igc object pointer to an AGC object.
 	 */
-	MakeAGCEvent(idEvent: Enums.AGCEventID, pszContext: LPCSTR, pszSubject: LPCOLESTR, idSubject: AGCUniqueID, cArgTriplets: number, pvArgs: object): IAGCEvent;
+	 MakeAGCEvent(idEvent: number, pszContext: string, pszSubject: string, idSubject: AGCUniqueID, cArgTriplets: number, pvArgs: object): IAGCEvent;
 	/**
 	 * Sets the ranges of event ID's available from the host application.
 	 */
-	MakeAGCVector(pVectorRaw: object): IAGCVector;
+	 MakeAGCVector(pVectorRaw: object): IAGCVector;
 	/**
 	 * Creates an AGCOrientation object, initialized with the specified raw ZLib orientation.
 	 */
-	MakeAGCOrientation(pOrientationRaw: object): IAGCOrientation;
+	 MakeAGCOrientation(pOrientationRaw: object): IAGCOrientation;
 	/**
 	 * Creates an AGCEventIDRange object, initialized with the specified values.
 	 */
-	MakeAGCEventIDRange(lower: Enums.AGCEventID, upper: Enums.AGCEventID): IAGCEventIDRange;
+	 MakeAGCEventIDRange(lower: number, upper: number): IAGCEventIDRange;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -384,35 +382,35 @@ interface IAGCVector extends IDispatch
 	/**
 	 * Gets/sets the x coordinate of the vector.
 	 */
-	X(xArg: number): number;
+	 X(xArg: number): void;
 	/**
 	 * Gets/sets the y coordinate of the vector.
 	 */
-	Y(yArg: number): number;
+	 Y(yArg: number): void;
 	/**
 	 * Gets/sets the z coordinate of the vector.
 	 */
-	Z(zArg: number): number;
+	 Z(zArg: number): void;
 	/**
 	 * Gets/sets the displayable string representation of the vector.
 	 */
-	DisplayString(bstrDisplayString: string): string;
+	 DisplayString(bstrDisplayString: string): void;
 	/**
 	 * Initializes the object with the specified x, y, and z values.
 	 */
-	InitXYZ(xArg: number, yArg: number, zArg: number): number;
+	 InitXYZ(xArg: number, yArg: number, zArg: number): void;
 	/**
 	 * Initializes the object by copying the specified vector's x, y, and z values.
 	 */
-	InitCopy(pVector: IAGCVector): IAGCVector;
+	 InitCopy(pVector: IAGCVector): void;
 	/**
 	 * Initializes the object with a random direction.
 	 */
-	InitRandomDirection();
+	 InitRandomDirection(): void;
 	/**
 	 * Initializes the object with a random position.
 	 */
-	InitRandomPosition(fRadius: number): number;
+	 InitRandomPosition(fRadius: number): void;
 	/**
 	 * READONLY: Compares the object to a zero vector.
 	 */
@@ -420,7 +418,7 @@ interface IAGCVector extends IDispatch
 	/**
 	 * Compares the object to the specified vector.
 	 */
-	IsEqual(pVector: IAGCVector): boolean;
+	 IsEqual(pVector: IAGCVector): boolean;
 	/**
 	 * READONLY: Computes the length of the object from a zero vector.
 	 */
@@ -436,59 +434,59 @@ interface IAGCVector extends IDispatch
 	/**
 	 * Computes the sum of the object and the specified vector. Does not modify the object.
 	 */
-	Add(pVector: IAGCVector): IAGCVector;
+	 Add(pVector: IAGCVector): IAGCVector;
 	/**
 	 * Computes the difference of the object and the specified vector. Does not modify the object.
 	 */
-	Subtract(pVector: IAGCVector): IAGCVector;
+	 Subtract(pVector: IAGCVector): IAGCVector;
 	/**
 	 * Computes the product of the object and the specified multiplier value. Does not modify the object.
 	 */
-	Multiply(f: number): IAGCVector;
+	 Multiply(f: number): IAGCVector;
 	/**
 	 * Computes the quotient of the object and the specified divisor value. Does not modify the object.
 	 */
-	Divide(f: number): IAGCVector;
+	 Divide(f: number): IAGCVector;
 	/**
 	 * Computes the normalized vector of the object. Does not modify the object.
 	 */
-	Normalize(): IAGCVector;
+	 Normalize(): IAGCVector;
 	/**
 	 * Computes the cross product of the object and the specified vector. Does not modify the object.
 	 */
-	CrossProduct(pVector: IAGCVector): IAGCVector;
+	 CrossProduct(pVector: IAGCVector): IAGCVector;
 	/**
 	 * Computes an interpolation of the object with the specified vector. Does not modify the object.
 	 */
-	Interpolate(pVector: IAGCVector, fValue: number): IAGCVector;
+	 Interpolate(pVector: IAGCVector, fValue: number): IAGCVector;
 	/**
 	 * Computes the sum of the object and the specified vector, with the result being stored in the object.
 	 */
-	AddInPlace(pVector: IAGCVector): IAGCVector;
+	 AddInPlace(pVector: IAGCVector): void;
 	/**
 	 * Computes the difference of the object and the specified vector, with the result being stored in the object.
 	 */
-	SubtractInPlace(pVector: IAGCVector): IAGCVector;
+	 SubtractInPlace(pVector: IAGCVector): void;
 	/**
 	 * Computes the product of the object and the specified multiplier value, with the result being stored in the object.
 	 */
-	MultiplyInPlace(f: number): number;
+	 MultiplyInPlace(f: number): void;
 	/**
 	 * Computes the quotient of the object and the specified divisor value, with the result being stored in the object.
 	 */
-	DivideInPlace(f: number): number;
+	 DivideInPlace(f: number): void;
 	/**
 	 * Computes the normalized vector of the object, with the result being stored in the object.
 	 */
-	NormalizeInPlace();
+	 NormalizeInPlace(): void;
 	/**
 	 * Computes the cross product of the object and the specified vector, with the result being stored in the object.
 	 */
-	CrossProductInPlace(pVector: IAGCVector): IAGCVector;
+	 CrossProductInPlace(pVector: IAGCVector): void;
 	/**
 	 * Computes an interpolation of the object with the specified vector, with the result being stored in the object.
 	 */
-	InterpolateInPlace(pVector: IAGCVector, fValue: number): number;
+	 InterpolateInPlace(pVector: IAGCVector, fValue: number): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -502,11 +500,11 @@ interface IAGCVectorPrivate extends IUnknown
 	/**
 	 * Initializes the object from a raw (ZLib/IGC) Vector pointer.
 	 */
-	InitFromVector(pvVector: object): object;
+	 InitFromVector(pvVector: object): void;
 	/**
 	 * Copies the object's raw (ZLib/IGC) Vector to the specified Vector pointer.
 	 */
-	CopyVectorTo(pvVector: object): object;
+	 CopyVectorTo(pvVector: object): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -520,7 +518,7 @@ interface IAGCOrientation extends IDispatch
 	/**
 	 * Initializes the object by copying the specified object.
 	 */
-	InitCopy(pOrientation: IAGCOrientation): IAGCOrientation;
+	 InitCopy(pOrientation: IAGCOrientation): void;
 	/**
 	 * READONLY: Gets the Forward vector of the orientation matrix.
 	 */
@@ -540,11 +538,11 @@ interface IAGCOrientation extends IDispatch
 	/**
 	 * Compares the object to the specified object for absolute equality.
 	 */
-	IsEqual(pOrientation: IAGCOrientation): boolean;
+	 IsEqual(pOrientation: IAGCOrientation): boolean;
 	/**
 	 * Compares the object to the specified object for 'fuzzy' equality.
 	 */
-	IsRoughlyEqual(pOrientation: IAGCOrientation): boolean;
+	 IsRoughlyEqual(pOrientation: IAGCOrientation): boolean;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -558,11 +556,11 @@ interface IAGCOrientationPrivate extends IUnknown
 	/**
 	 * Initializes the object from a raw (ZLib/IGC) Orientation pointer.
 	 */
-	InitFromOrientation(pvOrientation: object): object;
+	 InitFromOrientation(pvOrientation: object): void;
 	/**
 	 * Copies the object's raw (ZLib/IGC) Orientation to the specified Orientation pointer.
 	 */
-	CopyOrientationTo(pvOrientation: object): object;
+	 CopyOrientationTo(pvOrientation: object): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -586,7 +584,7 @@ interface IAGCEvent extends IDispatch
 	/**
 	 * READONLY: Gets the event identifier.
 	 */
-	readonly ID: Enums.AGCEventID;
+	readonly ID: number;
 	/**
 	 * READONLY: Gets the date and time that the event occurred.
 	 */
@@ -602,11 +600,11 @@ interface IAGCEvent extends IDispatch
 	/**
 	 * Gets whether or not the specified event parameter is in the property map.
 	 */
-	PropertyExists(bstrKey: string): boolean;
+	 PropertyExists(bstrKey: string): boolean;
 	/**
 	 * Gets the specified event parameter from the property map.
 	 */
-	Property(pvKey: object): object;
+	 Property(pvKey: object): object;
 	/**
 	 * READONLY: Gets the name of the computer on which the event occurred.
 	 */
@@ -622,11 +620,11 @@ interface IAGCEvent extends IDispatch
 	/**
 	 * Persists the object to a string representation, to be resolved with LoadFromString.
 	 */
-	SaveToString(): string;
+	 SaveToString(): string;
 	/**
 	 * Initializes the object from a persistence string returned by SaveToString.
 	 */
-	LoadFromString(bstr: string): string;
+	 LoadFromString(bstr: string): void;
 	/**
 	 * READONLY: Gets a string representing the context in which the event occurred.
 	 */
@@ -644,39 +642,39 @@ interface IAGCEventCreate extends IDispatch
 	/**
 	 * Initializes object.
 	 */
-	Init();
+	 Init(): void;
 	/**
 	 * Sets the event identifier.
 	 */
-	ID(Val: Enums.AGCEventID): Enums.AGCEventID;
+	 ID(Val: number): void;
 	/**
 	 * Sets the date and time that the event occurred.
 	 */
-	Time(Val: Date): Date;
+	 Time(Val: Date): void;
 	/**
 	 * Sets the time property to the current date/time.
 	 */
-	SetTimeNow();
+	 SetTimeNow(): void;
 	/**
 	 * Adds the specified event parameter to the property map.
 	 */
-	AddProperty(pbstrKey: string, pvValue: object): object;
+	 AddProperty(pbstrKey: string, pvValue: object): void;
 	/**
 	 * Removes the specified event parameter from the property map.
 	 */
-	RemoveProperty(pbstrKey: string, pvValue: object): object;
+	 RemoveProperty(pbstrKey: string, pvValue: object): void;
 	/**
 	 * Sets the ID of the subject of the event, if any. Otherwise, -1.
 	 */
-	SubjectID(idSubject: number): number;
+	 SubjectID(idSubject: number): void;
 	/**
 	 * Sets the name of the subject of the event, if any.
 	 */
-	SubjectName(bstrSubject: string): string;
+	 SubjectName(bstrSubject: string): void;
 	/**
 	 * Sets the string representing the context in which the event occurred.
 	 */
-	Context(bstrContext: string): string;
+	 Context(bstrContext: string): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -690,15 +688,15 @@ interface IAGCGameParameters extends IDispatch
 	/**
 	 * Validates the properties of the object.
 	 */
-	Validate();
+	 Validate(): void;
 	/**
 	 * Gets/sets the minimum players per team.
 	 */
-	MinPlayers(Val: number): number;
+	 MinPlayers(Val: number): void;
 	/**
 	 * Gets/sets the maximum players per team.
 	 */
-	MaxPlayers(Val: number): number;
+	 MaxPlayers(Val: number): void;
 	/**
 	 * property GameName
 	 */
@@ -770,7 +768,7 @@ interface IAGCGameParameters extends IDispatch
 	/**
 	 * property CivIDs
 	 */
-	CivIDs(element: number, element: number, newVal: number): number;
+	 CivIDs(element: number, newVal: number): number;
 	/**
 	 * property GoalTeamMoney
 	 */
@@ -998,19 +996,19 @@ interface IAGCGameParameters extends IDispatch
 	/**
 	 * property TeamName
 	 */
-	TeamName(iTeam: number, iTeam: number, newVal: string): string;
+	 TeamName(iTeam: number, newVal: string): string;
 	/**
 	 * property IsTechBitOverridden; returns true iff OverriddenTechBit was set for this Team's BitID
 	 */
-	IsTechBitOverridden(iTeam: number, iBitID: number): boolean;
+	 IsTechBitOverridden(iTeam: number, iBitID: number): boolean;
 	/**
 	 * property OverriddenTechBit
 	 */
-	OverriddenTechBit(iTeam: number, iBitID: number, iTeam: number, iBitID: number, newVal: boolean): boolean;
+	 OverriddenTechBit(iTeam: number, iBitID: number, newVal: boolean): boolean;
 	/**
 	 * property SetOverriddenTechBitRange
 	 */
-	SetOverriddenTechBitRange(iTeam: number, iBitID_First: number, iBitID_Last: number, newVal: boolean): boolean;
+	 SetOverriddenTechBitRange(iTeam: number, iBitID_First: number, iBitID_Last: number, newVal: boolean): void;
 	/**
 	 * property IsGoalFlags
 	 */
@@ -1114,11 +1112,11 @@ interface IAGCDBParams extends IDispatch
 	/**
 	 * Gets/sets the database connection string.
 	 */
-	ConnectionString(bstr: string): string;
+	 ConnectionString(bstr: string): void;
 	/**
 	 * Gets/sets the table name.
 	 */
-	TableName(bstr: string): string;
+	 TableName(bstr: string): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1136,19 +1134,19 @@ interface IAGCEventLogger extends IDispatch
 	/**
 	 * Gets/sets the name of the (WinNT or Win2000) computer to which AGC Events will be logged as NT Events.
 	 */
-	NTEventLog(bstrComputer: string): string;
+	 NTEventLog(bstrComputer: string): void;
 	/**
 	 * Gets/sets the parameters of the database to which AGC Events will be logged.
 	 */
-	DBEventLog(pDBParams: IAGCDBParams): IAGCDBParams;
+	 DBEventLog(pDBParams: IAGCDBParams): void;
 	/**
 	 * Gets/sets the range(s) of AGC Events to be logged to the NT Event log.
 	 */
-	EnabledNTEvents(pEvents: IAGCEventIDRanges): IAGCEventIDRanges;
+	 EnabledNTEvents(pEvents: IAGCEventIDRanges): void;
 	/**
 	 * Gets/sets the range(s) of AGC Events to be logged to the database event log.
 	 */
-	EnabledDBEvents(pEvents: IAGCEventIDRanges): IAGCEventIDRanges;
+	 EnabledDBEvents(pEvents: IAGCEventIDRanges): void;
 	/**
 	 * READONLY: Gets the default range(s) of AGC Events to be logged to the NT Event log.
 	 */
@@ -1170,7 +1168,7 @@ interface IAGCEventLoggerHook extends IUnknown
 	/**
 	 * Called to allow the host application to log an event in its own way. Host should return S_FALSE to indicate to the event logger that it should perform 'normal' event logging.
 	 */
-	LogEvent(pEvent: IAGCEvent, bSynchronous: boolean): boolean;
+	 LogEvent(pEvent: IAGCEvent, bSynchronous: boolean): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1184,27 +1182,27 @@ interface IAGCEventLoggerPrivate extends IUnknown
 	/**
 	 * Should be called immediately upon creating the object (and from the same thread or apartment).
 	 */
-	Initialize(bstrSourceApp: string, bstrRegKey: string): string;
+	 Initialize(bstrSourceApp: string, bstrRegKey: string): void;
 	/**
 	 * Should be called immediately prior to releasing the object.
 	 */
-	Terminate();
+	 Terminate(): void;
 	/**
 	 * Gets/sets whether or not logging to the NT Event log is enabled or not.
 	 */
-	LoggingToNTEnabled(bEnabled: boolean): boolean;
+	 LoggingToNTEnabled(bEnabled: boolean): void;
 	/**
 	 * Gets/sets whether or not logging to the DB Event log is enabled or not.
 	 */
-	LoggingToDBEnabled(bEnabled: boolean): boolean;
+	 LoggingToDBEnabled(bEnabled: boolean): void;
 	/**
 	 * Gets/sets a callback interface to hook events logged to the NT Event log.
 	 */
-	HookForNTLogging(pHook: IAGCEventLoggerHook): IAGCEventLoggerHook;
+	 HookForNTLogging(pHook: IAGCEventLoggerHook): void;
 	/**
 	 * Gets/sets a callback interface to hook events logged to the DB Event log.
 	 */
-	HookForDBLogging(pHook: IAGCEventLoggerHook): IAGCEventLoggerHook;
+	 HookForDBLogging(pHook: IAGCEventLoggerHook): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1218,11 +1216,11 @@ interface IAGCRangePrivate extends IUnknown
 	/**
 	 * Initializes the object from a raw (TCLib) range<T> pointer.
 	 */
-	InitFromRange(pvRange: object): object;
+	 InitFromRange(pvRange: object): void;
 	/**
 	 * Copies the object's raw (TCLib) range to the specified range<T> pointer.
 	 */
-	CopyRangeTo(pvRange: object): object;
+	 CopyRangeTo(pvRange: object): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1236,11 +1234,11 @@ interface IAGCRangesPrivate extends IUnknown
 	/**
 	 * Initializes the object from a raw (TCLib) rangeset< range<T> > pointer.
 	 */
-	InitFromRanges(pvRanges: object): object;
+	 InitFromRanges(pvRanges: object): void;
 	/**
 	 * Copies the object's raw (TCLib) range to the specified rangeset< range<T> > pointer.
 	 */
-	CopyRangesTo(pvRanges: object): object;
+	 CopyRangesTo(pvRanges: object): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1254,19 +1252,19 @@ interface IAGCEventIDRange extends IDispatch
 	/**
 	 * Gets/sets the range as a string, formatted for display purposes.
 	 */
-	DisplayString(bstr: string): string;
+	 DisplayString(bstr: string): void;
 	/**
 	 * Sets the lower and upper (open) ends of the range.
 	 */
-	Init(lower: Enums.AGCEventID, upper: Enums.AGCEventID): Enums.AGCEventID;
+	 Init(lower: number, upper: number): void;
 	/**
 	 * READONLY: Gets the lower end of the range.
 	 */
-	readonly Lower: Enums.AGCEventID;
+	readonly Lower: number;
 	/**
 	 * READONLY: Gets the upper (open) end of the range.
 	 */
-	readonly Upper: Enums.AGCEventID;
+	readonly Upper: number;
 	/**
 	 * READONLY: Determines whether this range is empty (Lower equals Upper).
 	 */
@@ -1274,15 +1272,15 @@ interface IAGCEventIDRange extends IDispatch
 	/**
 	 * Determines whether the specified value intersects with this range.
 	 */
-	IntersectsWithValue(value: Enums.AGCEventID): boolean;
+	 IntersectsWithValue(value: number): boolean;
 	/**
 	 * Determines whether the specified range intersects with this range.
 	 */
-	IntersectsWithRangeValues(value1: Enums.AGCEventID, value2: Enums.AGCEventID): boolean;
+	 IntersectsWithRangeValues(value1: number, value2: number): boolean;
 	/**
 	 * Determines whether the specified range intersects with this range.
 	 */
-	IntersectsWithRange(pRange: IAGCEventIDRange): boolean;
+	 IntersectsWithRange(pRange: IAGCEventIDRange): boolean;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1304,43 +1302,43 @@ interface IAGCEventIDRanges extends IDispatch
 	/**
 	 * Returns a AGCShip from the collection, or NULL if the item does not exist. Takes an argument, index, which must be the index into the collection.
 	 */
-	Item(pvIndex: object): IAGCEventIDRange;
+	 Item(pvIndex: object): IAGCEventIDRange;
 	/**
 	 * Gets/sets the range set as a string, formatted for display purposes.
 	 */
-	DisplayString(bstr: string): string;
+	 DisplayString(bstr: string): void;
 	/**
 	 * Adds a range into the set, specified by the range's lower and upper bounds.
 	 */
-	AddByValues(value1: Enums.AGCEventID, value2: Enums.AGCEventID): Enums.AGCEventID;
+	 AddByValues(value1: number, value2: number): void;
 	/**
 	 * Adds a range into the set, specified by a range object.
 	 */
-	Add(pRange: IAGCEventIDRange): IAGCEventIDRange;
+	 Add(pRange: IAGCEventIDRange): void;
 	/**
 	 * Removes a range from the set, specified by the range's lower and upper bounds.
 	 */
-	RemoveByValues(value1: Enums.AGCEventID, value2: Enums.AGCEventID): Enums.AGCEventID;
+	 RemoveByValues(value1: number, value2: number): void;
 	/**
 	 * Removes a range from the set, specified by a range object.
 	 */
-	Remove(pRange: IAGCEventIDRange): IAGCEventIDRange;
+	 Remove(pRange: IAGCEventIDRange): void;
 	/**
 	 * Removes all ranges from the set, specified by a range object.
 	 */
-	RemoveAll();
+	 RemoveAll(): void;
 	/**
 	 * Determines whether the specified value intersects with any range in this set.
 	 */
-	IntersectsWithValue(value: Enums.AGCEventID): boolean;
+	 IntersectsWithValue(value: number): boolean;
 	/**
 	 * Determines whether the specified range intersects with any range in this set.
 	 */
-	IntersectsWithRangeValues(value1: Enums.AGCEventID, value2: Enums.AGCEventID): boolean;
+	 IntersectsWithRangeValues(value1: number, value2: number): boolean;
 	/**
 	 * Determines whether the specified range intersects with any range in this set.
 	 */
-	IntersectsWithRange(pRange: IAGCEventIDRange): boolean;
+	 IntersectsWithRange(pRange: IAGCEventIDRange): boolean;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1372,31 +1370,31 @@ interface ITCStrings extends ITCCollection
 	/**
 	 * Returns a BSTR from the collection or NULL if the index is out of range. Takes an argument, index, which must be the index into the collection.
 	 */
-	Item(pvIndex: object): string;
+	 Item(pvIndex: object): string;
 	/**
 	 * Adds the specified string to the collection.
 	 */
-	Add(bstr: string): string;
+	 Add(bstr: string): void;
 	/**
 	 * Removes the specified string from the collection.
 	 */
-	Remove(pvIndex: object): object;
+	 Remove(pvIndex: object): void;
 	/**
 	 * Removes all strings from the collection.
 	 */
-	RemoveAll();
+	 RemoveAll(): void;
 	/**
 	 * Adds the specified delimited strings to the collection.
 	 */
-	AddDelimited(bstrDelimiter: string, bstrStrings: string): string;
+	 AddDelimited(bstrDelimiter: string, bstrStrings: string): void;
 	/**
 	 * Returns the entire array of strings as a single string, delimited by the specified delimiter string.
 	 */
-	DelimitedItems(bstrDelimiter: string): string;
+	 DelimitedItems(bstrDelimiter: string): string;
 	/**
 	 * Adds the strings of the specified collection.
 	 */
-	AddStrings(pStrings: ITCStrings): ITCStrings;
+	 AddStrings(pStrings: ITCStrings): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1410,35 +1408,35 @@ interface ITCPropBagOnRegKey extends IDispatch
 	/**
 	 * Creates or opens the specified registry key.
 	 */
-	CreateKey(bstrRegKey: string, bReadOnly: boolean): boolean;
+	 CreateKey(bstrRegKey: string, bReadOnly: boolean): void;
 	/**
 	 * Opens the specified registry key.  Fails if the key does not exist.
 	 */
-	OpenKey(bstrRegKey: string, bReadOnly: boolean): boolean;
+	 OpenKey(bstrRegKey: string, bReadOnly: boolean): void;
 	/**
 	 * Creates the object that is stored on the current registry key.
 	 */
-	CreateObject(): IUnknown;
+	 CreateObject(): IUnknown;
 	/**
 	 * Creates the object, always on the local machine, that is stored on the current registry key.
 	 */
-	CreateLocalObject(): IUnknown;
+	 CreateLocalObject(): IUnknown;
 	/**
 	 * Creates the object, on the specified server, that is stored on the current registry key.
 	 */
-	CreateRemoteObject(bstrServer: string): IUnknown;
+	 CreateRemoteObject(bstrServer: string): IUnknown;
 	/**
 	 * Load the specified object from the values stored in the current registry key.
 	 */
-	LoadObject(punkObj: IUnknown): IUnknown;
+	 LoadObject(punkObj: IUnknown): void;
 	/**
 	 * Saves the specified object to the current registry key.
 	 */
-	SaveObject(punkObj: IUnknown, bClearDirty: boolean, bSaveAllProperties: boolean, bSaveCreationInfo: boolean): boolean;
+	 SaveObject(punkObj: IUnknown, bClearDirty: boolean, bSaveAllProperties: boolean, bSaveCreationInfo: boolean): void;
 	/**
 	 * Gets/sets the server on which the object stored on the current registry key will be created.
 	 */
-	Server(bstrServer: string): string;
+	 Server(bstrServer: string): void;
 	/**
 	 * READONLY: Gets the string representation of the CLSID of the object stored on the current registry key.
 	 */
@@ -1464,7 +1462,7 @@ interface ITCSessionInfo extends IDispatch
 	/**
 	 * Gets/sets the application name of this session.
 	 */
-	ApplicationName(bstrAppName: [in]BSTR): [in]BSTR;
+	 ApplicationName(bstrAppName: string): void;
 	/**
 	 * READONLY: Returns the time the session was created.
 	 */
@@ -1490,7 +1488,7 @@ interface ITCSessionInfos extends ITCCollection
 	/**
 	 * Returns a Session from the collection, or NULL if the session does not exist. Takes an argument, index, which must be the index into the collection.
 	 */
-	Item(index: object): ITCSessionInfo;
+	 Item(index: object): ITCSessionInfo;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1504,7 +1502,7 @@ interface ITCCollectionPersistHelper extends IDispatch
 	/**
 	 * Gets/sets the current thread priority.
 	 */
-	Collection1(pvarSafeArray: object): object;
+	 Collection1(pvarSafeArray: object): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1518,19 +1516,19 @@ interface ITCUtility extends IDispatch
 	/**
 	 * Creates the specified object on the specified computer.
 	 */
-	CreateObject(bstrProgID: string, bstrComputer: string): IUnknown;
+	 CreateObject(bstrProgID: string, bstrComputer: string): IUnknown;
 	/**
 	 * Create an object reference string.
 	 */
-	ObjectReference(pUnk: IUnknown): string;
+	 ObjectReference(pUnk: IUnknown): string;
 	/**
 	 * Sleeps for the specified number of milliseconds.
 	 */
-	Sleep(nDurationMS: number): number;
+	 Sleep(nDurationMS: number): void;
 	/**
 	 * Creates an object by binding the specified moniker display name.
 	 */
-	GetObject(bstrMoniker: string, bAllowUI: boolean, nTimeoutMS: number): IUnknown;
+	 GetObject(bstrMoniker: string, bAllowUI: boolean, nTimeoutMS: number): IUnknown;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1630,7 +1628,7 @@ interface IAGCModel extends IAGCBase
 	/**
 	 * 
 	 */
-	IsSeenBySide(pTeam: IAGCTeam): boolean;
+	 IsSeenBySide(pTeam: IAGCTeam): boolean;
 	/**
 	 * READONLY: 
 	 */
@@ -1708,7 +1706,7 @@ interface IAGCModels extends IAGCCollection
 	/**
 	 * Returns an AGCModel from the collection, or NULL if the item does not exist. Takes an argument, index, which must be the index into the collection.
 	 */
-	Item(pvIndex: object): IAGCModel;
+	 Item(pvIndex: object): IAGCModel;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1760,11 +1758,11 @@ interface IAGCHullType extends IAGCBuyable
 	/**
 	 * Gets the MaxTurnRate.
 	 */
-	MaxTurnRate(eAxis: Enums.AGCAxis): number;
+	 MaxTurnRate(eAxis: Enums.AGCAxis): number;
 	/**
 	 * Gets the TurnTorque.
 	 */
-	TurnTorque(eAxis: Enums.AGCAxis): number;
+	 TurnTorque(eAxis: Enums.AGCAxis): number;
 	/**
 	 * READONLY: Gets the Thrust.
 	 */
@@ -1796,7 +1794,7 @@ interface IAGCHullType extends IAGCBuyable
 	/**
 	 * Gets the PartMask.
 	 */
-	PartMask(et: Enums.AGCEquipmentType, mountID: AGCMount): AGCPartMask;
+	 PartMask(et: Enums.AGCEquipmentType, mountID: AGCMount): AGCPartMask;
 	/**
 	 * READONLY: Gets the MaxWeapons.
 	 */
@@ -1820,7 +1818,7 @@ interface IAGCHullType extends IAGCBuyable
 	/**
 	 * Determines if the object has the specified capabilities..
 	 */
-	HasCapability(habm: AGCHullAbilityBitMask): boolean;
+	 HasCapability(habm: AGCHullAbilityBitMask): boolean;
 	/**
 	 * READONLY: Gets the MaxAmmo.
 	 */
@@ -1860,7 +1858,7 @@ interface IAGCTreasures extends IAGCCollection
 	/**
 	 * Returns an AGCTreasure from the collection, or NULL if the game does not exist. Takes an argument, index, which must be the index into the collection.
 	 */
-	Item(pvIndex: object): IAGCTreasure;
+	 Item(pvIndex: object): IAGCTreasure;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1888,11 +1886,11 @@ interface IAGCScanner extends IAGCDamage
 	/**
 	 * 
 	 */
-	InScannerRange(pModel: IAGCModel): boolean;
+	 InScannerRange(pModel: IAGCModel): boolean;
 	/**
 	 * 
 	 */
-	CanSee(pModel: IAGCModel): boolean;
+	 CanSee(pModel: IAGCModel): boolean;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1936,7 +1934,7 @@ interface IAGCProbes extends IAGCCollection
 	/**
 	 * Returns an AGCProbe from the collection, or NULL if the item does not exist. Takes an argument, index, which must be the index into the collection.
 	 */
-	Item(pvIndex: object): IAGCProbe;
+	 Item(pvIndex: object): IAGCProbe;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1962,7 +1960,7 @@ interface IAGCGame extends IAGCCommon
 	/**
 	 * Gets the Ship associated with specified AGC ID.
 	 */
-	LookupShip(idAGC: AGCUniqueID): IAGCShip;
+	 LookupShip(idAGC: AGCUniqueID): IAGCShip;
 	/**
 	 * READONLY: Gets the collection of the ships in the game.
 	 */
@@ -1986,15 +1984,15 @@ interface IAGCGame extends IAGCCommon
 	/**
 	 * Gets the team associated with specified AGC ID.
 	 */
-	LookupTeam(idAGC: AGCObjectID): IAGCTeam;
+	 LookupTeam(idAGC: AGCObjectID): IAGCTeam;
 	/**
 	 * Sends the specified chat text to everyone in the Game.
 	 */
-	SendChat(bstrText: string, idSound: AGCSoundID): AGCSoundID;
+	 SendChat(bstrText: string, idSound: AGCSoundID): void;
 	/**
 	 * Sends the specified command to everyone in the Game.
 	 */
-	SendCommand(bstrCommand: string, pModelTarget: IAGCModel, idSound: AGCSoundID): AGCSoundID;
+	 SendCommand(bstrCommand: string, pModelTarget: IAGCModel, idSound: AGCSoundID): void;
 	/**
 	 * READONLY: Gets the stage of the game.
 	 */
@@ -2036,35 +2034,35 @@ interface IAGCShip extends IAGCScanner
 	/**
 	 * Amount of ammo the ship has.
 	 */
-	Ammo(Val: number): number;
+	 Ammo(Val: number): void;
 	/**
 	 * Amount of fuel the ship has.
 	 */
-	Fuel(Val: number): number;
+	 Fuel(Val: number): void;
 	/**
 	 * Amount of energy the ship has.
 	 */
-	Energy(Val: number): number;
+	 Energy(Val: number): void;
 	/**
 	 * Ship's Wing ID.
 	 */
-	WingID(Val: number): number;
+	 WingID(Val: number): void;
 	/**
 	 * Sends the specified chat text to the ship.
 	 */
-	SendChat(bstrText: string, idSound: AGCSoundID): AGCSoundID;
+	 SendChat(bstrText: string, idSound: AGCSoundID): void;
 	/**
 	 * Sends the specified command to the ship.
 	 */
-	SendCommand(bstrCommand: string, pModelTarget: IAGCModel, idSound: AGCSoundID): AGCSoundID;
+	 SendCommand(bstrCommand: string, pModelTarget: IAGCModel, idSound: AGCSoundID): void;
 	/**
 	 * Gets/sets the AutoDonate ship.
 	 */
-	AutoDonate(pShip: IAGCShip): IAGCShip;
+	 AutoDonate(pShip: IAGCShip): void;
 	/**
 	 * Gets/sets the ship's ShieldFraction
 	 */
-	ShieldFraction(pVal: number): number;
+	 ShieldFraction(pVal: number): void;
 	/**
 	 * READONLY: Gets the ship's Hull type.
 	 */
@@ -2086,7 +2084,7 @@ interface IAGCShips extends IAGCCollection
 	/**
 	 * Returns a AGCShip from the collection, or NULL if the item does not exist. Takes an argument, index, which must be the index into the collection.
 	 */
-	Item(pvIndex: object): IAGCShip;
+	 Item(pvIndex: object): IAGCShip;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2100,7 +2098,7 @@ interface IAGCStation extends IAGCScanner
 	/**
 	 * Gets/sets the station's ShieldFraction
 	 */
-	ShieldFraction(pVal: number): number;
+	 ShieldFraction(pVal: number): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2114,7 +2112,7 @@ interface IAGCStations extends IAGCCollection
 	/**
 	 * Returns a AGCStation from the collection, or NULL if the item does not exist. Takes an argument, index, which must be the index into the collection.
 	 */
-	Item(pvIndex: object): IAGCStation;
+	 Item(pvIndex: object): IAGCStation;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2142,7 +2140,7 @@ interface IAGCAlephs extends IAGCCollection
 	/**
 	 * Returns a AGCAleph from the collection, or NULL if the AGCAleph does not exist. Takes an argument, index, which must be the index into the collection.
 	 */
-	Item(pvIndex: object): IAGCAleph;
+	 Item(pvIndex: object): IAGCAleph;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2176,19 +2174,19 @@ interface IAGCSector extends IAGCBase
 	/**
 	 * Sends the specified chat text to everyone in the Sector.
 	 */
-	SendChat(bstrText: string, bIncludeEnemies: boolean, idSound: AGCSoundID): AGCSoundID;
+	 SendChat(bstrText: string, bIncludeEnemies: boolean, idSound: AGCSoundID): void;
 	/**
 	 * Sends the specified command to everyone in the Sector.
 	 */
-	SendCommand(bstrCommand: string, pModelTarget: IAGCModel, bIncludeEnemies: boolean, idSound: AGCSoundID): AGCSoundID;
+	 SendCommand(bstrCommand: string, pModelTarget: IAGCModel, bIncludeEnemies: boolean, idSound: AGCSoundID): void;
 	/**
 	 * READONLY: Gets sector's X position relative to other sectors.  This is used in the sector overview display.  This value never changes.
 	 */
-	readonly ScreenX: float ;
+	readonly ScreenX: number;
 	/**
 	 * READONLY: Gets sector's Y position relative to other sectors.  This is used in the sector overview display.  This value never changes.
 	 */
-	readonly ScreenY: float ;
+	readonly ScreenY: number;
 	/**
 	 * READONLY: Gets the collection of mines in the sector.
 	 */
@@ -2226,7 +2224,7 @@ interface IAGCSectors extends IAGCCollection
 	/**
 	 * Returns a AGCSector from the collection, or NULL if the sector does not exist. Takes an argument, index, which must be the index into the collection.
 	 */
-	Item(pvIndex: object): IAGCSector;
+	 Item(pvIndex: object): IAGCSector;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2256,11 +2254,11 @@ interface IAGCTeam extends IAGCBase
 	/**
 	 * Sends the specified chat text to everyone on the Team.
 	 */
-	SendChat(bstrText: string, idWing: number, idSound: AGCSoundID): AGCSoundID;
+	 SendChat(bstrText: string, idWing: number, idSound: AGCSoundID): void;
 	/**
 	 * Sends the specified command to everyone on the Team.
 	 */
-	SendCommand(bstrCommand: string, pModelTarget: IAGCModel, idWing: number, idSound: AGCSoundID): AGCSoundID;
+	 SendCommand(bstrCommand: string, pModelTarget: IAGCModel, idWing: number, idSound: AGCSoundID): void;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2274,7 +2272,7 @@ interface IAGCTeams extends IAGCCollection
 	/**
 	 * Returns a AGCTeam from the collection, or NULL if the game does not exist. Takes an argument, index, which must be the index into the collection.
 	 */
-	Item(pvIndex: object): IAGCTeam;
+	 Item(pvIndex: object): IAGCTeam;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2296,7 +2294,7 @@ interface IAGCAsteroid extends IAGCDamage
 	/**
 	 * Determines if the object has the specified capabilities.
 	 */
-	HasCapability(aabm: AGCAsteroidAbilityBitMask): boolean;
+	 HasCapability(aabm: AGCAsteroidAbilityBitMask): boolean;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2310,6 +2308,6 @@ interface IAGCAsteroids extends IAGCCollection
 	/**
 	 * Returns an AGCAsteroid from the collection, or NULL if the game does not exist. Takes an argument, index, which must be the index into the collection.
 	 */
-	Item(pvIndex: object): IAGCAsteroid;
+	 Item(pvIndex: object): IAGCAsteroid;
 }
 

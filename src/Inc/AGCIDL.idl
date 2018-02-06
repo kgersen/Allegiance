@@ -1723,7 +1723,7 @@ interface ITCSessionInfo : IDispatch
   //   E_UNEXPECTED - Something unexpected occurred, such as an empty string
   // was specified.
   [propput, id(dispid_ApplicationName), helpstring("Gets/sets the application name of this session.")]
-  HRESULT ApplicationName([in]BSTR bstrAppName);
+  HRESULT ApplicationName([in] BSTR bstrAppName);
   [propget]
   HRESULT ApplicationName([out, retval] BSTR* pbstrAppName);
 

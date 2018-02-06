@@ -1,6 +1,7 @@
 ﻿using PigJSDocGenerator.Entities;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -107,8 +108,8 @@ namespace PigJSDocGenerator
 
                     WriteTSDocInterface(streamWriterTS, helpstring, name, inherits, signatures);
 
-                    if(name.Equals("IPig") == true)
-                        WriteJSDocInterface(streamWriterJS, helpstring, name, signatures);
+                    //if(name.Equals("IPig") == true)
+                    //    WriteJSDocInterface(streamWriterJS, helpstring, name, signatures);
                 }
             }
         }
@@ -201,6 +202,26 @@ namespace PigJSDocGenerator
 
             streamWriter.WriteLine("{");
 
+            WriteTSDocGenerateSignatureBlock(streamWriter, signatures, false);
+
+            
+            streamWriter.WriteLine("}");
+            streamWriter.WriteLine("");
+
+            if (name.Equals("IPigBehavior") == true)
+            {
+                streamWriter.WriteLine(@"
+/**                
+ * These are global objects that are injected by COM into the javascript space. Both IPig and IPigBehavior are available, 
+ * but because you can get a Pig object from IPigBehavior, I am not going to make constants for those here. 
+ */
+");
+                WriteTSDocGenerateSignatureBlock(streamWriter, signatures, true);
+            }
+        }
+
+        private void WriteTSDocGenerateSignatureBlock(StreamWriter streamWriter, List<Signature> signatures, bool isGlobal)
+        {
             foreach (var signature in signatures)
             {
                 if (signature.IsFunction == true)
@@ -210,7 +231,7 @@ namespace PigJSDocGenerator
                     streamWriter.WriteLine($"\t * {signature.HelpString}");
                     streamWriter.WriteLine("\t */");
 
-                    streamWriter.Write($"\t{signature.Name}(");
+                    streamWriter.Write($"\t{(isGlobal ? "function" : "")} {signature.Name}(");
 
                     bool firstParameter = true;
                     foreach (var parameter in signature.Paramaters)
@@ -224,9 +245,9 @@ namespace PigJSDocGenerator
                     }
 
                     if (String.IsNullOrWhiteSpace(signature.ReturnType) == false)
-                        streamWriter.WriteLine($"): {signature.ReturnType};");
+                        streamWriter.WriteLine($"): {signature.ReturnType}{(isGlobal ? " { }" : ";")}");
                     else
-                        streamWriter.WriteLine(");");
+                        streamWriter.WriteLine($"){(isGlobal ? " { }" : ";")}");
                 }
                 else if (signature.SetProperty == true || signature.GetProperty == true)
                 {
@@ -243,25 +264,11 @@ namespace PigJSDocGenerator
                     // Property declaration block.
                     streamWriter.Write("\t");
 
-                    if (signature.SetProperty == false)
+                    if (signature.SetProperty == false && isGlobal == false)
                         streamWriter.Write("readonly ");
 
-                    streamWriter.WriteLine($"{signature.Name}: {signature.ReturnType};");
+                    streamWriter.WriteLine($"{(isGlobal ? "declare const " : "")}{signature.Name}: {signature.ReturnType};");
                 }
-            }
-
-            streamWriter.WriteLine("}");
-            streamWriter.WriteLine("");
-
-            if (name.Equals("IPig") == true)
-            {
-                streamWriter.WriteLine("/**");
-                streamWriter.WriteLine(" * This is the global pig object. It is created by the COM layer when the pig script is loaded by PigSrv. This is your main hook into all things pig.");
-                streamWriter.WriteLine(" */");
-
-                streamWriter.WriteLine("declare const Pig: IPig;");
-                streamWriter.WriteLine("");
-                streamWriter.WriteLine("");
             }
         }
 
@@ -369,6 +376,7 @@ namespace PigJSDocGenerator
                 if (nameAndParametersMatch.Success == true)
                 {
                     signature.Name = nameAndParametersMatch.Groups["name"].Value;
+                    signature.ReturnType = "void";
 
                     //string parameters = nameAndParametersMatch.Groups["parameters"].Value;
 
@@ -407,10 +415,11 @@ namespace PigJSDocGenerator
                             signature.IsFunction |= true;
                         }
 
-                        if (parameter.IsReturnValue == false)
+                        if (parameter.IsReturnValue == false && signature.Paramaters.Exists(p => p.Name == parameter.Name) == false)
                             signature.Paramaters.Add(parameter);
 
-                        signature.ReturnType = parameter.Type;
+                        if (parameter.IsReturnValue == true)
+                            signature.ReturnType = parameter.Type;
 
                     }
 
@@ -467,11 +476,19 @@ namespace PigJSDocGenerator
 
         private string FixupJavascriptType(string type)
         {
-            string returnValue = type.Replace("*", "");
+            string returnValue = type.Replace("*", "").Trim();
 
             switch (returnValue)
             {
                 case "BSTR":
+                    returnValue = "string";
+                    break;
+
+                case "LPCSTR":
+                    returnValue = "string";
+                    break;
+
+                case "LPCOLESTR":
                     returnValue = "string";
                     break;
 
@@ -624,7 +641,11 @@ namespace PigJSDocGenerator
                 if (String.IsNullOrWhiteSpace(existingSignature.ReturnType) == true)
                     existingSignature.ReturnType = signature.ReturnType;
 
-                existingSignature.Paramaters.AddRange(signature.Paramaters);
+                foreach (var parameter in signature.Paramaters)
+                {
+                    if(existingSignature.Paramaters.Exists(p => p.Name == parameter.Name) == false)
+                        existingSignature.Paramaters.Add(parameter);
+                }
             }
             else
             {
@@ -734,11 +755,12 @@ namespace PigJSDocGenerator
                 | RegexOptions.Compiled
                 );
 
-            // \s*(?<enumValue>.*?)(\s*=.*?)?,
+            // ^\s*(?<name>.*?)(\s*=\s*(?<value>.*?)\s*)?((,)|(//)|$)
             Regex enumValueFinder = new Regex(
-                  "\\s*(?<enumValue>.*?)(\\s*=.*?)?,",
+                  "^\\s*(?<name>.*?)(\\s*=\\s*(?<value>.*?)\\s*)?((,)|(//)|$)",
                 RegexOptions.IgnoreCase
                 | RegexOptions.Multiline
+                | RegexOptions.Singleline
                 | RegexOptions.CultureInvariant
                 | RegexOptions.Compiled
                 );
@@ -757,10 +779,48 @@ namespace PigJSDocGenerator
                     string helpstring = elementMatch.Groups["helpstring"].Value;
                     string enumName = elementMatch.Groups["enumName"].Value;
 
-                    string[] enumLines = enumValueFinder.Matches(elementMatch.Groups["enumLines"].Value).OfType<Match>().Select(p => p.Groups["enumValue"].Value).ToArray();
+                    if (enumName.Contains("//") == true)
+                        enumName = enumName.Substring(0, enumName.IndexOf("//"));
 
-                    WriteJSDocEnum(jsDocStreamWriter, helpstring, enumName, enumLines);
-                    WriteTSDocEnum(tsDocStreamWriter, helpstring, enumName, enumLines);
+                    enumName = enumName.Trim();
+
+                    List<EnumValue> enumValues = new List<EnumValue>();
+                    int enumValueCounter = 0;
+                    foreach (Match enumValueMatch in enumValueFinder.Matches(elementMatch.Groups["enumLines"].Value))
+                    {
+                        string name = enumValueMatch.Groups["name"].Value;
+                        string value = enumValueMatch.Groups["value"].Value;
+
+                        if (String.IsNullOrWhiteSpace(name) == true)
+                            continue;
+
+                        if (String.IsNullOrWhiteSpace(value) == true)
+                            value = enumValueCounter.ToString();
+
+                        if (value.StartsWith("0x"))
+                            enumValueCounter = Int32.Parse(value.Substring(2), NumberStyles.HexNumber);
+                        else
+                        {
+                            int tempNumber;
+                            if (Int32.TryParse(value, out tempNumber) == false)
+                                enumValueCounter++;
+                            else
+                                enumValueCounter = tempNumber;
+                        }
+                        enumValueCounter++;
+
+                        enumValues.Add(new EnumValue()
+                        {
+                            Name = name,
+                            Value = value
+                        });
+                    }
+
+
+                    //string[] enumLines = enumValueFinder.Matches(elementMatch.Groups["enumLines"].Value).OfType<Match>().Select(p => p.Groups["enumValue"].Value).ToArray();
+
+                    WriteJSDocEnum(jsDocStreamWriter, helpstring, enumName, enumValues);
+                    WriteTSDocEnum(tsDocStreamWriter, helpstring, enumName, enumValues);
                 }
             }
 
@@ -769,7 +829,7 @@ namespace PigJSDocGenerator
             tsDocStreamWriter.WriteLine("");
         }
 
-        private void WriteTSDocEnum(StreamWriter streamWriter, string helpstring, string enumName, string[] enumLines)
+        private void WriteTSDocEnum(StreamWriter streamWriter, string helpstring, string enumName, List<EnumValue> enumValues)
         {
             streamWriter.WriteLine(@"////////////////////////////////////////////////////////////////////////////////////////////////////");
             streamWriter.WriteLine($"// {enumName} Enum");
@@ -783,12 +843,9 @@ namespace PigJSDocGenerator
             streamWriter.WriteLine($"\tenum {enumName}");
             streamWriter.WriteLine("\t\t{");
 
-            foreach (string enumLine in enumLines)
+            foreach (var enumValue in enumValues)
             {
-                if (enumLine.Length == 0)
-                    continue;
-
-                streamWriter.WriteLine($"\t\t{enumLine},");
+                streamWriter.WriteLine($"\t\t{enumValue.Name},");
             }
 
             streamWriter.WriteLine("\t}");
@@ -796,7 +853,7 @@ namespace PigJSDocGenerator
             streamWriter.WriteLine("");
         }
 
-        private void WriteJSDocEnum(StreamWriter streamWriter, string helpstring, string enumName, string[] enumLines)
+        private void WriteJSDocEnum(StreamWriter streamWriter, string helpstring, string enumName, List<EnumValue> enumValues)
         {
             streamWriter.WriteLine(@"////////////////////////////////////////////////////////////////////////////////////////////////////");
             streamWriter.WriteLine($"// {enumName} Enum");
@@ -804,12 +861,9 @@ namespace PigJSDocGenerator
             streamWriter.WriteLine($"Enums.{enumName} = function () {{ }};");
             streamWriter.WriteLine("");
 
-            foreach (string enumLine in enumLines)
+            foreach (var enumValue in enumValues)
             {
-                if (enumLine.Length == 0)
-                    continue;
-
-                streamWriter.WriteLine($"Enums.{enumName}.{enumLine} = {enumLine};");
+                streamWriter.WriteLine($"Enums.{enumName}.{enumValue.Name} = {enumValue.Value};");
             }
 
             streamWriter.WriteLine("");
@@ -827,13 +881,13 @@ namespace PigJSDocGenerator
 interface IDispatch { }
 interface IDictionary { }
 interface IUnknown { }
-
-type Guid = string;
-
 ");
+
             if (idlFilename.Equals("AGCIDL.idl", StringComparison.InvariantCultureIgnoreCase) == true)
             {
-                streamWriter.WriteLine("/// <reference path='AGCEventsIDL.d.ts' />");
+                //streamWriter.WriteLine("/// <reference path='AGCEventsIDL.d.ts' />");
+                streamWriter.WriteLine("");
+                streamWriter.WriteLine("type Guid = string;");
             }
 
             streamWriter.WriteLine("");
