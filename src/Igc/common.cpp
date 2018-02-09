@@ -2658,7 +2658,7 @@ void   PlayerScoreObject::CalculateScore(ImissionIGC*   pmission)
         float(m_cRescues)                    * pmission->GetFloatConstant(c_fcidPointsRescues) +
         float(m_cArtifacts)                  * pmission->GetFloatConstant(c_fcidPointsArtifacts) +
         float(m_cFlags)                      * pmission->GetFloatConstant(c_fcidPointsFlags) +
-        m_cProbeSpot                         * 2 +
+        float(m_cHighValueTargetsSpotted)    * 2 +
         m_cRepair                            * 5;
 
     if (m_bWin)

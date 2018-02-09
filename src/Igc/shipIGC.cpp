@@ -196,7 +196,7 @@ HRESULT     CshipIGC::Initialize(ImissionIGC* pMission, Time now, const void* da
     m_wingmanBehaviour = c_wbbmUseMissiles | c_wbbmRunAt60Hull;
 	m_repair = 0; //Xynth amount of nanning performed by ship
 	m_achievementMask = 0;
-	m_previouslySpotted = false; //Xynth if this ship has been spotted
+	m_timePreviouslySpotted = 0;
     
 	return S_OK;
 }
@@ -2500,7 +2500,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
 
                                 }
                                 else {
-                                    if ((m_wingmanBehaviour & c_wbbmInRangeAggressive) && (m_timeRanAway + 10.0 <= timeStop)) { //m_timeRanAway gets set on SetCommand c_cmdPlan
+                                    if ((m_wingmanBehaviour & c_wbbmInRangeAggressive) && (m_timeRanAway + 10.0f <= timeStop)) { //m_timeRanAway gets set on SetCommand c_cmdPlan
                                         ImodelIGC* newTarget = NULL;
                                         for (ShipLinkIGC* l = GetCluster()->GetShips()->first(); (l != NULL); l = l->next()) {
                                             if (ModelHasTargetPriority(l->data(), this)) {
@@ -2718,7 +2718,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                             // assume we just got a goto plan to find our actual target. Attack it.
                             SetCommand(c_cmdPlan, m_commandTargets[c_cmdAccepted], c_cidAttack);
                         }
-                        if ((m_wingmanBehaviour & (c_wbbmInRangeAggressive | c_wbbmTempSectorAggressive)) && (m_timeRanAway + 10.0 <= timeStop)) {
+                        if ((m_wingmanBehaviour & (c_wbbmInRangeAggressive | c_wbbmTempSectorAggressive)) && (m_timeRanAway + 10.0f <= timeStop)) {
                             ImodelIGC* newTarget = NULL;
                             for (ShipLinkIGC* l = GetCluster()->GetShips()->first(); (l != NULL); l = l->next()) {
                                 if (ModelHasTargetPriority(l->data(), this)) {
