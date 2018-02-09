@@ -11041,7 +11041,6 @@ class ThingSiteImpl : public ThingSite
 
                             if (!sv.fVisible() && seenBefore) {
                                 // hide it
-                                debugf("%s hide.\n", pmodel->GetName());
 								sv.CurrentEyed(false); //Xynth #100 7/2010
                                 HideObject(pside, pmodel);
                                 sv.pLastSpotter(NULL);
