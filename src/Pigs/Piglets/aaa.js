@@ -215,9 +215,10 @@ function OnShipKilled(objShip, objModel, fAmount, objV1, objV2) {
         var delta = tnow - LastDeath;
         LastDeath = tnow;
         if (delta > 2000) {
-            ShootSkill += 0.050;
-            TurnSkill += 0.050;
-            GotoSkill += 0.050;
+            var moreSkill = 0.95 * ShootSkill + 0.049;	
+            ShootSkill += moreSkill;
+            TurnSkill += moreSkill;
+            GotoSkill += moreSkill;
 
             if (ShootSkill > 1.0) ShootSkill = 1.0;
             if (TurnSkill > 1.0) TurnSkill = 1.0;

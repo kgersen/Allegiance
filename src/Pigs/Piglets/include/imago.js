@@ -254,17 +254,18 @@ function buyShipSetSkillsLaunch(safe) {
         var objHullTypes = HullTypes;
 
         var fRand = Random() % 4;
+        if (Money && Money >= 500) {
+            // dont always buy a bomber.
+            fRand = Random() % 6;
+        }
         Trace("Random : " + fRand + " \n");
-        if (fRand >= 3) ShipSelection = "Scout";
+        if (fRand >= 4) ShipSelection = "Bomber";
+        else if (fRand >= 3) ShipSelection = "Scout";
         else if (fRand >= 2) ShipSelection = "Adv Stl Fighter";
         else if (fRand >= 1) ShipSelection = "Interceptor";
         else if (fRand >= 0) ShipSelection = "Adv Fighter";
         
         var realShipSelection = ShipSelection;
-        if (Money && Money >= 500) {
-            Trace("Money... " + Money + " \n");
-            realShipSelection = "Bomber";
-        }
 
         // If you want to force the pigs to pick a certain ship, do it right here.
         //realShipSelection = "Adv Stl Fighter";
