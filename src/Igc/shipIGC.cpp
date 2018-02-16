@@ -196,7 +196,7 @@ HRESULT     CshipIGC::Initialize(ImissionIGC* pMission, Time now, const void* da
     m_wingmanBehaviour = c_wbbmUseMissiles | c_wbbmRunAt60Hull;
 	m_repair = 0; //Xynth amount of nanning performed by ship
 	m_achievementMask = 0;
-	m_hasBeenSpotted = false; //Xynth if this ship has been spotted
+	m_timePreviouslySpotted = 0;
     
 	return S_OK;
 }
@@ -1229,7 +1229,6 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
 
     float   maxHP = m_myHullType.GetHitPoints();
     float   dtmArmor = GetMyMission()->GetDamageConstant(type, m_myHullType.GetDefenseType());
-	float   repairFraction;
     assert (dtmArmor >= 0.0f);
 
     float leakage;
@@ -1243,17 +1242,15 @@ DamageResult CshipIGC::ReceiveDamage(DamageTypeID            type,
 			m_fraction = 1.0f;
 		}            
         GetThingSite ()->RemoveDamage (m_fraction);
-		if (GetMyMission()->GetMissionParams()->bAllowFriendlyFire || //no points when FF is on
-			!((pside == launcher->GetSide()) || IsideIGC::AlliedSides(pside, launcher->GetSide()))) //no points for healing the enemy
-			repairFraction = 0;
-		else
-			repairFraction = fabs(amount * dtmArmor / maxHP);
         leakage = 0.0f;
         dr = c_drNoDamage;
-		if (launcher->GetObjectType() == OT_ship && (pside == launcher->GetSide()) || IsideIGC::AlliedSides(pside, launcher->GetSide()))
-		{
 
+		if (launcher->GetObjectType() == OT_ship && (pside == launcher->GetSide() || IsideIGC::AlliedSides(pside, launcher->GetSide())))
+		{
 			IshipIGC * pIship = ((IshipIGC*)launcher);
+            float   repairFraction = -amount * dtmArmor / maxHP;
+            if (GetBaseHullType() && (GetBaseHullType()->GetCapabilities() & c_habmThreatToStation))
+                repairFraction *= 2.0f; //double points for nanning a bomber/htt
 			pIship->AddRepair(repairFraction);
 			pIship->SetAchievementMask(c_achmNewRepair);
 		}
@@ -2503,7 +2500,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
 
                                 }
                                 else {
-                                    if ((m_wingmanBehaviour & c_wbbmInRangeAggressive) && (m_timeRanAway + 10.0 <= timeStop)) { //m_timeRanAway gets set on SetCommand c_cmdPlan
+                                    if ((m_wingmanBehaviour & c_wbbmInRangeAggressive) && (m_timeRanAway + 10.0f <= timeStop)) { //m_timeRanAway gets set on SetCommand c_cmdPlan
                                         ImodelIGC* newTarget = NULL;
                                         for (ShipLinkIGC* l = GetCluster()->GetShips()->first(); (l != NULL); l = l->next()) {
                                             if (ModelHasTargetPriority(l->data(), this)) {
@@ -2721,7 +2718,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                             // assume we just got a goto plan to find our actual target. Attack it.
                             SetCommand(c_cmdPlan, m_commandTargets[c_cmdAccepted], c_cidAttack);
                         }
-                        if ((m_wingmanBehaviour & (c_wbbmInRangeAggressive | c_wbbmTempSectorAggressive)) && (m_timeRanAway + 10.0 <= timeStop)) {
+                        if ((m_wingmanBehaviour & (c_wbbmInRangeAggressive | c_wbbmTempSectorAggressive)) && (m_timeRanAway + 10.0f <= timeStop)) {
                             ImodelIGC* newTarget = NULL;
                             for (ShipLinkIGC* l = GetCluster()->GetShips()->first(); (l != NULL); l = l->next()) {
                                 if (ModelHasTargetPriority(l->data(), this)) {
