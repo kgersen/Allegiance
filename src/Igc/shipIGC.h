@@ -19,8 +19,6 @@
 #include "igc.h"
 #include "modelIGC.h"
 
-const float c_dtCheckRunaway = 31.0f;   //Must be slightly longer than ripcord time for drones.
-
 class       CshipIGC;
 
 class       MyHullType : public IhullTypeIGC
@@ -717,7 +715,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         }
         virtual void                 SetCommand(Command i, ImodelIGC* target, CommandID cid)
         {
-            //debugf("%s: SetCommand(%d, %s, %d)\n", GetName(), i, target ? target->GetName() : "NULL", cid);
+            //debugf("%s: SetCommand(%d, %s in %s, %d)\n", GetName(), i, (target ? GetModelName(target) : "NULL"), ((target && target->GetCluster()) ? target->GetCluster()->GetName() : "-"), cid);
             assert (i >= 0);
             assert (i < c_cmdMax);
 
@@ -746,17 +744,19 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 
                     case c_cmdPlan:
                     {
-                        //Clear the drilling mask (either it wasn't set or it no longer applies).
-                        m_stateM &= ~drillingMaskIGC;
-
                         ResetWaypoint();
 
-                        m_fractionLastOrder = m_fraction;
-                        m_timeRanAway = GetMyLastUpdate();
-                        m_bRunningAway = false;
-                        m_bGettingAmmo = false;
-                        m_targetFirstNotSeen = 0;
-                        m_checkCooldown = 0;
+                        if (m_pilotType < c_ptPlayer) {
+                            //Clear the drilling mask (either it wasn't set or it no longer applies).
+                            m_stateM &= ~drillingMaskIGC;
+
+                            m_fractionLastOrder = m_fraction;
+                            m_timeRanAway = GetMyLastUpdate();
+                            m_bRunningAway = false;
+                            m_bGettingAmmo = false;
+                            m_targetFirstNotSeen = 0;
+                            m_checkCooldown = 0;
+                        }
                     }
                     break;
 
@@ -1729,6 +1729,10 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
             }
         }
 
+        virtual void SetRunawayCheckCooldown(float dtRunAway) {
+            m_dtCheckRunaway = dtRunAway;
+        }
+
         virtual IshipIGC*           GetAutoDonate(void) const
         {
             return m_pshipAutoDonate;
@@ -2169,10 +2173,47 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
             return m_fOre;
         }
 
+        static ImodelIGC* GetLocalStationToHide(IshipIGC* pship) {
+            ImodelIGC* pstationToHide = FindTarget(pship, c_ttFriendly | c_ttStation | c_ttNearest,
+                NULL, NULL, NULL, NULL,
+                c_sabmLand);
+            if (!pstationToHide) {
+                CompactShipFractions fractions;
+                pship->ExportFractions(&fractions);
+                if (fractions.GetShieldFraction() < 0.8f) {
+                    pstationToHide = FindTarget(pship, c_ttFriendly | c_ttStation | c_ttNearest,
+                        NULL, NULL, NULL, NULL,
+                        c_sabmRipcord);
+                    if (pstationToHide) {
+
+                        // check if we need to protect the secret location of the teleport
+                        bool knownStation = true;
+                        for (SideLinkIGC* l = pship->GetMission()->GetSides()->first(); l != NULL; l = l->next()) {
+                            IsideIGC* pside = l->data();
+                            if (pside != pship->GetSide() && !pstationToHide->SeenBySide(pside)) {
+                                knownStation = false;
+                                break;
+                            }
+                        }
+                        if (!knownStation) {
+                            DataBuoyIGC buoyData;
+                            buoyData.position = pstationToHide->GetPosition() + Vector::RandomDirection()*2000.0f;
+                            buoyData.type = c_buoyWaypoint;
+                            buoyData.clusterID = pship->GetCluster()->GetObjectID();
+                            pstationToHide = (ImodelIGC*)(pship->GetMission()->CreateObject(pship->GetLastUpdate(), OT_buoy, &buoyData, sizeof(buoyData)));
+                        }
+                    }
+                }
+            }
+            return pstationToHide;
+        }
+
         bool                PickDefaultOrder(IclusterIGC*   pcluster,
                                              const Vector&  position,
                                              bool           bDocked)
         {
+            m_dtCheckRunaway = 5.0f; // Be ready to run after making up a command
+            
             bool fGaveOrder = false;
 
             //No orders ... pick something
@@ -2180,24 +2221,75 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
             {
                 case c_ptMiner:
                 {
-                    float   capacity = GetMyMission()->GetFloatConstant(c_fcidCapacityHe3) * 
-                                       GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaMiningCapacity);
-                    if (m_fOre < capacity / 2.0f)
+                    // Take cover at a local station, if too damaged
+                    if (GetFraction() < 1.0f && !bDocked) {
+                        CompactShipFractions fractions;
+                        ExportFractions(&fractions);
+                        if ((fractions.GetShieldFraction() == 0.0f) ||
+                            (fractions.GetShieldFraction() < 0.5f && GetFraction() < 0.7f) ||
+                            (GetFraction() < 0.5f))
+                        {
+                            ImodelIGC* pstationToHide = GetLocalStationToHide(this);
+
+                            if (pstationToHide) {
+                                SetCommand(c_cmdPlan, pstationToHide, c_cidGoto);
+                                fGaveOrder = true;
+
+                                m_dtCheckRunaway = 90.0f; // we already got a plan for running, don't change it too soon
+                            }
+                        }
+                    }
+
+                    float   capacity = GetMyMission()->GetFloatConstant(c_fcidCapacityHe3) *
+                        GetSide()->GetGlobalAttributeSet().GetAttribute(c_gaMiningCapacity);
+
+                    // Handle arriving in a sector after player command
+                    if (!fGaveOrder && m_commandIDs[c_cmdQueued] == c_cidJoin && m_commandTargets[c_cmdQueued] && m_commandTargets[c_cmdQueued]->GetCluster() == GetCluster()) {
+                        ImodelIGC* phe3Asteroid = FindTarget(this,
+                            c_ttNeutral | c_ttAsteroid | c_ttNearest | c_ttLeastTargeted,
+                            NULL, pcluster, &position, NULL,
+                            m_abmOrders);
+                        if (phe3Asteroid && m_fOre < capacity / 2.0f) {
+                            SetCommand(c_cmdAccepted, phe3Asteroid, c_cidMine);
+                            fGaveOrder = true;
+                        }
+                        else {
+                            ImodelIGC* pstationToUnload = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest,
+                                NULL, pcluster, &position, NULL,
+                                c_sabmUnload);
+                            if (pstationToUnload && m_fOre > 0.0f) {
+                                SetCommand(c_cmdAccepted, pstationToUnload, c_cidGoto);
+                                fGaveOrder = true;
+                            }
+                            else if (phe3Asteroid && m_fOre < capacity) {
+                                SetCommand(c_cmdAccepted, phe3Asteroid, c_cidMine);
+                                fGaveOrder = true;
+                            }
+                            // else see where default sends us and make sure we don't go back to the previous sector afterwards
+                        }
+                        m_dtCheckRunaway = 30.0f; // the player wants us to be in here, don't run right away
+                    }
+                    
+                    if (!fGaveOrder && m_fOre < capacity / 2.0f)
                     {
                         ImodelIGC*  pmodel = NULL;
 
-                        // Check if there is a player command we should be continuing
-                        if (m_commandTargets[c_cmdQueued] && m_commandIDs[c_cmdQueued] == c_cidDefault) {
-                            IclusterIGC* pcommandCluster = (IclusterIGC*)(m_commandTargets[c_cmdQueued]);
+                        // Check if there is an old player command we should be continuing
+                        if (!pmodel && m_commandTargets[c_cmdQueued]) {
+                            IclusterIGC* pcommandCluster = m_commandTargets[c_cmdQueued]->GetCluster();
                             assert(pcommandCluster);
                             pmodel = FindTarget(this,
                                 c_ttNeutral | c_ttAsteroid | c_ttNearest |
                                 c_ttLeastTargeted | c_ttCowardly,
                                 NULL, pcommandCluster, &Vector(0.0f, 0.0f, 0.0f), NULL,
                                 m_abmOrders);
-                            if (!pmodel) //don't remember the cluster after it's been mined out
+                            if (!pmodel && m_commandIDs[c_cmdQueued] != c_cidJoin) {
+                                //Don't remember the cluster after it's been mined out
                                 SetCommand(c_cmdQueued, NULL, c_cidNone);
+                            }
                         }
+
+                        // Look for something to mine normally
                         if (!pmodel) 
                             pmodel = FindTarget(this,
                                                 c_ttNeutral | c_ttAsteroid | c_ttNearest |
@@ -2205,14 +2297,26 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                                                 NULL, pcluster, &position, NULL,
                                                 m_abmOrders);
 
-                        if (pmodel)
-                        {
-                            SetCommand(c_cmdAccepted, pmodel, c_cidMine);
-                            fGaveOrder = true;
+                        if (pmodel) {
+                            // Check if we should unload first
+                            if (pmodel->GetCluster() != GetCluster() && m_fOre > capacity * 0.2f) {
+                                ImodelIGC* pstationModel = FindTarget(this, c_ttFriendly | c_ttStation | c_ttNearest,
+                                    NULL, pcluster, &position, NULL,
+                                    c_sabmUnload);
+                                if (pstationModel) {
+                                    SetCommand(c_cmdAccepted, pstationModel, c_cidGoto);
+                                    fGaveOrder = true;
+                                }
+                            }
+                            // Otherwise mine
+                            if (!fGaveOrder) {
+                                SetCommand(c_cmdAccepted, pmodel, c_cidMine);
+                                fGaveOrder = true;
+                            }
                         }
                     }
 
-                    if ((!m_commandTargets[c_cmdCurrent]) && ((m_fOre > 0.0f) || !bDocked))
+                    if ((!m_commandTargets[c_cmdPlan]) && ((m_fOre > 0.0f) || !bDocked))
                     {
                         ImodelIGC*  pmodel = NULL;
 
@@ -2241,6 +2345,38 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                             fGaveOrder = true;
                         }
                     }
+
+                    // Make sure the miner doesn't go straight back into the sector it was sent from
+                    if (m_commandIDs[c_cmdQueued] == c_cidJoin && m_commandTargets[c_cmdQueued] && m_commandTargets[c_cmdQueued]->GetCluster() == GetCluster()) { // arriving in a sector after player command
+                        if (m_commandTargets[c_cmdPlan] && m_commandTargets[c_cmdPlan]->GetCluster() != GetCluster()) {
+                            IwarpIGC* nextWarp = FindPath(this, m_commandTargets[c_cmdPlan], true);
+                            if ((position - nextWarp->GetPosition()).Length() < 500.0f) {
+                                debugf("%s trying to go back to the previous sector. Find an alternative.\n", GetName());
+
+                                ImodelIGC* pstationToHide = GetLocalStationToHide(this);
+
+                                if (pstationToHide) {
+                                    SetCommand(c_cmdPlan, pstationToHide, c_cidGoto);
+                                    fGaveOrder = true;
+                                }
+                                else {
+                                    // move to the center
+                                    DataBuoyIGC         buoyData;
+                                    buoyData.position = Vector(0.0f, 0.0f, 0.0f);
+                                    buoyData.type = c_buoyWaypoint;
+                                    buoyData.clusterID = pcluster->GetObjectID();
+                                    ImodelIGC* buoy = (ImodelIGC*)(GetMyMission()->CreateObject(GetMyLastUpdate(), OT_buoy, &buoyData, sizeof(buoyData)));
+
+                                    SetCommand(c_cmdPlan, buoy, c_cidGoto);
+                                    fGaveOrder = true;
+                                }
+                            }
+                        }
+                    }
+
+                    // Mark as not a fresh player command anymore
+                    if (m_commandIDs[c_cmdQueued] != c_cidDefault && m_commandIDs[c_cmdQueued] != c_cidNone)
+                        SetCommand(c_cmdQueued, m_commandTargets[c_cmdQueued], c_cidDefault);
                 }
                 break;
 
@@ -2446,6 +2582,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
         float               m_ripcordCost;
         Vector              m_engineVector;
 
+        float               m_dtCheckRunaway;
         Time                m_timeLastComplaint;
         Time                m_timeRanAway;
         Time                m_timeLastMineExplosion;
