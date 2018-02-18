@@ -11157,11 +11157,6 @@ public:
         //bool newButton5 = m_ptrekInput->GetButton(4); // !!! was vector lock
         bool newButton6 = m_ptrekInput->IsTrekKeyDown(TK_MatchSpeed , bReadKeyboard);
 
-        if (newButton3) {
-            trekClient.trekThrottle = 1.0f;
-            bThrottleChange = !trekClient.joyThrottle;
-        }
-
         if (bInternalCamera)
         {
             // roll left/right
