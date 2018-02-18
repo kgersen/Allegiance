@@ -3358,6 +3358,8 @@ class IshipIGC : public IscannerIGC
         virtual bool                LegalCommand(CommandID   cid,
                                                  ImodelIGC*  pmodel) const = 0;
 
+        virtual void                SetRunawayCheckCooldown(float dtRunAway) = 0;
+
         virtual IshipIGC*           GetAutoDonate(void) const = 0;
         virtual void                SetAutoDonate(IshipIGC* pship) = 0;
 
@@ -4287,6 +4289,7 @@ class IsideIGC : public IbaseIGC
 		//Xynth Adding function to return number of players on a side
 		virtual int GetNumPlayersOnSide(void) const = 0;
 
+        virtual void HandleNewEnemyCluster(IclusterIGC* pcluster) = 0;
         //Territory clusters
         virtual void UpdateTerritory() = 0;
         virtual ClusterListIGC GetTerritory() = 0;

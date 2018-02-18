@@ -335,26 +335,78 @@ bool CsideIGC::IsSurroundedByTerritory(IclusterIGC* pcluster, ClusterListIGC* cl
             byte checkedWarpCount = 0;
             for (WarpLinkIGC* l = pcluster->GetWarps()->first(); (l != NULL); l = l->next())
             {
-                IwarpIGC*   w = l->data();
-                if (w->SeenBySide(this))
+                IwarpIGC* w = l->data();
+                IwarpIGC* pwarpDestination = w->GetDestination();
+                if (pwarpDestination)
                 {
-                    IwarpIGC*       pwarpDestination = w->GetDestination();
-                    if (pwarpDestination)
+                    IclusterIGC* pclusterOther = pwarpDestination->GetCluster();
+                    if (clustersLinked->find(pclusterOther) == NULL)
                     {
-                        IclusterIGC*    pclusterOther = pwarpDestination->GetCluster();
-                        if (clustersLinked->find(pclusterOther) == NULL)
-                        {
-                            if (!IsSurroundedByTerritory(pclusterOther, clustersLinked, clustersTerritory, currentDepth + 1))
-                                return false;
-                        }
-                        checkedWarpCount++;
+                        if (!IsSurroundedByTerritory(pclusterOther, clustersLinked, clustersTerritory, currentDepth + 1))
+                            return false;
                     }
+                    checkedWarpCount++;
                 }
             }
             return (checkedWarpCount > 1);
         }
     }
     return false;
+}
+
+void CsideIGC::HandleNewEnemyCluster(IclusterIGC* pcluster) {
+    if (!pcluster) {
+        ZAssert(false);
+        return;
+    }
+
+    // Stop miners from suiciding there
+    for (ShipLinkIGC* l = this->GetShips()->first(); (l != NULL); l = l->next()) {
+        IshipIGC* s = l->data();
+        if (s->GetPilotType() == c_ptMiner) {
+            if (s->GetCommandTarget(c_cmdQueued) && s->GetCommandTarget(c_cmdQueued)->GetCluster() == pcluster)
+                s->SetCommand(c_cmdQueued, NULL, c_cidNone);
+            bool acceptedBad = false;
+            bool planBad = false;
+            if (s->GetCommandTarget(c_cmdAccepted) && s->GetCommandTarget(c_cmdAccepted)->GetCluster() == pcluster)
+                acceptedBad = true;
+            if (s->GetCommandTarget(c_cmdPlan) && s->GetCommandTarget(c_cmdPlan)->GetCluster() == pcluster)
+                planBad = true;
+            if (s->GetCluster() == pcluster) {
+                //If already there, finish the current action (plan), but think of something better afterwards
+                if (acceptedBad) {
+                    CommandID tempCid = s->GetCommandID(c_cmdPlan);
+                    ImodelIGC* tempModel = s->GetCommandTarget(c_cmdPlan);
+                    tempModel->AddRef();
+                    if (tempModel->GetObjectType() == OT_buoy)
+                        ((IbuoyIGC*)tempModel)->AddConsumer();
+                    s->SetCommand(c_cmdAccepted, NULL, c_cidNone); //Also sets current & plan
+                    s->SetCommand(c_cmdPlan, tempModel, tempCid); 
+                    tempModel->Release();
+                    if (tempModel->GetObjectType() == OT_buoy)
+                        ((IbuoyIGC*)tempModel)->ReleaseConsumer();
+                }
+            }
+            else {
+                if (acceptedBad && planBad)
+                    s->SetCommand(c_cmdAccepted, NULL, c_cidNone);
+                else if (planBad)
+                    s->SetCommand(c_cmdPlan, NULL, c_cidNone);
+                else if (acceptedBad) {
+                    CommandID tempCid = s->GetCommandID(c_cmdPlan);
+                    ImodelIGC* tempModel = s->GetCommandTarget(c_cmdPlan);
+                    tempModel->AddRef();
+                    if (tempModel->GetObjectType() == OT_buoy)
+                        ((IbuoyIGC*)tempModel)->AddConsumer();
+                    s->SetCommand(c_cmdAccepted, NULL, c_cidNone); //Also sets current & plan
+                    s->SetCommand(c_cmdPlan, tempModel, tempCid);
+                    tempModel->Release();
+                    if (tempModel->GetObjectType() == OT_buoy)
+                        ((IbuoyIGC*)tempModel)->ReleaseConsumer();
+                }
+            }
+        }
+    }
 }
 
 void CsideIGC::UpdateTerritory()
@@ -397,7 +449,7 @@ void CsideIGC::UpdateTerritory()
         }
     }
 
-    // Possibly add clusters claimed by allies' stations
+    // ToDo: Possibly add clusters claimed by allies' stations
 
     // Check the clusters without stations
     for (ClusterLinkIGC* lc = GetMission()->GetClusters()->first(); (lc != NULL); lc = lc->next()) {
