@@ -2200,7 +2200,7 @@ public:
 
         // Check if it's a combat ship or a scout-like one
         bool combatShip = !(pht->GetDefenseType() == 1 && // light armor
-            pht->GetScannerRange() >= 2200);
+            pht->GetScannerRange() >= 2200.0f);
 
         //Start actually filling the cargo
         Mount   cargo = -c_maxCargo;

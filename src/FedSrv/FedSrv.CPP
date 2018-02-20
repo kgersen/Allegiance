@@ -3187,22 +3187,21 @@ bool CommandToDrone(CFSMission*         pfsMission,
     if ((pcd->commandID != c_cidNone) &&
         (pfsSender->GetIGCShip()->GetSide() == pside))
     {
+        pshipTo->SetRunawayCheckCooldown(120.0f); // don't run anytime soon while executing a player command
+
         IclusterIGC* pminerCluster = NULL;
         char pcReply[100] = "Affirmative.";
         if (*ppmodelTarget == NULL)
 		{
             if (pdb)
             {
-                if (pshipTo->GetPilotType() == c_ptMiner && pdb->type == c_buoyCluster) {
+                if (pshipTo->GetPilotType() == c_ptMiner && pdb->type == c_buoyCluster)
                     pminerCluster = pfsMission->GetIGCMission()->GetCluster(pdb->clusterID);
-                }
-                else {
-                    //Create a buoy for this chat message
-                    *ppmodelTarget = (ImodelIGC*)(pfsMission->GetIGCMission()->CreateObject(g.timeNow, OT_buoy, pdb, sizeof(*pdb)));
-                    assert (*ppmodelTarget);
+                //Create a buoy for this chat message
+                *ppmodelTarget = (ImodelIGC*)(pfsMission->GetIGCMission()->CreateObject(g.timeNow, OT_buoy, pdb, sizeof(*pdb)));
+                assert(*ppmodelTarget);
 
-                    ((IbuoyIGC*)*ppmodelTarget)->AddConsumer();
-                }
+                ((IbuoyIGC*)*ppmodelTarget)->AddConsumer();
             }
             else
             {
@@ -3241,74 +3240,6 @@ bool CommandToDrone(CFSMission*         pfsMission,
                 }
             }
 
-            if (pminerCluster) {
-                IstationIGC* pstationToDock = NULL;
-                for (StationLinkIGC* l = pminerCluster->GetStations()->first(); (l != NULL); l = l->next()) {
-                    IstationIGC* pcurStation = l->data();
-                    if (pcurStation->GetSide() == pside) {
-                        pstationToDock = pcurStation;
-                        break;
-                    }
-                }
-                bool mine = false;
-
-                CompactShipFractions fractions;
-                pshipTo->ExportFractions(&fractions);
-                float capacity = pside->GetMission()->GetFloatConstant(c_fcidCapacityHe3) *
-                    pside->GetGlobalAttributeSet().GetAttribute(c_gaMiningCapacity);
-                // Should we try to mine?
-                if ((fractions.GetShieldFraction()>0.5 || !pstationToDock) &&
-                    (pshipTo->GetOre() < capacity / 2.0f || (!pstationToDock && pshipTo->GetOre() < capacity))) 
-                {
-                    ImodelIGC*  pmodel = FindTarget(pshipTo,
-                        c_ttNeutral | c_ttAsteroid | c_ttNearest |
-                        c_ttLeastTargeted | c_ttCowardly,
-                        NULL, pminerCluster, &(pshipTo->GetPosition()), NULL,
-                        pshipTo->GetOrdersABM());
-
-                    if (pmodel) {
-                        sprintf(pcReply, "Affirmative, going to mine in %s.", pminerCluster->GetName());
-                        *ppmodelTarget = pmodel;
-                        pcd->commandID = c_cidMine;
-                        mine = true;
-                    }
-                }
-
-                if (!mine) {
-                    if (pstationToDock) {
-                        sprintf(pcReply, "Affirmative, going to dock in %s.", pminerCluster->GetName());
-                        *ppmodelTarget = pstationToDock;
-                        pcd->commandID = c_cidGoto;
-                    }
-                    else {
-                        // check if the side has explored the sector
-                        bool knownSector = false;
-                        for (AsteroidLinkIGC* l = pminerCluster->GetAsteroids()->first(); (l != NULL); l = l->next()) {
-                            IasteroidIGC* pcurRoid = l->data();
-                            if (pcurRoid->SeenBySide(pside)) {
-                                knownSector = true;
-                                break;
-                            }
-                        }
-
-                        DataBuoyIGC         buoyData;
-                        buoyData.position = Vector(0.0f, 0.0f, 0.0f);
-                        if (!knownSector && pshipTo->GetOre() < capacity / 2.0f) {
-                            //debugf(" send the miner just inside the sector, will find an asteroid there.\n");
-                            buoyData.type = c_buoyCluster;
-                        }
-                        else {
-                            //debugf(" send the miner to the center of the sector.\n");
-                            buoyData.type = c_buoyWaypoint;
-                        }
-                        buoyData.clusterID = pminerCluster->GetObjectID();
-                        buoyData.buoyID = pfsMission->GetIGCMission()->GenerateNewBuoyID();
-
-                        *ppmodelTarget = (ImodelIGC*)(pfsMission->GetIGCMission()->CreateObject(g.timeNow, OT_buoy, &buoyData, sizeof(buoyData)));
-                        pcd->commandID = c_cidGoto;
-                    }
-                }
-            }
         }
         if ((pcd->commandID == c_cidDefault) && (*ppmodelTarget != NULL))
         {
@@ -3357,20 +3288,32 @@ bool CommandToDrone(CFSMission*         pfsMission,
                                             */
         }
 
+        // Remember player commands by storing location/ID in c_cmdQueued
         if (pshipTo->GetPilotType() == c_ptMiner) {
             if ((*ppmodelTarget) &&
                 (*ppmodelTarget)->GetObjectType() != OT_station &&
                 (*ppmodelTarget)->GetObjectType() != OT_ship)
             {
-                pshipTo->SetCommand(c_cmdQueued, (ImodelIGC*)(*ppmodelTarget)->GetCluster(), c_cidDefault);
-            }
-            else
-                pshipTo->SetCommand(c_cmdQueued, NULL, c_cidNone);
+                DataBuoyIGC         buoyData;
+                buoyData.position = Vector(0.0f, 0.0f, 0.0f);
+                buoyData.type = c_buoyWaypoint; // c_buoyCluster would be deleted as soon as we are in the cluster
+                if (pminerCluster)
+                    buoyData.clusterID = pminerCluster->GetObjectID();
+                else
+                    buoyData.clusterID = (*ppmodelTarget)->GetCluster()->GetObjectID();
+                buoyData.buoyID = pfsMission->GetIGCMission()->GenerateNewBuoyID();
+                ImodelIGC* buoy = (ImodelIGC*)(pfsMission->GetIGCMission()->CreateObject(g.timeNow, OT_buoy, &buoyData, sizeof(buoyData)));
 
-            if (pminerCluster) {
-                if ((*ppmodelTarget)->GetObjectType() == OT_buoy)
-                    (*ppmodelTarget)->Release();
-                *ppmodelTarget = NULL; //no more clean-up needed
+                CommandID cid = c_cidGoto;
+                if (pminerCluster)
+                    cid = c_cidJoin;
+                pshipTo->SetCommand(c_cmdQueued, buoy, cid);
+
+                buoy->Release(); //SetCommand added the consumer needed
+            }
+            else {
+                // Remember that we just got a player command -> c_cidGoto instead of None
+                pshipTo->SetCommand(c_cmdQueued, NULL, c_cidGoto);
             }
         }
     }
@@ -7337,6 +7280,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 								NULL, NULL, NULL, NULL, c_sabmRepair);
 				}
 				pship->SetStayDocked(true);
+                pship->SetCommand(c_cmdQueued, NULL, c_cidNone); //Don't remember any sector
 				if (pmodel)
 				{
 					pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),
@@ -10963,6 +10907,7 @@ class ThingSiteImpl : public ThingSite
 											//Imago #121
 											if (otModel == OT_station) {
                                                 pside->UpdateTerritory();
+                                                pside->HandleNewEnemyCluster(pmodel->GetCluster());
 
 												ObjectID roidID = static_cast<IstationIGC*>(pmodel)->GetRoidID();
 												//asteroid to silently pop
@@ -13416,6 +13361,9 @@ bool FedSrvSiteBase::UseRipcord(IshipIGC* pship, ImodelIGC* pmodel)
         }
 		*/
     }
+
+    CFSShip* pfsShip = (CFSShip*)pship->GetPrivateData();
+    pfsShip->ShipStatusSpotted(pship->GetSide());
 
     return true;
 }

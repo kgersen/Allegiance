@@ -591,6 +591,7 @@ class       CsideIGC : public IsideIGC
 		{
 			return m_data.allies;
 		}
+        void HandleNewEnemyCluster(IclusterIGC* pcluster);
 
         void UpdateTerritory();
 
