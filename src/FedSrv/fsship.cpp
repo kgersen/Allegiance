@@ -684,8 +684,12 @@ void CFSShip::CaptureStation(IstationIGC * pstation)
 
   for (SideLinkIGC* l = pside->GetMission()->GetSides()->first(); (l != NULL); l = l->next()) {
       IsideIGC* pcurSide = l->data();
-      if (pcurSide == pside || pcurSide == psideOld || IsideIGC::AlliedSides(pside, pcurSide) || IsideIGC::AlliedSides(psideOld, pcurSide)) {
-          l->data()->UpdateTerritory();
+      if (pcurSide == psideOld || IsideIGC::AlliedSides(psideOld, pcurSide)) {
+          pcurSide->HandleNewEnemyCluster(pstation->GetCluster());
+          pcurSide->UpdateTerritory();
+      }
+      else if (pcurSide == pside || IsideIGC::AlliedSides(pside, pcurSide)) {
+          pcurSide->UpdateTerritory();
       }
   }
 }

@@ -2199,9 +2199,8 @@ public:
             nan = (IpartTypeIGC*)(pstation->GetSuccessor(nan));
 
         // Check if it's a combat ship or a scout-like one
-        bool combatShip = (pht->GetMaxWeapons() > 1 &&                      // more than one weapon mount
-            pship->GetMountedPart(ET_Weapon, 1) &&                          // second mount not empty
-            pship->GetMountedPart(ET_Weapon, 1)->GetPartType() != nan);     // non-nan weapon - this means TF scouts are considered combat ships
+        bool combatShip = !(pht->GetDefenseType() == 1 && // light armor
+            pht->GetScannerRange() >= 2200.0f);
 
         //Start actually filling the cargo
         Mount   cargo = -c_maxCargo;
@@ -2212,8 +2211,8 @@ public:
         if (pship->GetHullType()->CanMount(nan, 0) && pstation->CanBuy(nan)) // GT scouts can mount a nan only in the second slot
             if (nan && cargo < 0)
                 BuyPartOnBudget(pship, nan, cargo++, pbudget);
-        // Buy ammo for combat ships
-        if (combatShip && pptAmmo && cargo < 0) {
+        // Buy ammo
+        if (pptAmmo && cargo < 0) {
             BuyPartOnBudget(pship, pptAmmo, cargo++, pbudget);
             if (pht->GetMaxWeapons() > 2 && cargo < 0)
                 BuyPartOnBudget(pship, pptAmmo, cargo++, pbudget);
@@ -2221,35 +2220,37 @@ public:
         // Buy 2 fuel
         if (pptFuel && cargo < 0)
             BuyPartOnBudget(pship, pptFuel, cargo++, pbudget);
-        if (pptFuel && cargo < 0)
+        if (pptFuel && cargo < 0 && combatShip)
             BuyPartOnBudget(pship, pptFuel, cargo++, pbudget);
-        // Buy one dispenser item
-        if (pptDispenser && cargo < 0)
+        // Buy one dispenser item for combat ships
+        if (combatShip && pptDispenser && cargo < 0)
             BuyPartOnBudget(pship, pptDispenser, cargo++, pbudget);
         // Buy items for non-combat ships
         if (!combatShip) {
-            // Buy an additional dispenser item
-            if (pptDispenser && cargo < 0)
-                BuyPartOnBudget(pship, pptDispenser, cargo++, pbudget);
-            // One ammo for missile-less scouts
+            // One extra ammo for missile-less scouts
             if (!pptMissile && pptAmmo && cargo < 0)
                 BuyPartOnBudget(pship, pptAmmo, cargo++, pbudget);
-            // Buy two prox
+            // Buy prox
             IpartTypeIGC* prox = GetCore()->GetPartType(59);
             if (prox && pstation->CanBuy(prox) && pship->GetHullType()->CanMount(prox, 0)) {
                 prox = (IpartTypeIGC*)(pstation->GetSuccessor(prox)); //won't return NULL
                 if (cargo < 0)
                     BuyPartOnBudget(pship, prox, cargo++, pbudget);
-                if (cargo < 0)
+                if (cargo < -2) //GT scout
                     BuyPartOnBudget(pship, prox, cargo++, pbudget);
             }
+            else {
+                //Buy Technoflux Plas Gen
+                IpartTypeIGC* plasGen = GetCore()->GetPartType(65);
+                if (plasGen && pstation->CanBuy(plasGen) && pship->GetHullType()->CanMount(plasGen, 0)) {
+                    plasGen = (IpartTypeIGC*)(pstation->GetSuccessor(plasGen)); //won't return NULL
+                    if (cargo < 0)
+                        BuyPartOnBudget(pship, plasGen, cargo++, pbudget);
+                    if (cargo < 0)
+                        BuyPartOnBudget(pship, plasGen, cargo++, pbudget);
+                }
+            }
         }
-        // Buy one missile
-        if (pptMissile && cargo < 0)
-            BuyPartOnBudget(pship, pptMissile, cargo++, pbudget);
-        // Buy one ammo for non-combat ships (falsely classified destroyers)
-        if (!combatShip && pptAmmo && cargo < 0)
-            BuyPartOnBudget(pship, pptAmmo, cargo++, pbudget);
 
         //Fill up any remaining slots
         bool    bBuyFuel = true;

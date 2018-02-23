@@ -1169,12 +1169,14 @@ void SetCharStats(int                   characterID,
 	debugf("CharacterID=%d, Rank=%d, bScoresCount=%d, CivID=%d, Rating=%d,\n",
         characterID, Rank ,pfsMission->GetScoresCount(), pSide->GetCivilization()->GetObjectID(),
 		RATING_INT2EXT(pso.GetCombatRating()));
-    debugf("    WarpsSpotted=%.2f, AsteroidsSpotted=%.2f, TechsRecovered=%.2f,\n",
+    debugf("    WarpsSpotted=%.2f, AsteroidsSpotted=%.2f, TechsRecovered=%d,\n",
         pso.GetWarpsSpotted(), pso.GetAsteroidsSpotted(), pso.GetTechsRecovered());
     debugf("    MinerKills=%.2f, BuilderKills=%.2f, LayerKills=%.2f, PlayerKills=%.2f,\n",
         pso.GetMinerKills(), pso.GetBuilderKills(), pso.GetLayerKills(), pso.GetPlayerKills());
     debugf("    BaseKills=%.2f, BaseCaptures=%.2f, Deaths=%d, PilotBaseKills=%d, BaseCaptures=%d,\n",
         pso.GetBaseKills(), pso.GetBaseCaptures(), pso.GetDeaths(), pso.GetPilotBaseKills(), pso.GetPilotBaseCaptures());
+    debugf("    HighValueTargetsSpotted=%d, Repair=%.2f,\n",
+        pso.GetTargetsSpotted(), pso.GetRepair());
     debugf("    Minutes=%.2f, bWin=%d, bLose=%d, bWinCmd=%d, bLoseCmd=%d, Score=%.2f.\n",
         (pso.GetTimePlayed() / 60.0f), pso.GetWinner(), pso.GetLoser(), pso.GetCommandWinner(), pso.GetCommandLoser(),
 		pso.GetScore());
@@ -3185,22 +3187,21 @@ bool CommandToDrone(CFSMission*         pfsMission,
     if ((pcd->commandID != c_cidNone) &&
         (pfsSender->GetIGCShip()->GetSide() == pside))
     {
+        pshipTo->SetRunawayCheckCooldown(120.0f); // don't run anytime soon while executing a player command
+
         IclusterIGC* pminerCluster = NULL;
         char pcReply[100] = "Affirmative.";
         if (*ppmodelTarget == NULL)
 		{
             if (pdb)
             {
-                if (pshipTo->GetPilotType() == c_ptMiner && pdb->type == c_buoyCluster) {
+                if (pshipTo->GetPilotType() == c_ptMiner && pdb->type == c_buoyCluster)
                     pminerCluster = pfsMission->GetIGCMission()->GetCluster(pdb->clusterID);
-                }
-                else {
-                    //Create a buoy for this chat message
-                    *ppmodelTarget = (ImodelIGC*)(pfsMission->GetIGCMission()->CreateObject(g.timeNow, OT_buoy, pdb, sizeof(*pdb)));
-                    assert (*ppmodelTarget);
+                //Create a buoy for this chat message
+                *ppmodelTarget = (ImodelIGC*)(pfsMission->GetIGCMission()->CreateObject(g.timeNow, OT_buoy, pdb, sizeof(*pdb)));
+                assert(*ppmodelTarget);
 
-                    ((IbuoyIGC*)*ppmodelTarget)->AddConsumer();
-                }
+                ((IbuoyIGC*)*ppmodelTarget)->AddConsumer();
             }
             else
             {
@@ -3239,74 +3240,6 @@ bool CommandToDrone(CFSMission*         pfsMission,
                 }
             }
 
-            if (pminerCluster) {
-                IstationIGC* pstationToDock = NULL;
-                for (StationLinkIGC* l = pminerCluster->GetStations()->first(); (l != NULL); l = l->next()) {
-                    IstationIGC* pcurStation = l->data();
-                    if (pcurStation->GetSide() == pside) {
-                        pstationToDock = pcurStation;
-                        break;
-                    }
-                }
-                bool mine = false;
-
-                CompactShipFractions fractions;
-                pshipTo->ExportFractions(&fractions);
-                float capacity = pside->GetMission()->GetFloatConstant(c_fcidCapacityHe3) *
-                    pside->GetGlobalAttributeSet().GetAttribute(c_gaMiningCapacity);
-                // Should we try to mine?
-                if ((fractions.GetShieldFraction()>0.5 || !pstationToDock) &&
-                    (pshipTo->GetOre() < capacity / 2.0f || (!pstationToDock && pshipTo->GetOre() < capacity))) 
-                {
-                    ImodelIGC*  pmodel = FindTarget(pshipTo,
-                        c_ttNeutral | c_ttAsteroid | c_ttNearest |
-                        c_ttLeastTargeted | c_ttCowardly,
-                        NULL, pminerCluster, &(pshipTo->GetPosition()), NULL,
-                        pshipTo->GetOrdersABM());
-
-                    if (pmodel) {
-                        sprintf(pcReply, "Affirmative, going to mine in %s.", pminerCluster->GetName());
-                        *ppmodelTarget = pmodel;
-                        pcd->commandID = c_cidMine;
-                        mine = true;
-                    }
-                }
-
-                if (!mine) {
-                    if (pstationToDock) {
-                        sprintf(pcReply, "Affirmative, going to dock in %s.", pminerCluster->GetName());
-                        *ppmodelTarget = pstationToDock;
-                        pcd->commandID = c_cidGoto;
-                    }
-                    else {
-                        // check if the side has explored the sector
-                        bool knownSector = false;
-                        for (AsteroidLinkIGC* l = pminerCluster->GetAsteroids()->first(); (l != NULL); l = l->next()) {
-                            IasteroidIGC* pcurRoid = l->data();
-                            if (pcurRoid->SeenBySide(pside)) {
-                                knownSector = true;
-                                break;
-                            }
-                        }
-
-                        DataBuoyIGC         buoyData;
-                        buoyData.position = Vector(0.0f, 0.0f, 0.0f);
-                        if (!knownSector && pshipTo->GetOre() < capacity / 2.0f) {
-                            //debugf(" send the miner just inside the sector, will find an asteroid there.\n");
-                            buoyData.type = c_buoyCluster;
-                        }
-                        else {
-                            //debugf(" send the miner to the center of the sector.\n");
-                            buoyData.type = c_buoyWaypoint;
-                        }
-                        buoyData.clusterID = pminerCluster->GetObjectID();
-                        buoyData.buoyID = pfsMission->GetIGCMission()->GenerateNewBuoyID();
-
-                        *ppmodelTarget = (ImodelIGC*)(pfsMission->GetIGCMission()->CreateObject(g.timeNow, OT_buoy, &buoyData, sizeof(buoyData)));
-                        pcd->commandID = c_cidGoto;
-                    }
-                }
-            }
         }
         if ((pcd->commandID == c_cidDefault) && (*ppmodelTarget != NULL))
         {
@@ -3355,20 +3288,32 @@ bool CommandToDrone(CFSMission*         pfsMission,
                                             */
         }
 
+        // Remember player commands by storing location/ID in c_cmdQueued
         if (pshipTo->GetPilotType() == c_ptMiner) {
             if ((*ppmodelTarget) &&
                 (*ppmodelTarget)->GetObjectType() != OT_station &&
                 (*ppmodelTarget)->GetObjectType() != OT_ship)
             {
-                pshipTo->SetCommand(c_cmdQueued, (ImodelIGC*)(*ppmodelTarget)->GetCluster(), c_cidDefault);
-            }
-            else
-                pshipTo->SetCommand(c_cmdQueued, NULL, c_cidNone);
+                DataBuoyIGC         buoyData;
+                buoyData.position = Vector(0.0f, 0.0f, 0.0f);
+                buoyData.type = c_buoyWaypoint; // c_buoyCluster would be deleted as soon as we are in the cluster
+                if (pminerCluster)
+                    buoyData.clusterID = pminerCluster->GetObjectID();
+                else
+                    buoyData.clusterID = (*ppmodelTarget)->GetCluster()->GetObjectID();
+                buoyData.buoyID = pfsMission->GetIGCMission()->GenerateNewBuoyID();
+                ImodelIGC* buoy = (ImodelIGC*)(pfsMission->GetIGCMission()->CreateObject(g.timeNow, OT_buoy, &buoyData, sizeof(buoyData)));
 
-            if (pminerCluster) {
-                if ((*ppmodelTarget)->GetObjectType() == OT_buoy)
-                    (*ppmodelTarget)->Release();
-                *ppmodelTarget = NULL; //no more clean-up needed
+                CommandID cid = c_cidGoto;
+                if (pminerCluster)
+                    cid = c_cidJoin;
+                pshipTo->SetCommand(c_cmdQueued, buoy, cid);
+
+                buoy->Release(); //SetCommand added the consumer needed
+            }
+            else {
+                // Remember that we just got a player command -> c_cidGoto instead of None
+                pshipTo->SetCommand(c_cmdQueued, NULL, c_cidGoto);
             }
         }
     }
@@ -7335,6 +7280,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 								NULL, NULL, NULL, NULL, c_sabmRepair);
 				}
 				pship->SetStayDocked(true);
+                pship->SetCommand(c_cmdQueued, NULL, c_cidNone); //Don't remember any sector
 				if (pmodel)
 				{
 					pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),
@@ -10819,49 +10765,36 @@ class ThingSiteImpl : public ThingSite
                     assert (sid < c_cSidesMax);
 
                     SideVisibility& sv = m_rgSideVisibility[sid];
-
+                    bool seenBefore = sv.fVisible();
 
                     //Update the visibility for everything except visible static objects
-                    //if (!(m_bPredictable && sv.fVisible()))  Xynth #100 We need to check vis on everything to get Currenteye
-					bool staticVisible = m_bPredictable && sv.fVisible(); //Xynth#100 keep track of static visibles
-					//{
-                        if (pside == pmodel->GetSide() && !pmodel->SeenBySide(pside)) //ALLY imago 7/7/09 Visibility 7/11/09
-                        {
+                        if (seenBefore && m_bPredictable) {
+                            //no need to change anything
+                        }
+                        else if (pside == pmodel->GetSide()) {
                             //Always see object on your own side (& call ShowObject() to export new stations, etc.)
-                            sv.fVisible(true);
-							sv.CurrentEyed(true); //Xynth #100 7/2010
-                            ShowObject(pside, pmodel);
-
-
-						} else if (pside->AlliedSides(pside,pmodel->GetSide()) && pside->GetMission()->GetMissionParams()->bAllowAlliedViz && !pmodel->SeenBySide(pside)) {
-										//printf("show object to ally via model's side\n");
-										//Allies See it
-                            			sv.fVisible(true);
-										sv.CurrentEyed(true); //Xynth #100 7/2010
-										ShowObject(pside, pmodel);
-			
-						} else if (sv.pLastSpotter() && sv.pLastSpotter()->InScannerRange(pmodel) && !pmodel->SeenBySide(pside)) // ALLY SCAN 7/11/09 Imago
-						{						
-	                            if (!sv.fVisible())
-	                            {
-	                                //See it
-	                                sv.fVisible(true);									
-	                                ShowObject(pside, pmodel);
-	                            }
-								sv.CurrentEyed(true); //Xynth #100 7/2010
-
-						} else if (sv.pLastSpotter() && pside->AlliedSides(pside,sv.pLastSpotter()->GetSide()) && sv.pLastSpotter()->InScannerRange(pmodel) && pside->GetMission()->GetMissionParams()->bAllowAlliedViz && !pmodel->SeenBySide(pside)) {
-	                            if (!sv.fVisible())
-	                            {
-	                                //Allies See it
-									//printf("show object to ally via last spotter's side\n");
-	                                sv.fVisible(true);									
-	                                ShowObject(pside, pmodel);
-	                            }
-								sv.CurrentEyed(true); //Xynth #100 7/2010
+                            if (!seenBefore) {
+                                sv.fVisible(true);
+                                sv.CurrentEyed(true);
+                                ShowObject(pside, pmodel);
+                            }
+						} 
+                        else if (pside->AlliedSides(pside,pmodel->GetSide()) && pside->GetMission()->GetMissionParams()->bAllowAlliedViz) {
+							//Allies See it
+                            if (!seenBefore) {
+                                sv.fVisible(true);
+                                sv.CurrentEyed(true);
+                                ShowObject(pside, pmodel);
+                            }
+						} 
+                        else if (sv.pLastSpotter() && sv.pLastSpotter()->InScannerRange(pmodel)) { // No need to check if sv.pLastSpotter is allied, as only those get set as sv.pLastSpotter
+                            if (!seenBefore) {
+                                sv.fVisible(true);
+                                sv.CurrentEyed(true);
+                                ShowObject(pside, pmodel);
+                            }
 						}
-                        else
-						{
+                        else {
                             //Not trivially seen ... loop over everything that could see it
                             sv.fVisible(false);
 							sv.CurrentEyed(false); //Xynth #100 7/2010
@@ -10874,67 +10807,52 @@ class ThingSiteImpl : public ThingSite
 
 								// If the thing is in scanner range
 								if (s->InScannerRange(pmodel)) {
-									//Xynth something was just seen, I want to know if it was a probe that saw it and if this was high value target
-									if (s->GetObjectType() == OT_probe && pmodel->GetSide() != nullptr)
-									{
-										ObjectID spottedID = pmodel->GetObjectID();
-										IshipIGC* pSpottedShip = pmodel->GetSide()->GetShip(spottedID);	
 
-										// Guarding against server crash.
-										if (pSpottedShip != nullptr && pSpottedShip->GetHullType() != nullptr && pSpottedShip->GetHullType()->GetData() != nullptr)
-										{
-											AssetMask am = GetAssetMask(pSpottedShip, pSpottedShip->GetHullType(), false);
-											short hvMask = c_amEnemyMiner | c_amEnemyBuilder | c_amEnemyCapital | c_amEnemyCarrier | c_amEnemyBomber | c_amEnemyAPC | c_amEnemyTeleportShip;
-											if (am & hvMask)
-											{
-												ObjectID probeID = s->GetObjectID();
-												ImodelIGC * pProbeModel = s->GetMission()->GetModel(OT_probe, probeID);
-												IprobeIGC * pProbe = (IprobeIGC*)pProbeModel;
-												if (pProbe && !pSpottedShip->beenSpotted())
-												{
-													IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
-													if (pProbingShip)
-													{
-														CFSShip* pfsShip = (CFSShip *)(pProbingShip->GetPrivateData());
-														if (pfsShip && pfsShip->IsPlayer())
-														{
-															CFSPlayer* pfsPlayer = pfsShip->GetPlayer();
-															if (pfsPlayer)
-															{
-																PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
-																if (pso)
-																	pso->AddProbeSpot();
-																pfsPlayer->GetSteamAchievements()->AwardIGCAchievements(c_achmProbeSpot);
-															}
-														}
-													}
-												}
-											}
-										}
-										if (pSpottedShip) //mark ship as novelly spotted
-											pSpottedShip->SpotShip();
-									}
-									else if (OT_probe && pmodel->GetSide() != nullptr) //wasn't a probe but still want to mark it as a novel spot
-									{
-										ObjectID spottedID = pmodel->GetObjectID();
-										IshipIGC* pSpottedShip = pmodel->GetSide()->GetShip(spottedID);
-										if (pSpottedShip != nullptr)
-											pSpottedShip->SpotShip();
-									}
-
-									
 									bool bSent = false;
                                     //See it
-									if (!pmodel->SeenBySide(pside)) {
-                                    	if (!staticVisible)  //Xynth #135 7/2010
-										{											
-                                    		bSent = ShowObject(pside, pmodel);
-										}
-										sv.fVisible(true);
-										sv.CurrentEyed(true); //Xynth #100 7/2010
+                                    if (!seenBefore) {
+                                        bSent = ShowObject(pside, pmodel);
+                                        sv.fVisible(true);
+                                        sv.CurrentEyed(true); //Xynth #100 7/2010
 
-									}
+                                        //Check for spotted high value targets and award achievement/score
+                                        if (pmodel->GetObjectType() == OT_ship) {
+                                            ObjectType t;
+                                            IshipIGC* pSpottedShip = (IshipIGC*)pmodel;
+                                            //debugf("Ship %s spotted by %s.\n", GetModelName(pmodel), GetModelName(s));
+                                            if (pSpottedShip && pSpottedShip->GetHullType()->GetData()) { // Guard for exploding ship without data
+                                                AssetMask spottedMask = GetAssetMask(pSpottedShip, pSpottedShip->GetHullType(), false);
+                                                const short hvMask = c_amEnemyMiner | c_amEnemyBuilder | c_amEnemyCapital | c_amEnemyCarrier | c_amEnemyBomber | c_amEnemyAPC | c_amEnemyTeleportShip;
+                                                if (spottedMask & hvMask) {
+                                                    if (!pSpottedShip->RecentlySpotted()) {
+                                                        if (s->GetObjectType() == OT_probe) {
+                                                            IprobeIGC* pProbe = (IprobeIGC*)s;
+                                                            IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
+                                                            if (pProbingShip && pProbingShip->GetPilotType() >= c_ptPlayer) {
+                                                                CFSShip* pfsShip = (CFSShip*)(pProbingShip->GetPrivateData());
+                                                                PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
+                                                                pso->AddTargetSpot();
+                                                                if (pfsShip->IsPlayer())
+                                                                    pfsShip->GetPlayer()->GetSteamAchievements()->AwardIGCAchievements(c_achmProbeSpot);
+                                                            }
+                                                        }
+                                                        else if (s->GetObjectType() == OT_ship) {
+                                                            IshipIGC* spottingShip = (IshipIGC*)s;
+                                                            if (spottingShip->GetPilotType() >= c_ptPlayer) {
+                                                                CFSShip* pfsShip = (CFSShip*)(spottingShip->GetPrivateData());
+                                                                PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
+                                                                pso->AddTargetSpot();
+                                                            }
+                                                        }
+                                                        //mark hv ship as previously spotted, no matter by whom
+                                                        pSpottedShip->MarkPreviouslySpotted();
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
 									
+                                    //Show it to allies who don't see it
 									if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY should be SCAN Imago 7/11/09
 									{
 										//lets get a list of allied sideIDs
@@ -10957,8 +10875,7 @@ class ThingSiteImpl : public ThingSite
 												ObjectType  otSpotter = s->GetObjectType();
 		                                        if (((bAllySent) && otModel == OT_station || otModel == OT_warp ||
 		                                            (otModel == OT_asteroid &&
-		                                             (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0))
-													 && !staticVisible) //Xynth #135 7/2010
+		                                             (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0)))
 												{
 
 	                                           		ObjectType  otSpotter = s->GetObjectType();
@@ -10973,7 +10890,8 @@ class ThingSiteImpl : public ThingSite
 												}
 											}
 										}
-									}									
+									}	
+
                                     //Keep track of who spotted it
                                     sv.pLastSpotter(s);
 
@@ -10983,13 +10901,13 @@ class ThingSiteImpl : public ThingSite
                                         ObjectType otModel = pmodel->GetObjectType();									
                                         if ((otModel == OT_station || otModel == OT_warp ||
                                             (otModel == OT_asteroid &&
-                                             (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0)) //Imago - Review - what about mineable?! 7/10
-											 && !staticVisible) //Xynth #135 7/2010
+                                             (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0))) //Imago - Review - what about mineable?! 7/10
 										{
                                             ObjectType  otSpotter = s->GetObjectType();
 											//Imago #121
 											if (otModel == OT_station) {
                                                 pside->UpdateTerritory();
+                                                pside->HandleNewEnemyCluster(pmodel->GetCluster());
 
 												ObjectID roidID = static_cast<IstationIGC*>(pmodel)->GetRoidID();
 												//asteroid to silently pop
@@ -11066,17 +10984,13 @@ class ThingSiteImpl : public ThingSite
                                 }
                             }
 
-                            if (!sv.fVisible())
-                            {
+                            if (!sv.fVisible() && seenBefore) {
                                 // hide it
 								sv.CurrentEyed(false); //Xynth #100 7/2010
                                 HideObject(pside, pmodel);
                                 sv.pLastSpotter(NULL);
                             }
                         }                    
-					//} Xynth #100 need to make sure static objects are visible once spotted
-						if (staticVisible && !sv.CurrentEyed())
-							sv.fVisible(true);
                 }
             }
 		}
@@ -13447,6 +13361,9 @@ bool FedSrvSiteBase::UseRipcord(IshipIGC* pship, ImodelIGC* pmodel)
         }
 		*/
     }
+
+    CFSShip* pfsShip = (CFSShip*)pship->GetPrivateData();
+    pfsShip->ShipStatusSpotted(pship->GetSide());
 
     return true;
 }

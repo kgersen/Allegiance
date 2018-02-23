@@ -2790,7 +2790,7 @@ public:
 		debugf("Reading FFGain, MouseSensitivity\n");
 
 		m_pnumFFGain = new ModifiableNumber((float)LoadPreference("FFGain", 10000)); //Imago #187 
-		m_pnumMouseSens = new ModifiableNumber(atof(LoadPreference("MouseSensitivity", "1.0"))); //Imago #215 8/10
+		m_pnumMouseSens = new ModifiableNumber(atof(LoadPreference("MouseSensitivity", "0.6")));
 
 		debugf("TrekResources::Initialize() - Loading fonts.\n");
 
@@ -2913,11 +2913,11 @@ public:
         pnsGamePanes->AddMember("targetHudColor", m_pcolorTargetHUD = new ModifiableColorValue(Color::Black()));
 
         pnsGamePanes->AddMember("SFXGain", m_pnumSFXGain =
-            new ModifiableNumber(-(float)LoadPreference("SFXGain", 5)));
+            new ModifiableNumber(-(float)LoadPreference("SFXGain", 8)));
         pnsGamePanes->AddMember("MusicGain", m_pnumMusicGain =
             new ModifiableNumber(-(float)LoadPreference("MusicGain", 30)));
         pnsGamePanes->AddMember("VoiceOverGain", m_pnumVoiceOverGain =
-            new ModifiableNumber(-(float)LoadPreference("VoiceOverGain", 10))); //Imago 7/13/09 made default voice over volume lower than sfx volume
+            new ModifiableNumber(-(float)LoadPreference("VoiceOverGain", 13)));
         pnsGamePanes->AddMember("AllegianceCD", m_pDiskPlayer);
         pnsGamePanes->AddMember("MutexSal", m_psoundmutexSal);
         pnsGamePanes->AddMember("MutexVO", m_psoundmutexVO);
@@ -11156,11 +11156,6 @@ public:
         //bool newButton4 = m_ptrekInput->GetButton(3); // !!! was next weapon
         //bool newButton5 = m_ptrekInput->GetButton(4); // !!! was vector lock
         bool newButton6 = m_ptrekInput->IsTrekKeyDown(TK_MatchSpeed , bReadKeyboard);
-
-        if (newButton3) {
-            trekClient.trekThrottle = 1.0f;
-            bThrottleChange = !trekClient.joyThrottle;
-        }
 
         if (bInternalCamera)
         {

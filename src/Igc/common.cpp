@@ -354,7 +354,7 @@ bool  FindableModel(ImodelIGC*          m,
 
 static bool IsFriendlyCluster(IclusterIGC*  pcluster, IsideIGC* pside)
 {
-    StationLinkIGC* psl = pcluster->GetStations()->first();
+    /*StationLinkIGC* psl = pcluster->GetStations()->first();
     if (psl == NULL)
         return false;                   //No stations == unfriendly
 
@@ -383,31 +383,45 @@ static bool IsFriendlyCluster(IclusterIGC*  pcluster, IsideIGC* pside)
 	if (!(pmp->bExperimental)) {
 	  return rc; // mmf 10/07 orig code
 	}
-    // mmf else if Experimental game type fall through to yp's code
+    // mmf else if Experimental game type fall through to yp's code*/
+
+    bool rc = pside->IsTerritory(pcluster);
+
 	// yp: Improving AI: no reason to check further if we already know its a hostile sector
 	if(rc == false)
 		return rc;
+
 	// we should also check to see if there is a lot of enemy in the sector.
 	// we wouldnt want to go somewhere hostile even if we do have a base there.
 	if(pcluster->GetShips() != NULL)
 	{
 		int friendlyShipCount = 0;
 
-		for (ShipLinkIGC*   psl = pcluster->GetShips()->first(); (psl != NULL); psl = psl->next()) // mmf changed this to pcluste->GetShips from pside
+		for (ShipLinkIGC*   psl = pcluster->GetShips()->first(); (psl != NULL); psl = psl->next())
         {
             IshipIGC*   pship = psl->data();
-			// If our team knows that ship is there or its one of our ships, then we can count it.
-            if (pship->SeenBySide(pside) || pship->GetSide() == pside)
+			// If our team knows that ship is there, then we can count it.
+            if (pship->SeenBySide(pside))
 			{
-				//if (pside != pship->GetSide()) // if its not our side then we subtract 1 from our count
-				if ((pside != pship->GetSide()) && !IsideIGC::AlliedSides(pside,pship->GetSide())) //#ALLY -was: line above IMAGO FIXED LIKE THIS ALL OVER 7/8/09
+                PilotType pt = pship->GetPilotType();
+				if ((pside != pship->GetSide()) && !IsideIGC::AlliedSides(pside,pship->GetSide()))
 				{// count hostiles in the system.
-					// TODO: Make smarter: Assign differnt ship hulls a differnt amount of points, could also handle drones differntly
-					friendlyShipCount--;
+                    //Different weights for pilot types
+                    if (pt == c_ptCarrier)
+                        friendlyShipCount -= 6;
+                    else if (pt >= c_ptPlayer || pt == c_ptWingman)
+                        friendlyShipCount -= 2;
+                    else
+					    friendlyShipCount--;
 				}
 				else//, otherwise we increment it.
 				{// count friendlys in the system.
-					friendlyShipCount++;
+                    if (pt == c_ptCarrier)
+                        friendlyShipCount += 2;
+                    else if (pt >= c_ptPlayer || pt == c_ptWingman)
+                        friendlyShipCount += 2;
+                    else
+                        friendlyShipCount++;
 				}
 			}
         }
@@ -676,7 +690,7 @@ ImodelIGC*  FindTarget(IshipIGC*           pship,
                             if (clustersVisited.find(pclusterOther) == NULL)
                             {
                                 //No
-                                if (((ttMask & c_ttCowardly) == 0) || pside->IsTerritory(pclusterOther))
+                                if (((ttMask & c_ttCowardly) == 0) || IsFriendlyCluster(pclusterOther, pside))
                                     pwlTwoAway->last(pwarpDestination);
                             }
                         }
@@ -2645,21 +2659,21 @@ void   PlayerScoreObject::CalculateScore(ImissionIGC*   pmission)
     float   kMax = m_dtPlayed / (15.0f * 60.0f);    //1.0 / 15 minutes
 
 
-    m_fScore = float(m_cWarpsSpotted)       * pmission->GetFloatConstant(c_fcidPointsWarp) +
-        float(m_cAsteroidsSpotted)           * pmission->GetFloatConstant(c_fcidPointsAsteroid) +
+    m_fScore = float(m_cWarpsSpotted)       * pmission->GetFloatConstant(c_fcidPointsWarp) + // 2 on PCore15
+        float(m_cAsteroidsSpotted)           * pmission->GetFloatConstant(c_fcidPointsAsteroid) + // 1 on PCore15
         m_cTechsRecovered                    * pmission->GetFloatConstant(c_fcidPointsTech) +
         (m_cMinerKills * kMax)               * pmission->GetFloatConstant(c_fcidPointsMiner) / (m_cMinerKills + kMax) +
         (m_cBuilderKills * kMax)             * pmission->GetFloatConstant(c_fcidPointsBuilder) / (m_cBuilderKills + kMax) +
         (m_cLayerKills * kMax)               * pmission->GetFloatConstant(c_fcidPointsLayer) / (m_cLayerKills + kMax) +
         (m_cCarrierKills * kMax)             * pmission->GetFloatConstant(c_fcidPointsCarrier) / (m_cCarrierKills + kMax) +
-        m_cPlayerKills                       * pmission->GetFloatConstant(c_fcidPointsPlayer) +
+        m_cPlayerKills                       * pmission->GetFloatConstant(c_fcidPointsPlayer) + // 10 on PCore15
         (m_cBaseKills * kMax)                * pmission->GetFloatConstant(c_fcidPointsBaseKill) / (m_cBaseKills + kMax) +
         (m_cBaseCaptures * kMax)             * pmission->GetFloatConstant(c_fcidPointsBaseCapture) / (m_cBaseCaptures + kMax) +
         float(m_cRescues)                    * pmission->GetFloatConstant(c_fcidPointsRescues) +
         float(m_cArtifacts)                  * pmission->GetFloatConstant(c_fcidPointsArtifacts) +
         float(m_cFlags)                      * pmission->GetFloatConstant(c_fcidPointsFlags) +
-        float(m_cProbeSpot)                  * 10 +
-        float(m_cRepair)                     * 10;
+        float(m_cHighValueTargetsSpotted)    * 2 +
+        m_cRepair                            * 5;
 
     if (m_bWin)
         m_fScore *= 2.0f;
