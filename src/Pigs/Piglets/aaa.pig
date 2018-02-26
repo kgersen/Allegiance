@@ -3,8 +3,7 @@
 
 
 // These files provide an intellisense bridge to COM. Use PigJSDocGenerator to update the intellisense if you modify an IDL file. -->
-<script src="include\AGC.js"/>
-<script src="include\Pigs.js"/>
+<script src="include\IDL.js"/>
 
 // Helper functions to make your pig go.
 <script src="include\common.js"/>

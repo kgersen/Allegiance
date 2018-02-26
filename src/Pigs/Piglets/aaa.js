@@ -1,5 +1,4 @@
-/// <reference path="include/AGCIDL.d.ts" />
-/// <reference path="include/PigsIDL.d.ts" />  
+/// <reference path="include/IDL.d.ts" /> 
 /// <reference path="include/imago.js" />  
 
 
@@ -15,8 +14,16 @@ var DebugSpam = true;
 var CivSelection = "Iron Coalition,Dreghklar,Belters,Rixan,Gigacorp,Bios,Ga'Taraan,Technoflux,Draconium";  //blank for Random
 var ShipSelection = "Interceptor";
 UpdatesPerSecond = 30;
- 
+
+/** Event Callback
+ * @param {string} strText The radius of the circle.
+ * @param {IAGCShip} objShip The radius of the circle.
+ * @return {void}  
+ */
 function OnReceiveChat(strText, objShip) {
+    Pig.Host.Trace("Coooooooooooooooooooooooooooooooooooooooooooool beeeeeeeeeeeeaaaaaaaaaaaanzzzzzzzzzzzzzzzzzzzzzzzzzzz\n");
+
+    var x = CType.IAGCShip(objShip);
     
     if (strText == "#check") {
         Pig.Game.SendChat("Check baby check! HullTypeCount = " + Pig.HullTypes.Count + ", objShip.Name: " + objShip.Name);
@@ -43,6 +50,8 @@ function OnReceiveChat(strText, objShip) {
     if (objShip.Team != Ship.Team)
         return;
 }
+
+
 
 // deep space!
 function OnStateFlying(eStatePrevious) {

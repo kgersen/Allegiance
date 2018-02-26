@@ -186,3 +186,151 @@ Enums.FileAttributes.FileAttribute_Compressed = 0x00000800;
 Enums.FileAttributes.FileAttribute_Offline = 0x00001000;
 Enums.FileAttributes.FileAttribute_NotContentIndexed = 0x00002000;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// PigState Enum
+
+Enums.PigState = function () { };
+
+Enums.PigState.PigState_NonExistant = 0;
+Enums.PigState.PigState_LoggingOn = 1;
+Enums.PigState.PigState_LoggingOff = 2;
+Enums.PigState.PigState_MissionList = 3;
+Enums.PigState.PigState_CreatingMission = 4;
+Enums.PigState.PigState_JoiningMission = 5;
+Enums.PigState.PigState_QuittingMission = 6;
+Enums.PigState.PigState_TeamList = 7;
+Enums.PigState.PigState_JoiningTeam = 8;
+Enums.PigState.PigState_WaitingForMission = 9;
+Enums.PigState.PigState_Docked = 10;
+Enums.PigState.PigState_Launching = 11;
+Enums.PigState.PigState_Flying = 12;
+Enums.PigState.PigState_Terminated = 13;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// PigMapType Enum
+
+Enums.PigMapType = function () { };
+
+Enums.PigMapType.PigMapType_SingleRing = 0;
+Enums.PigMapType.PigMapType_DoubleRing = 1;
+Enums.PigMapType.PigMapType_PinWheel = 2;
+Enums.PigMapType.PigMapType_DiamondRing = 3;
+Enums.PigMapType.PigMapType_Snowflake = 4;
+Enums.PigMapType.PigMapType_SplitBases = 5;
+Enums.PigMapType.PigMapType_Brawl = 6;
+Enums.PigMapType.PigMapType_Count = 7;
+Enums.PigMapType.PigMapType_Default = PigMapType_Brawl;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// PigLobbyMode Enum
+
+Enums.PigLobbyMode = function () { };
+
+Enums.PigLobbyMode.PigLobbyMode_Club = 0;
+Enums.PigLobbyMode.PigLobbyMode_Free = 1;
+Enums.PigLobbyMode.PigLobbyMode_LAN = 2;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// PigThrust Enum
+
+Enums.PigThrust = function () { };
+
+Enums.PigThrust.ThrustNone = 0;
+Enums.PigThrust.ThrustLeft = 1;
+Enums.PigThrust.ThrustRight = 2;
+Enums.PigThrust.ThrustUp = 3;
+Enums.PigThrust.ThrustDown = 4;
+Enums.PigThrust.ThrustForward = 5;
+Enums.PigThrust.ThrustBackward = 6;
+Enums.PigThrust.ThrustBooster = 7;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// These functions are simple pass-throughs so that your code will work properly at run-time.  
+// This is how you can get intellisense support without having to use typescript to create a pig.
+
+var CType = function() { };
+CType.IAGCEventSink = function(o) { return o; };
+CType.IAGCEventSinkSynchronous = function(o) { return o; };
+CType.IAGCDebugHook = function(o) { return o; };
+CType.IAGCGlobal = function(o) { return o; };
+CType.IAGCVector = function(o) { return o; };
+CType.IAGCVectorPrivate = function(o) { return o; };
+CType.IAGCOrientation = function(o) { return o; };
+CType.IAGCOrientationPrivate = function(o) { return o; };
+CType.IAGCEventType = function(o) { return o; };
+CType.IAGCEvent = function(o) { return o; };
+CType.IAGCEventCreate = function(o) { return o; };
+CType.IAGCGameParameters = function(o) { return o; };
+CType.IAGCCommand = function(o) { return o; };
+CType.IAGCCommandPrivate = function(o) { return o; };
+CType.IAGCVersionInfo = function(o) { return o; };
+CType.IAGCDBParams = function(o) { return o; };
+CType.IAGCEventLogger = function(o) { return o; };
+CType.IAGCEventLoggerHook = function(o) { return o; };
+CType.IAGCEventLoggerPrivate = function(o) { return o; };
+CType.IAGCRangePrivate = function(o) { return o; };
+CType.IAGCRangesPrivate = function(o) { return o; };
+CType.IAGCEventIDRange = function(o) { return o; };
+CType.IAGCEventIDRanges = function(o) { return o; };
+CType.ITCCollection = function(o) { return o; };
+CType.ITCStrings = function(o) { return o; };
+CType.ITCPropBagOnRegKey = function(o) { return o; };
+CType.ITCSessionInfo = function(o) { return o; };
+CType.ITCSessionInfos = function(o) { return o; };
+CType.ITCCollectionPersistHelper = function(o) { return o; };
+CType.ITCUtility = function(o) { return o; };
+CType.IAdminSessionHelper = function(o) { return o; };
+CType.IAGCPrivate = function(o) { return o; };
+CType.IAGCCommon = function(o) { return o; };
+CType.IAGCCollection = function(o) { return o; };
+CType.IAGCBase = function(o) { return o; };
+CType.IAGCModel = function(o) { return o; };
+CType.IAGCModels = function(o) { return o; };
+CType.IAGCBuyable = function(o) { return o; };
+CType.IAGCHullType = function(o) { return o; };
+CType.IAGCTreasure = function(o) { return o; };
+CType.IAGCTreasures = function(o) { return o; };
+CType.IAGCDamage = function(o) { return o; };
+CType.IAGCScanner = function(o) { return o; };
+CType.IAGCProbe = function(o) { return o; };
+CType.IAGCProbes = function(o) { return o; };
+CType.IAGCGame = function(o) { return o; };
+CType.IAGCShip = function(o) { return o; };
+CType.IAGCShips = function(o) { return o; };
+CType.IAGCStation = function(o) { return o; };
+CType.IAGCStations = function(o) { return o; };
+CType.IAGCAleph = function(o) { return o; };
+CType.IAGCAlephs = function(o) { return o; };
+CType.IAGCSector = function(o) { return o; };
+CType.IAGCSectors = function(o) { return o; };
+CType.IAGCTeam = function(o) { return o; };
+CType.IAGCTeams = function(o) { return o; };
+CType.IAGCAsteroid = function(o) { return o; };
+CType.IAGCAsteroids = function(o) { return o; };
+CType.IPigBehaviorType = function(o) { return o; };
+CType.IPigBehaviorTypes = function(o) { return o; };
+CType.IPigBehaviorScriptType = function(o) { return o; };
+CType.IPigBehaviorHost = function(o) { return o; };
+CType.IPigBehavior = function(o) { return o; };
+CType.IPigBehaviors = function(o) { return o; };
+CType.IPigBehaviorStack = function(o) { return o; };
+CType.IPig = function(o) { return o; };
+CType.IPigs = function(o) { return o; };
+CType.IPigTeam = function(o) { return o; };
+CType.IPigTeams = function(o) { return o; };
+CType.IPigMissionParams = function(o) { return o; };
+CType.IPigMissionParamsPrivate = function(o) { return o; };
+CType.IPigMission = function(o) { return o; };
+CType.IPigMissions = function(o) { return o; };
+CType.IPigLobby = function(o) { return o; };
+CType.IPigLobbies = function(o) { return o; };
+CType.IPigSession = function(o) { return o; };
+CType.IPigSessionEvents = function(o) { return o; };
+CType.IPigEvent = function(o) { return o; };
+CType.IPigTimer = function(o) { return o; };
+CType.IPigShip = function(o) { return o; };
+CType.IPigShipEvent = function(o) { return o; };
+CType.IPigVector = function(o) { return o; };
+CType.IPigAccount = function(o) { return o; };
+CType.IPigAccountDispenser = function(o) { return o; };
+CType.IPigHullTypes = function(o) { return o; };

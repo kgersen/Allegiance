@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -43,7 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration.cs" />
     <Compile Include="Entities\EnumValue.cs" />
+    <Compile Include="Entities\Interface.cs" />
     <Compile Include="Entities\Parameter.cs" />
     <Compile Include="Entities\Signature.cs" />
     <Compile Include="Program.cs" />

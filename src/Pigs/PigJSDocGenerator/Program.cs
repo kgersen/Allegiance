@@ -14,28 +14,43 @@ namespace PigJSDocGenerator
     {
         static int Main(string[] args)
         {
-            if (args.Length != 3)
-            {
-                Console.WriteLine("Usage:");
-                Console.WriteLine("PigJSDocGenerator <input .idl file> <output .js file> <output .d.ts file>");
-                return -1;
-            }
+            //Console.WriteLine(Configuration.OutputJavascriptFile);
+            //Console.WriteLine(Configuration.OutputTypescriptDefinitionFile);
+
+            //if (args.Length != 3)
+            //{
+            //    Console.WriteLine("Usage:");
+            //    Console.WriteLine("PigJSDocGenerator <input .idl file> <output .js file> <output .d.ts file>");
+            //    return -1;
+            //}
 
             Program program = new Program();
-            return program.Run(args[0], args[1], args[2]);
+            return program.Run();
 
         }
 
-        private int Run(string inputIdlFile, string outputJsFile, string outputTsFile)
+        private int Run()
         {
-            StreamReader streamReader = new StreamReader(inputIdlFile);
-            string idlContents = streamReader.ReadToEnd();
+            StringBuilder idlContentsBuilder = new StringBuilder();
 
-            StreamWriter streamWriterJS = new StreamWriter(outputJsFile, false);
+            foreach (string inputfile in Configuration.Filenames)
+            {
+                StreamReader streamReader = new StreamReader(inputfile);
+                idlContentsBuilder.Append(streamReader.ReadToEnd());
+                streamReader.Close();
+            }
+
+            string idlContents = idlContentsBuilder.ToString();
+
+
+            //StreamReader streamReader = new StreamReader(inputIdlFile);
+            //string idlContents = streamReader.ReadToEnd();
+
+            StreamWriter streamWriterJS = new StreamWriter(Configuration.OutputJavascriptFile, false);
             WriteJSDocHeader(streamWriterJS);
 
-            StreamWriter streamWriterTS = new StreamWriter(outputTsFile, false);
-            WriteTSDocHeader(Path.GetFileName(inputIdlFile), streamWriterTS);
+            StreamWriter streamWriterTS = new StreamWriter(Configuration.OutputTypescriptDefinitionFile, false);
+            WriteTSDocHeader(streamWriterTS);
 
             FindEnumBlocksAndWriteToFile(streamWriterJS, streamWriterTS, idlContents);
 
@@ -53,10 +68,10 @@ namespace PigJSDocGenerator
 
         private void FindInterfaceBlocksAndWriteToFile(StreamWriter streamWriterJS, StreamWriter streamWriterTS, string idlContents)
         {
-            // (?<block>\[.*?\]\s+(?<blocktype>((interface)|(typedef))).*?\{.*?\})
+            // (?<block>\[.*?\]\s+(?<blocktype>((interface)|(typedef)|(dispinterface))).*?\{.*?\})
             Regex blockFinder = new Regex(
-                  "(?<block>\\[.*?\\]\\s+(?<blocktype>((interface)|(typedef)))." +
-                  "*?\\{.*?\\})",
+                  "(?<block>\\[.*?\\]\\s+(?<blocktype>((interface)|(typedef)|(d" +
+                  "ispinterface))).*?\\{.*?\\})",
                 RegexOptions.IgnoreCase
                 | RegexOptions.Multiline
                 | RegexOptions.Singleline
@@ -86,6 +101,7 @@ namespace PigJSDocGenerator
                 );
 
             List<Signature> signatures = new List<Signature>();
+            List<Interface> interfaces = new List<Interface>();
 
             foreach (Match interfaceMatch in blockFinder.Matches(idlContents))
             {
@@ -104,6 +120,13 @@ namespace PigJSDocGenerator
                     string name = elementMatch.Groups["name"].Value;
                     string inherits = elementMatch.Groups["inherits"].Value.Trim();
 
+                    interfaces.Add(new Interface()
+                    {
+                        Name = name,
+                        HelpString = helpstring
+                    });
+
+
                     signatures = ParseInterfaceBlock(elementMatch.Groups["lines"].Value);
 
                     WriteTSDocInterface(streamWriterTS, helpstring, name, inherits, signatures);
@@ -112,6 +135,47 @@ namespace PigJSDocGenerator
                     //    WriteJSDocInterface(streamWriterJS, helpstring, name, signatures);
                 }
             }
+
+            WriteTSDocCasts(streamWriterTS, interfaces);
+            WriteJSDocCasts(streamWriterJS, interfaces);
+        }
+
+        private void WriteJSDocCasts(StreamWriter streamWriter, List<Interface> interfaces)
+        {
+            streamWriter.WriteLine(@"////////////////////////////////////////////////////////////////////////////////////////////////////");
+            streamWriter.WriteLine($"// These functions are simple pass-throughs so that your code will work properly at run-time.  ");
+            streamWriter.WriteLine($"// This is how you can get intellisense support without having to use typescript to create a pig.");
+            streamWriter.WriteLine("");
+
+            streamWriter.WriteLine("var CType = function() { };");
+
+            foreach (var item in interfaces)
+            {
+                streamWriter.WriteLine($"CType.{item.Name} = function(o) {{ return o; }};");
+            }
+        }
+
+        private void WriteTSDocCasts(StreamWriter streamWriter, List<Interface> interfaces)
+        {
+            streamWriter.WriteLine(@"////////////////////////////////////////////////////////////////////////////////////////////////////");
+            streamWriter.WriteLine($"// These declarations enable you to convert your JS objects into COM Interfaces so that you can  ");
+            streamWriter.WriteLine($"// get intellisense for event handler parameters.");
+            streamWriter.WriteLine("");
+
+            streamWriter.WriteLine("interface ICType {");
+
+            foreach (var item in interfaces)
+            {
+                streamWriter.WriteLine("/**");
+                streamWriter.WriteLine($" * Casts the passed object to {item.Name} - {item.HelpString}");
+                streamWriter.WriteLine(" */");
+                streamWriter.WriteLine($"\t{item.Name}(o: any): {item.Name};");
+            }
+
+            streamWriter.WriteLine("}");
+
+            streamWriter.WriteLine("");
+            streamWriter.WriteLine("declare const CType: ICType;");
         }
 
         private void WriteJSDocInterface(StreamWriter streamWriter, string helpstring, string name, List<Signature> signatures)
@@ -231,7 +295,7 @@ namespace PigJSDocGenerator
                     streamWriter.WriteLine($"\t * {signature.HelpString}");
                     streamWriter.WriteLine("\t */");
 
-                    streamWriter.Write($"\t{(isGlobal ? "function" : "")} {signature.Name}(");
+                    streamWriter.Write($"\t{(isGlobal ? "declare function" : "")} {signature.Name}(");
 
                     bool firstParameter = true;
                     foreach (var parameter in signature.Paramaters)
@@ -245,9 +309,9 @@ namespace PigJSDocGenerator
                     }
 
                     if (String.IsNullOrWhiteSpace(signature.ReturnType) == false)
-                        streamWriter.WriteLine($"): {signature.ReturnType}{(isGlobal ? " { }" : ";")}");
+                        streamWriter.WriteLine($"): {signature.ReturnType}{(isGlobal ? ";" : ";")}");
                     else
-                        streamWriter.WriteLine($"){(isGlobal ? " { }" : ";")}");
+                        streamWriter.WriteLine($"){(isGlobal ? ";" : ";")}");
                 }
                 else if (signature.SetProperty == true || signature.GetProperty == true)
                 {
@@ -493,6 +557,10 @@ namespace PigJSDocGenerator
                     break;
 
                 case "VARIANT_BOOL":
+                    returnValue = "boolean";
+                    break;
+
+                case "BOOL":
                     returnValue = "boolean";
                     break;
 
@@ -869,7 +937,7 @@ namespace PigJSDocGenerator
             streamWriter.WriteLine("");
         }
 
-        private void WriteTSDocHeader(string idlFilename, StreamWriter streamWriter)
+        private void WriteTSDocHeader(StreamWriter streamWriter)
         {
             streamWriter.WriteLine(@"
 // ***
@@ -881,14 +949,15 @@ namespace PigJSDocGenerator
 interface IDispatch { }
 interface IDictionary { }
 interface IUnknown { }
+interface IStream { }
 ");
 
-            if (idlFilename.Equals("AGCIDL.idl", StringComparison.InvariantCultureIgnoreCase) == true)
-            {
+            //if (idlFilename.Equals("AGCIDL.idl", StringComparison.InvariantCultureIgnoreCase) == true)
+            //{
                 //streamWriter.WriteLine("/// <reference path='AGCEventsIDL.d.ts' />");
                 streamWriter.WriteLine("");
                 streamWriter.WriteLine("type Guid = string;");
-            }
+            //}
 
             streamWriter.WriteLine("");
         }
