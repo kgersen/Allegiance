@@ -89,6 +89,7 @@ class IndicatorImage : public Image {
     TRef<Surface>    m_psurfaceLeadOutRange;
     TRef<Camera>     m_pcamera;
     TRef<Geo>        m_pgeoPointer;
+    TRef<Geo>        m_pgeoJoystickPointer;
     TRef<Material>   m_pmaterial;
 
     Viewport*  GetViewport() { return Viewport::Cast(GetChild(0));  }
@@ -119,6 +120,7 @@ public:
         m_psurfaceTrainingOverlay = pmodeler->LoadSurface (AWF_HUD_TRAINING_OVERLAY, true);
 
         m_pgeoPointer             = pmodeler->LoadGeo("pointer", true);
+        m_pgeoJoystickPointer     = pmodeler->LoadGeo("joystickindicator", true);
 
         m_pmaterial = CreateMaterial(Color::Black());
     }
@@ -147,6 +149,28 @@ public:
 			pcontext->SetBlendMode(BlendModeAdd);
             pcontext->DrawImage3D(m_psurfaceDirectionIn, Color(0.4f, 0.4f, 0.4f, 0.4f), true, rect.Center());
         }
+    }
+
+    void RenderJoystickIndicator(Context* pcontext) {
+        const ControlData& shipControls = trekClient.GetShip()->GetControls();
+        //Point pointJoystick = GetViewRect()->GetValue().Center() - Point(100.0f*shipControls.jsValues[c_axisYaw], 100.0f*shipControls.jsValues[c_axisPitch]);
+        //pitch + yaw <= 1.0
+
+        pcontext->PushState();
+        pcontext->Translate(GetViewRect()->GetValue().Center() - Point(100.0f*shipControls.jsValues[c_axisYaw], 100.0f*shipControls.jsValues[c_axisPitch]));
+        pcontext->Begin3DLayer(m_pcamera, false);
+        pcontext->DirectionalLight(Vector(0, 0, 1), Color(1.0f, 1.0f, 1.0f));
+        pcontext->SetAmbientLevel(0.25f);
+        float angle = atan(shipControls.jsValues[c_axisPitch] / shipControls.jsValues[c_axisYaw]) + pi / 2;
+        if (shipControls.jsValues[c_axisYaw] < 0)
+            angle += pi;
+        pcontext->Rotate(Vector(0, 0, 1), angle);
+        pcontext->Scale3(Point(shipControls.jsValues[c_axisYaw], shipControls.jsValues[c_axisPitch]).Length() / 2 + 0.5f);
+        m_pmaterial->SetDiffuse(Color(1.0f, 1.0f, 1.0f));
+        pcontext->SetMaterial(m_pmaterial);
+        m_pgeoJoystickPointer->Render(pcontext);
+        pcontext->End3DLayer();
+        pcontext->PopState();
     }
 
     void RenderLeadIndicator(Context* pcontext)
@@ -664,6 +688,10 @@ public:
             //
             // Draw the indicators
             //
+
+            if (GetWindow()->GetShowJoystickIndicator())
+                RenderJoystickIndicator(pcontext);
+
             RenderLeadIndicator(pcontext);
 
             ImodelIGC* pmodelAccepted = trekClient.GetShip()->GetCommandTarget(c_cmdAccepted);
