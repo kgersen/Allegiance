@@ -162,6 +162,8 @@ public:
     virtual void        SetRadarMode(int radarMode) = 0;
     virtual bool        GetRoundRadarMode(void) const = 0;
 
+    virtual bool        GetShowJoystickIndicator(void) const = 0;
+
     virtual CameraMode  GetCameraMode(void) const = 0;
     virtual void        SetCameraMode(CameraMode cm) = 0;
 

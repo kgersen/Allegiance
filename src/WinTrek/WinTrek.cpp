@@ -1332,6 +1332,7 @@ public:
     TRef<IMenuItem>            m_pitemToggleStars;
     TRef<IMenuItem>            m_pitemToggleEnvironment;
     TRef<IMenuItem>			   m_pitemToggleUseOldUi;
+    TRef<IMenuItem>			   m_pitemToggleShowJoystickIndicator;
     TRef<IMenuItem>            m_pitemToggleRoundRadar;
     TRef<IMenuItem>            m_pitemToggleLinearControls;
     TRef<IMenuItem>            m_pitemToggleLargeDeadZone;
@@ -1390,7 +1391,8 @@ public:
     bool                       m_bLensFlare;
     bool                       m_bMusic;
     bool                       m_bRoundRadar;
-    bool                       m_bLinearControls;
+
+    bool                       m_bShowJoystickIndicator;
 
     //
     // CommandView
@@ -1448,6 +1450,7 @@ public:
     bool            m_bEnableVirtualJoystick;
     bool            m_bFlipY;
     bool            m_bEnableFeedback;
+    bool            m_bLinearControls;
 
     AsteroidAbilityBitMask          m_aabmInvest;
     AsteroidAbilityBitMask          m_aabmCommand;
@@ -2723,7 +2726,8 @@ public:
 		m_iMouseAccel(0), //#215
 		m_bShowInventoryPane(true), // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
 		m_bShowSectorMapPane(true),  // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
-        m_bUseOldUi(false)
+        m_bUseOldUi(false),
+        m_bShowJoystickIndicator(true)
     {
         HRESULT hr;
 
@@ -3039,6 +3043,8 @@ public:
 		m_iWheelDelay			 = LoadPreference("WheelDelay",            2) % 5; //Spunky #282
 
         m_bUseOldUi = (LoadPreference("OldUi", 1) != 0);
+
+        m_bShowJoystickIndicator = (LoadPreference("ShowJoystickIndicator", 1) != 0);
 
         //
         // Initial screen size
@@ -3949,6 +3955,8 @@ public:
     bool             GetRoundRadarMode(void) const  { return m_bRoundRadar;                     }
     CameraMode       GetCameraMode(void) const      { return m_cm;                              }
 
+    bool             GetShowJoystickIndicator(void) const { return m_bShowJoystickIndicator; }
+
     /*
     void             TurretChange(void)
     {
@@ -4127,6 +4135,8 @@ public:
 	#define idmWheelDelay		821 //Spunky #282
 
     #define idmOldUi	        823
+
+    #define idmShowJoystickIndicator 824
 
 	// BT - STEAM
 	#define idmCallsignTag0		900
@@ -4643,6 +4653,8 @@ public:
                 m_pitemStyleHUD                    = pmenu->AddMenuItem(idmStyleHUD,                    GetStyleHUDMenuString()             ,	'H'); //Imago 6/30/09 adjust new dx9 settings in game
 
                 m_pitemToggleUseOldUi     = pmenu->AddMenuItem(idmOldUi, GetOldUiMenuString(), 'G');
+
+                m_pitemToggleShowJoystickIndicator = pmenu->AddMenuItem(idmShowJoystickIndicator, GetShowJoystickIndicatorMenuString(), 'J');
  				
 				break;
 
@@ -5450,6 +5462,24 @@ public:
 
     }
 
+    void ToggleShowJoystickIndicator()
+    {
+        if (m_bShowJoystickIndicator)
+        {
+            m_bShowJoystickIndicator = false;
+            SavePreference("ShowJoystickIndicator", FALSE);
+        }
+        else
+        {
+            m_bShowJoystickIndicator = true;
+            SavePreference("ShowJoystickIndicator", TRUE);
+        }
+
+        if (m_pitemToggleShowJoystickIndicator != NULL) {
+            m_pitemToggleShowJoystickIndicator->SetString(GetShowJoystickIndicatorMenuString());
+        }
+    }
+
 	//Imago 7/8/09 #24
     void ToggleShowGrid()
     {
@@ -5948,7 +5978,7 @@ public:
 
     ZString GetLinearControlsMenuString()
     {
-        return (m_bLinearControls) ? "Linear Control Response" : "Quadratic Control Response";
+        return (m_bLinearControls) ? "Linear Joystick Control Response" : "Quadratic Joystick Control Response";
     }
 
     ZString GetStarsMenuString()
@@ -6129,6 +6159,11 @@ public:
     ZString GetOldUiMenuString()
     {
         return "Use old UI: " + ZString(m_bUseOldUi ? "On" : "Off");
+    }
+
+    ZString GetShowJoystickIndicatorMenuString()
+    {
+        return "Joystick Indicator: " + ZString(m_bShowJoystickIndicator ? "On" : "Off");
     }
 
     ZString GetEnableFeedbackMenuString()
@@ -6402,6 +6437,9 @@ public:
                 ToggleOldUi();
                 break;
 
+            case idmShowJoystickIndicator:
+                ToggleShowJoystickIndicator();
+                break;
 
 			/* pkk May 6th: Disabled bandwidth patch
 			// w0dk4 June 2007: Bandwith Patch

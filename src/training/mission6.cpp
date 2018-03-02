@@ -132,7 +132,7 @@ namespace Training
                     (GetKillCount() > 2 || s->GetPilotType() < c_ptPlayer))
                 {
                     pSameClusterTarget = s;
-                    minClusterTargetDRel = (s->GetPilotType() == c_ptMiner ? dist : dist * 1.5); //prefer targeting miners
+                    minClusterTargetDRel = (s->GetPilotType() == c_ptMiner ? dist : dist * 1.5f); //prefer targeting miners
                 }
             }
         }
