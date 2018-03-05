@@ -229,6 +229,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PigClient", "..\src\Pigs\PigClient\PigClient\PigClient.csproj", "{01700303-9A0C-46B5-B0B8-0E810BE2BC58}"
 	ProjectSection(ProjectDependencies) = postProject
 		{4276FB1E-16D0-4463-89CE-2D33D78512B1} = {4276FB1E-16D0-4463-89CE-2D33D78512B1}
+		{1CBF6569-F71C-422A-81DD-8D30A736DB21} = {1CBF6569-F71C-422A-81DD-8D30A736DB21}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PigJSDocGenerator", "..\src\Pigs\PigJSDocGenerator\PigJSDocGenerator.csproj", "{605E77B8-7CDF-46CB-8320-728EAAB78BB2}"
