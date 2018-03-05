@@ -923,12 +923,22 @@ void GotLogonDetails(CQLogonStats * pquery)
     pqd->fCanCheat = true;
     #endif
 
+	// If CDKey matches Pig CDKey then they can always cheat
+	if (strcmp(pqd->szCDKey, g.szBotAuthenticationGuid) == 0) {
+		pqd->fCanCheat = true;  
+	}
+
     dataship.pilotType = pqd->fCanCheat ? c_ptCheatPlayer : c_ptPlayer;
     dataship.abmOrders = 0;
     dataship.baseObjectID = NA;
     lstrcpy(dataship.name, pqd->szReason);
     TRef<IshipIGC> pship = (IshipIGC *) g.trekCore->CreateObject(g.timeNow,
                           OT_ship, &dataship, sizeof(dataship));
+
+	// If CDKey matches Pig CDKey then give them super powers
+	if (strcmp(pqd->szCDKey, g.szBotAuthenticationGuid) == 0) {
+		pship->SetWingmanBehaviour(c_wbbmStrafe | c_wbbmUseMissiles | c_wbbmUseMines | c_wbbmRunAt30Hull | c_wbbmInRangeAggressive);
+	}
 
 	// BT - STEAM
 	CSteamID steamID;
@@ -5930,7 +5940,10 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		// is correct, then, we are going to make an async call to the Lobby to get the player's rank, then the return from that call will finally trigger the 
 		// SQL Done state on the pQuery and let the user login.
 
-		if (g.bUseSteamAuthentication == true)
+		if (g.bUseSteamAuthentication == true 
+			// If the user's CDKey matches the botAuthenticationGUID from the registry, then this login is a bot, so we can bypass all 
+			// the steam security.
+			&& strcmp(pqd->szCDKey, g.szBotAuthenticationGuid) != 0)
 		{
 			memcpy(pqd->steamAuthTicket, pfmLogon->steamAuthTicket, pfmLogon->steamAuthTicketLength);
 			pqd->steamAuthTicketLength = pfmLogon->steamAuthTicketLength;
@@ -6654,9 +6667,27 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       if (NA == iSide)
         iSide = pfsMission->PickNewSide(pfsPlayer, false, 0);
 
-      IsideIGC* psideReq = pMission->GetSide(iSide);
-      if (psideReq)
-        pfsMission->RequestPosition(pfsPlayer, psideReq, false);
+	  IsideIGC* psideReq = pMission->GetSide(iSide);
+
+	  if (pMission->GetMissionParams()->bDrones == true && iSide == 0 && strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) != 0)
+	  {
+		  //deny the request: Only bots are allowed on this team.
+		  BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
+			  END_PFM_CREATE
+			  pfmDelPosReq->shipID = pfsPlayer->GetShipID();
+		  pfmDelPosReq->iSide = iSide;
+
+		  pfmDelPosReq->reason = DPR_BotsOnTeam0Only;
+
+		  g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
+		  break;
+	  }
+
+      
+	  if (psideReq)
+	  {
+		  pfsMission->RequestPosition(pfsPlayer, psideReq, false);
+	  }
       else
       {
         //deny the request: side no longer exists
@@ -7559,12 +7590,16 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
     {
       // the player better be the mission owner for this mission
       TrapHackBoot(pfsMission);
-      TrapHackBoot(pfsMission->GetOwner() == pfsPlayer);
+
+	  // Let bots start the game even if they are not the mission owner.
+	  if (strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) != 0)
+		TrapHackBoot(pfsMission->GetOwner() == pfsPlayer);
 
       // if the mission has not started yet but is ready to start, start the mission
       if (pfsMission->GetStage() == STAGE_NOTSTARTED)
       {
-        if (pfsMission->FAllReady())
+		  // If all sides are ready, or if the game starter is a bot, then start the game. 
+        if (pfsMission->FAllReady() || strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) == 0) 
         {
             // start the countdown
             pfsMission->StartCountdown(c_fMissionBriefingCountdown);
@@ -8997,10 +9032,24 @@ void StartDefaultGames()
        	// look for a core/map for Map#
 		// -KGJV : should we lock game settings when custom map specified. If so need 'GameParameters#' too ?
 		// removed map# for now
+		// BT - Readded for bots
 		ZString strMap;
-		//wsprintf(cbValueName, "Map%d", iGame);
-		//LoadRegString(hKey, cbValueName, strMap);
-		//strncpy(mp.szCustomMapFile, strMap, c_cbFileName);
+		wsprintf(cbValueName, "Map%d", iGame);
+		LoadRegString(hKey, cbValueName, strMap);
+
+		if (strlen(strMap) > 0 && stricmp("botbrawl", strMap) == 0)
+		{
+			mp.mmMapType = c_mmBrawl;
+			mp.nGoalTeamKills = 100;
+			mp.bAllowDevelopments = false;
+			mp.bObjectModelCreated = true;
+			mp.bClubGame = true;
+			mp.iGoalConquestPercentage = 0;
+			mp.bDrones = true;
+			mp.iMaxImbalance = 0x7fff; // Imalance = N/A
+		}
+
+		
 
         // KGJV #92 - LockOpen# option  per game
         // dword value - 1 to lockopen
@@ -9457,6 +9506,23 @@ void LoadSettings()
 		DWORD cbApiKey = sizeof(g.szApiKey);
 		RegQueryValueExA(hKey, "ApiKey", NULL, &dwType, (unsigned char*)g.szApiKey, &cbApiKey);
 
+		// BT - STEAM
+		g.szBotAuthenticationGuid[0] = '\0';
+		DWORD cbBotAuthenticationGuid = sizeof(g.szBotAuthenticationGuid);
+		RegQueryValueExA(hKey, "BotAuthenticationGuid", NULL, &dwType, (unsigned char*)g.szBotAuthenticationGuid, &cbBotAuthenticationGuid);
+
+		// If no BotAuthenticationGuid was defined, then set this to some random GUID to ensure that no one guesses the bot auth GUID.
+		if (strlen(g.szBotAuthenticationGuid) == 0)
+		{
+			UUID newId;
+			UuidCreate(&newId);
+			CHAR* szUuid = NULL;
+			::UuidToString(&newId, (RPC_CSTR*)&szUuid);
+			char pork[1024];
+			strcpy(g.szBotAuthenticationGuid, szUuid);
+			::RpcStringFree((RPC_CSTR*)&szUuid);
+			szUuid = NULL;
+		}
 
 		/* pkk May 6th: Disabled bandwidth patch
 		// w0dk4 Bandwidth Patch
