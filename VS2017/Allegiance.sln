@@ -227,6 +227,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ui", "Ui.vcxproj", "{77F306
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PigClient", "..\src\Pigs\PigClient\PigClient\PigClient.csproj", "{01700303-9A0C-46B5-B0B8-0E810BE2BC58}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4276FB1E-16D0-4463-89CE-2D33D78512B1} = {4276FB1E-16D0-4463-89CE-2D33D78512B1}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PigJSDocGenerator", "..\src\Pigs\PigJSDocGenerator\PigJSDocGenerator.csproj", "{605E77B8-7CDF-46CB-8320-728EAAB78BB2}"
 EndProject
