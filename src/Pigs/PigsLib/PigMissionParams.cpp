@@ -311,5 +311,3 @@ STDMETHODIMP CPigMissionParams::InitNew()
   // Perform default processing
   return TCPersistStreamInitImplBase::InitNew();
 }
-
-

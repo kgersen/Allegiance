@@ -33,6 +33,12 @@
     <TypeScriptSourceRoot />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup Condition=" '$(Configuration)' == 'FZDebug' ">
+    <OutputPath>bin\FZDebug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'FZRetail' ">
+    <OutputPath>bin\FZRetail\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Folder Include="include\" />
     <Folder Include="moldy\" />
