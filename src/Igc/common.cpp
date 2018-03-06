@@ -2229,7 +2229,8 @@ if (d2 < dMax2)             //Object is closer that our goal
                             fThrottleMax = -1.0f;
                         }
                         else if (m_wpTarget.m_pmodelTarget->GetObjectType() == OT_ship &&
-                            ((positionGoto - myPosition).Length() < distanceRest*2.0f || 
+                            m_wpTarget.m_pmodelTarget->GetCluster() == m_pship->GetCluster() &&
+                            ((positionGoto - myPosition).Length() < distanceRest*2.0f ||
                             (positionGoto - myPosition).Length() < 200.0f))
                         {
                             // Match speed
