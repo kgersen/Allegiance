@@ -1,5 +1,5 @@
 # BUILD STATUS
-[![Build status](https://ci.appveyor.com/api/projects/status/ownbltmba0nvhqrl/branch/master?svg=true)](https://ci.appveyor.com/project/Astn/allegiance-fa/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/ownbltmba0nvhqrl/branch/master?svg=true)](https://ci.appveyor.com/project/BackTrak/allegiance)
 
 # Installation
 
