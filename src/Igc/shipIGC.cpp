@@ -4059,14 +4059,25 @@ void    CshipIGC::ResetWaypoint(void)
                             float   rMajor;
                             IprojectileTypeIGC* pprojectile = ppt->GetProjectileType();
                             if (pprojectile) // KG -bug fix, was: ppt
-                                rMajor = pprojectile->GetLifespan() * pprojectile->GetSpeed() * 0.5f;
+                                rMajor = pprojectile->GetLifespan() * pprojectile->GetSpeed() * 0.8f;
                             else
-                                rMajor = ppt->GetScannerRange() * 0.4f;
+                                rMajor = ppt->GetScannerRange() * 0.7f;
+                            rMajor += random(0.0f, 0.1f);
 
-                            db.position = p -
-                                          (orientation.GetBackward() *
-                                           rMajor) +
-                                           Vector::RandomPosition(rMajor / 3.0f);
+                            float pitchAngle, yawAngle;
+                            do {
+                                pitchAngle = random(0, pi / 2);
+                                yawAngle = random(0, pi / 2);
+                            } while (pitchAngle < pi / 4 && yawAngle < pi / 4);
+                            if (rand() % 2 == 0)
+                                pitchAngle = -pitchAngle;
+                            if (rand() % 2 == 0)
+                                yawAngle = -yawAngle;
+                            Orientation omod = orientation;
+                            omod.Pitch(pitchAngle);
+                            omod.Yaw(yawAngle);
+
+                            db.position = p + (omod.GetForward() * rMajor);
                         }
 
                         db.clusterID = m_commandTargets[c_cmdPlan]->GetCluster()->GetObjectID();
