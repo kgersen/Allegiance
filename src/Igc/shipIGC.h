@@ -2350,7 +2350,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                     if (m_commandIDs[c_cmdQueued] == c_cidJoin && m_commandTargets[c_cmdQueued] && m_commandTargets[c_cmdQueued]->GetCluster() == GetCluster()) { // arriving in a sector after player command
                         if (m_commandTargets[c_cmdPlan] && m_commandTargets[c_cmdPlan]->GetCluster() != GetCluster()) {
                             IwarpIGC* nextWarp = FindPath(this, m_commandTargets[c_cmdPlan], true);
-                            if ((position - nextWarp->GetPosition()).Length() < 500.0f) {
+                            if (nextWarp != nullptr && (position - nextWarp->GetPosition()).Length() < 500.0f) {
                                 debugf("%s trying to go back to the previous sector. Find an alternative.\n", GetName());
 
                                 ImodelIGC* pstationToHide = GetLocalStationToHide(this);
