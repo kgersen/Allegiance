@@ -2341,7 +2341,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
             if ((m_pilotType == c_ptWingman || m_pilotType == c_ptCheatPlayer) && m_mountedWeapons[0] != NULL)  { // || (m_pilotType == c_ptCheatPlayer && m_commandIDs[c_cmdPlan] != c_cidGoto)) {
                 if (m_commandTargets[c_cmdPlan]->GetCluster() == GetCluster())
                 {
-                    if (m_commandIDs[c_cmdPlan] == c_cidAttack)
+                    if (m_commandIDs[c_cmdPlan] == c_cidAttack && m_mountedWeapons[0])
                     {
                         //In the same cluster as the target ... we dodge, turn to face the aim point and fire if close enough
                         float fShootSkill = 0.75f;
@@ -2593,7 +2593,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                     }
 
                     //AEM 7.9.07 allow wingman to repair if they are equipped with a nan
-                    else if (m_commandIDs[c_cmdPlan] == c_cidRepair && m_mountedWeapons[0]->GetProjectileType()->GetPower() < 0.0)
+                    else if (m_commandIDs[c_cmdPlan] == c_cidRepair && m_mountedWeapons[0] && m_mountedWeapons[0]->GetProjectileType()->GetPower() < 0.0)
                     {
                         //In the same cluster as the target ... we dodge, turn to face the aim point and fire if close enough
                         float   fShootSkill = 1.00f;
@@ -2665,7 +2665,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
 
                         return;
                     }
-                    else if (m_commandIDs[c_cmdPlan] == c_cidDefend && m_mountedWeapons[0]->GetProjectileType()->GetPower() > 0.0)
+                    else if (m_commandIDs[c_cmdPlan] == c_cidDefend && m_mountedWeapons[0] && m_mountedWeapons[0]->GetProjectileType()->GetPower() > 0.0)
                     {
                         if (m_checkCooldown) {
                             m_checkCooldown--;
