@@ -10833,11 +10833,11 @@ class ThingSiteImpl : public ThingSite
                     SideVisibility& sv = m_rgSideVisibility[sid];
                     bool seenBefore = sv.fVisible();
 
-                    //Update the visibility for everything except visible static objects
-                        if (seenBefore && m_bPredictable) {
-                            //no need to change anything
-                        }
-                        else if (pside == pmodel->GetSide()) {
+                    //Update the visibility for everything, including visible static objects, so currentEyed gets set for He3 amount, etc.
+                        /*if (seenBefore && m_bPredictable) {
+                            //no need to change anything - wrong, need to hide He3
+                        }*/
+                        if (pside == pmodel->GetSide()) {
                             //Always see object on your own side (& call ShowObject() to export new stations, etc.)
                             if (!seenBefore) {
                                 sv.fVisible(true);
@@ -11053,8 +11053,11 @@ class ThingSiteImpl : public ThingSite
                             if (!sv.fVisible() && seenBefore) {
                                 // hide it
 								sv.CurrentEyed(false); //Xynth #100 7/2010
-                                HideObject(pside, pmodel);
                                 sv.pLastSpotter(NULL);
+                                if (m_bPredictable) //keep static objects visible (but not currentEyed)
+                                    sv.fVisible(true);
+                                else
+                                    HideObject(pside, pmodel);
                             }
                         }                    
                 }
