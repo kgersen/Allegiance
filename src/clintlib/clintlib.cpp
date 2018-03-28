@@ -1955,12 +1955,16 @@ void BaseClient::JoinMission(MissionInfo * pMission, const char* szMissionPasswo
     BEGIN_PFM_CREATE(m_fmLobby, pfmJoinGameReq, C, JOIN_GAME_REQ)
     END_PFM_CREATE
     pfmJoinGameReq->dwCookie = pMission->GetCookie();
-    SendLobbyMessages();
-    m_dwCookieToJoin = pMission->GetCookie();
-    assert(strlen(szMissionPassword) < c_cbGamePassword);
-    strncpy(m_strPasswordToJoin, szMissionPassword, c_cbGamePassword);
-    m_strPasswordToJoin[c_cbGamePassword - 1] = '\0';
-    // waiting for FM_L_JOIN_GAME_ACK. When we get that we can join it
+
+	if (m_fmLobby.IsConnected() == true)
+	{
+		SendLobbyMessages();
+		m_dwCookieToJoin = pMission->GetCookie();
+		assert(strlen(szMissionPassword) < c_cbGamePassword);
+		strncpy(m_strPasswordToJoin, szMissionPassword, c_cbGamePassword);
+		m_strPasswordToJoin[c_cbGamePassword - 1] = '\0';
+		// waiting for FM_L_JOIN_GAME_ACK. When we get that we can join it
+	}	
 }
 
 

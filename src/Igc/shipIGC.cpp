@@ -2338,18 +2338,23 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
         {
             m_dtTimeBetweenComplaints = c_dtTimeBetweenComplaints;
 
-            if (m_pilotType == c_ptWingman || m_pilotType == c_ptCheatPlayer) {
+            if ((m_pilotType == c_ptWingman || m_pilotType == c_ptCheatPlayer) && m_mountedWeapons[0] != NULL)  { // || (m_pilotType == c_ptCheatPlayer && m_commandIDs[c_cmdPlan] != c_cidGoto)) {
                 if (m_commandTargets[c_cmdPlan]->GetCluster() == GetCluster())
                 {
-                    if (m_commandIDs[c_cmdPlan] == c_cidAttack)
+                    if (m_commandIDs[c_cmdPlan] == c_cidAttack && m_mountedWeapons[0])
                     {
                         //In the same cluster as the target ... we dodge, turn to face the aim point and fire if close enough
                         float fShootSkill = 0.75f;
-                        const float fTurnSkill = 0.75f;
+                        float fTurnSkill = 0.75f;
                         const float openFireDistPercentage = 0.95f;
                         int     state = 0;
                         bool    bDodge = Dodge(this, m_commandTargets[c_cmdPlan], &state);
                         bool    criticalMovement = false;
+
+						if (m_pilotType == c_ptCheatPlayer) {
+							fShootSkill = m_fShootSkill;
+							fTurnSkill = m_fTurnSkill;
+						}
 
                         if (m_checkCooldown)
                             m_checkCooldown--;
@@ -2588,7 +2593,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
                     }
 
                     //AEM 7.9.07 allow wingman to repair if they are equipped with a nan
-                    else if (m_commandIDs[c_cmdPlan] == c_cidRepair && m_mountedWeapons[0]->GetProjectileType()->GetPower() < 0.0)
+                    else if (m_commandIDs[c_cmdPlan] == c_cidRepair && m_mountedWeapons[0] && m_mountedWeapons[0]->GetProjectileType()->GetPower() < 0.0)
                     {
                         //In the same cluster as the target ... we dodge, turn to face the aim point and fire if close enough
                         float   fShootSkill = 1.00f;
@@ -2660,7 +2665,7 @@ void    CshipIGC::PlotShipMove(Time          timeStop)
 
                         return;
                     }
-                    else if (m_commandIDs[c_cmdPlan] == c_cidDefend && m_mountedWeapons[0]->GetProjectileType()->GetPower() > 0.0)
+                    else if (m_commandIDs[c_cmdPlan] == c_cidDefend && m_mountedWeapons[0] && m_mountedWeapons[0]->GetProjectileType()->GetPower() > 0.0)
                     {
                         if (m_checkCooldown) {
                             m_checkCooldown--;
@@ -4582,7 +4587,10 @@ const char*          MyHullType::GetIconName(void) const
 
 HullAbilityBitMask   MyHullType::GetCapabilities(void) const
 {
-    return m_pHullData->habmCapabilities;
+	if (m_pHullData != nullptr)
+		return m_pHullData->habmCapabilities;
+	else
+		return 0;
 }
 bool                 MyHullType::HasCapability(HullAbilityBitMask habm) const
 {
