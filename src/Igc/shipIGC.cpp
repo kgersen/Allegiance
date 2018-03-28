@@ -1790,8 +1790,10 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                         {
                             bDamage = false;
 
+                            bRunAway = false; //Never run away if not damaged sufficiently
+
                             // 95% hull & 75% shield
-                            //Does anyone see us?
+                            /*//Does anyone see us? Run due to enemy threat.
                             IsideIGC*       psideMe = GetSide();
 
                             int     cEnemy = 0;
@@ -1850,7 +1852,7 @@ void    CshipIGC::PreplotShipMove(Time          timeStop)
                                 static const float  c_d2AlwaysRun = 1000.0f;
                                 if (d2Enemy > c_d2AlwaysRun * c_d2AlwaysRun)
                                     bRunAway = (d2Enemy < d2Friend);
-                            }
+                            }*/
                         }
                     }
                 }
