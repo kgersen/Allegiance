@@ -3334,17 +3334,6 @@ public:
 		/* pkk May 6th: Disabled bandwidth patch
 		ToggleBandwidth(LoadPreference("Bandwidth",32)); // w0dk4 June 2007: Bandwith Patch - Increase default to max Imago 8/10*/
 
-        bool bAllowSecondary;
-
-        if (bSecondary || bPrimary) {
-            bAllowSecondary = bSecondary;
-            SavePreference("AllowSecondary", bAllowSecondary);
-        } else {
-            bAllowSecondary = LoadPreference("AllowSecondary" , TRUE) != 0;
-        }
-
-        GetEngine()->SetAllowSecondary(bAllowSecondary);
-
         //
         // Help
         //
@@ -3550,8 +3539,6 @@ public:
 		WinPoint sizeCurrentResolution = GetEngine()->GetFullscreenSize();
 		SavePreference("CombatFullscreenXSize", sizeCurrentResolution.X());
 		SavePreference("CombatFullscreenYSize", sizeCurrentResolution.Y());
-
-        SavePreference("AllowSecondary"     , GetEngine()->GetAllowSecondary     ());
 
 		SetGamma(ZString(GetEngine()->GetGammaLevel())); //imago 7/8/09 #24
 

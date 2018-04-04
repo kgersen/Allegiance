@@ -751,11 +751,6 @@ WinPoint EngineWindow::GetFullscreenSize()
     return m_pengine->GetFullscreenSize();
 }
 
-void EngineWindow::Set3DAccelerationImportant(bool b3DAccelerationImportant)
-{
-    m_pengine->Set3DAccelerationImportant(b3DAccelerationImportant);
-}
-
 void EngineWindow::SetFullscreenSize(const Vector& size)
 {
     m_pengine->SetFullscreenSize(size);
@@ -883,15 +878,6 @@ ZString EngineWindow::GetDeviceString()
     return "Device: " + GetEngine()->GetDeviceName();
 }
 
-ZString EngineWindow::GetAllowSecondaryString()
-{
-    return 
-          GetEngine()->GetAllowSecondary()
-        ? "Use secondary device for 3D acceleration when needed"
-        : "Never use secondary device";
-}
-
-
 void EngineWindow::UpdateMenuStrings()
 {
     if (m_pitemDevice) {
@@ -907,13 +893,6 @@ void EngineWindow::OnEngineWindowMenuCommand(IMenuItem* pitem)
 {
     switch (pitem->GetID()) 
 	{
-
-/*       case idmAllowSecondary:
-            GetEngine()->SetAllowSecondary(
-                !GetEngine()->GetAllowSecondary()
-            );
-            break;
-*/
 		// DISABLE THE higher/lower resolution option - to be reinstated at some point.
 		//Imago reinstated 6/26/09
 		case idmHigherResolution:

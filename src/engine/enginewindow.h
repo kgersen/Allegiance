@@ -227,8 +227,6 @@ protected:
     ZString GetResolutionString();
     ZString GetRenderingString();
     ZString GetPixelFormatString(); // KGJV 32B
-    ZString GetAllow3DAccelerationString();
-    ZString GetAllowSecondaryString();
     void    UpdateMenuStrings();
 
 public:
@@ -280,7 +278,6 @@ public:
     void SetSizeable(bool bSizeable);
     void SetFullscreenSize(const Vector& point);
     void ChangeFullscreenSize(bool bLarger);
-    void Set3DAccelerationImportant(bool b3DAccelerationImportant);
     void SetMouseEnabled(bool bEnable);
 
     WinPoint GetSize();

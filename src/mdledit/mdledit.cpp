@@ -562,7 +562,6 @@ public:
 
         //SetFullscreen(true);
         //GetEngine()->SetDebugFullscreen(true);
-        GetEngine()->Set3DAccelerationImportant(true);
         SetShowFPS(true);
 
         //
