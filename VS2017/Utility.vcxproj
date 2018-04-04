@@ -64,7 +64,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src\Lib\AllegianceSecurity;..\src\lib\Steam;..\src\Inc;..\src\_Utility;..\src\WinTrek;..\src\ZLib;..\src\Guids;..\src\Zone;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\Lib\AllegianceSecurity;..\src\lib\Steam;..\src\Lib\nlohmann\json\include;..\src\Inc;..\src\_Utility;..\src\WinTrek;..\src\ZLib;..\src\Guids;..\src\Zone;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>

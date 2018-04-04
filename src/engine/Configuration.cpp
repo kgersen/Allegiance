@@ -24,6 +24,8 @@ void UpdatingConfiguration::Write() {
     {
         m_inner->SetString(it->first, std::string(it->second->GetValue()));
     }
+
+    m_inner->Commit();
 }
 
 const TRef<SimpleModifiableValue<bool>>& UpdatingConfiguration::GetBool(std::string key, bool valueDefault) {

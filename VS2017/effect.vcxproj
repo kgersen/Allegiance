@@ -65,7 +65,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\src\SoundEngine;..\src\Inc;..\src\ZLib;..\src\_Utility;..\src\Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\src\SoundEngine;..\src\Inc;..\src\ZLib;..\src\lib\nlohmann\json\include;..\src\_Utility;..\src\Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;D3D_DEBUG_INFO;WIN32;_WINDOWS;STRICT;DEBUG;_DEBUG;_AFXDLL;DIRECTINPUT_VERSION=0x0800;__MODULE__#"Effect";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>

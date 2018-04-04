@@ -155,7 +155,12 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 				m_bClickBreak(true), //Imago 7/10 #37
 				m_pEngineApp(papp)
 {
-    m_pConfiguration = new UpdatingConfiguration(std::make_shared<RegistryConfigurationStore>(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT));
+    m_pConfiguration = new UpdatingConfiguration(
+        std::make_shared<FallbackConfigurationStore>(
+            std::make_shared<JsonConfigurationStore>("config.json"),
+            std::make_shared<RegistryConfigurationStore>(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT)
+        )
+    );
 
     //
     // Button Event Sink

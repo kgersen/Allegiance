@@ -4,6 +4,7 @@
 #include "ConfigurationStore.h"
 
 #include <sstream>
+#include <fstream>
 
 DWORD GetDWordRegValue(HKEY hkey, LPCSTR appKey, std::string key, DWORD valueDefault) {
     HKEY hKey;
@@ -109,4 +110,115 @@ std::string RegistryConfigurationStore::ReadString(std::string key, std::string 
 
 void RegistryConfigurationStore::SetString(std::string key, std::string value) {
     SetStringRegValue(mHKey, mRegistryPath, key, value);
+}
+
+// ##### JSON #####
+
+template <typename T>
+T GetJsonValue(const nlohmann::json& json, std::string key, T defaultValue) {
+    auto found = json.find(key);
+    
+    if (found == json.end()) {
+        return defaultValue;
+    }
+
+    try {
+        return found->get<T>();
+    }
+    catch (std::exception e) {
+        return defaultValue;
+    }
+}
+
+template <typename T>
+void SetJsonValue(nlohmann::json& json, std::string key, T value) {
+    json[key] = value;
+}
+
+JsonConfigurationStore::JsonConfigurationStore(std::string path) :
+    m_path(path)
+{
+    try {
+        std::ifstream filestream(path);
+        m_json = nlohmann::json::parse(filestream);
+    }
+    catch (std::exception e) {
+        //initial value for m_json is empty, which is fine
+    }
+}
+
+void JsonConfigurationStore::Commit() {
+    std::ofstream filestream(m_path);
+    filestream << m_json.dump(4);
+}
+
+bool JsonConfigurationStore::ReadBool(std::string key, bool valueDefault) {
+    return GetJsonValue<bool>(m_json, key, valueDefault);
+}
+
+void JsonConfigurationStore::SetBool(std::string key, bool value) {
+    SetJsonValue<bool>(m_json, key, value);
+}
+
+int JsonConfigurationStore::ReadInt(std::string key, int valueDefault) {
+    return GetJsonValue<int>(m_json, key, valueDefault);
+}
+
+void JsonConfigurationStore::SetInt(std::string key, int value) {
+    SetJsonValue<int>(m_json, key, value);
+}
+
+float JsonConfigurationStore::ReadFloat(std::string key, float valueDefault) {
+    return GetJsonValue<float>(m_json, key, valueDefault);
+}
+
+void JsonConfigurationStore::SetFloat(std::string key, float value) {
+    SetJsonValue<float>(m_json, key, value);
+}
+
+std::string JsonConfigurationStore::ReadString(std::string key, std::string valueDefault) {
+    return GetJsonValue<std::string>(m_json, key, valueDefault);
+}
+
+void JsonConfigurationStore::SetString(std::string key, std::string value) {
+    SetJsonValue<std::string>(m_json, key, value);
+}
+
+
+// #### FALLBACK ####
+
+void FallbackConfigurationStore::Commit() {
+    mJsonStore->Commit();
+}
+
+bool FallbackConfigurationStore::ReadBool(std::string key, bool valueDefault) {
+    return mJsonStore->ReadBool(key, mRegStore->ReadBool(key, valueDefault));
+}
+
+void FallbackConfigurationStore::SetBool(std::string key, bool value) {
+    mJsonStore->SetBool(key, value);
+}
+
+int FallbackConfigurationStore::ReadInt(std::string key, int valueDefault) {
+    return mJsonStore->ReadInt(key, mRegStore->ReadInt(key, valueDefault));
+}
+
+void FallbackConfigurationStore::SetInt(std::string key, int value) {
+    mJsonStore->SetInt(key, value);
+}
+
+float FallbackConfigurationStore::ReadFloat(std::string key, float valueDefault) {
+    return mJsonStore->ReadFloat(key, mRegStore->ReadFloat(key, valueDefault));
+}
+
+void FallbackConfigurationStore::SetFloat(std::string key, float value) {
+    mJsonStore->SetFloat(key, value);
+}
+
+std::string FallbackConfigurationStore::ReadString(std::string key, std::string valueDefault) {
+    return mJsonStore->ReadString(key, mRegStore->ReadString(key, valueDefault));
+}
+
+void FallbackConfigurationStore::SetString(std::string key, std::string value) {
+    mJsonStore->SetString(key, value);
 }
