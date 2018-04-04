@@ -424,71 +424,6 @@ void EngineWindow::UpdateSurfacePointer()
 	}
 }
 
-/* OLD ROUTINES FOR ABOVE FUNCTION COMBINED
-
-	CD3DDevice9 * pDev = CD3DDevice9::Get();
-	if( !m_pengine->IsFullscreen() )
-	{
-		m_psurface = m_pengine->CreateDummySurface( GetClientRect().Size(), NULL );
-		
-		if( pDev->IsDeviceValid() == true )
-		{
-			pDev->ResetDevice(	pDev->IsWindowed(), 
-								GetClientRect().Size().x,
-								GetClientRect().Size().y );
-		}
-	}
-	else
-	{
-		m_psurface = m_pengine->CreateDummySurface( m_pengine->GetFullscreenSize(), NULL );
-
-		if( pDev->IsDeviceValid() == true )
-		{
-			pDev->ResetDevice(	pDev->IsWindowed(), 
-								m_pengine->GetFullscreenSize().x,
-								m_pengine->GetFullscreenSize().y );
-		}
-	}
-	*/
-
-
-/*	if( (!m_pengine->IsFullscreen())
-        || (!m_pengine->GetUsing3DAcceleration())
-    ) {
-        WinPoint size = GetClientRect().Size();
-
-        if (size.X() == 0) {
-            size.SetX(1);
-        }
-
-        if (size.Y() == 0) {
-            size.SetY(1);
-        }
-
-        if (
-               m_pengine->PrimaryHas3DAcceleration()
-            && m_pengine->GetAllow3DAcceleration()
-        ) {
-            m_psurface =
-                m_pengine->CreateSurface(
-                    size,
-                    SurfaceType2D() | SurfaceType3D() | SurfaceTypeZBuffer() | SurfaceTypeVideo(),
-                    NULL
-                );
-
-            if (m_psurface != NULL && m_psurface->IsValid()) {
-                return;
-            }
-        }
-
-        m_psurface =
-            m_pengine->CreateSurface(
-                size,
-                SurfaceType2D() | SurfaceType3D() | SurfaceTypeZBuffer(),
-                NULL
-            );
-    }*/
-
 void EngineWindow::UpdateWindowStyle()
 {
     if (m_pengine->IsFullscreen()) {
@@ -934,8 +869,7 @@ ZString EngineWindow::GetRendererString()
 {
     return 
           (
-               GetEngine()->GetUsing3DAcceleration() 
-            && (
+              (
                    m_psurface == NULL 
                 || m_psurface->GetSurfaceType().Test(SurfaceTypeVideo())
                )
@@ -947,14 +881,6 @@ ZString EngineWindow::GetRendererString()
 ZString EngineWindow::GetDeviceString()
 {
     return "Device: " + GetEngine()->GetDeviceName();
-}
-
-ZString EngineWindow::GetAllow3DAccelerationString()
-{
-    return 
-          GetEngine()->GetAllow3DAcceleration()
-        ? "Use 3D acceleration when needed"
-        : "Never use 3D acceleration";
 }
 
 ZString EngineWindow::GetAllowSecondaryString()
@@ -985,12 +911,6 @@ void EngineWindow::OnEngineWindowMenuCommand(IMenuItem* pitem)
 /*       case idmAllowSecondary:
             GetEngine()->SetAllowSecondary(
                 !GetEngine()->GetAllowSecondary()
-            );
-            break;
-
-        case idmAllow3DAcceleration:
-            GetEngine()->SetAllow3DAcceleration(
-                !GetEngine()->GetAllow3DAcceleration()
             );
             break;
 */

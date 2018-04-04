@@ -2252,7 +2252,6 @@ public:
 
             if (m_screen == ScreenIDCombat) {
 				// this used to also save the current resolution. Still keeping the other functions.
-                Set3DAccelerationImportant(false);
                 GetConsoleImage()->OnSwitchViewMode();
             }
 
@@ -3335,17 +3334,6 @@ public:
 		/* pkk May 6th: Disabled bandwidth patch
 		ToggleBandwidth(LoadPreference("Bandwidth",32)); // w0dk4 June 2007: Bandwith Patch - Increase default to max Imago 8/10*/
 
-        bool bAllow3DAcceleration;
-
-        if (bSoftware || bHardware) {
-            bAllow3DAcceleration = bHardware;
-            SavePreference("Allow3DAcceleration", bAllow3DAcceleration);
-        } else {
-            bAllow3DAcceleration = LoadPreference("Allow3DAcceleration", TRUE) != 0;
-        }
-
-        GetEngine()->SetAllow3DAcceleration(bAllow3DAcceleration);
-
         bool bAllowSecondary;
 
         if (bSecondary || bPrimary) {
@@ -3563,7 +3551,6 @@ public:
 		SavePreference("CombatFullscreenXSize", sizeCurrentResolution.X());
 		SavePreference("CombatFullscreenYSize", sizeCurrentResolution.Y());
 
-        SavePreference("Allow3DAcceleration", GetEngine()->GetAllow3DAcceleration());
         SavePreference("AllowSecondary"     , GetEngine()->GetAllowSecondary     ());
 
 		SetGamma(ZString(GetEngine()->GetGammaLevel())); //imago 7/8/09 #24

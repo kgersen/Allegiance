@@ -886,16 +886,6 @@ private:
         }
     }
 
-    void SetAllow3DAcceleration(bool bAllow3DAcceleration)
-    {
-        if (m_bAllow3DAcceleration != bAllow3DAcceleration) {
-            m_bAllow3DAcceleration = bAllow3DAcceleration;
-//            m_pdddevicePrimary->SetAllow3DAcceleration(m_bAllow3DAcceleration);
-            m_bValid       = false;
-            m_bValidDevice = false;
-        }
-    }
-
 	void ForceReset()
 	{
 		//I do not know why this code is needed, I expect it to do some kind of reset. Since it was repeated a bunch of times I have collected calls to this code here.
@@ -1157,16 +1147,6 @@ private:
         return m_bChanged;
     }
 
-    bool GetAllow3DAcceleration() //REVIEW IMAGO (RESTORE?)
-    {
-        return m_bAllow3DAcceleration;
-    }
-
-    bool Get3DAccelerationImportant()  //REVIEW IMAGO REMOVE
-    {
-        return m_b3DAccelerationImportant;
-    }
-
 	const TRef<ModifiableWinPointValue> GetResolutionSizeModifiable()
 	{
 		return m_sizeResolution;
@@ -1182,19 +1162,9 @@ private:
         return m_bFullscreen->GetValue() == true;
     }
 
-    bool PrimaryHas3DAcceleration()  //REVIEW IMAGO (RESTORE?)
-    {
-        return true;
-    }
-
     ZString GetDeviceName()
     {
 		return CD3DDevice9::Get()->GetDeviceSetupString();
-    }
-
-    bool GetUsing3DAcceleration()  //REVIEW IMAGO (RESTORE?)
-    {
-		return true;
     }
 
     ZString GetPixelFormatName()
