@@ -108,6 +108,7 @@
     <ClCompile Include="..\src\_Utility\allegdb.cpp" />
     <ClCompile Include="..\src\_Utility\CollisionEntry.cpp" />
     <ClCompile Include="..\src\_Utility\CollisionQueue.cpp" />
+    <ClCompile Include="..\src\_Utility\ConfigurationStore.cpp" />
     <ClCompile Include="..\src\_Utility\CRC.cpp" />
     <ClCompile Include="..\src\_Utility\Endpoint.cpp" />
     <ClCompile Include="..\src\_Utility\FileLoader.cpp" />
@@ -123,6 +124,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Inc\MessageVersion.h" />
+    <ClInclude Include="..\src\_Utility\ConfigurationStore.h" />
     <ClInclude Include="..\src\_Utility\CRC.h" />
     <ClInclude Include="..\src\_Utility\FileLoader.h" />
     <ClInclude Include="..\src\_Utility\listwrappers.h" />

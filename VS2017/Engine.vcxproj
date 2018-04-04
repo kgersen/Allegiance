@@ -121,6 +121,7 @@
     <ClCompile Include="..\src\engine\button.cpp" />
     <ClCompile Include="..\src\engine\camera.cpp" />
     <ClCompile Include="..\src\engine\caption.cpp" />
+    <ClCompile Include="..\src\engine\Configuration.cpp" />
     <ClCompile Include="..\src\engine\context.cpp" />
     <ClCompile Include="..\src\engine\controls.cpp" />
     <ClCompile Include="..\src\engine\D3DDevice9.cpp" />
@@ -170,6 +171,7 @@
     <ClInclude Include="..\src\engine\button.h" />
     <ClInclude Include="..\src\engine\camera.h" />
     <ClInclude Include="..\src\engine\caption.h" />
+    <ClInclude Include="..\src\engine\Configuration.h" />
     <ClInclude Include="..\src\engine\context.h" />
     <ClInclude Include="..\src\engine\controls.h" />
     <ClInclude Include="..\src\engine\D3DDevice9.h" />

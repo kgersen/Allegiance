@@ -1,6 +1,5 @@
 #include "pch.h"
 
-
 #include <shellapi.h>
 #include "cmdview.h"
 //#include "console.h"
@@ -25,6 +24,8 @@ class QuickChatNode : public IMDLObject {};
 #include <D3DDevice9.h>
 
 #include "FileLoader.h"
+
+#include "Configuration.h"
 
 // Tell the linker that my DLL should be delay loaded
 //#pragma comment(linker, "/DelayLoad:icqmapi.dll")
@@ -3042,7 +3043,7 @@ public:
 		m_iMouseAccel			 = LoadPreference("MouseAcceleration",     0) % 3; // Imago #215 //#282 bugfix
 		m_iWheelDelay			 = LoadPreference("WheelDelay",            2) % 5; //Spunky #282
 
-        m_bUseOldUi = (LoadPreference("OldUi", 1) != 0);
+        m_bUseOldUi = m_pConfiguration->GetBool("OldUi", true)->GetValue();
 
         m_bShowJoystickIndicator = (LoadPreference("ShowJoystickIndicator", 1) != 0);
 
@@ -5450,7 +5451,9 @@ public:
     {
         m_bUseOldUi = !m_bUseOldUi;
 
-        SavePreference("OldUi", m_bUseOldUi);
+        m_pConfiguration->GetBool("OldUi", true)->SetValue(m_bUseOldUi);
+
+        //SavePreference("OldUi", m_bUseOldUi);
 
         if (m_pitemToggleUseOldUi != NULL) {
             m_pitemToggleUseOldUi->SetString(GetOldUiMenuString());

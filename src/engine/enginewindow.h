@@ -9,6 +9,8 @@
 #include "inputengine.h"
 #include "menu.h"
 
+#include "Configuration.h"
+
 class Context;
 class EngineApp;
 class GroupImage;
@@ -85,6 +87,8 @@ protected:
     // Members
     //
     //////////////////////////////////////////////////////////////////////////////
+
+    TRef<UpdatingConfiguration> m_pConfiguration;
 
     TRef<Engine>               m_pengine;
     TRef<Modeler>              m_pmodeler;

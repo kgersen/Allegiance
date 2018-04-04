@@ -10,6 +10,8 @@
 #include "enginep.h"
 #include "D3DDevice9.h"
 
+#include "regkey.h"
+
 bool g_bLuaDebug = false;
 
 //////////////////////////////////////////////////////////////////////////////
@@ -153,6 +155,8 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 				m_bClickBreak(true), //Imago 7/10 #37
 				m_pEngineApp(papp)
 {
+    m_pConfiguration = new UpdatingConfiguration(std::make_shared<RegistryConfigurationStore>(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT));
+
     //
     // Button Event Sink
     //
@@ -1131,6 +1135,8 @@ void EngineWindow::SetHideCursorTimer(bool bHideCursor)
 
 void EngineWindow::UpdateFrame()
 {
+    m_pConfiguration->Update();
+
     m_timeCurrent = Time::Now();
     m_pnumberTime->SetValue(m_timeCurrent - m_timeStart);
     EvaluateFrame(m_timeCurrent);
