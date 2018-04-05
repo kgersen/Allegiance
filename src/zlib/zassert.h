@@ -7,7 +7,10 @@
 #ifndef _assert_h_
 #define _assert_h_
 
+#include <memory>
 #include <windows.h>
+
+#include "Logger.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -31,8 +34,7 @@ void logchat(const char*);  // mmf log chat, stuck it here, the code is in Win32
 
 void retailf(const char* , ...);
 
-extern int g_outputdebugstring; // mmf added to support Radar's -debug command line
-extern bool g_bOutput;
+extern std::shared_ptr<ILogger> g_pDebugLogger;
 
 #ifdef _DEBUG
     //

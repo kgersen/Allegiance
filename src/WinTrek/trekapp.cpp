@@ -718,7 +718,7 @@ public:
                 } else if (str == "secondary") {
                     bSecondary = true;
                 } else if (str == "nooutput") {
-                    g_bOutput = false;
+                    //todo, change logging based on this
                 } else if (str == "quickstart") {
 					//Imago dont quickstart if no saved name 7/21/09
 					if (trekClient.GetSavedCharacterName().GetLength())
@@ -765,7 +765,7 @@ public:
                     g_bAskForCDKey = true;
                 // wlp 2006 - added debug option to turn on debug output
 				} else if (str == "debug") {
-                    g_outputdebugstring  = true;           //wlp allow debug outputs
+                    //todo, change logging based on this
                 } else if (str.Left(9) == "callsign=") { // wlp - 2006, added new ASGS token
                     trekClient.SaveCharacterName(str.RightOf(9)) ; // Use CdKey for ASGS callsign storage
                     g_bAskForCallSign = false ; // wlp callsign was entered on commandline

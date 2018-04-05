@@ -687,11 +687,7 @@ private:
                 }
                 else 
 				{
-					if (g_outputdebugstring) { //Imago changed from _DEBUG ifdef 8/17/09
-	                    char sz[40];
-	                    sprintf(sz, "Moving Files Error: %d", GetLastError());
-	                    ZDebugOutput(sz);
-					}
+                    g_pDebugLogger->Log("Moving Files Error:" + GetLastError());
 
                     bErrorOccured = true;
                 }

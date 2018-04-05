@@ -12,6 +12,8 @@
 #include "zmath.h"
 #include "window.h"
 
+#include "Logger.h"
+
 #ifndef NO_STEAM
 	#include "steam_api.h"	
 #endif
@@ -286,35 +288,43 @@ void logchat(const char* strText)
 
 // end mmf chat logging code
 
+std::string GetExecutablePath() {
+    char    pCharModulePath[MAX_PATH];
+    GetModuleFileName(nullptr, pCharModulePath, MAX_PATH);
+
+    std::string pathFull = std::string(pCharModulePath);
+
+    std::string pathDirectory = pathFull.substr(0, pathFull.find_last_of("\\", pathFull.size()));
+
+    return pathDirectory;
+}
+
+
+std::shared_ptr<SettableLogger> g_pDebugFileLogger = std::make_shared<SettableLogger>(std::make_shared<FileLogger>(GetExecutablePath() + "/debug.log", false));
+std::shared_ptr<SettableLogger> g_pDebugOutputLogger = std::make_shared<SettableLogger>(std::make_shared<OutputLogger>());
+
+std::shared_ptr<ILogger> g_pDebugLogger = std::make_shared<MultiLogger>(std::vector<std::shared_ptr<ILogger>>({
+    g_pDebugOutputLogger,
+    g_pDebugFileLogger
+}));
 
 void ZDebugOutputImpl(const char *psz)
 {
-    if (g_papp)
-        g_papp->DebugOutput(psz);
-    else
-        ::OutputDebugStringA(psz);
+    g_pDebugLogger->Log(std::string(psz));
 }
-HANDLE g_logfile = nullptr;
-
-int g_outputdebugstring = 0;  // mmf temp change, control outputdebugstring call with reg key
 
 void retailf(const char* format, ...)
 {
-    if (g_bOutput)
-    {
-        const size_t size = 2048; //Avalance: Changed to log longer messages. (From 512)
-        char         bfr[size];
+    const size_t size = 2048; //Avalance: Changed to log longer messages. (From 512)
+    char         bfr[size];
 
-        va_list vl;
-        va_start(vl, format);
-        _vsnprintf_s(bfr, size, (size-1), format, vl); //Avalanche: Fix off by one error. 
-        va_end(vl);
+    va_list vl;
+    va_start(vl, format);
+    _vsnprintf_s(bfr, size, (size - 1), format, vl); //Avalanche: Fix off by one error. 
+    va_end(vl);
 
-        ZDebugOutputImpl(bfr);
-    }
+    ZDebugOutputImpl(bfr);
 }
-
-bool g_bOutput = true;
 
 // mmf log to file on SRVLOG define as well as _DEBUG
 #ifdef _DEBUG
@@ -392,92 +402,42 @@ bool g_bOutput = true;
 
     void debugf(const char* format, ...)
     {
-        if (g_bOutput)
-        {
-            const size_t size = 2048; //Avalanche: Changed to handle longer messages (from 512)
-            char         bfr[size];
+        const size_t size = 2048; //Avalanche: Changed to handle longer messages (from 512)
+        char         bfr[size];
 
-            va_list vl;
-            va_start(vl, format);
-            _vsnprintf_s(bfr, size, (size-1), format, vl); //Avalanche: Fix off by one error. 
-            va_end(vl);
+        va_list vl;
+        va_start(vl, format);
+        _vsnprintf_s(bfr, size, (size - 1), format, vl); //Avalanche: Fix off by one error. 
+        va_end(vl);
 
-            ZDebugOutputImpl(bfr);
-        }
+        ZDebugOutputImpl(bfr);
     }
 
     void InitializeDebugf()
     {
-        HKEY hKey;
-        uint32_t dwType;
-        char  szValue[20];
-        uint32_t cbValue = sizeof(szValue);
-        bool  bLogToFile = false;
+        g_pDebugLogger->Log("Changing logging method based on configuration");
 
-		// mmf added this regkey check 
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-        {
-            ::RegQueryValueEx(hKey, "OutputDebugString", nullptr, LPDWORD(&dwType), (unsigned char*)&szValue, LPDWORD(&cbValue));
-            ::RegCloseKey(hKey);
-
-            g_outputdebugstring = (strcmp(szValue, "1") == 0);
+        //todo: must depend on configuration
+        if (true) {
+            g_pDebugFileLogger->Log("Stopping file log, logging continued in timestamped log file");
+            g_pDebugFileLogger->SetLogger(
+                CreateTimestampedFileLogger(GetExecutablePath() + "/debug_")
+            );
+        }
+        else {
+            g_pDebugFileLogger->Log("Stopping file log.");
+            g_pDebugFileLogger->SetLogger(
+                NullLogger::GetInstance()
+            );
         }
 
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-        {
-            ::RegQueryValueEx(hKey, "LogToFile", nullptr, LPDWORD(&dwType), (unsigned char*)&szValue, LPDWORD(&cbValue));
-            ::RegCloseKey(hKey);
-
-            bLogToFile = (strcmp(szValue, "1") == 0);
+        //todo: must depend on configuration
+        if (false) {
+            g_pDebugFileLogger->Log("Stopping output log");
+            g_pDebugOutputLogger->SetLogger(NullLogger::GetInstance());
         }
 
-        if (bLogToFile)
-        {
-            time_t  longTime;
-            time(&longTime);
-			tm* t = new tm;
-//            tm*             t = localtime(&longTime);
-			localtime_s(t, &longTime);
-
-            char    logFileName[MAX_PATH + 16];
-            GetModuleFileName(nullptr, logFileName, MAX_PATH);
-            char*   p = strrchr(logFileName, '\\');
-            if (!p)
-                p = logFileName;
-            else
-                p++;
-
-            const char* months[] = {"jan", "feb", "mar", "apr",
-                                    "may", "jun", "jul", "aug",
-                                    "sep", "oct", "nov", "dec"};
-//            strcpy_s(p, _MAX_PATH + 16, months[t->tm_mon]);
-//            sprintf_s(p + 3, _MAX_PATH + 13, "%02d%02d%02d%02d.txt",
-//                    t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-			strcpy(p, months[t->tm_mon]);
-			sprintf(p+3, "%02d%02d%02d%02d.txt",
-				t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-			delete t;
-			// mmf this is NOT where the logfile AllSrv.txt is generated
-			//     this is the client logfile and only for FZDebug build
-            g_logfile = 
-                CreateFile(
-                    logFileName, 
-                    GENERIC_WRITE, 
-                    FILE_SHARE_READ,
-                    nullptr,
-                    OPEN_ALWAYS,
-                    FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
-                    nullptr
-                );
-        }
-    }
-
-    void TerminateDebugf()
-    {
-        if (g_logfile) {
-            CloseHandle(g_logfile);
-            g_logfile = nullptr;
-        }
+        g_pDebugLogger->Log("Logging configuration completed");
     }
 #endif  // SRVLOG or _DEBUG
 
@@ -539,14 +499,7 @@ void Win32App::DebugOutput(const char *psz)
             g_listOutput.PopEnd();
         }
     #else
-		// mmf for now tie this to a registry key
-		if (g_outputdebugstring)
-			::OutputDebugStringA(psz);
-
-        if (g_logfile) {
-            uint32_t nBytes;
-            ::WriteFile(g_logfile, psz, strlen(psz), LPDWORD(&nBytes), nullptr);
-        }
+        g_pDebugLogger->Log(psz);
     #endif
 }
 
@@ -791,10 +744,6 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
 
             g_papp->Terminate();
             Window::StaticTerminate();
-
-            #ifdef SRVLOG
-                TerminateDebugf();
-            #endif
 
 			TerminateLogchat(); // mmf
 
