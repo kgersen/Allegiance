@@ -413,12 +413,12 @@ void retailf(const char* format, ...)
         ZDebugOutputImpl(bfr);
     }
 
-    void InitializeDebugf()
+    void GlobalConfigureLoggers(bool bLogToOutput, bool bLogToFile)
     {
         g_pDebugLogger->Log("Changing logging method based on configuration");
 
-        //todo: must depend on configuration
-        if (true) {
+        //on startup this is logging to a generic logfile
+        if (bLogToFile) {
             g_pDebugFileLogger->Log("Stopping file log, logging continued in timestamped log file");
             g_pDebugFileLogger->SetLogger(
                 CreateTimestampedFileLogger(GetExecutablePath() + "/debug_")
@@ -431,8 +431,8 @@ void retailf(const char* format, ...)
             );
         }
 
-        //todo: must depend on configuration
-        if (false) {
+        //this is enabled on startup
+        if (bLogToOutput == false) {
             g_pDebugFileLogger->Log("Stopping output log");
             g_pDebugOutputLogger->SetLogger(NullLogger::GetInstance());
         }
@@ -712,11 +712,6 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
     __try { */
 
         do {
-
-            #ifdef SRVLOG
-                InitializeDebugf();
-            #endif
-
 			InitializeLogchat();  // mmf
 
             BreakOnError(hr = Window::StaticInitialize());

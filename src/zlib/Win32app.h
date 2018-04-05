@@ -11,6 +11,8 @@
 
 #include "tref.h"
 
+void GlobalConfigureLoggers(bool bLogToOutput, bool bLogToFile);
+
 class ExceptionData {
 public:
     EXCEPTION_RECORD *ExceptionRecord;

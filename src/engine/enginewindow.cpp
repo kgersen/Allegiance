@@ -162,6 +162,11 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
         )
     );
 
+    GlobalConfigureLoggers(
+        m_pConfiguration->GetBool("OutputDebugString", true)->GetValue(),
+        m_pConfiguration->GetBool("LogToFile", false)->GetValue()
+    );
+
     //
     // Button Event Sink
     //
