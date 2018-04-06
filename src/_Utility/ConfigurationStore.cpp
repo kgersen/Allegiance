@@ -38,17 +38,20 @@ void SetDWordRegValue(HKEY hkey, LPCSTR appKey, std::string key, DWORD value) {
 
 std::string GetStringRegValue(HKEY hkey, LPCSTR appKey, std::string key, std::string valueDefault) {
     HKEY hKey;
-    if (ERROR_SUCCESS == ::RegOpenKeyEx(hkey, appKey,
+    if (ERROR_SUCCESS != ::RegOpenKeyEx(hkey, appKey,
         0, KEY_READ, &hKey))
     {
-        DWORD cbValue = 512;
-        char result[512];
-        result[0] = '\0';
-        ::RegQueryValueEx(hKey, "CfgFile", NULL, NULL, (LPBYTE)&result, &cbValue);
-
-        return std::string(result);
+        return valueDefault;
     }
-    return valueDefault;
+
+    DWORD cbValue = 512;
+    char result[512];
+    result[0] = '\0';
+    if (ERROR_SUCCESS != ::RegQueryValueEx(hKey, key.c_str(), NULL, NULL, (LPBYTE)&result, &cbValue)) {
+        return valueDefault;
+    }
+
+    return std::string(result);
 }
 
 void SetStringRegValue(HKEY hkey, LPCSTR appKey, std::string key, std::string value) {

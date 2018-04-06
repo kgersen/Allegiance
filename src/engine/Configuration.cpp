@@ -36,10 +36,10 @@ const TRef<SimpleModifiableValue<bool>>& UpdatingConfiguration::GetBool(std::str
 }
 
 bool UpdatingConfiguration::GetBoolValue(std::string key, bool valueDefault) {
-    if (mBoolMap->Has(key) == false) {
-        return valueDefault;
+    if (mBoolMap->Has(key) == true) {
+        return mBoolMap->Get(key)->GetValue();
     }
-    return mBoolMap->Get(key)->GetValue();
+    return m_inner->ReadBool(key, valueDefault);
 }
 
 const TRef<SimpleModifiableValue<float>>& UpdatingConfiguration::GetFloat(std::string key, float valueDefault) {
@@ -50,10 +50,10 @@ const TRef<SimpleModifiableValue<float>>& UpdatingConfiguration::GetFloat(std::s
 }
 
 float UpdatingConfiguration::GetFloatValue(std::string key, float valueDefault) {
-    if (mFloatMap->Has(key) == false) {
-        return valueDefault;
+    if (mFloatMap->Has(key) == true) {
+        return mFloatMap->Get(key)->GetValue();
     }
-    return mFloatMap->Get(key)->GetValue();
+    return m_inner->ReadFloat(key, valueDefault);
 }
 
 const TRef<SimpleModifiableValue<float>>& UpdatingConfiguration::GetInt(std::string key, int valueDefault) {
@@ -64,10 +64,10 @@ const TRef<SimpleModifiableValue<float>>& UpdatingConfiguration::GetInt(std::str
 }
 
 int UpdatingConfiguration::GetIntValue(std::string key, int valueDefault) {
-    if (mIntMap->Has(key) == false) {
-        return valueDefault;
+    if (mIntMap->Has(key) == true) {
+        return (int)mIntMap->Get(key)->GetValue();
     }
-    return (int)mIntMap->Get(key)->GetValue();
+    return m_inner->ReadInt(key, valueDefault);
 }
 
 const TRef<SimpleModifiableValue<ZString>>& UpdatingConfiguration::GetString(std::string key, const std::string& valueDefault) {
@@ -78,8 +78,8 @@ const TRef<SimpleModifiableValue<ZString>>& UpdatingConfiguration::GetString(std
 }
 
 std::string UpdatingConfiguration::GetStringValue(std::string key, const std::string& valueDefault) {
-    if (mStringMap->Has(key) == false) {
-        return valueDefault;
+    if (mStringMap->Has(key) == true) {
+        return std::string(mStringMap->Get(key)->GetValue());
     }
-    return std::string(mStringMap->Get(key)->GetValue());
+    return m_inner->ReadString(key, valueDefault);
 }

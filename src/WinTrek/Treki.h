@@ -34,6 +34,8 @@ enum ScreenID {
     ScreenIDZoneEvents          =   14
 };
 
+//global
+UpdatingConfiguration* GetConfiguration();
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -58,6 +60,7 @@ protected:
     ) :
         EffectWindow(
             papp,
+            GetConfiguration(),
             strCommandLine,
             GetWindowTitle(),
             bStartFullscreen,

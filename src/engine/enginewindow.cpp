@@ -127,12 +127,14 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 
 EngineWindow::EngineWindow(	EngineApp *			papp,
+                            UpdatingConfiguration* pConfiguration,
 							const ZString&		strCommandLine,
 							const ZString&		strTitle,
 							bool				bStartFullscreen,
 							const WinRect&		rect,
 							const WinPoint&		sizeMin,
-							HMENU				hmenu ) :
+							HMENU				hmenu
+) :
 				Window(NULL, rect, strTitle, ZString(), 0, hmenu),
 				m_pengine(papp->GetEngine()),
 				m_pmodeler(papp->GetModeler()),
@@ -153,15 +155,9 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 				m_bWindowStateMinimised(false),
 				m_bWindowStateRestored(false),
 				m_bClickBreak(true), //Imago 7/10 #37
-				m_pEngineApp(papp)
+				m_pEngineApp(papp),
+                m_pConfiguration(pConfiguration)
 {
-    m_pConfiguration = new UpdatingConfiguration(
-        std::make_shared<FallbackConfigurationStore>(
-            std::make_shared<JsonConfigurationStore>("config.json"),
-            std::make_shared<RegistryConfigurationStore>(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT)
-        )
-    );
-
     GlobalConfigureLoggers(
         m_pConfiguration->GetBool("Debug.LogToOutput", m_pConfiguration->GetBoolValue("OutputDebugString", true))->GetValue(),
         m_pConfiguration->GetBool("Debug.LogToFile", m_pConfiguration->GetBoolValue("LogToFile", false))->GetValue()

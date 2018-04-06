@@ -717,10 +717,17 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 
 TRef<TrekWindow> g_ptrekWindow;
+UpdatingConfiguration* g_pConfiguration = new UpdatingConfiguration(
+    std::make_shared<FallbackConfigurationStore>(
+        std::make_shared<JsonConfigurationStore>("config.json"),
+        std::make_shared<RegistryConfigurationStore>(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT)
+        )
+);
 
 TrekWindow* GetWindow()     { return g_ptrekWindow;               }
 Engine*     GetEngine()     { return g_ptrekWindow->GetEngine();  }
 Modeler*    GetModeler()    { return g_ptrekWindow->GetModeler(); }
+UpdatingConfiguration* GetConfiguration() { return g_pConfiguration; }
 
 /*
  * DelayLoadDllExceptionFilter

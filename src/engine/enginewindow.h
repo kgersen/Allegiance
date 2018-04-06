@@ -232,6 +232,7 @@ protected:
 public:
     EngineWindow(
               EngineApp*   papp,
+        UpdatingConfiguration* pConfiguration,
         const ZString&     strCommandLine,
         const ZString&     strTitle         = ZString(),
               bool         bStartFullscreen = false,
@@ -260,7 +261,6 @@ public:
     Time             GetTimeStart()      { return m_timeStart;               }
     Engine*          GetEngine()         { return m_pengine;                 }
     Modeler*         GetModeler()        { return m_pmodeler;                }
-    const TRef<UpdatingConfiguration>& GetConfiguration() { return m_pConfiguration; }
     bool             GetFullscreen()     { return m_pengine->IsFullscreen(); }
     bool             GetShowFPS()        { return m_bFPS;                    }
     IPopupContainer* GetPopupContainer() { return m_ppopupContainer;         }

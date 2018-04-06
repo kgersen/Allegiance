@@ -2477,15 +2477,15 @@ void WinTrekClient::Initialize(Time timeNow)
     if (m_pChatLogger == nullptr) {
 
         // I'm not entirely sure if this is used. It was at some point proposed to be used as a way to authenticate bots (pigs) to the servers.
-        auto strCdKeyConfig = GetWindow()->GetConfiguration()->GetStringValue(
+        auto strCdKeyConfig = GetConfiguration()->GetStringValue(
             "AuthenticationId",
-            GetWindow()->GetConfiguration()->GetStringValue("CDKey", "")
+            GetConfiguration()->GetStringValue("CDKey", "")
         );
         if (strCdKeyConfig != "") {
             BaseClient::SetCDKey(strCdKeyConfig.c_str());
         }
 
-        m_pLogChatEnabled = GetWindow()->GetConfiguration()->GetBool("Chat.Log", GetWindow()->GetConfiguration()->GetBoolValue("LogChat", false));
+        m_pLogChatEnabled = GetConfiguration()->GetBool("Chat.Log", GetConfiguration()->GetBoolValue("LogChat", false));
         if (m_pLogChatEnabled->GetValue()) {
             m_pChatLogger = CreateTimestampedFileLogger(GetExecutablePath() + "\\logs\\chat_");
         }
@@ -2493,7 +2493,7 @@ void WinTrekClient::Initialize(Time timeNow)
             m_pChatLogger = NullLogger::GetInstance();
         }
 
-        SoundEngine::bConvertToMono = GetWindow()->GetConfiguration()->GetBool("Sound.ConvertToMono", false == GetWindow()->GetConfiguration()->GetBoolValue("MonoOff", true))->GetValue();
+        SoundEngine::bConvertToMono = GetConfiguration()->GetBool("Sound.ConvertToMono", false == GetConfiguration()->GetBoolValue("MonoOff", true))->GetValue();
     }
 
     GetShip()->CreateDamageTrack();
