@@ -23,10 +23,6 @@
 #include "DeviceModesDX9.h"
 #include "LogFile.h"
 
-// kg - registry key is passed as parameter
-// #define HKLM_3DSETTINGS ALLEGIANCE_REGISTRY_KEY_ROOT "\\3DSettings"
-
-
 struct SAdditional3DRegistryData
 {
 	char szDeviceName[256];
