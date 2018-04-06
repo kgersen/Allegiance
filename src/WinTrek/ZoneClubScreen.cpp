@@ -675,7 +675,7 @@ public:
                         //
                         // Let's do it!
                         //
-                        trekClient.m_pAutoDownload->BeginUpdate(pAutoUpdateSink, bForceFileCheck, false);
+                        trekClient.m_pAutoDownload->BeginUpdate(pAutoUpdateSink, bForceFileCheck);
                         // m_pAutoDownload could be NULL at this point, if the autodownload system decided
                         // not to do a download after all.  This can happen if there is an error or if
                         // the client was already up-to-date.

@@ -429,36 +429,6 @@ public:
 
           *p = 0; // erase filename
           ::SetCurrentDirectory(path);
-
-          HKEY hKey;
-          DWORD dwType;
-          char  szValue[MAX_PATH];
-          DWORD cbValue = MAX_PATH;
-
-          // NOTE: please keep reloader.cpp's GetArtPath() in sync with this!!!
-          if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-          {
-              // Get MoveInProgress from registry
-              if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "MoveInProgress", NULL, &dwType, (unsigned char*)&szValue, &cbValue) &&
-                  *((DWORD*)szValue) == 1)
-              {
-                  if (::MessageBox(NULL, "The AutoUpdate process failed to finish.  Try again to finish?  (YES is recommended)", "Error", MB_ICONERROR | MB_YESNO) == IDYES)
-                  {
-                      if (!LaunchReloaderAndExit(false))
-                      {
-                          ::MessageBox(NULL, "Couldn't launch Reloader.exe", "Fatal Error", MB_ICONERROR);
-                          ::ExitProcess(0);
-                          return S_FALSE;
-                      }
-                  }
-                  else
-                  {
-                      ::ExitProcess(0);
-                      return S_FALSE;
-                  }
-              }
-              ::RegCloseKey(hKey);
-          }
         }
 
         //

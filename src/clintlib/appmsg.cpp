@@ -3422,7 +3422,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             //
             // Let's do it!
             //
-			m_pAutoDownload->BeginUpdate(pAutoUpdateSink, true, false); //#111 force check
+			m_pAutoDownload->BeginUpdate(pAutoUpdateSink, true); //#111 force check
             // m_pAutoDownload could be NULL at this point, if the autodownload system decided
             // not to do a download after all.  This can happen if there is an error or if
             // the client was already up-to-date.
