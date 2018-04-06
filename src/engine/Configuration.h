@@ -51,6 +51,7 @@ public:
         insertResult = mMap.insert(pair);
         //mMap.insert(key, (EntryType)result);
 
+        result->Update();
         AddChild(result);
 
         return insertResult.first->second;
@@ -81,7 +82,7 @@ public:
         AddChild(mStringMap);
     }
 
-    void Evaluate() {
+    void Evaluate() override {
         this->Write();
     }
 
