@@ -88,7 +88,15 @@ public:
     void Write();
 
     const TRef<SimpleModifiableValue<bool>>& GetBool(std::string key, bool valueDefault);
+    bool GetBoolValue(std::string key, bool valueDefault);
+
     const TRef<SimpleModifiableValue<float>>& GetFloat(std::string key, float valueDefault);
+    float GetFloatValue(std::string key, float valueDefault);
+
     const TRef<SimpleModifiableValue<float>>& GetInt(std::string key, int valueDefault);
-    const TRef<SimpleModifiableValue<ZString>>& GetString(std::string key, std::string valueDefault);
+    int GetIntValue(std::string key, int valueDefault);
+
+    const TRef<SimpleModifiableValue<ZString>>& GetString(std::string key, const std::string& valueDefault);
+    std::string GetStringValue(std::string key, const std::string& valueDefault);
+
 };

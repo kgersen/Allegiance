@@ -2457,10 +2457,10 @@ WinTrekClient::WinTrekClient(void)
     m_bFilterQuickComms(false),
 	m_bFilterUnknownChats(true), //TheBored 30-JUL-07: Filter Unknown Chat patch
     m_dwFilterLobbyChats(3), //TheBored 25-JUN-07: Changed value to 3 (Don't Filter Lobby)
-	bTrainingFirstClick(false)
+	bTrainingFirstClick(false),
+    m_pChatLogger(nullptr)
 {
     // restore the CD Key from the registry
-
     HKEY hKey;
 
     if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER,
@@ -2490,6 +2490,16 @@ WinTrekClient::~WinTrekClient(void)
 void WinTrekClient::Initialize(Time timeNow)
 {
     BaseClient::Initialize(timeNow);
+
+    if (m_pChatLogger == nullptr) {
+        m_pLogChatEnabled = GetWindow()->GetConfiguration()->GetBool("Chat.Log", GetWindow()->GetConfiguration()->GetBoolValue("LogChat", false));
+        if (m_pLogChatEnabled->GetValue()) {
+            m_pChatLogger = CreateTimestampedFileLogger(GetExecutablePath() + "\\Chat\\log_");
+        }
+        else {
+            m_pChatLogger = NullLogger::GetInstance();
+        }
+    }
 
     GetShip()->CreateDamageTrack();
 
@@ -4838,6 +4848,8 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
 			l->data().SetChat(ctRecipient, strSender + c_str1 + strRecipient + c_str2 + strOrder,
                               c_cidNone, pmodelTarget, color, bFromPlayer, bObjectModel, bIsLeader);
             trekClient.GetChatList()->last(l);
+
+            m_pChatLogger->Log(std::string(strSender + c_str1 + strRecipient + c_str2 + strOrder));
 
             BaseClient::ReceiveChat(pshipSender,
                                     ctRecipient, oidRecipient,

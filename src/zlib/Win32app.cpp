@@ -181,113 +181,6 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
     }
 }
 
-// mmf added code for chat logging
-// mmf 7/15 changed creation flag on chat file so other processes can read from it
-// avalanche + mmf 03/22/07 (bugs 108 and 109) place chat logs in logs folder, use \r\n
-
-HANDLE chat_logfile = nullptr;
-char logFileName[MAX_PATH + 21];
-
-void InitializeLogchat()
-{
-	HKEY hKey;
-	uint32_t dwType;
-	char szValue[20];
-	uint32_t cbValue = sizeof(szValue);
-	bool bLogChat = false;
-
-	if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-	{
-		//Imago fixed this but is still confused why it's not a uint32_t.
-		if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogChat", nullptr, LPDWORD(&dwType), (unsigned char*)&szValue, LPDWORD(&cbValue)))
-			bLogChat = (strcmp(szValue, "1") == 0);
-		::RegCloseKey(hKey);
-	}
-
-
-	if (bLogChat)
-	{
-		time_t longTime;
-		time(&longTime);
-		tm* t = new tm;
-	//	tm* t = localtime(&longTime);
-		localtime_s(t, &longTime);
-
-		// char logFileName[MAX_PATH + 21]; make this global so chat can open and close it
-		// turns out this is not needed but leaving it here instead of moving it again
-		GetModuleFileName(nullptr, logFileName, MAX_PATH);
-		char* p = strrchr(logFileName, '\\');
-		if (!p)
-			p = logFileName;
-		else
-			p++;
-
-		strcpy(p, "logs\\");
-
-		if (!CreateDirectory(logFileName, nullptr))
-		{
-			if (GetLastError() == ERROR_PATH_NOT_FOUND)
-			{
-				debugf("Unable to create chat log directory %s\n",logFileName);
-			}
-		}
-
-		// mmf 1/17/08 fixed month
-		sprintf(p+5, "chat_%02d-%02d-%02d-%02d%02d%02d.txt", (t->tm_year - 100), (t->tm_mon+1), t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-
-		// mmf changed 3 param from 0 to FILE_SHARE_READ
-		chat_logfile =
-			CreateFile(
-				logFileName,
-				GENERIC_WRITE,
-				FILE_SHARE_READ,
-				nullptr,
-				OPEN_ALWAYS,
-				FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
-				nullptr
-			);
-		delete t;
-
-		//Imago moved inside bLogChat
-		if (chat_logfile == nullptr) debugf("Unable to create chat_logfile %s\n",logFileName);
-	}
-}
-
-void TerminateLogchat()
-{
-	if (chat_logfile) {
-		CloseHandle(chat_logfile);
-        chat_logfile = nullptr;
-    }
-}
-
-void logchat(const char* strText)
-{
-	// unravel this from debugf-ZDebugOutputImpl-DebugOutput
-    const size_t size = 512;
-    char         bfr[size];
-	int length;
-
-	time_t  longTime;
-    time(&longTime);
-	tm* t = new tm;
-//    tm*             t = localtime(&longTime);
-	localtime_s(t, &longTime);
-
-	length = strlen(strText);
-
-	// don't log if text is bigger than buffer, we don't want to log these long 'spam' chat's anyway
-	if (chat_logfile && (length < 490)) {
-		sprintf(bfr, "%02d/%02d/%02d %02d:%02d:%02d: %s\r\n",
-            (t->tm_mon + 1), t->tm_mday, (t->tm_year - 100), t->tm_hour, t->tm_min, t->tm_sec, strText);
-        uint32_t nBytes;
-        ::WriteFile(chat_logfile, bfr, strlen(bfr), LPDWORD(&nBytes), nullptr);
-	}
-	delete t;
-}
-
-// end mmf chat logging code
-
 std::string GetExecutablePath() {
     char    pCharModulePath[MAX_PATH];
     GetModuleFileName(nullptr, pCharModulePath, MAX_PATH);
@@ -298,7 +191,6 @@ std::string GetExecutablePath() {
 
     return pathDirectory;
 }
-
 
 std::shared_ptr<SettableLogger> g_pDebugFileLogger = std::make_shared<SettableLogger>(std::make_shared<FileLogger>(GetExecutablePath() + "/debug.log", false));
 std::shared_ptr<SettableLogger> g_pDebugOutputLogger = std::make_shared<SettableLogger>(std::make_shared<OutputLogger>());
@@ -712,8 +604,6 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
     __try { */
 
         do {
-			InitializeLogchat();  // mmf
-
             BreakOnError(hr = Window::StaticInitialize());
 
 // BUILD_DX9 - KGJV use runtime dynamic instead at preprocessor level
@@ -739,8 +629,6 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
 
             g_papp->Terminate();
             Window::StaticTerminate();
-
-			TerminateLogchat(); // mmf
 
 			
      } while (false);

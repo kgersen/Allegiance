@@ -163,9 +163,13 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
     );
 
     GlobalConfigureLoggers(
-        m_pConfiguration->GetBool("OutputDebugString", true)->GetValue(),
-        m_pConfiguration->GetBool("LogToFile", false)->GetValue()
+        m_pConfiguration->GetBool("Debug.LogToOutput", m_pConfiguration->GetBoolValue("OutputDebugString", true))->GetValue(),
+        m_pConfiguration->GetBool("Debug.LogToFile", m_pConfiguration->GetBoolValue("LogToFile", false))->GetValue()
     );
+
+    g_bMDLLog = m_pConfiguration->GetBool("Debug.Mdl", false)->GetValue();
+    g_bWindowLog = m_pConfiguration->GetBool("Debug.Window", false)->GetValue();
+    g_bWindowLog = m_pConfiguration->GetBool("Debug.Lua", false)->GetValue();
 
     //
     // Button Event Sink
@@ -188,19 +192,23 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
     //
     // Should we start fullscreen?
 	CD3DDevice9 * pDev = CD3DDevice9::Get();
-	bool startFullscreen = pDev->GetDeviceSetupParams()->bRunWindowed ? false : true;
-	
-    ParseCommandLine( strCommandLine, startFullscreen);
 
-	
-	// BT - 10/17 - Force the client to start windowed first, then we can take it full screen later.
-	bool bStartFullScreen = false;
+    auto startFullscreenModifiable = m_pConfiguration->GetBool("Graphics.Fullscreen", pDev->GetDeviceSetupParams()->bRunWindowed ? false : true);
+
+    bool bCommandLineFullscreen = startFullscreenModifiable->GetValue();
+    ParseCommandLine(strCommandLine, bCommandLineFullscreen);
+
+    if (bCommandLineFullscreen != startFullscreenModifiable->GetValue()) {
+        startFullscreenModifiable->SetValue(bCommandLineFullscreen);
+    }
+
+	bool bStartFullScreen = startFullscreenModifiable->GetValue();
 
     // Get the mouse
     //
 
     m_pmouse = m_pinputEngine->GetMouse();
-    m_pmouse->SetEnabled(startFullscreen);
+    m_pmouse->SetEnabled(bStartFullScreen);
     papp->SetMouse(m_pmouse);
 
     m_pmouse->GetEventSource()->AddSink(m_peventSink = new ButtonEvent::Delegate(this));
@@ -261,8 +269,8 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 
 	devLog.OutputString("CVertexGenerator::Get()->Initialise( );\n");
 
-	m_bStartFullScreen = startFullscreen;
-	pDev->ResetDevice(startFullscreen == false);
+	m_bStartFullScreen = bStartFullScreen;
+	pDev->ResetDevice(bStartFullScreen == false);
 }
 
 EngineWindow::~EngineWindow()
@@ -352,17 +360,11 @@ void EngineWindow::ParseCommandLine(const ZString& strCommandLine, bool& bStartF
         ZString str;
 
         if (token.IsMinus(str)) {
-            if (str == "mdllog") {
-                g_bMDLLog = true;
-            } else if (str == "windowlog") {
-                g_bWindowLog = true;
-            } else if (str == "windowed") {
+            if (str == "windowed") {
                 bStartFullscreen = false;
             } else if (str == "fullscreen") {
                 bStartFullscreen = true;
-			} else if (str == "lua-debug") {
-                g_bLuaDebug = true;
-            }
+			}
         } else {
             token.IsString(str);
         }

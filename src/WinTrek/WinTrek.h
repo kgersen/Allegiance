@@ -137,6 +137,9 @@ class  WinTrekClient :
 		/* pkk May 6th: Disabled bandwidth patch
 		unsigned int			m_nBandwidth; // w0dk4 June 2007: Bandwith Patch */
 
+        TRef<SimpleModifiableValue<bool>> m_pLogChatEnabled;
+        std::shared_ptr<ILogger> m_pChatLogger;
+
         //
         // Explosions
         //

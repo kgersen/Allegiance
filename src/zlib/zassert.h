@@ -30,8 +30,6 @@
 void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line, const char* pszModule);
 #define ZRetailAssert(bCond)    ZAssertImpl((bCond) ? true : false, #bCond, __FILE__, __LINE__, __MODULE__)
 
-void logchat(const char*);  // mmf log chat, stuck it here, the code is in Win32app.cpp
-
 void retailf(const char* , ...);
 
 extern std::shared_ptr<ILogger> g_pDebugLogger;
