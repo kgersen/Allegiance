@@ -2460,25 +2460,7 @@ WinTrekClient::WinTrekClient(void)
 	bTrainingFirstClick(false),
     m_pChatLogger(nullptr)
 {
-    // restore the CD Key from the registry
-    HKEY hKey;
-
-    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER,
-        ALLEGIANCE_REGISTRY_KEY_ROOT,
-        0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL))
-    {
-        DWORD dwSize = c_cbCDKey;
-        DWORD dwType;
-        char szCDKey[c_cbCDKey];
-
-        if (::RegQueryValueEx(hKey, "CDKey", NULL, &dwType, 
-                (unsigned char*)szCDKey, &dwSize) == ERROR_SUCCESS
-            && dwType == REG_SZ && dwSize != 0)
-        {
-            BaseClient::SetCDKey(szCDKey);
-        }
-        ::RegCloseKey(hKey);
-    }
+    
 }
 
 WinTrekClient::~WinTrekClient(void)
@@ -2491,10 +2473,21 @@ void WinTrekClient::Initialize(Time timeNow)
 {
     BaseClient::Initialize(timeNow);
 
+    // making sure that this only happens once, instead of also being run on a reset
     if (m_pChatLogger == nullptr) {
+
+        // I'm not entirely sure if this is used. It was at some point proposed to be used as a way to authenticate bots (pigs) to the servers.
+        auto strCdKeyConfig = GetWindow()->GetConfiguration()->GetStringValue(
+            "AuthenticationId",
+            GetWindow()->GetConfiguration()->GetStringValue("CDKey", "")
+        );
+        if (strCdKeyConfig != "") {
+            BaseClient::SetCDKey(strCdKeyConfig.c_str());
+        }
+
         m_pLogChatEnabled = GetWindow()->GetConfiguration()->GetBool("Chat.Log", GetWindow()->GetConfiguration()->GetBoolValue("LogChat", false));
         if (m_pLogChatEnabled->GetValue()) {
-            m_pChatLogger = CreateTimestampedFileLogger(GetExecutablePath() + "\\Chat\\log_");
+            m_pChatLogger = CreateTimestampedFileLogger(GetExecutablePath() + "\\logs\\chat_");
         }
         else {
             m_pChatLogger = NullLogger::GetInstance();
@@ -4971,30 +4964,6 @@ void            WinTrekClient::Preload(const char*  pszModelName,
 	GetModeler()->SetColorKeyHint( bOldColorKeyValue );
 	GetEngine()->SetEnableMipMapGeneration( false );
 // BUILD_DX9
-}
-
-void WinTrekClient::SetCDKey(const ZString& strCDKey)
-{
-	// BT - 5/21/2012 - ACSS - Debugging for the CDKey.
-	//debugf("SetCDKey() strCDKey = %s\r\n", (const unsigned char*)(PCC) strCDKey);
-
-    HKEY hKey;
-    // wlp 2006 - Cdkey is the ASGS Ticket Now - we don't want to save it
-    //
-    //
-    // save the new key for future use.
-	//
-    // if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER, 
-    //    ALLEGIANCE_REGISTRY_KEY_ROOT,
-    //    0, "", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL))
-    // {
-    //    ::RegSetValueEx(hKey, "CDKey", NULL, REG_SZ, 
-    // wlp -        (const unsigned char*)(PCC)strCDKey, strCDKey.GetLength());
-    //      
-    //   ::RegCloseKey(hKey);
-    // }
-    
-    BaseClient::SetCDKey(strCDKey);
 }
 
 TRef<ThingSite> WinTrekClient::CreateThingSite(ImodelIGC* pModel)
