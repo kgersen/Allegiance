@@ -406,13 +406,20 @@ void    CprobeIGC::Update(Time now)
                             &pmodelTarget, &distance2Min, &directionMin);
                     }
 
-                    bool hasAOE = (GetProjectileType()->GetBlastRadius() > 1.0f);
-                    if (hasAOE && !pmodelTarget && (eabm & c_eabmShootMissiles))
-                    {
-                        GetTarget((const ModelListIGC*)(pcluster->GetMissiles()),
-                            pside, myPosition, dtUpdate, accuracy, speed, lifespan, OT_missile,
-                            &pmodelTarget, &distance2Min, &directionMin);
-                    }
+					bool hasAOE = false;
+					if (GetProjectileType() != nullptr)
+					{
+						hasAOE = (GetProjectileType()->GetBlastRadius() > 1.0f);
+						if (hasAOE && !pmodelTarget && (eabm & c_eabmShootMissiles))
+						{
+							if (pcluster != nullptr && pcluster->GetMissiles() != nullptr)
+							{
+								GetTarget((const ModelListIGC*)(pcluster->GetMissiles()),
+									pside, myPosition, dtUpdate, accuracy, speed, lifespan, OT_missile,
+									&pmodelTarget, &distance2Min, &directionMin);
+							}
+						}
+					}
 
                     if (!pmodelTarget && (eabm & c_eabmShootShips))
                     {
