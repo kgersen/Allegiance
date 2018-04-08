@@ -2795,6 +2795,8 @@ public:
 		m_pnumFFGain = new ModifiableNumber((float)LoadPreference("FFGain", 10000)); //Imago #187 
 		m_pnumMouseSens = new ModifiableNumber(atof(LoadPreference("MouseSensitivity", "0.6")));
 
+        m_pinputEngine->GetMouse()->SetSensitivity(m_pnumMouseSens->GetValue());
+
 		debugf("TrekResources::Initialize() - Loading fonts.\n");
 
 		// load the fonts
@@ -3028,6 +3030,8 @@ public:
         m_pUseOldUi = m_pConfiguration->GetBool("Ui.UseOldUi", true);
 
         m_bShowJoystickIndicator = (LoadPreference("ShowJoystickIndicator", 1) != 0);
+
+        GetInputEngine()->GetMouse()->SetAccel(m_iMouseAccel);
 
 // BUILD_DX9
 
