@@ -396,119 +396,69 @@ public:
         //
         // get the artpath
         //
+        PathString pathStr = GetConfiguration()->GetStringValue(
+            "Data.Path",
+            GetConfiguration()->GetStringValue(
+                "ArtPath",
+                GetExecutablePath() + "\\Artwork" 
+            )
+        ).c_str();
 
-        PathString pathStr; // = ZString::GetProfileString("Federation", "ArtPath");
+        bool bLogFrameData = GetConfiguration()->GetBoolValue(
+            "Debug.LogFrameData",
+            GetConfiguration()->GetBoolValue(
+                "LogFrameData",
+                ""
+            )
+        );
 
-        HKEY hKey;
-        DWORD dwType;
-        char  szValue[MAX_PATH];
-        DWORD dwValue;
-        DWORD cbValue = MAX_PATH;
+        std::string pathLogFrameData = GetConfiguration()->GetStringValue(
+            "Debug.LogFrameDataPath",
+            GetConfiguration()->GetStringValue(
+                "LogFrameDataPath",
+                ""
+            )
+        );
 
-        // NOTE: please keep reloader.cpp's GetArtPath() in sync with this!!!
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        if (bLogFrameData && pathLogFrameData.length() > 0)
         {
+            ZString strFile = pathLogFrameData.c_str();
+            g_pzfFrameDump = new ZWriteFile(strFile);
+            // check for a valid file handle
+            if (g_pzfFrameDump->IsValid())
             {
-                nlohmann::json json;
-                std::ifstream filestream("config.json");
-
-                try {
-                    // Get the art path from the config file
-                    filestream >> json;
-                    pathStr = json["ArtPath"].get<std::string>().c_str();
-                }
-                catch (std::exception e) {
-                    // Get the art path from the registry
-                    if (ERROR_SUCCESS != ::RegQueryValueEx(hKey, "ArtPath", NULL, &dwType, (unsigned char*)&szValue, &cbValue))
-                    {
-                        // Set ArtPath to be relative to the application path
-                        GetModuleFileNameA(NULL, szValue, MAX_PATH);
-                        char*   p = strrchr(szValue, '\\');
-                        if (!p)
-                            p = szValue;
-                        else
-                            p++;
-
-                        strcpy(p, "artwork");
-
-                        //Create a subdirectory for the artwork (nothing will happen if it already there)
-                        CreateDirectoryA(szValue, NULL);
-                    }
-                    pathStr = szValue;
-                }
+                // dump out the header row of data
+                g_pzfFrameDump->Write(
+                    "Mspf,"
+                    "Fps,"
+                    "Warps,"
+                    "Ships,"
+                    "Projectiles,"
+                    "Asteroids,"
+                    "Stations,"
+                    "Treasures,"
+                    "Missiles,"
+                    "SectorWarps,"
+                    "SectorShips,"
+                    "SectorProjectiles,"
+                    "SectorAsteroids,"
+                    "SectorStations,"
+                    "SectorTreasures,"
+                    "SectorMissiles,"
+                    "Triangles,"
+                    "DrawStringCalls,"
+                    "Chars"
+                    "\n"
+                );
             }
- 
-            cbValue = MAX_PATH; // reset this
-
-            // Start the frame rate data log, if necessary
-            if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogFrameData", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-            {
-                cbValue = MAX_PATH;
-                if (dwValue==1)
-                {
-                    if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogFrameDataPath", NULL, &dwType, (unsigned char*)&szValue, &cbValue))
-                    {
-                        if (strlen(szValue)>0)
-                        {
-                            ZString strFile = szValue;
-                            g_pzfFrameDump = new ZWriteFile(strFile);
-                            // check for a valid file handle
-                            if (g_pzfFrameDump->IsValid()) 
-                            {
-                                // dump out the header row of data
-                                g_pzfFrameDump->Write(
-                                        "Mspf,"
-                                        "Fps,"
-                                        "Warps,"
-                                        "Ships,"
-                                        "Projectiles,"
-                                        "Asteroids,"
-                                        "Stations,"
-                                        "Treasures,"
-                                        "Missiles,"
-                                        "SectorWarps,"
-                                        "SectorShips,"
-                                        "SectorProjectiles,"
-                                        "SectorAsteroids,"
-                                        "SectorStations,"
-                                        "SectorTreasures,"
-                                        "SectorMissiles,"
-                                        "Triangles,"
-                                        "DrawStringCalls,"
-                                        "Chars"
-                                        "\n"
-                                    );
-                            }
-                            else
-                            {
-                              // pop up error message box
-                              MessageBox(NULL, "Framerate log file location is invalid.\n"
-                                               "Use CliConfig to set the framerate log file location to "
-                                               "a valid location.",
-                                               "Framerate Logging Error", MB_ICONEXCLAMATION | MB_OK);
-                            }
-                        }
-                    }
-                }
-            }
-
-            ::RegCloseKey(hKey);
-        }
-
-        if (pathStr.IsEmpty()) {
-            // marksn: to make everyone consistent, this should go back to getmodulefilename path
-            //         like for convex hull and sounds
-            // pathStr = PathString::GetCurrentDirectory() + "artwork";
-
-            char    logFileName[MAX_PATH + 16];
-            GetModuleFileName(NULL, logFileName, MAX_PATH);
-            char*   p = strrchr(logFileName, '\\');
-            if (!p)
-                p = logFileName;
             else
-                p++;
-            strcpy(p, "artwork");
-            pathStr = logFileName;
+            {
+                // pop up error message box
+                MessageBox(NULL, "Framerate log file location is invalid.\n"
+                    "Use CliConfig to set the framerate log file location to "
+                    "a valid location.",
+                    "Framerate Logging Error", MB_ICONEXCLAMATION | MB_OK);
+            }
         }
 		
 		//Imago 8/16/09
@@ -516,39 +466,7 @@ public:
 		debugf("Running %s %s\nArtpath: %s\nCommand line: %s\n", (PCC) vi.GetInternalName(), 
 			(PCC) vi.GetStringValue("FileVersion"),(PCC) pathStr, (PCC) strCommandLine);
 
-// BUILD_DX9
-		// Now set later for D3D build, as modeller isn't valid yet.
-		//GetModeler()->SetArtPath(pathStr);
-// BUILD_DX9
  		UTL::SetArtPath(pathStr);
-		
-		/*{
-			HRESULT hr = FirstRunEula(pathStr);
-		
-          if (hr == E_FAIL)
-          {
-              ::MessageBox(NULL, "Error while trying to load ebueula.dll. Please reboot and retry.  If it still fails, reinstall Allegiance", "Initialization Error", MB_OK);
-              return S_FALSE;
-          }
-          else
-          if (hr == S_FALSE) 
-          {
-              ::MessageBox(NULL, "You must accept the End User License Agreement before playing the Allegiance", "Allegiance", MB_OK);
-              return S_FALSE;
-          }
-          else
-          {
-            assert(hr == S_OK);
-          }
-        }*/
-
-// BUILD_DX9
-        //
-        // load the fonts
-        //
-
-//        TrekResources::Initialize(GetModeler());
-// BUILD_DX9
 
         //
         // Initialize the runtime
