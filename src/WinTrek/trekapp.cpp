@@ -194,93 +194,6 @@ bool CheckFreeMemory()
         return false;
 }
 
-
-bool CheckForAllGuard()
-{
-  // KGJV: allways bypass
-  return true;
-  // Bypass any other tests if -nod is specified on the command line
-  ZString strCmdLine(::GetCommandLine());
-  while (!strCmdLine.IsEmpty())
-    if (strCmdLine.GetToken() == "-nod")
-      return true;
-
-  // Load KERNEL32
-  HINSTANCE hinstKernel32 = ::GetModuleHandle("kernel32.dll");
-  assert(hinstKernel32);
-
-  // Get the address of IsDebuggerPresent, if available
-  typedef BOOL (WINAPI* PFNIsDebuggerPresent)(VOID);
-  PFNIsDebuggerPresent pfnIsDebuggerPresent = (PFNIsDebuggerPresent)
-    ::GetProcAddress(hinstKernel32, "IsDebuggerPresent");
-  if (pfnIsDebuggerPresent)
-  {
-    // Indicate that we are being debugged, if we are
-    if ((*pfnIsDebuggerPresent)())
-      return true;
-  }
-  else
-  {
-    // Win95 doesn't support IsDebuggerPresent, so we must check some other ways
-
-    // Format an event name using the current process ID
-    char szEvent[24];
-    sprintf(szEvent, "MSRGuard_%08X", GetCurrentProcessId());
-
-    // Determine if the named event already exists
-    HANDLE hEvent = ::OpenEvent(EVENT_ALL_ACCESS, false, szEvent);
-    if (hEvent)
-    {
-      // Close the event handle and indicate that we are being debugged
-      ::CloseHandle(hEvent);
-      return true;
-    }
-  }
-
-  // Get the command-line options (again)
-  strCmdLine = ::GetCommandLine();
-  strCmdLine.GetToken();
-
-  // Get the fully-qualified path to the current process
-  char szModulePath[_MAX_PATH];
-  GetModuleFileName(NULL, szModulePath, sizeof(szModulePath));
-  char szDrive[_MAX_DRIVE], szDir[_MAX_DIR];
-  _splitpath(szModulePath, szDrive, szDir, NULL, NULL);
-  _makepath(szModulePath, szDrive, szDir, NULL, NULL);
-
-  // Get the ArtPath, since that's where AllGuard.exe should be
-  HKEY hKey = NULL;
-  if (ERROR_SUCCESS != ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-    return true; // If it can't be read, just keep running
-  char szArtPath[_MAX_PATH];
-  DWORD cbArtPath = sizeof(szArtPath);
-  if (ERROR_SUCCESS != ::RegQueryValueEx(hKey, "ArtPath", NULL, NULL, (BYTE*)&szArtPath, &cbArtPath))
-  {
-    lstrcpy(szArtPath, szModulePath);
-    lstrcat(szArtPath, "artwork\\");
-    cbArtPath = lstrlen(szArtPath);
-  }
-  else if ('\\' != szArtPath[cbArtPath - 1])
-  {
-    lstrcat(szArtPath, "\\");
-    ++cbArtPath;
-  }
-  ::RegCloseKey(hKey);
-
-  // Append the AllGuard.exe filename and parameters
-  char szAllGuard[_MAX_PATH * 4];
-  sprintf(szAllGuard, "\"%sAllGuard.exe\" %s", szArtPath, (LPCSTR)strCmdLine);
-
-  // Create the AllGuard.exe process
-  STARTUPINFO si = {sizeof(si)};
-  PROCESS_INFORMATION pi;
-  if (!::CreateProcess(NULL, szAllGuard, NULL, NULL, false, 0, NULL, szModulePath, &si, &pi))
-    return true; // If it can't be created, just keep running
-
-  // Indicate false to exit this instance of the process
-  return false;
-}
-
 ZString ReadAuthPipe()
 {
 	const int LENGTH = 64;
@@ -430,12 +343,6 @@ public:
           *p = 0; // erase filename
           ::SetCurrentDirectory(path);
         }
-
-        //
-        // Check to see if we are being debugged
-        //
-        if (!CheckForAllGuard())
-          return S_FALSE;
 
 
         //
