@@ -3097,7 +3097,6 @@ void WinTrekClient::PostText(bool bCritical, const char* pszText, ...)
 void WinTrekClient::EjectPlayer(ImodelIGC*  pcredit)
 {
     GetWindow()->OverrideCamera(trekClient.m_now, pcredit, true);
-    GetWindow()->TriggerMusic(deathMusicSound);
 }
 
 ZString WinTrekClient::GetSavedCharacterName()

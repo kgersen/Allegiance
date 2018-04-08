@@ -1422,13 +1422,6 @@ public:
 	PlayerInfo * contextPlayerInfo;
 
     //
-    // Music
-    //
-
-    SoundID                 m_musicId;
-    TRef<ISoundInstance>    m_psoundMusic;
-
-    //
     // Sound support
     //
 
@@ -1437,7 +1430,6 @@ public:
     ISoundEngine::Quality           m_soundquality;
     bool                            m_bEnableSoundHardware;
 	bool                            m_bUseDSound8;
-    TRef<IDiskPlayer>               m_pDiskPlayer;
     TRef<ISoundMutex>               m_psoundmutexSal;
     TRef<ISoundMutex>               m_psoundmutexVO;
 
@@ -2520,8 +2512,6 @@ public:
             }
 
             m_screen = s;
-
-            UpdateMusic();
         }
 
         bSwitchingScreens = false;
@@ -2715,7 +2705,6 @@ public:
 		m_bCommandGrid(false),
 		m_radarCockpit(RadarImage::c_rlDefault),
 		m_radarCommand(RadarImage::c_rlAll),
-		m_musicId(NA),
 		m_viewmode(vmUI),
 		m_bOverlaysChanged(false),
 		m_pszCursor(AWF_CURSOR_DEFAULT),
@@ -2868,18 +2857,6 @@ public:
         m_pClientEventSource = trekClient.GetClientEventSource();
         m_pClientEventSource->AddSink(m_pClientEventSink);
 
-        //
-        // Initialize redbook audio
-        //
-
-		debugf("Creating disk player. \n");
-
-        hr = CreateDiskPlayer(m_pDiskPlayer, LoadPreference("AudioCD", "Allegiance"));
-
-        if (FAILED(hr))
-            CreateDummyDiskPlayer(m_pDiskPlayer);
-
-
 		debugf("Creating sound mutexes. \n");
 
         //
@@ -2928,14 +2905,10 @@ public:
 
         pnsGamePanes->AddMember("SFXGain", m_pnumSFXGain =
             new ModifiableNumber(-(float)LoadPreference("SFXGain", 8)));
-        pnsGamePanes->AddMember("MusicGain", m_pnumMusicGain =
-            new ModifiableNumber(-(float)LoadPreference("MusicGain", 30)));
         pnsGamePanes->AddMember("VoiceOverGain", m_pnumVoiceOverGain =
             new ModifiableNumber(-(float)LoadPreference("VoiceOverGain", 13)));
-        pnsGamePanes->AddMember("AllegianceCD", m_pDiskPlayer);
         pnsGamePanes->AddMember("MutexSal", m_psoundmutexSal);
         pnsGamePanes->AddMember("MutexVO", m_psoundmutexVO);
-        m_pDiskPlayer->SetGain(m_pnumMusicGain->GetValue());
 
         SoundInit::AddMembers(pnsGamePanes);
 
@@ -3057,14 +3030,6 @@ public:
         m_bShowJoystickIndicator = (LoadPreference("ShowJoystickIndicator", 1) != 0);
 
 // BUILD_DX9
-
-        //
-        // Music toggle
-        //
-
-        if (LoadPreference("Music", TRUE)) {
-            ToggleMusic();
-        }
 
         //
         // Create the combat camera
@@ -3514,7 +3479,6 @@ public:
         m_pgroupImage3D      = NULL;
         m_pconsoleImage = NULL;
 
-        m_psoundMusic = NULL;
         m_vSoundMap.SetEmpty();
         m_vsonicChats.SetEmpty();
         m_pqcmenuMain = NULL;
@@ -3652,7 +3616,6 @@ public:
         }
 
         m_pnumberIsGhost->SetValue(trekClient.GetShip()->IsGhost() ? 1.0f : 0.0f);
-        UpdateMusic();
     }
 
     void UpdateBackdropCentering()
@@ -4559,11 +4522,6 @@ public:
                 m_pitemSoundQuality         = pmenu->AddMenuItem(idmSoundQuality, GetSoundQualityMenuString());
                 m_pitemToggleSoundHardware  = pmenu->AddMenuItem(idmSoundHardware, GetSoundHardwareMenuString());
 				m_pitemToggleDSound8Usage   = pmenu->AddMenuItem(idmUseDSound8, GetDSound8EnabledString());
-                m_pitemToggleMusic          = pmenu->AddMenuItem(idmToggleMusic, GetMusicMenuString());
-                m_pitemMusicVolumeUp        = pmenu->AddMenuItem(idmMusicVolumeUp,
-                    GetGainMenuString("Music", m_pnumMusicGain->GetValue(), c_fVolumeDelta), 'M');
-                m_pitemMusicVolumeDown      = pmenu->AddMenuItem(idmMusicVolumeDown,
-                    GetGainMenuString("Music", m_pnumMusicGain->GetValue(), -c_fVolumeDelta), 'N');
                 m_pitemSFXVolumeUp          = pmenu->AddMenuItem(idmSFXVolumeUp,
                     GetGainMenuString("Sound Effect", m_pnumSFXGain->GetValue(), c_fVolumeDelta), 'S');
                 m_pitemSFXVolumeDown        = pmenu->AddMenuItem(idmSFXVolumeDown,
@@ -4960,150 +4918,6 @@ public:
         }
 	}*/
 
-    SoundID GetFlightMusic()
-    {
-        int nGrooveLevel = trekClient.GetGrooveLevel();
-        static SoundID idLastFlightMusic = (random(0, 1) > 0.5)
-            ? flightMusic1ASound : flightMusic2ASound;
-        SoundID idNextFlightAMusic = (idLastFlightMusic < flightMusic2ASound)
-            ? flightMusic2ASound : flightMusic1ASound;
-        SoundID musicIdNew;
-
-        if (idLastFlightMusic < flightMusic2ASound)
-            idNextFlightAMusic = flightMusic2ASound;
-        else if (idLastFlightMusic < flightMusic3ASound)
-            idNextFlightAMusic = flightMusic3ASound;
-        else
-            idNextFlightAMusic = flightMusic1ASound;
-
-        ZAssert(nGrooveLevel >= 0 && nGrooveLevel <= 2);
-
-        switch (m_musicId)
-        {
-        case flightMusic1CSound:
-        case flightMusic2CSound:
-        case flightMusic3CSound:
-            if (nGrooveLevel == 2)
-            {
-                if (m_psoundMusic && m_psoundMusic->IsPlaying() == S_OK)
-                    musicIdNew = m_musicId;
-                else
-                    musicIdNew = idNextFlightAMusic + 2;
-            }
-            else if (nGrooveLevel == 1)
-                musicIdNew = m_musicId - 1;
-            else
-                musicIdNew = idNextFlightAMusic;
-            break;
-
-        case flightMusic1BSound:
-        case flightMusic2BSound:
-        case flightMusic3BSound:
-            if (nGrooveLevel == 2)
-                musicIdNew = m_musicId + 1;
-            else if (nGrooveLevel == 1)
-            {
-                if (m_psoundMusic && m_psoundMusic->IsPlaying() == S_OK)
-                    musicIdNew = m_musicId;
-                else
-                    musicIdNew = idNextFlightAMusic + 1;
-            }
-            else
-                musicIdNew = idNextFlightAMusic;
-            break;
-
-        case flightMusic1ASound:
-        case flightMusic2ASound:
-        case flightMusic3ASound:
-            if (nGrooveLevel == 2)
-                musicIdNew = m_musicId + 2;
-            else if (nGrooveLevel == 1)
-                musicIdNew = m_musicId + 1;
-            else
-            {
-                if (m_psoundMusic && m_psoundMusic->IsPlaying() == S_OK)
-                    musicIdNew = m_musicId;
-                else
-                    musicIdNew = idNextFlightAMusic;
-            }
-            break;
-
-        case deathMusicSound:
-            if (m_psoundMusic && m_psoundMusic && m_psoundMusic->IsPlaying() == S_OK)
-                return deathMusicSound;
-            else
-                musicIdNew = nGrooveLevel + idNextFlightAMusic;
-            break;
-
-        default:
-            musicIdNew = nGrooveLevel + idNextFlightAMusic;
-            break;
-        }
-
-        idLastFlightMusic = musicIdNew;
-
-        return musicIdNew;
-    }
-
-    void UpdateMusic()
-    {
-        SoundID newMusicSound = NA;
-
-        if (m_bMusic)
-        {
-            switch (m_screen)
-            {
-                case ScreenIDCombat:
-                    newMusicSound = GetFlightMusic();
-                    break;
-
-                case ScreenIDSplashScreen:
-                    newMusicSound = NA;
-                    break;
-
-                default:
-                    if ((m_musicId == gameOverWonMusicSound
-                            || m_musicId == gameOverLostMusicSound)
-                        && m_psoundMusic && m_psoundMusic->IsPlaying() == S_OK)
-                    {
-                        newMusicSound = m_musicId;
-                    }
-                    else
-                        newMusicSound = gameScreenMusicSound;
-                    break;
-            }
-        }
-
-        TriggerMusic(newMusicSound);
-    }
-
-    void TriggerMusic(SoundID newMusicSound)
-    {
-        if (newMusicSound != m_musicId || m_psoundMusic == NULL || m_psoundMusic->IsPlaying() == S_FALSE)
-        {
-            if (m_psoundMusic != NULL)
-                m_psoundMusic->Stop(true);
-
-            if (newMusicSound != NA)
-                m_psoundMusic = StartSound(newMusicSound);
-            else
-                m_psoundMusic = NULL;
-
-            m_musicId = newMusicSound;
-        }
-    }
-
-    bool GetMusicIsOn (void)
-    {
-        return m_bMusic;
-    }
-
-    void SetMusicOn (bool bMusicOn)
-    {
-        m_bMusic = bMusicOn;
-        UpdateMusic ();
-    }
-
     void ToggleStrobes()
     {
         ThingGeo::SetShowLights(!ThingGeo::GetShowLights());
@@ -5428,9 +5242,6 @@ public:
         InitializeQuickChatMenu();
         InitializeSoundTemplates();
 
-        // reset the music
-        m_musicId = NA;
-
         // reset the SFX
         trekClient.ResetSound();
     }
@@ -5526,38 +5337,6 @@ public:
 		if(m_pitemToggleDSound8Usage != NULL)
 			m_pitemToggleDSound8Usage->SetString(GetDSound8EnabledString());
 	}
-
-    void ToggleMusic()
-    {
-        m_bMusic = !m_bMusic;
-
-        SavePreference("Music", (DWORD)m_bMusic);
-
-        UpdateMusic();
-
-        if (m_pitemToggleMusic != NULL)
-            m_pitemToggleMusic->SetString(GetMusicMenuString());
-    }
-
-    void AdjustMusicVolume(float fDelta)
-    {
-        float fNewValue = std::min(0.0f, std::max(c_nMinGain, m_pnumMusicGain->GetValue() + fDelta));
-        m_pnumMusicGain->SetValue(fNewValue);
-
-        SavePreference("MusicGain", (DWORD)-fNewValue);
-
-        if (m_pitemMusicVolumeUp != NULL)
-        {
-            m_pitemMusicVolumeUp->SetString(
-                GetGainMenuString("Music", m_pnumMusicGain->GetValue(), c_fVolumeDelta));
-        }
-        if (m_pitemMusicVolumeDown != NULL)
-        {
-            m_pitemMusicVolumeDown->SetString(
-                GetGainMenuString("Music", m_pnumMusicGain->GetValue(), -c_fVolumeDelta));
-        }
-        m_pDiskPlayer->SetGain(fNewValue);
-    }
 
     void AdjustSFXVolume(float fDelta)
     {
@@ -5909,11 +5688,6 @@ public:
 	{
 		return m_bUseDSound8 ? "DirectSound (Restart Reqd.): New" : "DirectSound (Restart Reqd.): Old";
 	}
-
-    ZString GetMusicMenuString()
-    {
-        return (m_bMusic) ? "Music On " : "Music Off ";
-    }
 
     ZString GetBidirectionalLightingMenuString()
     {
@@ -6450,18 +6224,6 @@ public:
 			case idmUseDSound8:
 				ToggleUseDSound8();
 				break;
-
-            case idmToggleMusic:
-                ToggleMusic();
-                break;
-
-            case idmMusicVolumeUp:
-                AdjustMusicVolume(c_fVolumeDelta);
-                break;
-
-            case idmMusicVolumeDown:
-                AdjustMusicVolume(-c_fVolumeDelta);
-                break;
 
             case idmSFXVolumeUp:
                 AdjustSFXVolume(c_fVolumeDelta);
@@ -7777,7 +7539,6 @@ public:
         // Update sounds
         m_pSoundEngine->Update();
         trekClient.UpdateAmbientSounds(DWORD(dtime * 1000));
-        UpdateMusic();
 
         // Update the HUD Graphics
         if ((m_cm == cmExternalOverride) && (m_timeOverrideStop < time))
@@ -11143,10 +10904,6 @@ public:
             case FM_S_GAME_OVER:
             {
                 CASTPFM(pfmGameOver, S, GAME_OVER, pfm);
-
-                TriggerMusic(pfmGameOver->iSideWinner == trekClient.GetSide()->GetObjectID()
-                   ? gameOverWonMusicSound
-                   : gameOverLostMusicSound);
                 trekClient.SetGameoverInfo(pfmGameOver);
 
                 if (trekClient.GetSideID() != SIDE_TEAMLOBBY)

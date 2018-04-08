@@ -115,7 +115,6 @@
     <ClCompile Include="..\src\soundengine\ds3dutil.cpp" />
     <ClCompile Include="..\src\soundengine\ds3dvirtualbuffer.cpp" />
     <ClCompile Include="..\src\soundengine\dummysound.cpp" />
-    <ClCompile Include="..\src\soundengine\redbooksound.cpp" />
     <ClCompile Include="..\src\soundengine\soundbase.cpp" />
     <ClCompile Include="..\src\soundengine\soundtemplates.cpp" />
     <ClCompile Include="..\src\soundengine\soundutil.cpp" />
@@ -125,7 +124,6 @@
     <ClInclude Include="..\src\soundengine\ds3dengine.h" />
     <ClInclude Include="..\src\soundengine\ds3dutil.h" />
     <ClInclude Include="..\src\soundengine\ds3dvirtualbuffer.h" />
-    <ClInclude Include="..\src\soundengine\redbooksound.h" />
     <ClInclude Include="..\src\soundengine\soundbase.h" />
     <ClInclude Include="..\src\soundengine\soundengine.h" />
     <ClInclude Include="..\src\soundengine\soundtemplates.h" />

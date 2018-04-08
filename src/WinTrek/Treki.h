@@ -228,10 +228,6 @@ public:
     virtual TRef<ISoundInstance>  StartSound(ISoundTemplate* ptemplate, ISoundPositionSource* psource = NULL) = 0;
     virtual TRef<ISoundInstance>  StartSound(SoundID soundId, ISoundPositionSource* psource = NULL) = 0;
 
-    virtual void TriggerMusic(SoundID newMusicSound) = 0;
-    virtual bool GetMusicIsOn (void) = 0;
-    virtual void SetMusicOn (bool bMusicOn) = 0;
-
     virtual void PlayFFEffect(ForceEffectID effectID, LONG lDirection = 0) = 0;
     virtual void SetChatListPane(ChatListPane* pchatListPane) = 0;
     virtual void SetLobbyChatTarget(ChatTarget ct, ObjectID recip = NA) = 0;
