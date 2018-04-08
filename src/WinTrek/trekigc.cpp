@@ -2478,7 +2478,7 @@ void WinTrekClient::Initialize(Time timeNow)
 
         // I'm not entirely sure if this is used. It was at some point proposed to be used as a way to authenticate bots (pigs) to the servers.
         auto strCdKeyConfig = GetConfiguration()->GetStringValue(
-            "AuthenticationId",
+            "Online.AuthenticationId",
             GetConfiguration()->GetStringValue("CDKey", "")
         );
         if (strCdKeyConfig != "") {
