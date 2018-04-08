@@ -9342,54 +9342,9 @@ public:
     public:
         TRef<ZFile> Include(const ZString& str)
         {
-            HKEY hKey;
-
-            if (ERROR_SUCCESS != ::RegCreateKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL)
-            ) {
-                return NULL;
-            }
-
-            char buf[128];
-            DWORD dwSize = sizeof(buf);
-            DWORD dwType = REG_SZ;
-
-            ::RegQueryValueEx(hKey, str, NULL, &dwType, (BYTE*)buf, &dwSize);
-            ::RegCloseKey(hKey);
-
-            if (dwType != REG_SZ) {
-                return NULL;
-            }
-
-            TRef<ZFile> pfile = GetWindow()->GetModeler()->LoadFile(ZString(buf), "mml", false);
-
-            if (pfile) {
-                return pfile;
-            }
-
             return NULL;
         }
     };
-
-    ZString GetProductID()
-    {
-        HKEY hKey;
-
-        if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT,
-                0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL)) {
-            char buf[128];
-            DWORD dwSize = sizeof(buf);
-            DWORD dwType = REG_SZ;
-
-            ::RegQueryValueEx(hKey, "PID", NULL, &dwType, (BYTE*)buf, &dwSize);
-            ::RegCloseKey(hKey);
-
-            if (dwType == REG_SZ) {
-                return ZString(buf);
-            }
-        }
-
-        return ZString("<unknown pid>");
-    }
 
     ZString GetVersionString()
     {
@@ -9399,7 +9354,6 @@ public:
     {
         m_phelp = CreateHelpPane(GetModeler(), "hlpStart", new PagePaneIncluderImpl());
 
-        m_phelp->SetString("pid", GetProductID());
         m_phelp->SetString("ver", ZVersionInfo().GetProductVersionString());
 
         m_phelpPosition = new HelpPosition(GetTime(), m_phelp->GetEventSourceClose());
