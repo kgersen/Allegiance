@@ -3353,13 +3353,6 @@ public:
         // initialize the bad words filters
         LoadBadWords ();
 
-		// BT - 10/17 - Check if Allegiance should run windowed or not... This happens after allegiance has 
-		// already initialized to a window and gotten its fonts loaded.
-		bool startFullScreen = true;
-		ParseCommandLine(strCommandLine, startFullScreen);
-
-		SetFullscreen(startFullScreen);
-
         m_pmissileLast = 0;
 
         //

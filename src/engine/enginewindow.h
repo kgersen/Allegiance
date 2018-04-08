@@ -125,7 +125,7 @@ protected:
     bool                       m_bRestore;
     bool                       m_bMouseInside;
     bool                       m_bMoveOnHide;
-	bool						m_bStartFullScreen;
+	TRef<SimpleModifiableValue<bool>> m_pPreferredFullscreen;
 	bool						m_bWindowStateMinimised;
 	bool						m_bWindowStateRestored;
 	bool						m_bClickBreak;

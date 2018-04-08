@@ -189,22 +189,20 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
     // Should we start fullscreen?
 	CD3DDevice9 * pDev = CD3DDevice9::Get();
 
-    auto startFullscreenModifiable = m_pConfiguration->GetBool("Graphics.Fullscreen", pDev->GetDeviceSetupParams()->bRunWindowed ? false : true);
+    m_pPreferredFullscreen = m_pConfiguration->GetBool("Graphics.Fullscreen", pDev->GetDeviceSetupParams()->bRunWindowed ? false : true);
 
-    bool bCommandLineFullscreen = startFullscreenModifiable->GetValue();
-    ParseCommandLine(strCommandLine, bCommandLineFullscreen);
+    bool bStartFullScreen = m_pPreferredFullscreen->GetValue();
+    ParseCommandLine(strCommandLine, bStartFullScreen);
 
-    if (bCommandLineFullscreen != startFullscreenModifiable->GetValue()) {
-        startFullscreenModifiable->SetValue(bCommandLineFullscreen);
+    if (bStartFullScreen != m_pPreferredFullscreen->GetValue()) {
+        m_pPreferredFullscreen->SetValue(bStartFullScreen);
     }
-
-	bool bStartFullScreen = startFullscreenModifiable->GetValue();
 
     // Get the mouse
     //
 
     m_pmouse = m_pinputEngine->GetMouse();
-    m_pmouse->SetEnabled(bStartFullScreen);
+    m_pmouse->SetEnabled(bStartFullscreen);
     papp->SetMouse(m_pmouse);
 
     m_pmouse->GetEventSource()->AddSink(m_peventSink = new ButtonEvent::Delegate(this));
@@ -265,8 +263,7 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 
 	devLog.OutputString("CVertexGenerator::Get()->Initialise( );\n");
 
-	m_bStartFullScreen = bStartFullScreen;
-	pDev->ResetDevice(bStartFullScreen == false);
+	pDev->ResetDevice(bStartFullscreen == false);
 }
 
 EngineWindow::~EngineWindow()
@@ -276,7 +273,7 @@ EngineWindow::~EngineWindow()
 void EngineWindow::PostWindowCreationInit()
 {
     // Tell the engine we are the window
-    GetEngine()->SetFocusWindow(this, m_bStartFullScreen);
+    GetEngine()->SetFocusWindow(this, m_pPreferredFullscreen->GetValue());
 
     //
     // These rects track the size of the window
@@ -620,6 +617,10 @@ RectValue* EngineWindow::GetRenderRectValue()
 
 void EngineWindow::SetFullscreen(bool bFullscreen)
 {
+    if (m_pPreferredFullscreen->GetValue() != bFullscreen) {
+        m_pPreferredFullscreen->SetValue(bFullscreen);
+    }
+
     if (m_pengine->IsFullscreen() != bFullscreen) {
         //
         // Make sure we don't recurse
