@@ -3102,58 +3102,20 @@ void WinTrekClient::EjectPlayer(ImodelIGC*  pcredit)
 
 ZString WinTrekClient::GetSavedCharacterName()
 {
-    HKEY hKey;
-    DWORD dwType;
-    DWORD cbName = c_cbName;
-    char szName[c_cbName];
-    szName[0] = '\0';
-    
-    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-    {
-        RegQueryValueEx(hKey, "CharacterName", NULL, &dwType, (unsigned char*)&szName, &cbName);
-        RegCloseKey(hKey);
-    }
-
-    return szName;
+    return GetConfiguration()->GetStringValue("Online.CharacterName", GetConfiguration()->GetStringValue("CharacterName", "")).c_str();
 }
 
 void WinTrekClient::SaveCharacterName(ZString strName)
 {
-    HKEY hKey;
-    DWORD cbName = c_cbName;
-    char szName[c_cbName];
-    szName[0] = '\0';
-    
-    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey))
-    {
-        RegSetValueEx(hKey, "CharacterName", NULL, REG_SZ, 
-            (const BYTE*)(const char*)strName, strName.GetLength() + 1);
-        RegCloseKey(hKey);
-    }
+    GetConfiguration()->GetString("Online.CharacterName", std::string(strName))->SetValue(strName);
 }
-int WinTrekClient::GetSavedWingAssignment(){ // kolie 6/10
-	HKEY hKey;
-	DWORD dwType = REG_DWORD;
-    //DWORD dwWing = NA; // Imago 7/10 #149
-	DWORD dwWing = 0; // BT - 9/17 - Default all new players to the command wing.
-    DWORD dwSize = sizeof(DWORD);
-    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-    {
-        RegQueryValueEx(hKey, "WingAssignment", NULL, &dwType, (PBYTE)&dwWing, &dwSize);
-        RegCloseKey(hKey);
-    }
 
-    return (int)dwWing;
+int WinTrekClient::GetSavedWingAssignment(){ // kolie 6/10
+    return GetConfiguration()->GetIntValue("Ui.DefaultWing", GetConfiguration()->GetIntValue("WingAssignment", 0));
 }
+
 void WinTrekClient::SaveWingAssignment(int index){ // kolie 6/10
-	HKEY hKey;
-	DWORD dwWing;
-	dwWing = (DWORD)index;
-	if ( ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey))
-	{
-		RegSetValueEx(hKey, "WingAssignment", NULL, REG_DWORD,  (PBYTE)&dwWing, sizeof(DWORD) );
-		RegCloseKey(hKey);
-	}
+    GetConfiguration()->GetInt("Ui.DefaultWing", 0)->SetValue((int)index);
 }
 
 // KGJV : added utility functions for cores & server names
