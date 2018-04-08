@@ -3266,8 +3266,6 @@ public:
         // Load saved settings
         //
 
-        if (LoadPreference("RoundRadarScreen", FALSE))
-            ToggleRoundRadar();
         if (!LoadPreference("CensorChats", TRUE))
             ToggleCensorChats();
         if (LoadPreference ("PreferChaseView", FALSE))
@@ -3415,80 +3413,24 @@ public:
         SetCursorImage(pimageCursor);
     }
 
-	// TODO: rewrite all load and savepreference methods to use a settings file instead of the registry.
     void SavePreference(const ZString& szName, DWORD dwValue)
     {
-        HKEY hKey;
-
-        if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT,
-                0, "", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL))
-        {
-            ::RegSetValueEx(hKey, szName, NULL, REG_DWORD, (const BYTE*)&dwValue, sizeof(dwValue));
-            ::RegCloseKey(hKey);
-        }
+        GetConfiguration()->SetIntValue(std::string(szName), (int)dwValue);
     }
 
     DWORD LoadPreference(const ZString& szName, DWORD dwDefault)
     {
-        HKEY hKey;
-        DWORD dwResult = dwDefault;
-
-		// mmf lets actually load it instead of creating it
-        // if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT,
-        //        0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL))
-		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT,
-                0, KEY_READ, &hKey))
-        {
-            DWORD dwSize = sizeof(dwResult);
-            DWORD dwType = REG_DWORD;
-
-            ::RegQueryValueEx(hKey, szName, NULL, &dwType, (BYTE*)&dwResult, &dwSize);
-            ::RegCloseKey(hKey);
-
-            if (dwType != REG_DWORD)
-                dwResult = dwDefault;
-        }
-
-        return dwResult;
+        return (DWORD)GetConfiguration()->GetIntValue(std::string(szName), (int)dwDefault);
     }
 
     void SavePreference(const ZString& szName, const ZString& strValue)
     {
-        HKEY hKey;
-
-        if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT,
-                0, "", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL))
-        {
-            ::RegSetValueEx(hKey, szName, NULL, REG_SZ,
-                (const unsigned char*)(const char*)strValue, strValue.GetLength() + 1);
-            ::RegCloseKey(hKey);
-        }
+        GetConfiguration()->SetStringValue(std::string(szName), std::string(strValue));
     }
 
     ZString LoadPreference(const ZString& szName, const ZString& strDefault)
     {
-        HKEY hKey;
-        ZString strResult = strDefault;
-
-		// mmf lets actually load it instead of creating it
-		if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT,
-                0, KEY_READ, &hKey))
-        {
-            const int nMaxStrLen = 2048;
-            DWORD dwSize = nMaxStrLen;
-            DWORD dwType = REG_SZ;
-            unsigned char cbValue[nMaxStrLen + 1];
-
-            ::RegQueryValueEx(hKey, szName, NULL, &dwType, cbValue, &dwSize);
-            
-
-            cbValue[nMaxStrLen] = '\0';
-
-            if (dwType == REG_SZ)
-                strResult = (const char*)cbValue;
-        }
-
-        return strResult;
+        return GetConfiguration()->GetStringValue(std::string(szName), std::string(strDefault)).c_str();
     }
 
 	bool IsWine() { //Imago 8/17/09
@@ -4002,7 +3944,6 @@ public:
     #define idmToggleChatHistoryHUD        614
     #define idmToggleCenterHUD             615
     #define idmToggleTargetHUD             616
-    #define idmToggleRoundRadar            617
     #define idmStyleHUD                    618
     #define idmToggleCensorChats           619
     #define idmToggleLinearControls        620
@@ -4689,19 +4630,6 @@ public:
 
     void ToggleDebris()
     {
-		/* old stuff
-        if (m_pwrapGeoDebris->GetGeo() == Geo::GetEmpty()) {
-            m_pwrapGeoDebris->SetGeo(m_pgeoDebris);
-            SavePreference("Debris", TRUE);
-        } else {
-            m_pwrapGeoDebris->SetGeo(Geo::GetEmpty());
-            SavePreference("Debris", FALSE);
-        }
-
-        if (m_pitemToggleDebris != NULL) {
-            m_pitemToggleDebris->SetString(GetDebrisMenuString());
-        }
-		*/
 		//LANS - allow off/low/medium/high debris settings
 		//lower numbers = more debris
 		if (m_debrisDensity->GetValue() == 1.5f) { //low -> medium
@@ -4739,24 +4667,6 @@ public:
 
         if (m_pitemToggleEnvironment != NULL) {
             m_pitemToggleEnvironment->SetString(GetEnvironmentMenuString());
-        }
-    }
-
-    void ToggleRoundRadar()
-    {
-        if (m_bRoundRadar)
-        {
-            m_bRoundRadar = false;
-            SavePreference("RoundRadarScreen", FALSE);
-        }
-        else
-        {
-            m_bRoundRadar = true;
-            SavePreference("RoundRadarScreen", TRUE);
-        }
-
-        if (m_pitemToggleRoundRadar != NULL) {
-            m_pitemToggleRoundRadar->SetString(GetRoundRadarMenuString());
         }
     }
 
@@ -6424,11 +6334,6 @@ public:
 					m_pitemVsync->SetString(GetVsyncString());
 				}
 				break;
-			//
-
-            case idmToggleRoundRadar:
-                ToggleRoundRadar ();
-                break;
 
             case idmToggleCensorChats:
                 ToggleCensorChats ();

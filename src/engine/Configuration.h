@@ -90,14 +90,18 @@ public:
 
     const TRef<SimpleModifiableValue<bool>>& GetBool(std::string key, bool valueDefault);
     bool GetBoolValue(std::string key, bool valueDefault);
+    void SetBoolValue(std::string key, bool value);
 
     const TRef<SimpleModifiableValue<float>>& GetFloat(std::string key, float valueDefault);
     float GetFloatValue(std::string key, float valueDefault);
+    void SetFloatValue(std::string key, float value);
 
     const TRef<SimpleModifiableValue<float>>& GetInt(std::string key, int valueDefault);
     int GetIntValue(std::string key, int valueDefault);
+    void SetIntValue(std::string key, int value);
 
     const TRef<SimpleModifiableValue<ZString>>& GetString(std::string key, const std::string& valueDefault);
     std::string GetStringValue(std::string key, const std::string& valueDefault);
+    void SetStringValue(std::string key, const std::string& value);
 
 };
