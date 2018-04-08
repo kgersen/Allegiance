@@ -2493,7 +2493,7 @@ void WinTrekClient::Initialize(Time timeNow)
             m_pChatLogger = NullLogger::GetInstance();
         }
 
-        SoundEngine::bConvertToMono = GetConfiguration()->GetBool("Sound.ConvertToMono", false == GetConfiguration()->GetBoolValue("MonoOff", true))->GetValue();
+        SoundEngine::bConvertToMono = GetConfiguration()->GetBool("Sound.ConvertToMono", false == GetConfiguration()->GetBoolValue("MonoOff", false))->GetValue();
     }
 
     GetShip()->CreateDamageTrack();
