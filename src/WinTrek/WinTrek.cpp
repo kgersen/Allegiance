@@ -1448,7 +1448,7 @@ public:
     DWORD m_cVTVersion;
     HWND  m_hwndVTEdit;
 
-    bool m_bUseOldUi;
+    TRef<SimpleModifiableValue<bool>> m_pUseOldUi;
 
     //
     // Input
@@ -2357,7 +2357,7 @@ public:
                     break;
 
                 case ScreenIDIntroScreen:
-					SetUiScreen(CreateIntroScreen(GetModeler(), *m_pUiEngine, m_bUseOldUi));
+					SetUiScreen(CreateIntroScreen(GetModeler(), *m_pUiEngine, m_pUseOldUi->GetValue()));
                     break;
 
 				case ScreenIDSplashScreen:
@@ -2434,7 +2434,7 @@ public:
 							}
 						}
 						GetWindow()->screen(ScreenIDIntroScreen);
-						SetUiScreen(CreateIntroScreen(GetModeler(), *m_pUiEngine, m_bUseOldUi));
+						SetUiScreen(CreateIntroScreen(GetModeler(), *m_pUiEngine, m_pUseOldUi->GetValue()));
 	                    break;
 					}
 
@@ -2733,7 +2733,7 @@ public:
 		m_iMouseAccel(0), //#215
 		m_bShowInventoryPane(true), // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
 		m_bShowSectorMapPane(true),  // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
-        m_bUseOldUi(false),
+        m_pUseOldUi(nullptr),
         m_bShowJoystickIndicator(true)
     {
         HRESULT hr;
@@ -2795,8 +2795,11 @@ public:
 		// and most didn't like having any intro at all. :(
 		// To make a movie that is compatible with the movie player, use this ffmpeg command line: 
 		// ffmpeg.exe -i intro_microsoft_original.avi -q:a 1 -q:v 1 -vcodec mpeg4 -acodec wmav2 intro_microsoft.avi
-		//ZString pathStr = GetModeler()->GetArtPath() + "/intro_microsoft.avi";
-		//hDDVidThread = PlayMovieClip(bMovies, bSoftware, CD3DDevice9::Get()->IsWindowed(), pathStr);
+        // Rock: Converted to configuration setting
+        if (m_pConfiguration->GetBool("Ui.ShowStartupCreditsMovie", false)->GetValue()) {
+            ZString pathStr = GetModeler()->GetArtPath() + "/intro_microsoft.avi";
+            hDDVidThread = PlayMovieClip(bMovies, bSoftware, CD3DDevice9::Get()->IsWindowed(), pathStr);
+        }
 
 		debugf("Reading FFGain, MouseSensitivity\n");
 
@@ -3049,7 +3052,7 @@ public:
 		m_iMouseAccel			 = LoadPreference("MouseAcceleration",     0) % 3; // Imago #215 //#282 bugfix
 		m_iWheelDelay			 = LoadPreference("WheelDelay",            2) % 5; //Spunky #282
 
-        m_bUseOldUi = m_pConfiguration->GetBool("OldUi", true)->GetValue();
+        m_pUseOldUi = m_pConfiguration->GetBool("Ui.UseOldUi", true);
 
         m_bShowJoystickIndicator = (LoadPreference("ShowJoystickIndicator", 1) != 0);
 
@@ -3362,53 +3365,40 @@ public:
         //
         // intro.avi video moved up
         //
-		TRef<Screen> introscr = CreateIntroScreen(GetModeler(), *m_pUiEngine, m_bUseOldUi);
+		TRef<Screen> introscr = CreateIntroScreen(GetModeler(), *m_pUiEngine, m_pUseOldUi->GetValue());
 		SetUiScreen(introscr);
         m_screen = ScreenIDIntroScreen;
         RestoreCursor();
 
-    	if (hDDVidThread != NULL) {
-			WaitForSingleObject(hDDVidThread,INFINITE);
-			CloseHandle(hDDVidThread);
+        // if the startup credits are running, wait.
+        if (hDDVidThread != NULL) {
+            WaitForSingleObject(hDDVidThread, INFINITE);
+            CloseHandle(hDDVidThread);
+        }
 
-			// BT - 9/17 - The return of the original intro movie. Only try to show the movie the first time the user runs allegiance. 
-			HKEY    hKey;
-			DWORD   dwHasSeenMovie = 0;
-			DWORD dwDataSize = sizeof(dwHasSeenMovie);
-			if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_ALL_ACCESS, &hKey))
-			{
-				RegQueryValueExA(hKey, "HasSeenMovie", NULL, NULL, (LPBYTE)&dwHasSeenMovie, &dwDataSize);
+        auto pShowIntroMovie = m_pConfiguration->GetBool("Ui.ShowStartupIntroMovie", false);
+        if (pShowIntroMovie->GetValue()) {
+            //only show on first run
+            pShowIntroMovie->SetValue(false);
 
-				if (dwHasSeenMovie == 0)
-				{
-					DWORD   dwNewValue = 1;
-					RegSetValueExA(hKey, "HasSeenMovie", NULL, REG_DWORD, (const BYTE*)&dwNewValue, sizeof(dwNewValue));
-				}
-				RegCloseKey(hKey);
-			}
-			ZString pathMovieStr = "";
+            ZString pathMovieStr = "";
 
-			if (dwHasSeenMovie == 0)
-			{
-				// To make a movie that is compatible with the movie player, use this ffmpeg command line: 
-				// ffmpeg.exe -i intro_microsoft_original.avi -q:a 1 -q:v 1 -vcodec mpeg4 -acodec wmav2 intro_microsoft.avi
-				pathMovieStr = GetModeler()->GetArtPath() + "/intro_movie.avi";
+            // To make a movie that is compatible with the movie player, use this ffmpeg command line: 
+            // ffmpeg.exe -i intro_microsoft_original.avi -q:a 1 -q:v 1 -vcodec mpeg4 -acodec wmav2 intro_microsoft.avi
+            pathMovieStr = GetModeler()->GetArtPath() + "/intro_movie.avi";
 
-				hDDVidThread = PlayMovieClip(bMovies, bSoftware, CD3DDevice9::Get()->IsWindowed(), pathMovieStr);
+            hDDVidThread = PlayMovieClip(bMovies, bSoftware, CD3DDevice9::Get()->IsWindowed(), pathMovieStr);
 
-				if (hDDVidThread != NULL) 
-				{
-					WaitForSingleObject(hDDVidThread, INFINITE);
-					CloseHandle(hDDVidThread);
-				}
-			}
+            if (hDDVidThread != NULL)
+            {
+                WaitForSingleObject(hDDVidThread, INFINITE);
+                CloseHandle(hDDVidThread);
+            }
 
-			// BT - End of movie change.
-
-			if (!CD3DDevice9::Get()->IsWindowed())
-				::ShowWindow(GetHWND(), SW_SHOWMAXIMIZED);
-		}  
-
+            if (!CD3DDevice9::Get()->IsWindowed()) {
+                ::ShowWindow(GetHWND(), SW_SHOWMAXIMIZED);
+            }
+        }
     }
 
     void InitializeImages()
@@ -5428,11 +5418,7 @@ public:
 
     void ToggleOldUi()
     {
-        m_bUseOldUi = !m_bUseOldUi;
-
-        m_pConfiguration->GetBool("OldUi", true)->SetValue(m_bUseOldUi);
-
-        //SavePreference("OldUi", m_bUseOldUi);
+        m_pUseOldUi->SetValue(!m_pUseOldUi->GetValue());
 
         if (m_pitemToggleUseOldUi != NULL) {
             m_pitemToggleUseOldUi->SetString(GetOldUiMenuString());
@@ -6140,7 +6126,7 @@ public:
 
     ZString GetOldUiMenuString()
     {
-        return "Use old UI: " + ZString(m_bUseOldUi ? "On" : "Off");
+        return "Use old UI: " + ZString(m_pUseOldUi->GetValue() ? "On" : "Off");
     }
 
     ZString GetShowJoystickIndicatorMenuString()
