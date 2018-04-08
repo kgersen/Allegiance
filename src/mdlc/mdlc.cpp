@@ -270,7 +270,7 @@ public:
 		printf(pathStr);
         
 		// Imago DX9 junk
-		if( PromptUserForVideoSettings(false, false, 0, GetModuleHandle(NULL), pathStr, ALLEGIANCE_REGISTRY_KEY_ROOT "\\MDLC3DSettings") == false )
+		if( PromptUserForVideoSettings(false, 0, GetModuleHandle(NULL), pathStr, ALLEGIANCE_REGISTRY_KEY_ROOT "\\MDLC3DSettings") == false )
 		{
 			return E_FAIL;
 		}

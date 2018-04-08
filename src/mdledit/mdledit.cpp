@@ -1657,7 +1657,7 @@ public:
             pathStr = szValue;
 		}
 		// Ask the user for video settings.
-		if( PromptUserForVideoSettings(false, true, 0, GetModuleHandle(NULL), pathStr, ALLEGIANCE_REGISTRY_KEY_ROOT "\\MDLEdit3DSettings") == false )
+		if( PromptUserForVideoSettings(false, 0, GetModuleHandle(NULL), pathStr, ALLEGIANCE_REGISTRY_KEY_ROOT "\\MDLEdit3DSettings") == false )
 		{
 			return E_FAIL;
 		}

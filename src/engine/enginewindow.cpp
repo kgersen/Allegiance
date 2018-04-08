@@ -459,7 +459,8 @@ void EngineWindow::UpdateWindowStyle()
         if (screenWidth <= size.X() && screenHeight <= size.Y()) {
             //windowed, but we do not fit with the selected resolution, switch to borderless
             //set to monitor resolution
-            m_pengine->SetFullscreenSize(WinPoint(screenWidth, screenHeight));
+            
+            SetFullscreenSize(Vector(screenWidth, screenHeight, g_DX9Settings.m_refreshrate));
             size = m_pengine->GetFullscreenSize();
             SetClientRect(WinRect(WinPoint(0, 0), size));
 
@@ -758,6 +759,8 @@ WinPoint EngineWindow::GetFullscreenSize()
 void EngineWindow::SetFullscreenSize(const Vector& size)
 {
     m_pengine->SetFullscreenSize(size);
+
+    RenderSizeChanged(true);
 }
 
 void EngineWindow::ChangeFullscreenSize(bool bLarger)

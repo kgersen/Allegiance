@@ -717,7 +717,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 
 TRef<TrekWindow> g_ptrekWindow;
-UpdatingConfiguration* g_pConfiguration = new UpdatingConfiguration(
+TRef<UpdatingConfiguration> g_pConfiguration = new UpdatingConfiguration(
     std::make_shared<FallbackConfigurationStore>(
         std::make_shared<JsonConfigurationStore>(GetExecutablePath() + "\\config.json"),
         std::make_shared<RegistryConfigurationStore>(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT)
@@ -3056,27 +3056,6 @@ public:
 
         m_bShowJoystickIndicator = (LoadPreference("ShowJoystickIndicator", 1) != 0);
 
-        //
-        // Initial screen size
-        //
-
-		{
-			int x, y;
-
-			//load resolution, default is the clients desktop resolution
-			WinPoint current_resolution = GetEngine()->GetFullscreenSize();
-			x = int(LoadPreference("CombatFullscreenXSize", current_resolution.X()));
-			y = int(LoadPreference("CombatFullscreenYSize", current_resolution.Y()));
-
-			//Use something reasonable if values are nonsense. I would really like to remove this.
-			if (x == 0)
-				x = 800;
-			if (y == 0)
-				y = 600;
-
-			SetFullscreenSize(Vector(x, y, g_DX9Settings.m_refreshrate));
-		}
-
 // BUILD_DX9
 
         //
@@ -3523,11 +3502,6 @@ public:
 
     void Terminate()
     {
-        // Save the screen resolution
-		WinPoint sizeCurrentResolution = GetEngine()->GetFullscreenSize();
-		SavePreference("CombatFullscreenXSize", sizeCurrentResolution.X());
-		SavePreference("CombatFullscreenYSize", sizeCurrentResolution.Y());
-
 		SetGamma(ZString(GetEngine()->GetGammaLevel())); //imago 7/8/09 #24
 
         //
@@ -5526,6 +5500,7 @@ public:
 
     void RenderSizeChanged(bool bSmaller)
     {
+        EngineWindow::RenderSizeChanged(bSmaller);
         if (bSmaller && GetFullscreen()) {
             m_pwrapNumberStyleHUD->SetWrappedValue(new Number(1.0f));
         } else {

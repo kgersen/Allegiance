@@ -309,7 +309,12 @@ public:
     virtual ZString GetFPSString(float dtime, float mspf, Context* pcontext);
 
     virtual void EvaluateFrame(Time time) {}
-    virtual void RenderSizeChanged(bool bSmaller) {}
+    virtual void RenderSizeChanged(bool bSmaller) {
+        int x = (int)m_pengine->GetResolutionSizeModifiable()->GetValue().X();
+        int y = (int)m_pengine->GetResolutionSizeModifiable()->GetValue().Y();
+        m_pConfiguration->GetInt("Graphics.ResolutionX", x)->SetValue((float)x);
+        m_pConfiguration->GetInt("Graphics.ResolutionY", y)->SetValue((float)y);
+    }
 
     //
     // ICaptionSite methods
