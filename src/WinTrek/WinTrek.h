@@ -300,9 +300,6 @@ class  WinTrekClient :
         bool              GetGameCounted() { return m_bGameCounted; };
         bool              GetScoresCounted() { return m_bScoresCounted; };
 
-        virtual void      SaveSquadMemberships(const char* szCharacterName);
-        virtual void      RestoreSquadMemberships(const char* szCharacterName);
-
         virtual void      StartLockDown(const ZString& strReason, LockdownCriteria criteria);
         virtual void      EndLockDown(LockdownCriteria criteria);
 

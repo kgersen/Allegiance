@@ -5433,63 +5433,6 @@ Color WinTrekClient::GetEndgameSideColor(SideID sideId)
     return m_vsideEndgameInfo[sideId].color;
 };
 
-void  WinTrekClient::SaveSquadMemberships(const char* szCharacterName)
-{
-    DWORD dwMembershipSize = m_squadmemberships.GetCount() * sizeof(SquadID);
-    SquadID* vsquadIDs = (SquadID*)_alloca(dwMembershipSize);
-
-    // only store the IDs (since we don't need anything else yet)
-    int iSquad = 0;
-    for (TList<SquadMembership>::Iterator iterSquad(m_squadmemberships);
-        !iterSquad.End(); iterSquad.Next())
-    {
-        vsquadIDs[iSquad] = iterSquad.Value().GetID();
-        ++iSquad;
-    }
-
-    HKEY hKey;
-
-    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER,
-        ALLEGIANCE_REGISTRY_KEY_ROOT "\\SquadMemberships",
-        0, "", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL))
-    {
-        ::RegSetValueEx(hKey, szCharacterName, NULL, REG_BINARY, 
-            (const unsigned char*)vsquadIDs, dwMembershipSize);
-        ::RegCloseKey(hKey);
-    }
-}
-
-void  WinTrekClient::RestoreSquadMemberships(const char* szCharacterName)
-{
-    m_squadmemberships.SetEmpty();
-
-    HKEY hKey;
-
-    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER,
-        ALLEGIANCE_REGISTRY_KEY_ROOT "\\SquadMemberships",
-        0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL))
-    {
-        DWORD dwSize = 0;
-        DWORD dwType;
-
-        if (::RegQueryValueEx(hKey, szCharacterName, NULL, &dwType, NULL, &dwSize) == ERROR_SUCCESS
-            && dwType == REG_BINARY && dwSize != 0)
-        {
-            SquadID* vsquadIDs = (SquadID*)_alloca(dwSize);
-            int numSquads = dwSize / sizeof(SquadID);
-
-            ::RegQueryValueEx(hKey, szCharacterName, NULL, NULL, 
-                (unsigned char*)vsquadIDs, &dwSize);
-
-            for (int iSquad = 0; iSquad < numSquads; iSquad++)
-            {
-                m_squadmemberships.PushEnd(SquadMembership(vsquadIDs[iSquad], "<bug>", false, false));
-            }
-        }
-        ::RegCloseKey(hKey);
-    }
-}
-
 CivID WinTrekClient::GetEndgameSideCiv(SideID sideId)
 {
     if (sideId == SIDE_TEAMLOBBY)
