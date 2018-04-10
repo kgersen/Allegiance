@@ -3,8 +3,36 @@
 
 #include "ConfigurationStore.h"
 
-#include <sstream>
+#include "json.hpp"
 #include <fstream>
+
+class JsonConfigurationStore : public IConfigurationStore {
+private:
+    nlohmann::json m_json;
+
+    std::string m_path;
+
+public:
+    JsonConfigurationStore(std::string path);
+
+    void Commit() override;
+
+    bool ReadBool(std::string key, bool valueDefault) override;
+    void SetBool(std::string key, bool value) override;
+
+    float ReadFloat(std::string key, float valueDefault) override;
+    void SetFloat(std::string key, float value) override;
+
+    int ReadInt(std::string key, int valueDefault) override;
+    void SetInt(std::string key, int value) override;
+
+    std::string ReadString(std::string key, std::string valueDefault) override;
+    void SetString(std::string key, std::string value) override;
+};
+
+std::shared_ptr<IConfigurationStore> CreateJsonConfigurationStore(std::string path) {
+    return std::make_shared<JsonConfigurationStore>(path);
+}
 
 DWORD GetDWordRegValue(HKEY hkey, LPCSTR appKey, std::string key, DWORD valueDefault) {
     HKEY hKey;

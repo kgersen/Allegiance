@@ -18,7 +18,6 @@
 #include "main.h"
 #include "regkey.h"
 
-#include "json.hpp"
 #include <fstream>
 
 // BUILD_DX9

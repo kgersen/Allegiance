@@ -3,7 +3,6 @@
 #include <string>
 
 #include "Windows.h"
-#include "json.hpp"
 
 class IConfigurationStore {
 public:
@@ -47,37 +46,15 @@ public:
     void SetString(std::string key, std::string value) override;
 };
 
-class JsonConfigurationStore : public IConfigurationStore {
-private:
-    nlohmann::json m_json;
-
-    std::string m_path;
-
-public:
-    JsonConfigurationStore(std::string path);
-
-    void Commit() override;
-
-    bool ReadBool(std::string key, bool valueDefault) override;
-    void SetBool(std::string key, bool value) override;
-
-    float ReadFloat(std::string key, float valueDefault) override;
-    void SetFloat(std::string key, float value) override;
-
-    int ReadInt(std::string key, int valueDefault) override;
-    void SetInt(std::string key, int value) override;
-
-    std::string ReadString(std::string key, std::string valueDefault) override;
-    void SetString(std::string key, std::string value) override;
-};
+std::shared_ptr<IConfigurationStore> CreateJsonConfigurationStore(std::string path);
 
 class FallbackConfigurationStore : public IConfigurationStore {
 private:
-    std::shared_ptr<JsonConfigurationStore> mJsonStore;
-    std::shared_ptr<RegistryConfigurationStore> mRegStore;
+    std::shared_ptr<IConfigurationStore> mJsonStore;
+    std::shared_ptr<IConfigurationStore> mRegStore;
 
 public:
-    FallbackConfigurationStore(const std::shared_ptr<JsonConfigurationStore>& jsonStore, const std::shared_ptr<RegistryConfigurationStore>& regStore) :
+    FallbackConfigurationStore(const std::shared_ptr<IConfigurationStore>& jsonStore, const std::shared_ptr<RegistryConfigurationStore>& regStore) :
         mJsonStore(jsonStore),
         mRegStore(regStore)
     {}
