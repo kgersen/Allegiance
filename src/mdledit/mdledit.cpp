@@ -515,6 +515,7 @@ public:
 
     MDLEditWindow(
         EffectApp* papp, 
+        UpdatingConfiguration* pConfiguration,
         const ZString& strCommandLine, 
         bool bImageTest,
         bool bTest, 
@@ -523,6 +524,7 @@ public:
     ) :
         EffectWindow(
             papp,
+            pConfiguration,
             strCommandLine,
             "MDLEdit",
             false,
@@ -1656,8 +1658,16 @@ public:
             }
             pathStr = szValue;
 		}
+
+        TRef<UpdatingConfiguration> pConfiguration = new UpdatingConfiguration(
+            std::make_shared<FallbackConfigurationStore>(
+                CreateJsonConfigurationStore(GetExecutablePath() + "\\config.json"),
+                std::make_shared<RegistryConfigurationStore>(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT "\\MDLEdit3DSettings")
+            )
+        );
+
 		// Ask the user for video settings.
-		if( PromptUserForVideoSettings(false, 0, GetModuleHandle(NULL), pathStr, ALLEGIANCE_REGISTRY_KEY_ROOT "\\MDLEdit3DSettings") == false )
+		if( PromptUserForVideoSettings(false, 0, GetModuleHandle(NULL), pathStr, pConfiguration) == false )
 		{
 			return E_FAIL;
 		}
@@ -1700,7 +1710,7 @@ public:
         // Create the window
         //
 
-        m_pwindow = new MDLEditWindow(this, strCommandLine, bImageTest, bTest, initialTest, pathStr);
+        m_pwindow = new MDLEditWindow(this, pConfiguration, strCommandLine, bImageTest, bTest, initialTest, pathStr);
 
         //
         // Parse the command line
