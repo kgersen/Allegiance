@@ -166,7 +166,7 @@ public:
     bool OnButtonTrain()
     {
         // here we mark the fact that a training mission has been launched
-        GetConfiguration()->GetBool("Ui.ShowStartupTrainingSuggestion", true)->SetValue(false);
+        GetConfiguration()->SetBoolValue("Ui.ShowStartupTrainingSuggestion", false);
 
         // check to see which mission this is, and advance to the next mission
         int iMission = static_cast<int> (g_pnumberMissionNumber->GetValue ());

@@ -1050,7 +1050,7 @@ private:
             
             if (m_pDontAskMeAgain->GetChecked()) {
                 // here we mark things as if a training mission has been launched
-                GetConfiguration()->GetBool("Ui.ShowStartupTrainingSuggestion", true)->SetValue(false);
+                GetConfiguration()->SetBoolValue("Ui.ShowStartupTrainingSuggestion", false);
             }
             return false;
         }
@@ -1292,7 +1292,7 @@ public:
         {
             // first time through, show a dialog explaining that users
             // really should do the training first
-            if (GetConfiguration()->GetBoolValue("Ui.ShowStartupTrainingSuggestion", GetConfiguration()->GetBoolValue("HasTrained", true)))
+            if (GetConfiguration()->GetBoolValue("Ui.ShowStartupTrainingSuggestion", false == GetConfiguration()->GetBoolValue("HasTrained", false)))
             {
                 TRef<IMessageBox>   pMsgBox = 
                     CreateMessageBox(
