@@ -63,6 +63,8 @@ public:
     }
 
     void SetStep(int step, std::string message) {
+        debugf(("Introscreen login step: " + message).c_str());
+
         ((ModifiableNumber*)(Number*)Get<TRef<Number>>("Step number"))->SetValue((float)step);
         ((ModifiableString*)(StringValue*)Get<TRef<StringValue>>("Step message"))->SetValue(message.c_str());
     }
@@ -347,6 +349,7 @@ public:
     }
 
     void SetLoginError(std::string message) {
+        debugf(("Introscreen login error: " + message).c_str());
         trekClient.GetClientEventSource()->RemoveSink(m_pClientEventSink);
         m_pClientEventSink = nullptr;
         m_state->SetValue(std::make_shared<LoggedOutState>(new UiStateValue(std::make_shared<YesErrorState>(message)), this->GetLoginSink()));

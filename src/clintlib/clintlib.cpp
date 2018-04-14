@@ -1333,6 +1333,8 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
 HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if relogging in
 {
     HRESULT hr = S_OK;
+
+    debugf("ConnectToLobby: Start");
     
     // review:  in the event of retry logon after logon failure 
     // we need to treat this as a reconnect and dump first connection...
@@ -1348,6 +1350,7 @@ HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if reloggin
 
     // but we always use config-specified lobby server. Is this too restrictive to derived clients?
     m_ci.strServer = GetIsZoneClub() ? GetCfgInfo().strClubLobby : GetCfgInfo().strPublicLobby;
+    debugf("ConnectToLobby: Server address is " + m_ci.strServer);
 
     assert(IFF(m_ci.cbZoneTicket > 0, m_ci.pZoneTicket));
     
@@ -1355,11 +1358,16 @@ HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if reloggin
     if (m_strCDKey.IsEmpty())
         m_strCDKey = ZString(m_ci.szName).ToUpper();
 
-    if (m_fmLobby.IsConnected())
+    debugf("ConnectToLobby: CDKey " + m_strCDKey);
+
+    if (m_fmLobby.IsConnected()) {
+        debugf("ConnectToLobby: Already connected");
         return S_OK;
+    }
 
     assert(m_fLoggedOnToLobby == false);
-    
+
+    debugf("ConnectToLobby: Clearing list of already loaded missions");
     TMapListWrapper<DWORD, MissionInfo*>::Iterator iterMissions(m_mapMissions);
     while (!iterMissions.End())
     {
@@ -1372,6 +1380,8 @@ HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if reloggin
     assert(IFF(m_fmLobby.IsConnected(), SUCCEEDED(hr)));
     if (m_fmLobby.IsConnected())
     {
+        debugf("ConnectToLobby: Session started with the lobby");
+
         DWORD dwTime = Time::Now().clock();
         int crcFileList = (g_bCheckFiles ? 0 : FileCRC("FileList.txt", NULL));
         char * szEncryptionKey = (char *)_alloca(strlen(CL_LOGON_KEY) + 30);
@@ -1399,6 +1409,14 @@ HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if reloggin
     retailf("$$MSRGuard:Set:UserName=%s\n", m_szLobbyCharName);
     m_cUnansweredPings = 0;
     m_serverOffsetValidF = false;
+
+    if (SUCCEEDED(hr)) {
+        debugf("ConnectToLobby: Completed succesfully");
+    }
+    else {
+        debugf("ConnectToLobby: Completed with error");
+    }
+
     return hr;
 }
 
