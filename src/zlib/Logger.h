@@ -41,9 +41,7 @@ public:
 
 class OutputLogger : public ILogger {
 public:
-    void Log(std::string text) override {
-        ::OutputDebugStringA(text.c_str());
-    }
+    void Log(std::string text) override;
 };
 
 class SettableLogger : public ILogger {

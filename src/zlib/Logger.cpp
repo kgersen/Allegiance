@@ -98,3 +98,8 @@ void FileLogger::Log(std::string text) {
     uint32_t nBytes;
     ::WriteFile(m_hFile, bfr, strlen(bfr), LPDWORD(&nBytes), nullptr);
 }
+
+void OutputLogger::Log(std::string text) {
+    ::OutputDebugStringA(text.c_str());
+    ::OutputDebugStringA("\n");
+}
