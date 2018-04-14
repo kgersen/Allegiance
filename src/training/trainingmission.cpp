@@ -71,10 +71,6 @@ namespace Training
         // get the window pointer
         TrekWindow* pWindow = GetWindow ();
 
-        // check to see if music was playing, then turn it off
-        if ((m_bMusicWasOn = pWindow->GetMusicIsOn ()) == true)
-            pWindow->SetMusicOn (false);
-
         // check to see what the HUD style is, and set it to hardware
         if ((m_fHUDStyle = pWindow->GetHUDStyle ()) != 0.0f)
             pWindow->SetHUDStyle (0.0f);
@@ -122,9 +118,6 @@ namespace Training
         PlayerInfo* pPlayerInfo = trekClient.GetPlayerInfo ();
         trekClient.RemovePlayerFromSide (pPlayerInfo, QSR_Quit);
         trekClient.RemovePlayerFromMission (pPlayerInfo, QSR_Quit);
-
-        // turn music back on if it was on when we started
-        pWindow->SetMusicOn (m_bMusicWasOn);
 
         // set the HUD style back to what it was
         pWindow->SetHUDStyle (m_fHUDStyle);

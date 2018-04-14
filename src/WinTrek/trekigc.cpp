@@ -2457,28 +2457,10 @@ WinTrekClient::WinTrekClient(void)
     m_bFilterQuickComms(false),
 	m_bFilterUnknownChats(true), //TheBored 30-JUL-07: Filter Unknown Chat patch
     m_dwFilterLobbyChats(3), //TheBored 25-JUN-07: Changed value to 3 (Don't Filter Lobby)
-	bTrainingFirstClick(false)
+	bTrainingFirstClick(false),
+    m_pChatLogger(nullptr)
 {
-    // restore the CD Key from the registry
-
-    HKEY hKey;
-
-    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER,
-        ALLEGIANCE_REGISTRY_KEY_ROOT,
-        0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL))
-    {
-        DWORD dwSize = c_cbCDKey;
-        DWORD dwType;
-        char szCDKey[c_cbCDKey];
-
-        if (::RegQueryValueEx(hKey, "CDKey", NULL, &dwType, 
-                (unsigned char*)szCDKey, &dwSize) == ERROR_SUCCESS
-            && dwType == REG_SZ && dwSize != 0)
-        {
-            BaseClient::SetCDKey(szCDKey);
-        }
-        ::RegCloseKey(hKey);
-    }
+    
 }
 
 WinTrekClient::~WinTrekClient(void)
@@ -2490,6 +2472,29 @@ WinTrekClient::~WinTrekClient(void)
 void WinTrekClient::Initialize(Time timeNow)
 {
     BaseClient::Initialize(timeNow);
+
+    // making sure that this only happens once, instead of also being run on a reset
+    if (m_pChatLogger == nullptr) {
+
+        // I'm not entirely sure if this is used. It was at some point proposed to be used as a way to authenticate bots (pigs) to the servers.
+        auto strCdKeyConfig = GetConfiguration()->GetStringValue(
+            "Online.AuthenticationId",
+            GetConfiguration()->GetStringValue("CDKey", "")
+        );
+        if (strCdKeyConfig != "") {
+            BaseClient::SetCDKey(strCdKeyConfig.c_str());
+        }
+
+        m_pLogChatEnabled = GetConfiguration()->GetBool("Chat.Log", GetConfiguration()->GetBoolValue("LogChat", false));
+        if (m_pLogChatEnabled->GetValue()) {
+            m_pChatLogger = CreateTimestampedFileLogger(GetExecutablePath() + "\\logs\\chat_");
+        }
+        else {
+            m_pChatLogger = NullLogger::GetInstance();
+        }
+
+        SoundEngine::bConvertToMono = GetConfiguration()->GetBool("Sound.ConvertToMono", false == GetConfiguration()->GetBoolValue("MonoOff", false))->GetValue();
+    }
 
     GetShip()->CreateDamageTrack();
 
@@ -3092,63 +3097,24 @@ void WinTrekClient::PostText(bool bCritical, const char* pszText, ...)
 void WinTrekClient::EjectPlayer(ImodelIGC*  pcredit)
 {
     GetWindow()->OverrideCamera(trekClient.m_now, pcredit, true);
-    GetWindow()->TriggerMusic(deathMusicSound);
 }
 
 ZString WinTrekClient::GetSavedCharacterName()
 {
-    HKEY hKey;
-    DWORD dwType;
-    DWORD cbName = c_cbName;
-    char szName[c_cbName];
-    szName[0] = '\0';
-    
-    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-    {
-        RegQueryValueEx(hKey, "CharacterName", NULL, &dwType, (unsigned char*)&szName, &cbName);
-        RegCloseKey(hKey);
-    }
-
-    return szName;
+    return GetConfiguration()->GetStringValue("Online.CharacterName", GetConfiguration()->GetStringValue("CharacterName", "")).c_str();
 }
 
 void WinTrekClient::SaveCharacterName(ZString strName)
 {
-    HKEY hKey;
-    DWORD cbName = c_cbName;
-    char szName[c_cbName];
-    szName[0] = '\0';
-    
-    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey))
-    {
-        RegSetValueEx(hKey, "CharacterName", NULL, REG_SZ, 
-            (const BYTE*)(const char*)strName, strName.GetLength() + 1);
-        RegCloseKey(hKey);
-    }
+    GetConfiguration()->GetString("Online.CharacterName", std::string(strName))->SetValue(strName);
 }
-int WinTrekClient::GetSavedWingAssignment(){ // kolie 6/10
-	HKEY hKey;
-	DWORD dwType = REG_DWORD;
-    //DWORD dwWing = NA; // Imago 7/10 #149
-	DWORD dwWing = 0; // BT - 9/17 - Default all new players to the command wing.
-    DWORD dwSize = sizeof(DWORD);
-    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-    {
-        RegQueryValueEx(hKey, "WingAssignment", NULL, &dwType, (PBYTE)&dwWing, &dwSize);
-        RegCloseKey(hKey);
-    }
 
-    return (int)dwWing;
+int WinTrekClient::GetSavedWingAssignment(){ // kolie 6/10
+    return GetConfiguration()->GetIntValue("Ui.DefaultWing", GetConfiguration()->GetIntValue("WingAssignment", 0));
 }
+
 void WinTrekClient::SaveWingAssignment(int index){ // kolie 6/10
-	HKEY hKey;
-	DWORD dwWing;
-	dwWing = (DWORD)index;
-	if ( ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey))
-	{
-		RegSetValueEx(hKey, "WingAssignment", NULL, REG_DWORD,  (PBYTE)&dwWing, sizeof(DWORD) );
-		RegCloseKey(hKey);
-	}
+    GetConfiguration()->GetInt("Ui.DefaultWing", 0)->SetValue((int)index);
 }
 
 // KGJV : added utility functions for cores & server names
@@ -3401,11 +3367,11 @@ public:
 
     virtual void OnProgress(unsigned long cTotalBytes, const char* szCurrentFile, unsigned long cCurrentFileBytes, unsigned nEstimatedSecondsLeft) 
     {
-		if (g_outputdebugstring) { //Imago - was DEBUG ifdef 8/16/09
+		{
 	        char sz[80];
 
 	        sprintf(sz, "%2.2f%%   %i  %s  %i\n", 100.0f*float(cTotalBytes)/float(m_cGrandTotalBytes), cTotalBytes, szCurrentFile, cCurrentFileBytes);
-	        ZDebugOutput(sz);
+            g_pDebugLogger->Log(sz);
 		}
 
         //
@@ -4839,6 +4805,8 @@ void      WinTrekClient::ReceiveChat(IshipIGC*   pshipSender,
                               c_cidNone, pmodelTarget, color, bFromPlayer, bObjectModel, bIsLeader);
             trekClient.GetChatList()->last(l);
 
+            m_pChatLogger->Log(std::string(strSender + c_str1 + strRecipient + c_str2 + strOrder));
+
             BaseClient::ReceiveChat(pshipSender,
                                     ctRecipient, oidRecipient,
                                     idSonicChat, pszText,
@@ -4959,30 +4927,6 @@ void            WinTrekClient::Preload(const char*  pszModelName,
 	GetModeler()->SetColorKeyHint( bOldColorKeyValue );
 	GetEngine()->SetEnableMipMapGeneration( false );
 // BUILD_DX9
-}
-
-void WinTrekClient::SetCDKey(const ZString& strCDKey)
-{
-	// BT - 5/21/2012 - ACSS - Debugging for the CDKey.
-	//debugf("SetCDKey() strCDKey = %s\r\n", (const unsigned char*)(PCC) strCDKey);
-
-    HKEY hKey;
-    // wlp 2006 - Cdkey is the ASGS Ticket Now - we don't want to save it
-    //
-    //
-    // save the new key for future use.
-	//
-    // if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER, 
-    //    ALLEGIANCE_REGISTRY_KEY_ROOT,
-    //    0, "", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL))
-    // {
-    //    ::RegSetValueEx(hKey, "CDKey", NULL, REG_SZ, 
-    // wlp -        (const unsigned char*)(PCC)strCDKey, strCDKey.GetLength());
-    //      
-    //   ::RegCloseKey(hKey);
-    // }
-    
-    BaseClient::SetCDKey(strCDKey);
 }
 
 TRef<ThingSite> WinTrekClient::CreateThingSite(ImodelIGC* pModel)
@@ -5487,63 +5431,6 @@ Color WinTrekClient::GetEndgameSideColor(SideID sideId)
 
     return m_vsideEndgameInfo[sideId].color;
 };
-
-void  WinTrekClient::SaveSquadMemberships(const char* szCharacterName)
-{
-    DWORD dwMembershipSize = m_squadmemberships.GetCount() * sizeof(SquadID);
-    SquadID* vsquadIDs = (SquadID*)_alloca(dwMembershipSize);
-
-    // only store the IDs (since we don't need anything else yet)
-    int iSquad = 0;
-    for (TList<SquadMembership>::Iterator iterSquad(m_squadmemberships);
-        !iterSquad.End(); iterSquad.Next())
-    {
-        vsquadIDs[iSquad] = iterSquad.Value().GetID();
-        ++iSquad;
-    }
-
-    HKEY hKey;
-
-    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER,
-        ALLEGIANCE_REGISTRY_KEY_ROOT "\\SquadMemberships",
-        0, "", REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL))
-    {
-        ::RegSetValueEx(hKey, szCharacterName, NULL, REG_BINARY, 
-            (const unsigned char*)vsquadIDs, dwMembershipSize);
-        ::RegCloseKey(hKey);
-    }
-}
-
-void  WinTrekClient::RestoreSquadMemberships(const char* szCharacterName)
-{
-    m_squadmemberships.SetEmpty();
-
-    HKEY hKey;
-
-    if (ERROR_SUCCESS == ::RegCreateKeyEx(HKEY_CURRENT_USER,
-        ALLEGIANCE_REGISTRY_KEY_ROOT "\\SquadMemberships",
-        0, "", REG_OPTION_NON_VOLATILE, KEY_READ, NULL, &hKey, NULL))
-    {
-        DWORD dwSize = 0;
-        DWORD dwType;
-
-        if (::RegQueryValueEx(hKey, szCharacterName, NULL, &dwType, NULL, &dwSize) == ERROR_SUCCESS
-            && dwType == REG_BINARY && dwSize != 0)
-        {
-            SquadID* vsquadIDs = (SquadID*)_alloca(dwSize);
-            int numSquads = dwSize / sizeof(SquadID);
-
-            ::RegQueryValueEx(hKey, szCharacterName, NULL, NULL, 
-                (unsigned char*)vsquadIDs, &dwSize);
-
-            for (int iSquad = 0; iSquad < numSquads; iSquad++)
-            {
-                m_squadmemberships.PushEnd(SquadMembership(vsquadIDs[iSquad], "<bug>", false, false));
-            }
-        }
-        ::RegCloseKey(hKey);
-    }
-}
 
 CivID WinTrekClient::GetEndgameSideCiv(SideID sideId)
 {

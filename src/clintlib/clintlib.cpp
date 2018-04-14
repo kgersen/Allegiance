@@ -593,9 +593,6 @@ void ChatInfo::SetChat(ChatTarget       ctRecipient,
                        bool             bFromObjectModel,
                        bool             bFromLeader)
 {
-
-	logchat(strText);  // mmf added log chat
-
     m_ctRecipient = ctRecipient;
 
     m_cidCommand = cid;
@@ -1288,27 +1285,7 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
 			hr = m_fm.JoinSession(FEDSRV_STANDALONE_PRIVATE_GUID, ci.strServer, ci.szName);		  
 		}
 		else {
-			//imago moved this up first 8/1/09 due to longer timeout
-            HKEY hKey;
-            DWORD cbValue = c_cbName;
-            char szServer[c_cbName];
-            szServer[0] = '\0';
-            if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) {
-                ::RegQueryValueEx(hKey,"ServerAddress", NULL, NULL, (unsigned char*)&szServer, &cbValue);
-                ::RegCloseKey(hKey);
-            }
-            if (szServer[0] != '\0') {
-                ZString strServer = ZString(szServer).LeftOf(":");
-                DWORD dwPort = ZString(szServer).RightOf(":").GetInteger();
-
-                hr = m_fm.JoinSession(FEDSRV_GUID, strServer, ci.szName, dwPort);
-			} else {
-				hr = -1;
-			}
-
-			if(FAILED(hr)) 
-				hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);
-
+            hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);
         }
     }
 
@@ -1391,16 +1368,6 @@ HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if reloggin
     }
     m_mapMissions.SetEmpty();
 
-	// Mdvalley: Pull lobby port from registry
-/*    DWORD dwPort = 2302;		// Default to 2302
-	HKEY hKey;
-	if(ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-	{
-		DWORD dwSize = sizeof(DWORD);
-		::RegQueryValueEx(hKey, "LobbyPort", NULL, NULL, (BYTE*)&dwPort, &dwSize);
-		::RegCloseKey(hKey);
-	}
-*/
 	hr = m_fmLobby.JoinSession(GetIsZoneClub() ? FEDLOBBYCLIENTS_GUID : FEDFREELOBBYCLIENTS_GUID, m_ci.strServer, m_ci.szName, GetCfgInfo().dwLobbyPort);
     assert(IFF(m_fmLobby.IsConnected(), SUCCEEDED(hr)));
     if (m_fmLobby.IsConnected())

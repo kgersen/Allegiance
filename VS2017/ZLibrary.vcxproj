@@ -125,6 +125,7 @@
     <ClCompile Include="..\src\zlib\event.cpp" />
     <ClCompile Include="..\src\zlib\FTPSession_win.cpp" />
     <ClCompile Include="..\src\zlib\input.cpp" />
+    <ClCompile Include="..\src\zlib\Logger.cpp" />
     <ClCompile Include="..\src\zlib\matrix.cpp" />
     <ClCompile Include="..\src\zlib\matrix2.cpp" />
     <ClCompile Include="..\src\zlib\orientation.cpp" />
@@ -150,6 +151,7 @@
     <ClInclude Include="..\src\zlib\FTPSession.h" />
     <ClInclude Include="..\src\zlib\genericlist.h" />
     <ClInclude Include="..\src\zlib\input.h" />
+    <ClInclude Include="..\src\zlib\Logger.h" />
     <ClInclude Include="..\src\zlib\main.h" />
     <ClInclude Include="..\src\zlib\mask.h" />
     <ClInclude Include="..\src\zlib\matrix.h" />

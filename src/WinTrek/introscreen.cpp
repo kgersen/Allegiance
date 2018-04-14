@@ -417,25 +417,14 @@ public:
         CallsignTagInfo callSignTagInfo;
         ZString characterName = callSignTagInfo.Render(name);
 
-        char configPath[MAX_PATH];
-        lstrcpy(configPath, "http://allegiance.zaphop.com/allegiance.txt");
+        std::string configPath = GetConfiguration()->GetStringValue(
+            "Online.ConfigFile", 
+            GetConfiguration()->GetStringValue("CfgFile", "http://allegiance.zaphop.com/allegiance.txt")
+        );
 
-        HKEY hKey;
-
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        if (ZString(configPath.c_str()).Find("http://") == -1)
         {
-            DWORD cbValue = MAX_PATH;
-            char szConfig[MAX_PATH];
-            szConfig[0] = '\0';
-            ::RegQueryValueEx(hKey, "CfgFile", NULL, NULL, (LPBYTE)&szConfig, &cbValue);
-            // if it didn't succeed, we'll just use the default above
-            if (lstrlen(szConfig) > 0)
-                lstrcpy(configPath, szConfig);
-        }
-
-        if (ZString(configPath).Find("http://") == -1)
-        {
-            StartConfigRead(characterName, configPath, "Using local lobby configuration. Reading lobby configuration");
+            StartConfigRead(characterName, configPath.c_str(), "Using local lobby configuration. Reading lobby configuration");
         }
         else {
             m_pConfigDownload = Downloader().Download(configPath);
@@ -1058,13 +1047,7 @@ private:
             
             if (m_pDontAskMeAgain->GetChecked()) {
                 // here we mark things as if a training mission has been launched
-                HKEY    hKey;
-                DWORD   dwHasRunTraining = 1;
-                if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey))
-                {
-                    RegSetValueEx (hKey, "HasTrained", NULL, REG_DWORD, (const BYTE*) &dwHasRunTraining, sizeof (dwHasRunTraining));
-                    RegCloseKey (hKey);
-                }
+                GetConfiguration()->GetBool("Ui.ShowStartupTrainingSuggestion", true)->SetValue(false);
             }
             return false;
         }
@@ -1304,19 +1287,9 @@ public:
         static  bool    bHaveVisited = false;
         if (Training::IsInstalled () && !bHaveVisited)
         {
-            // check to see if training has been run before
-            HKEY    hKey;
-            DWORD   dwHasRunTraining = 0;
-            DWORD   dwDataSize = sizeof (dwHasRunTraining);
-            if (ERROR_SUCCESS == RegOpenKeyEx (HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-            {
-                RegQueryValueEx (hKey, "HasTrained", NULL, NULL, (LPBYTE) &dwHasRunTraining, &dwDataSize);
-                RegCloseKey(hKey);
-            }
-
             // first time through, show a dialog explaining that users
             // really should do the training first
-            if (!dwHasRunTraining)
+            if (GetConfiguration()->GetBoolValue("Ui.ShowStartupTrainingSuggestion", GetConfiguration()->GetBoolValue("HasTrained", true)))
             {
                 TRef<IMessageBox>   pMsgBox = 
                     CreateMessageBox(
@@ -1576,7 +1549,6 @@ public:
             m_pMsgBox->GetPane ()->InsertAtBottom (pOKButton);
             m_pMsgBox->GetPane ()->InsertAtBottom (pAbortButton);
             AddEventTarget(&IntroScreen::OnButtonBailTraining, pAbortButton->GetEventSource());
-            AddEventTarget(&IntroScreen::OnButtonDownloadTraining, pOKButton->GetEventSource());
             GetWindow()->GetPopupContainer()->OpenPopup (m_pMsgBox, false);
         }
         return true;
@@ -1585,59 +1557,6 @@ public:
     bool    OnButtonBailTraining ()
     {
         GetWindow ()->GetPopupContainer ()->ClosePopup (m_pMsgBox);
-        return true;
-    }
-
-    bool    OnButtonDownloadTraining ()
-    {
-        // close the dialog window
-        GetWindow ()->GetPopupContainer ()->ClosePopup (m_pMsgBox);
-
-        // start to find the config file
-        char    config_file_name[MAX_PATH];
-
-        // get the app build number
-        ZVersionInfo vi;
-        ZString strBuild(vi.GetFileBuildNumber());
-
-        // start with a default name
-        lstrcpy(config_file_name, "Allegiance");
-        lstrcat(config_file_name, PCC(strBuild));
-        lstrcat(config_file_name, ".cfg");
-
-        // then look to see if there is one in the registry we should use instead
-        HKEY hKey;
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-        {
-            DWORD   cbValue = MAX_PATH;
-            char    reg_config_file_name[MAX_PATH] = {0};
-            ::RegQueryValueEx (hKey, "CfgFile", NULL, NULL, (LPBYTE)&reg_config_file_name, &cbValue);
-            // if it didn't succeed, we'll just use the default above
-            if (lstrlen (reg_config_file_name) > 0)
-              lstrcpy (config_file_name, reg_config_file_name);
-        }
-
-        // then construct the full path name of the config file
-        PathString  pathEXE(PathString::GetCurrentDirectory());
-        PathString  pathConfig(pathEXE + PathString(PathString(config_file_name).GetFilename()));
-
-        // load the config data
-        CfgInfo     cfgInfo;
-        cfgInfo.Load (pathConfig);
-        if (cfgInfo.strTrainingURL)
-        {
-            // if everything is OK, launch the web page
-            GetWindow ()->ShowWebPage (cfgInfo.strTrainingURL);
-
-            // ... and close our application
-            GetWindow()->PostMessage(WM_CLOSE);
-        }
-        else
-        {
-            // if not, we alert the user...
-            TRef<IMessageBox>   pMsgBox = CreateMessageBox ("CAN'T DOWNLOAD TRAINING FILES.\n\nCan't find the download address.", NULL, true);
-            GetWindow()->GetPopupContainer()->OpenPopup (pMsgBox, false);
-        }
         return true;
     }
 

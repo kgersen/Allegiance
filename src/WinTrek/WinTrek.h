@@ -137,6 +137,9 @@ class  WinTrekClient :
 		/* pkk May 6th: Disabled bandwidth patch
 		unsigned int			m_nBandwidth; // w0dk4 June 2007: Bandwith Patch */
 
+        TRef<SimpleModifiableValue<bool>> m_pLogChatEnabled;
+        std::shared_ptr<ILogger> m_pChatLogger;
+
         //
         // Explosions
         //
@@ -252,7 +255,6 @@ class  WinTrekClient :
 
         virtual void      OnReload(IpartIGC* ppart, bool bConsumed);
         virtual void      Preload(const char* pszModelName, const char* pszTextureName);
-        virtual void      SetCDKey(const ZString& strCDKey);
         virtual void      ChangeGameState(void) { GetWindow()->UpdateGameStateContainer(); }
 
         virtual IAutoUpdateSink * OnBeginAutoUpdate(IAutoUpdateSink * pSink, bool bConnectToLobby);
@@ -297,9 +299,6 @@ class  WinTrekClient :
         bool              GetGameoverEjectPods() { return m_bEndgameEjectPods; };
         bool              GetGameCounted() { return m_bGameCounted; };
         bool              GetScoresCounted() { return m_bScoresCounted; };
-
-        virtual void      SaveSquadMemberships(const char* szCharacterName);
-        virtual void      RestoreSquadMemberships(const char* szCharacterName);
 
         virtual void      StartLockDown(const ZString& strReason, LockdownCriteria criteria);
         virtual void      EndLockDown(LockdownCriteria criteria);
