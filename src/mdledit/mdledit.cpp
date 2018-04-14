@@ -1661,7 +1661,7 @@ public:
 
         TRef<UpdatingConfiguration> pConfiguration = new UpdatingConfiguration(
             std::make_shared<FallbackConfigurationStore>(
-                CreateJsonConfigurationStore(GetExecutablePath() + "\\config.json"),
+                CreateJsonConfigurationStore(GetExecutablePath() + "\\config_mdledit.json"),
                 std::make_shared<RegistryConfigurationStore>(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT "\\MDLEdit3DSettings")
             )
         );
