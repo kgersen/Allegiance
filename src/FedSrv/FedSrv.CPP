@@ -10832,6 +10832,7 @@ class ThingSiteImpl : public ThingSite
 
                     SideVisibility& sv = m_rgSideVisibility[sid];
                     bool seenBefore = sv.fVisible();
+                    bool eyedBefore = sv.CurrentEyed();
 
                     //Update the visibility for everything, including visible static objects, so currentEyed gets set for He3 amount, etc.
                         /*if (seenBefore && m_bPredictable) {
@@ -10859,6 +10860,8 @@ class ThingSiteImpl : public ThingSite
                                 sv.CurrentEyed(true);
                                 ShowObject(pside, pmodel);
                             }
+                            else if (!eyedBefore) //only can be the case for m_bPredictable
+                                sv.CurrentEyed(true);
 						}
                         else {
                             //Not trivially seen ... loop over everything that could see it
@@ -10916,6 +10919,10 @@ class ThingSiteImpl : public ThingSite
                                                 }
                                             }
                                         }
+                                    }
+                                    else if (!eyedBefore) { //only can be the case for m_bPredictable
+                                        sv.fVisible(true);
+                                        sv.CurrentEyed(true);
                                     }
 									
                                     //Show it to allies who don't see it
