@@ -85,7 +85,7 @@ void FileLogger::Log(std::string text) {
         text = text.substr(0, size - 30);
     }
 
-    sprintf(bfr, "%04d/%02d/%02d %02d:%02d:%02d %s\r\n",
+    sprintf(bfr, "%04d-%02d-%02d %02d:%02d:%02d %s\r\n",
         t.tm_year + 1900,
         t.tm_mon + 1, 
         t.tm_mday, 
