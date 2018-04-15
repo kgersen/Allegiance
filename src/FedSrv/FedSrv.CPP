@@ -10876,13 +10876,13 @@ class ThingSiteImpl : public ThingSite
 
 								// If the thing is in scanner range
 								if (s->InScannerRange(pmodel)) {
+                                    sv.fVisible(true);
+                                    sv.CurrentEyed(true);
 
 									bool bSent = false;
                                     //See it
                                     if (!seenBefore) {
                                         bSent = ShowObject(pside, pmodel);
-                                        sv.fVisible(true);
-                                        sv.CurrentEyed(true); //Xynth #100 7/2010
 
                                         //Check for spotted high value targets and award achievement/score
                                         if (pmodel->GetObjectType() == OT_ship) {
