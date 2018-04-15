@@ -1,4 +1,3 @@
-
 //
 // sound IDs
 //
@@ -115,6 +114,22 @@ DEFSOUND(ripcord4)
 DEFSOUND(ripcord3)
 DEFSOUND(ripcord2)
 DEFSOUND(ripcord1)
+
+//UNUSED music. These cannot be removed without a simultaneous server deploy
+DEFEMPTYSOUND(flightMusic1A)
+DEFEMPTYSOUND(flightMusic1B)
+DEFEMPTYSOUND(flightMusic1C)
+DEFEMPTYSOUND(flightMusic2A)
+DEFEMPTYSOUND(flightMusic2B)
+DEFEMPTYSOUND(flightMusic2C)
+DEFEMPTYSOUND(flightMusic3A)
+DEFEMPTYSOUND(flightMusic3B)
+DEFEMPTYSOUND(flightMusic3C)
+DEFEMPTYSOUND(gameScreenMusic)
+DEFEMPTYSOUND(deathMusic)
+DEFEMPTYSOUND(gameOverWonMusic)
+DEFEMPTYSOUND(gameOverLostMusic)
+//end unused music
 
 DEFSOUND(missileLock)
 DEFSOUND(missileTone)

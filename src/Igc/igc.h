@@ -454,11 +454,18 @@ typedef short   SoundID;
 typedef short   VoiceID;
 
 #define DEFSOUND(id) id##Sound,
+
+//removed sounds should still create an entry in the enum
+#define DEFEMPTYSOUND(id) id##Sound,
 enum {
     lastDynamicSound = 1000,
 #include "sounds.h"
 };
 #undef DEFSOUND
+
+//further mentions of DEFEMPTYSOUND should do nothing
+#undef DEFEMPTYSOUND
+#define DEFEMPTYSOUND(id)
 
 //Redefined data types (so we can change them later)
 const int NA = -1; // meaning unspecified, none, or all.
