@@ -165,7 +165,7 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 
     g_bMDLLog = m_pConfiguration->GetBool("Debug.Mdl", false)->GetValue();
     g_bWindowLog = m_pConfiguration->GetBool("Debug.Window", false)->GetValue();
-    g_bWindowLog = m_pConfiguration->GetBool("Debug.Lua", false)->GetValue();
+    g_bLuaDebug = m_pConfiguration->GetBool("Debug.Lua", false)->GetValue();
 
     //
     // Button Event Sink
