@@ -10846,7 +10846,7 @@ class ThingSiteImpl : public ThingSite
                             }
 						} 
                         else if (pside->AlliedSides(pside,pmodel->GetSide()) && pside->GetMission()->GetMissionParams()->bAllowAlliedViz) {
-							//Allies See it
+							//Allied side
                             if (!seenBefore) {
                                 sv.fVisible(true);
                                 sv.CurrentEyed(true);
@@ -10859,6 +10859,8 @@ class ThingSiteImpl : public ThingSite
                                 sv.CurrentEyed(true);
                                 ShowObject(pside, pmodel);
                             }
+                            else if (!sv.CurrentEyed()) //only can be the case for m_bPredictable
+                                sv.CurrentEyed(true);
 						}
                         else {
                             //Not trivially seen ... loop over everything that could see it
@@ -10873,13 +10875,13 @@ class ThingSiteImpl : public ThingSite
 
 								// If the thing is in scanner range
 								if (s->InScannerRange(pmodel)) {
+                                    sv.fVisible(true);
+                                    sv.CurrentEyed(true);
 
 									bool bSent = false;
                                     //See it
                                     if (!seenBefore) {
                                         bSent = ShowObject(pside, pmodel);
-                                        sv.fVisible(true);
-                                        sv.CurrentEyed(true); //Xynth #100 7/2010
 
                                         //Check for spotted high value targets and award achievement/score
                                         if (pmodel->GetObjectType() == OT_ship) {
