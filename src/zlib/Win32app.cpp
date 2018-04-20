@@ -32,123 +32,68 @@ const uint8_t PatchBytes[5] = { 0x33, 0xC0, 0xC2, 0x04, 0x00 };
 	// Original bytes at the beginning of SetUnhandledExceptionFilter 
 uint8_t OriginalBytes[5] = {0};
 
-//Imago 6/10
-int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
-{
-    BOOL bMiniDumpSuccessful;
-    char szPathName[MAX_PATH] = ""; 
-	GetModuleFileNameA(nullptr, szPathName, MAX_PATH);
-    const char* p1 = strrchr(szPathName, '\\');
-	char* p = strrchr(szPathName, '\\');
-	if (!p)
-		p = szPathName;
-	else
-		p++;
-	if (!p1)
-		p1 = "mini";
-	else
-		p1++;
-	ZString zApp = p1;
-    uint32_t dwBufferSize = MAX_PATH;
-    HANDLE hDumpFile;
-    SYSTEMTIME stLocalTime;
-    MINIDUMP_EXCEPTION_INFORMATION ExpParam;
-
-    GetLocalTime( &stLocalTime );
-    
-   strcpy(p, (PCC)zApp);
-   
-   ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString();
-   sprintf( p+zApp.GetLength(),"-%s-%04d%02d%02d%02d%02d%02d-%ld-%ld.dmp",(PCC)zInfo,
-               stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay, 
-               stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond, 
-               GetCurrentProcessId(), GetCurrentThreadId());
-   
-    hDumpFile = CreateFileA(szPathName, GENERIC_READ|GENERIC_WRITE, 
-                FILE_SHARE_WRITE|FILE_SHARE_READ, nullptr, CREATE_ALWAYS, 0, nullptr);
-
-    ExpParam.ThreadId = GetCurrentThreadId();
-    ExpParam.ExceptionPointers = pExceptionPointers;
-    ExpParam.ClientPointers = TRUE;
-
-	MINIDUMP_TYPE mdt       = (MINIDUMP_TYPE)
-		(MiniDumpWithDataSegs		| 
-		MiniDumpWithHandleData		|
-		MiniDumpWithThreadInfo		| 
-		MiniDumpWithUnloadedModules |
-		MiniDumpWithProcessThreadData); 
-
-	//
-	//MiniDumpWithPrivateReadWriteMemory | 
-	//MiniDumpWithFullMemoryInfo | 
-	//
-
-    bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
-                    hDumpFile, mdt, &ExpParam, nullptr, nullptr);
-#ifndef NO_STEAM
-	SteamAPI_SetMiniDumpComment(p);
-
-	// The 0 here is a build ID, we don't set it
-	SteamAPI_WriteMiniDump(0, pExceptionPointers, int(rup)); // Now including build and release number in steam errors.
-#endif // !NO_STEAM
-    return EXCEPTION_EXECUTE_HANDLER;
-}
-
-//lazy...or stupid... is this even hit?
 int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 {
     BOOL bMiniDumpSuccessful;
-    char szPathName[MAX_PATH] = ""; 
-	GetModuleFileNameA(nullptr, szPathName, MAX_PATH);
+    char szPathName[MAX_PATH] = "";
+    GetModuleFileNameA(nullptr, szPathName, MAX_PATH);
     const char* p1 = strrchr(szPathName, '\\');
-	char* p = strrchr(szPathName, '\\');
-	if (!p)
-		p = szPathName;
-	else
-		p++;
-	if (!p1)
-		p1 = "mini";
-	else
-		p1++;
-	ZString zApp = p1;
+    char* p = strrchr(szPathName, '\\');
+    if (!p)
+        p = szPathName;
+    else
+        p++;
+    if (!p1)
+        p1 = "mini";
+    else
+        p1++;
+    ZString zApp = p1;
     uint32_t dwBufferSize = MAX_PATH;
     HANDLE hDumpFile;
     SYSTEMTIME stLocalTime;
     MINIDUMP_EXCEPTION_INFORMATION ExpParam;
 
-    GetLocalTime( &stLocalTime );
-    
-   strcpy(p, (PCC)zApp);
-   ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString();
-   sprintf( p+zApp.GetLength(),"-%s-%04d%02d%02d%02d%02d%02d-%ld-%ld.dmp",(PCC)zInfo,
-               stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay, 
-               stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond, 
-               GetCurrentProcessId(), GetCurrentThreadId());
-   
-    hDumpFile = CreateFileA(szPathName, GENERIC_READ|GENERIC_WRITE, 
-                FILE_SHARE_WRITE|FILE_SHARE_READ, nullptr, CREATE_ALWAYS, 0, nullptr);
+    GetLocalTime(&stLocalTime);
+
+    snprintf(p, szPathName + sizeof(szPathName) - p, "%s", (PCC)zApp);
+    ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString();
+
+    char* offsetString = p + zApp.GetLength();
+    snprintf(offsetString, szPathName + sizeof(szPathName) - offsetString, "-%s-%04d%02d%02d%02d%02d%02d-%ld-%ld.dmp", (PCC)zInfo,
+        stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay,
+        stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond,
+        GetCurrentProcessId(), GetCurrentThreadId());
+
+    hDumpFile = CreateFileA(szPathName, GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_WRITE | FILE_SHARE_READ, nullptr, CREATE_ALWAYS, 0, nullptr);
 
     ExpParam.ThreadId = GetCurrentThreadId();
     ExpParam.ExceptionPointers = pExceptionPointers;
     ExpParam.ClientPointers = TRUE;
 
-	MINIDUMP_TYPE mdt       = (MINIDUMP_TYPE)
-		(MiniDumpWithDataSegs		| 
-		MiniDumpWithHandleData		|
-		MiniDumpWithThreadInfo		| 
-		MiniDumpWithUnloadedModules |
-		MiniDumpWithProcessThreadData); 
+    MINIDUMP_TYPE mdt = (MINIDUMP_TYPE)
+        (MiniDumpWithDataSegs |
+            MiniDumpWithHandleData |
+            MiniDumpWithThreadInfo |
+            MiniDumpWithUnloadedModules |
+            MiniDumpWithProcessThreadData);
 
-    bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
-                    hDumpFile, mdt, &ExpParam, nullptr, nullptr);
+    bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
+        hDumpFile, mdt, &ExpParam, nullptr, nullptr);
 #ifndef NO_STEAM
-	// BT - STEAM
-	SteamAPI_SetMiniDumpComment(p);
+    // BT - STEAM
+    SteamAPI_SetMiniDumpComment(p);
 
-	// The 0 here is a build ID, we don't set it
-	SteamAPI_WriteMiniDump(0, pExceptionPointers, int(rup)); // Now including build and release number in steam errors.
+    // The 0 here is a build ID, we don't set it
+    SteamAPI_WriteMiniDump(0, pExceptionPointers, int(rup)); // Now including build and release number in steam errors.
 #endif
     return EXCEPTION_EXECUTE_HANDLER;
+}
+
+//Imago 6/10
+int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
+{
+    return ::GenerateDump(pExceptionPointers);
 }
 
 

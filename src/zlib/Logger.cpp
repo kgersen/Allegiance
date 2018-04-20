@@ -16,7 +16,7 @@ std::shared_ptr<ILogger> CreateTimestampedFileLogger(std::string prefix) {
 
     localtime_s(&t, &longTime);
 
-    sprintf(bfr, "%s%04d%02d%02d_%02d%02d%02d.log",
+    snprintf(bfr, sizeof(bfr), "%s%04d%02d%02d_%02d%02d%02d.log",
         prefix.c_str(),
         t.tm_year + 1900,
         t.tm_mon + 1, 

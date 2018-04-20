@@ -3849,14 +3849,6 @@ public:
 		if (szURL[0] == '\0')
 			szURL = "https://www.freeallegiance.org/forums"; // BT - 9/17 updated dead link to point to forums instead.
 
-        if (!IsWindows9x()) {
-            /*
-            if (GetFullscreen()) {
-                SetFullscreen(false);
-            }
-            */
-        }
-
         ShellExecute(NULL, NULL, szURL, NULL, NULL, SW_SHOWNORMAL);
     }
 
