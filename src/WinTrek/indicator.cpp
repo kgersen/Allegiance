@@ -156,17 +156,20 @@ public:
         //Point pointJoystick = GetViewRect()->GetValue().Center() - Point(100.0f*shipControls.jsValues[c_axisYaw], 100.0f*shipControls.jsValues[c_axisPitch]);
         //pitch + yaw <= 1.0
 
+        float angle = atan(shipControls.jsValues[c_axisPitch] / shipControls.jsValues[c_axisYaw]) + pi / 2;
+        if (shipControls.jsValues[c_axisYaw] < 0) {
+            angle += pi;
+        }
+        float turningSpeedRelativeToMax = std::min(1.0f, Point(shipControls.jsValues[c_axisYaw], shipControls.jsValues[c_axisPitch]).Length());
+
         pcontext->PushState();
         pcontext->Translate(GetViewRect()->GetValue().Center() - Point(100.0f*shipControls.jsValues[c_axisYaw], 100.0f*shipControls.jsValues[c_axisPitch]));
         pcontext->Begin3DLayer(m_pcamera, false);
         pcontext->DirectionalLight(Vector(0, 0, 1), Color(1.0f, 1.0f, 1.0f));
         pcontext->SetAmbientLevel(0.25f);
-        float angle = atan(shipControls.jsValues[c_axisPitch] / shipControls.jsValues[c_axisYaw]) + pi / 2;
-        if (shipControls.jsValues[c_axisYaw] < 0)
-            angle += pi;
         pcontext->Rotate(Vector(0, 0, 1), angle);
-        pcontext->Scale3(Point(shipControls.jsValues[c_axisYaw], shipControls.jsValues[c_axisPitch]).Length() / 2 + 0.5f);
-        m_pmaterial->SetDiffuse(Color(1.0f, 1.0f, 1.0f));
+        pcontext->Scale3(turningSpeedRelativeToMax / 2 + 0.5f);
+        m_pmaterial->SetDiffuse(Color(1.0f, 1.0f, 1.0f, turningSpeedRelativeToMax));
         pcontext->SetMaterial(m_pmaterial);
         m_pgeoJoystickPointer->Render(pcontext);
         pcontext->End3DLayer();
