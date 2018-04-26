@@ -16,26 +16,28 @@ TRef<Image> CreateIndicatorImage(Modeler* pmodeler, Viewport* pviewport, Number*
 //////////////////////////////////////////////////////////////////////////////
 enum TrainingOverlay
 {
-    NoTrainingOverlay,
-    SpeedTrainingOverlay,
-    MotionIndicatorTrainingOverlay,
-    ReticuleTrainingOverlay,
-    ThrottleTrainingOverlay,
-    FuelTrainingOverlay,
-    EnergyTrainingOverlay,
-    AmmoTrainingOverlay,
-    HullTrainingOverlay,
-    ShieldTrainingOverlay,
-    ChatTrainingOverlay,
-    SectorTrainingOverlay,
-    InventoryTrainingOverlay,
-    TargetTrainingOverlay,
-    CommandTrainingOverlay,
-    EyeballTrainingOverlay,
-    KillBonusTrainingOverlay
+	NoTrainingOverlay,
+	SpeedTrainingOverlay,
+	MotionIndicatorTrainingOverlay,
+	ReticuleTrainingOverlay,
+	ThrottleTrainingOverlay,
+	FuelTrainingOverlay,
+	EnergyTrainingOverlay,
+	AmmoTrainingOverlay,
+	HullTrainingOverlay,
+	ShieldTrainingOverlay,
+	ChatTrainingOverlay,
+	SectorTrainingOverlay,
+	InventoryTrainingOverlay,
+	TargetTrainingOverlay,
+	CommandTrainingOverlay,
+	EyeballTrainingOverlay,
+	KillBonusTrainingOverlay,
+	RollTrainingOverlay,
+	ShiftTabTrainingOverlay
 };
-void        SetTrainingOverlay (TrainingOverlay overlay);
+void        SetTrainingOverlay(TrainingOverlay overlay);
 inline
-void        ClearTrainingOverlay (void) {SetTrainingOverlay (NoTrainingOverlay);}
+void        ClearTrainingOverlay(void) { SetTrainingOverlay(NoTrainingOverlay); }
 
 #endif
