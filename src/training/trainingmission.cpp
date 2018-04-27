@@ -506,8 +506,10 @@ namespace Training
     {
         ZAssert(pShip);
         ZAssert(pShip != trekClient.GetShip());
-        if (pLauncher->GetSide() == trekClient.GetSide() && pShip->GetPilotType() == c_ptWingman) {
-            m_killCount++;
+        if (pLauncher != NULL) {
+            if (pLauncher->GetSide() == trekClient.GetSide() && pShip->GetPilotType() == c_ptWingman) {
+                m_killCount++;
+            }
         }
     }
 

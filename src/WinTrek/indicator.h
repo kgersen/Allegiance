@@ -38,7 +38,8 @@ enum TrainingOverlay
     TargetCenterTrainingOverlay,
     FireGunsTrainingOverlay,
     TargetEnemyTrainingOverlay,
-    MissileTrainingOverlay
+    MissileTrainingOverlay,
+    CloakTrainingOverlay
 };
 void        SetTrainingOverlay(TrainingOverlay overlay);
 inline

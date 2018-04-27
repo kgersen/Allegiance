@@ -263,7 +263,7 @@ namespace Training
 		// tm_4_04r
 		// Press the SPACEBAR when you are ready to proceed.
         {
-            Goal*   pGoal = new Goal (new GetKeyCondition (TK_FireWeapon));
+            Goal*   pGoal = new Goal (new GetKeyCondition (TK_ThrustForward));
             pGoal->AddStartAction (new MessageAction ("Press the SPACEBAR when you are ready to proceed."));
             pGoal->AddStartAction (new PlaySoundAction (tm_4_04rSound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_04rSound));
@@ -297,7 +297,7 @@ namespace Training
 		// Press the SPACEBAR when you are comfortable with quick 
 		// comms.
         {
-            Goal*   pGoal = new Goal (new GetKeyCondition (TK_FireWeapon));
+            Goal*   pGoal = new Goal (new GetKeyCondition (TK_ThrustForward));
             pGoal->AddStartAction (new MessageAction ("Press the SPACEBAR when you are ready to proceed."));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_06rSound));
             pGoalList->AddGoal (pGoal);
@@ -629,7 +629,7 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.3f)));
 
 		// tm_4_21
 		// Right now, we are far enough away that none of those enemy 
@@ -637,7 +637,7 @@ namespace Training
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_4_21Sound));
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.3f)));
 
 		// tm_4_22
 		// You can tell if the enemy sees you because this eyeball 
@@ -683,7 +683,7 @@ namespace Training
 		// tm_4_24
 		// First, you can stay out of their scan ranges. Enemies can't 
 		// see you if they can't scan you. This includes hiding in the 
-		// shadow of asteroids. ÿEnemies can't scan you unless they 
+		// shadow of asteroids. Enemies can't scan you unless they 
 		// have a line of sight on you. Remember that if any 
 		// individual enemy can see you, then they all can.
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_4_24Sound));
@@ -719,7 +719,8 @@ namespace Training
 		    // Press the K key now to activate your cloak.
             {
                 Goal*   pGoal = new Goal (new ProxyCondition (pGetKeyCondition));
-                pGoal->AddStartAction (new MessageAction ("Press the K key to activate your cloak."));
+                pGoal->AddStartAction (new MessageAction ("Press the G key to activate your cloak."));
+                pGoal->AddStartAction(new SetHUDOverlayAction(CloakTrainingOverlay));
                 pGoal->AddStartAction (new PlaySoundAction (tm_4_26rSound));
                 pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_26rSound));
                 pGoalList2->AddGoal (pGoal);
@@ -796,7 +797,7 @@ namespace Training
             //Goal*                           pGoal = new Goal (new AndCondition (new GetKeyCondition (TK_TargetEnemy), new SoundFinishedCondition (pPlaySoundAction)));
             Goal*                           pGoal = new Goal (new GetKeyCondition (TK_TargetEnemy)); // pkk - Let's start  before sound is finished
             pGoal->AddStartAction (pPlaySoundAction);
-            pGoal->AddStartAction (new MessageAction ("Target an enemy miner with the E key, and destroy it if you can."));
+            pGoal->AddStartAction (new MessageAction ("Target an enemy miner with the T key, and destroy it if you can."));
             pGoal->AddConstraintCondition (CreateTooLongCondition (20.0f, tm_4_29Sound));
             pGoalList->AddGoal (pGoal);
         }
@@ -889,7 +890,7 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.3f)));
 
 		// tm_4_32
 		// I'm moving your ship around to protect the constructor. 
@@ -973,7 +974,7 @@ namespace Training
         GoalList*   pGoalList = new GoalList;
 
 		// tm_4_34
-		// Good. Now I?ll give our constructor an order to build a 
+		// Good. Now I'll give our constructor an order to build a 
 		// station on an asteroid. Different kinds of asteroids are 
 		// good for different kinds of buildings. Different buildings 
 		// perform different tasks. In this case, we are building an 

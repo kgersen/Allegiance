@@ -690,6 +690,17 @@ public:
             description2 = "";
             break;
         }
+
+        case CloakTrainingOverlay:
+        {
+            pointDelta = Point(1.0f, 1.0f);
+            pointA = pointCenter + Point(-75.0, -170.0f);
+            pointB = pointA + Point(5.0f, 0.0f);
+            description = "PUSH G TO TOGGLE CLOAK";
+            description2 = "";
+            break;
+        }
+
         }
 
         // begin the ddraw procedure
