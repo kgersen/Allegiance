@@ -199,11 +199,11 @@ namespace Training
         pCommander->SetAutopilot (false);
 
         // create a bunch of derelict hulls in a sphere around the ship
-        // at about 200m to 450m distance
+        // at about 400m to 600m distance
         Vector  direction (1.0f, 0.0f, 0.0f);
         for (int i = 0; i < TM_NUMBER_OF_DERELICTS; i++)
         {
-            float   fRadius = 200.0f + (static_cast<float> (i) * 25.0f);
+            float   fRadius = 400.0f + (static_cast<float> (i) * 20.0f);
             Vector  newPosition = direction * fRadius;
             HullID  hullID;
             switch (randomInt (0, 2))
@@ -236,7 +236,7 @@ namespace Training
         GoalList*                       pGoalList = new GoalList;
         Goal*                           pGoal = new Goal (pGoalList);
 
-        // put a constraint that will point the back in if it's more than 7500m from the base
+        // put a constraint that will point the ship back in if it's more than 7500m from the base
         ImodelIGC*                      pShip = static_cast<ImodelIGC*> (trekClient.GetShip ());
         TurnToAction*                   pTurnToAction = new TurnToAction (pShip, OT_station, 1010);
         ObjectWithinRadiusCondition*    pObjectWithinRadiusCondition = new ObjectWithinRadiusCondition (pShip, OT_station, 1010, 7500.0f);
@@ -309,7 +309,7 @@ namespace Training
 
         // wait one second, zoom into ship
         {
-            Goal*   pGoal = new Goal (new ElapsedTimeCondition (1.0f));
+            Goal*   pGoal = new Goal (new ElapsedTimeCondition (0.7f));
             pGoal->AddStartAction (new SetDisplayModeAction (TrekWindow::cmCockpit));
             pGoalList->AddGoal (pGoal);
         }
@@ -321,7 +321,7 @@ namespace Training
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_02Sound));
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_03
 		// As before, your controls will be disabled until I ask you 
@@ -329,7 +329,7 @@ namespace Training
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_03Sound));
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
         return new Goal (pGoalList);
     }
@@ -346,7 +346,7 @@ namespace Training
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_04Sound));
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_05
 		// The shield gauge shows how much damage the shields can 
@@ -368,14 +368,14 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_06
 		// Now notice that the shield regenerates.
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_06Sound));
 
         // wait four seconds
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (4.0f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (3.0f)));
 
 		// tm_3_07
 		// The armor gauge shows how much more damage your ship hull 
@@ -403,7 +403,7 @@ namespace Training
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_08Sound));
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.3f)));
 
 		// tm_3_09
 		// If you're in a battle and you get damaged, try to return to 
@@ -432,7 +432,7 @@ namespace Training
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_10Sound));
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_11
 		// As your first introduction to targeting, you're going to 
@@ -440,21 +440,22 @@ namespace Training
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_11Sound));
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_11r
 		// Press the C key to target objects nearest to the center of 
 		// your display.
         {
             Goal    *pGoal = new Goal (CreateGotTargetCondition ());
-            pGoal->AddStartAction (new MessageAction ("Press the C key to target the derelict hull nearest the center of your display."));
-            pGoal->AddStartAction (new PlaySoundAction (tm_3_11rSound));
+            pGoal->AddStartAction (new MessageAction ("Press the middle mouse button to target the objects in the center of your display."));
+            //pGoal->AddStartAction (new PlaySoundAction (tm_3_11rSound)); - removed as it doesn't match the keymap
+			pGoal->AddStartAction(new SetHUDOverlayAction(TargetCenterTrainingOverlay));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_11Sound));
             pGoalList->AddGoal (pGoal);
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_12
 		// Good! I'm enabling your flight controls now. Practice 
@@ -470,21 +471,22 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_12r
 		// When you are comfortable with targeting, press the SPACEBAR 
 		// to proceed.
         {
-            Goal*   pGoal = new Goal (new GetKeyCondition (TK_FireWeapon));
+            Goal*   pGoal = new Goal (new GetKeyCondition (TK_ThrustForward));
             pGoal->AddStartAction (new MessageAction ("Press the SPACEBAR when you are ready to proceed."));
             pGoal->AddStartAction (new PlaySoundAction (tm_3_12rSound));
+			pGoal->AddStartAction(new SetHUDOverlayAction(NoTrainingOverlay));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_12rSound));
             pGoalList->AddGoal (pGoal);
         }
             
          // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
        return new Goal (pGoalList);
     }
@@ -507,7 +509,7 @@ namespace Training
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_13Sound));
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
         // XXX target something if there isn't a target?
 
@@ -523,12 +525,12 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_15
 		// Press the SPACEBAR when you are ready to proceed.
         {
-            Goal*   pGoal = new Goal (new GetKeyCondition (TK_FireWeapon));
+            Goal*   pGoal = new Goal (new GetKeyCondition (TK_ThrustForward));
             pGoal->AddStartAction (new MessageAction ("Press the SPACEBAR when you are ready to proceed."));
             pGoal->AddStartAction (new PlaySoundAction (tm_3_15Sound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_15Sound));
@@ -536,7 +538,7 @@ namespace Training
         }
             
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
         return new Goal (pGoalList);
     }
@@ -614,7 +616,7 @@ namespace Training
 
         // wait half second
         {
-            Goal*                           pGoal = new Goal (new ElapsedTimeCondition (0.5f));
+            Goal*                           pGoal = new Goal (new ElapsedTimeCondition (0.2f));
             SetControlConstraintsAction*    pSetControlConstraintsAction = new SetControlConstraintsAction;
             pSetControlConstraintsAction->EnableInputAction (weaponsMaskIGC);
             pGoal->AddStartAction (pSetControlConstraintsAction);
@@ -631,28 +633,30 @@ namespace Training
 		        // weapon.
                 pGoal->AddStartAction (new PlaySoundAction (tm_3_18Sound));
                 pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_18Sound));
-                pGoal->AddStartAction (new MessageAction ("Fire the main weapon by pressing the trigger button on your joystick."));
+				pGoal->AddStartAction(new SetHUDOverlayAction(FireGunsTrainingOverlay));
+                pGoal->AddStartAction (new MessageAction ("Fire the main weapon by pressing the trigger button on your joystick, or left click if using a mouse"));
             }
             else
             {
 		        // tm_3_19
 		        // Press the SPACEBAR on the keyboard to fire your main weapon.
-                pGoal->AddStartAction (new PlaySoundAction (tm_3_19Sound));
+                //pGoal->AddStartAction (new PlaySoundAction (tm_3_19Sound)); - voiceover does not match keymap
+				pGoal->AddStartAction(new SetHUDOverlayAction(FireGunsTrainingOverlay));
                 pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_19Sound));
-                pGoal->AddStartAction (new MessageAction ("Fire the main weapon by pressing the SPACEBAR."));
+                pGoal->AddStartAction (new MessageAction ("Left click to fire your main weapon."));
             }
             pGoalList->AddGoal (pGoal);
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_20
 		// Good!
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_20Sound));
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
         return new Goal (pGoalList);
     }
@@ -707,7 +711,7 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_23r
 		// Keep firing until your target is destroyed.
@@ -720,7 +724,7 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_24
 		// Great. As you can see, stationary objects are easy 
@@ -732,7 +736,7 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
         return new Goal (pGoalList);
     }
@@ -750,7 +754,7 @@ namespace Training
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_25Sound));
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_26
 		// You can selectively target the nearest friendly craft and 
@@ -760,20 +764,21 @@ namespace Training
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_26Sound));
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_27
 		// Select a new target now using the E key.
         {
             Goal*   pGoal = new Goal (new GetKeyCondition (TK_TargetEnemy));
-            pGoal->AddStartAction (new MessageAction ("Target an enemy using the E key."));
-            pGoal->AddStartAction (new PlaySoundAction (tm_3_27Sound));
-            pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_27Sound));
+            pGoal->AddStartAction (new MessageAction ("Target an enemy using the T key."));
+			pGoal->AddStartAction (new SetHUDOverlayAction(TargetEnemyTrainingOverlay));
+            //pGoal->AddStartAction (new PlaySoundAction (tm_3_27Sound)); - does not match keymap
+            //pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_27Sound));
             pGoalList->AddGoal (pGoal);
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_28
 		// Notice your radar. The targeted object has a set of square 
@@ -784,7 +789,7 @@ namespace Training
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_28Sound));
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_29
 		// Turn to face your new target.
@@ -797,14 +802,19 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_30
 		// Excellent! You're getting the hang of this!
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_30Sound));
+		{
+			Goal* pGoal = new Goal(new ElapsedTimeCondition(0.1f));
+			pGoal->AddStartAction(new SetHUDOverlayAction(NoTrainingOverlay));
+			pGoalList->AddGoal(pGoal);
+		}
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
         return new Goal (pGoalList);
     }
@@ -823,7 +833,7 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_31r
 		// Go ahead and fire.
@@ -832,21 +842,21 @@ namespace Training
             if (GetWindow ()->GetInputEngine ()->GetJoystickCount () > 0)
                 pGoal->AddStartAction (new MessageAction ("Fire the main weapon by pressing the trigger button on your joystick."));
             else
-                pGoal->AddStartAction (new MessageAction ("Fire the main weapon by pressing the SPACEBAR."));
+                pGoal->AddStartAction (new MessageAction ("Left click to fire your main weapon."));
             pGoal->AddStartAction (new PlaySoundAction (tm_3_31rSound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_31rSound));
             pGoalList->AddGoal (pGoal);
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_32
 		// Good!
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_32Sound));
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_33
 		// The machine gun uses ammunition. This gauge shows how much 
@@ -859,10 +869,10 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_34
-		// Blow up your target with the machine guns.ÿ
+		// Blow up your target with the machine guns.
         {
             Goal*   pGoal = new Goal (new GetShipIsDestroyedCondition (new CurrentTarget (new PlayerShipTarget, true)));
             pGoal->AddStartAction (new MessageAction ("Destroy current target."));
@@ -873,7 +883,7 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_35
 		// Now turn to face the next targeted derelict hull.
@@ -886,7 +896,7 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
         return new Goal (pGoalList);
     }
@@ -911,7 +921,7 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
         // wait for missilies to fire
         {
@@ -929,8 +939,9 @@ namespace Training
 		        // tm_3_38
 		        // Fire your missiles by pressing CONTROL plus SPACEBAR on the 
 		        // keyboard.
-                pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_38Sound));
-                pGoal->AddStartAction (new MessageAction ("Fire missiles by pressing CTRL+SPACEBAR."));
+                //pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_38Sound)); - does not match keymap
+                pGoal->AddStartAction (new MessageAction ("Right click to fire your secondary weapon."));
+				pGoal->AddStartAction(new SetHUDOverlayAction (MissileTrainingOverlay));
                 pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_38Sound));
             }
             SetControlConstraintsAction*    pSetControlConstraintsAction = new SetControlConstraintsAction;
@@ -940,14 +951,14 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_39
 		// Watch how these affect the target!
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_39Sound));
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_23r
 		// Keep firing until your target is destroyed.
@@ -960,14 +971,19 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_40
 		// Good job.
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_40Sound));
+		{
+			Goal* pGoal = new Goal(new ElapsedTimeCondition(0.1f));
+			pGoal->AddStartAction(new SetHUDOverlayAction(NoTrainingOverlay));
+			pGoalList->AddGoal(pGoal);
+		}
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
         return new Goal (pGoalList);
     }
@@ -992,7 +1008,7 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_42
 		// Check that out and make sure you are comfortable with it.
@@ -1016,7 +1032,7 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_43
 		// One more thing you?ll need to know about is your craft?s 
@@ -1028,7 +1044,7 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_44
 		// This number represents the percentage of extra damage your 
@@ -1038,7 +1054,7 @@ namespace Training
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_44Sound));
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
         return new Goal (pGoalList);
     }
@@ -1067,7 +1083,7 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_46
 		// When you are ready to go home, press the END key.
@@ -1080,7 +1096,7 @@ namespace Training
         }
             
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
         return new Goal (pGoalList);
     }
@@ -1097,7 +1113,7 @@ namespace Training
         pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_47Sound));
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
 		// tm_3_48
 		// Press the B key to target your nearest base.
@@ -1110,7 +1126,7 @@ namespace Training
         }
 
         // wait half second
-        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
+        pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.2f)));
 
         return new Goal (pGoalList);
     }

@@ -34,7 +34,11 @@ enum TrainingOverlay
 	EyeballTrainingOverlay,
 	KillBonusTrainingOverlay,
 	RollTrainingOverlay,
-	ShiftTabTrainingOverlay
+	ShiftTabTrainingOverlay,
+	TargetCenterTrainingOverlay,
+	FireGunsTrainingOverlay,
+	TargetEnemyTrainingOverlay,
+	MissileTrainingOverlay
 };
 void        SetTrainingOverlay(TrainingOverlay overlay);
 inline

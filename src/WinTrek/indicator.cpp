@@ -589,8 +589,8 @@ public:
 		case InventoryTrainingOverlay:
 		{
 			pointDelta = Point(-1.0f, 1.0f);
-			pointA = Point(rect.XMax() - 140.0f, 225.0f);
-			pointB = pointA + (pointDelta * 20.0f);
+			pointA = Point(rect.XMax() - 150.0f, 265.0f);
+			pointB = pointA + (pointDelta * 50.0f);
 			description = "INVENTORY DISPLAY";
 			break;
 		}
@@ -647,6 +647,46 @@ public:
 			pointA = pointCenter + Point(-70.0f, -170.0f);
 			pointB = pointA + Point(5.0f, 0.0f);
 			description = "SHIFT+SPACE TO BOOST";
+			description2 = "";
+			break;
+		}
+
+		case TargetCenterTrainingOverlay:
+		{
+			pointDelta = Point(1.0f, 1.0f);
+			pointA = pointCenter + Point(-144.0f, -170.0f);
+			pointB = pointA + Point(5.0f, 0.0f);
+			description = "CLICK MIDDLE MOUSE BUTTON TO TARGET CENTER";
+			description2 = "";
+			break;
+		}
+
+		case FireGunsTrainingOverlay:
+		{
+			pointDelta = Point(1.0f, 1.0f);
+			pointA = pointCenter + Point(-75.0, -170.0f);
+			pointB = pointA + Point(5.0f, 0.0f);
+			description = "LEFT CLICK TO FIRE GUNS";
+			description2 = "";
+			break;
+		}
+
+		case TargetEnemyTrainingOverlay:
+		{
+			pointDelta = Point(1.0f, 1.0f);
+			pointA = pointCenter + Point(-72.0, -170.0f);
+			pointB = pointA + Point(5.0f, 0.0f);
+			description = "PUSH T TO TARGET ENEMY";
+			description2 = "";
+			break;
+		}
+
+		case MissileTrainingOverlay:
+		{
+			pointDelta = Point(1.0f, 1.0f);
+			pointA = pointCenter + Point(-80.0, -170.0f);
+			pointB = pointA + Point(5.0f, 0.0f);
+			description = "RIGHT CLICK TO FIRE MISSILE";
 			description2 = "";
 			break;
 		}
