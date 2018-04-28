@@ -909,7 +909,7 @@ namespace Training
 
         // (Wait for enemy scout to get within range)
         {
-            Goal*               pGoal = new Goal (new ObjectWithinRadiusCondition (trekClient.GetShip(), OT_ship, m_enemyScoutID, 1500.0f)); //LANS - mission won't execute if player doesn't go near scout
+            Goal*               pGoal = new Goal (new ObjectWithinRadiusCondition (trekClient.GetShip(), OT_ship, m_enemyScoutID, 1500.0f));
             Vector              pos (random(-300.0f, 300.0f), random(-300.0f, 300.0f), random(-300.0f, 300.0f));
             CreateDroneAction*  pCreateDroneAction = new CreateDroneAction ("Enemy Scout", m_enemyScoutID, 310, 1, c_ptWingman);
             pCreateDroneAction->SetCreatedBehaviour(c_wbbmInRangeAggressive | c_wbbmUseMissiles); // - LANS, prevent scout from running away
