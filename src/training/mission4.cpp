@@ -889,6 +889,7 @@ namespace Training
             pGoalList->AddGoal (pGoal);
         }
 
+
         // wait half second
         pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.3f)));
 
@@ -975,14 +976,6 @@ namespace Training
     {
         GoalList*   pGoalList = new GoalList;
 
-        // LANS - do this first
-        // (Wait for building to complete)
-        {
-            Goal*   pGoal = new Goal(new GetShipIsDestroyedCondition2(OT_ship, m_builderID));
-            pGoal->AddStartAction(new SetCommandAction(m_builderID, c_cmdCurrent, OT_asteroid, static_cast<ObjectID>(10332), c_cidBuild));
-            pGoal->AddStartAction(new SetCommandAction(m_builderID, c_cmdAccepted, OT_asteroid, static_cast<ObjectID>(10332), c_cidBuild));
-            pGoalList->AddGoal(pGoal);
-        }
 
 		// tm_4_34
 		// Good. Now I'll give our constructor an order to build a 
@@ -997,6 +990,14 @@ namespace Training
             pGoal->AddStartAction (new SetCommandAction (trekClient.GetShip (), c_cmdQueued, OT_ship, m_builderID, c_cidGoto));
             pGoal->AddStartAction (new MessageAction ("Press the INSERT key to accept the command."));
             pGoalList->AddGoal (pGoal);
+        }
+
+        // (Wait for building to complete)
+        {
+            Goal*   pGoal = new Goal(new GetShipIsDestroyedCondition2(OT_ship, m_builderID));
+            pGoal->AddStartAction(new SetCommandAction(m_builderID, c_cmdCurrent, OT_asteroid, static_cast<ObjectID>(10332), c_cidBuild));
+            pGoal->AddStartAction(new SetCommandAction(m_builderID, c_cmdAccepted, OT_asteroid, static_cast<ObjectID>(10332), c_cidBuild));
+            pGoalList->AddGoal(pGoal);
         }
 
         // (Wait for command acceptance)
