@@ -179,19 +179,19 @@ namespace Training
 
         // create the tower builder drones
         Vector              pos = pStationNeptune->GetPosition () + Vector (random(-300.0f, 300.0f), random(-300.0f, 300.0f), random(-300.0f, 300.0f));
-        CreateDroneAction*  pCreateDroneAction = new CreateDroneAction ("Tower Layer 01", m_builder1ID, 167, 0, c_ptLayer);
+        CreateDroneAction*  pCreateDroneAction = new CreateDroneAction ("Tower Layer 01", m_builder1ID, 418, 0, c_ptLayer);
         pCreateDroneAction->SetExpendableType (87);
         pCreateDroneAction->SetCreatedLocation (GetStartSectorID (), pos);
         pGoal->AddStartAction (pCreateDroneAction);
 
 		pos = pStationNeptune->GetPosition () + Vector (random(-300.0f, 300.0f), random(-300.0f, 300.0f), random(-300.0f, 300.0f));
-		pCreateDroneAction = new CreateDroneAction ("Tower Layer 02", m_builder2ID, 167, 0, c_ptLayer);
+		pCreateDroneAction = new CreateDroneAction ("Tower Layer 02", m_builder2ID, 418, 0, c_ptLayer);
         pCreateDroneAction->SetExpendableType (87);
         pCreateDroneAction->SetCreatedLocation (GetStartSectorID (), pos);
         pGoal->AddStartAction (pCreateDroneAction);
 
         pos = pStationNeptune->GetPosition () + Vector (random(-300.0f, 300.0f), random(-300.0f, 300.0f), random(-300.0f, 300.0f));
-        pCreateDroneAction = new CreateDroneAction ("Tower Layer 03", m_builder3ID, 167, 0, c_ptLayer);
+        pCreateDroneAction = new CreateDroneAction ("Tower Layer 03", m_builder3ID, 418, 0, c_ptLayer);
         pCreateDroneAction->SetExpendableType (87);
         pCreateDroneAction->SetCreatedLocation (GetStartSectorID (), pos);
         pGoal->AddStartAction (pCreateDroneAction);
