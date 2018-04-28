@@ -1525,7 +1525,7 @@ public:
             trekClient.SetIsLobbied(false);
             trekClient.SetIsZoneClub(false);
             
-			m_pmessageBox = CreateMessageBox("Welcome to Allegiance training! We recommend that you start with our Crash Course wiki page first.\n\nMinimize Allegiance and go to the Wiki page now?", NULL, true, true);
+			m_pmessageBox = CreateMessageBox("Welcome to Allegiance training! In addition to these training missions, you can push F1 at any time to see a quick - reference keymap. We also have a wiki and discord, which are linked from the F1 screen", NULL, true, true);
 			m_pmessageBox->GetEventSource()->AddSink(new OpenWikiSink(GetWindow()));
 			GetWindow()->GetPopupContainer()->OpenPopup(m_pmessageBox, false);
 		

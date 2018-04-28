@@ -867,8 +867,8 @@ namespace Training
             pGoal->AddStartAction (pCreateDroneAction);
 
             // command the builder to go to the asteroid on which it will build
-            pGoal->AddStartAction (new SetCommandAction (m_builderID, c_cmdCurrent, OT_asteroid, static_cast<ObjectID>(10332), c_cidBuild));
-            pGoal->AddStartAction (new SetCommandAction (m_builderID, c_cmdAccepted, OT_asteroid, static_cast<ObjectID>(10332), c_cidBuild));
+            pGoal->AddStartAction(new SetCommandAction(m_builderID, c_cmdCurrent, OT_asteroid, static_cast<ObjectID>(10332), c_cidBuild));
+            pGoal->AddStartAction(new SetCommandAction(m_builderID, c_cmdAccepted, OT_asteroid, static_cast<ObjectID>(10332), c_cidBuild));
 
             // create a waypoint for all of the miners to run to, and send them all there
             BuoyID              buoyID = trekClient.GetCore ()->GenerateNewBuoyID ();
@@ -887,6 +887,18 @@ namespace Training
             pGoal->AddStartAction (new SetCommandAction (trekClient.GetShip (), c_cmdAccepted, NA, NA, c_cidDoNothing));
 
             pGoalList->AddGoal (pGoal);
+        }
+
+        {
+            //LANS - prevent builder from running if damaged
+            Goal* pGoal = new Goal(new ElapsedTimeCondition(0.001f));
+
+            //resend the "build" command every 30s
+            Condition*          pPeriodicCondition3 = new PeriodicCondition(new TrueCondition, 10.0f);
+            Condition*          pPeriodicCondition4 = new PeriodicCondition(new TrueCondition, 10.0f);
+            pGoal->AddConstraintCondition(new ConditionalAction(pPeriodicCondition3, new SetCommandAction(m_builderID, c_cmdCurrent, OT_asteroid, static_cast<ObjectID>(10332), c_cidBuild))); //resend bbr in case player gave it commands
+            pGoal->AddConstraintCondition(new ConditionalAction(pPeriodicCondition4, new SetCommandAction(m_builderID, c_cmdAccepted, OT_asteroid, static_cast<ObjectID>(10332), c_cidBuild))); //resend bbr in case player gave it commands
+            pGoalList->AddGoal(pGoal);
         }
 
         // wait half second
@@ -911,6 +923,7 @@ namespace Training
             Goal*               pGoal = new Goal (new ObjectWithinRadiusCondition (trekClient.GetShip (), OT_ship, m_enemyScoutID, 1500.0f));
             Vector              pos (random(-300.0f, 300.0f), random(-300.0f, 300.0f), random(-300.0f, 300.0f));
             CreateDroneAction*  pCreateDroneAction = new CreateDroneAction ("Enemy Scout", m_enemyScoutID, 310, 1, c_ptWingman);
+            pCreateDroneAction->SetCreatedBehaviour(c_wbbmInRangeAggressive | c_wbbmUseMissiles); // - LANS, prevent scout from running away
             pCreateDroneAction->SetCreatedLocation (1031, pos);
             pGoal->AddStartAction (pCreateDroneAction);
             pGoal->AddStartAction (new SetCommandAction (m_enemyScoutID, c_cmdCurrent, trekClient.GetShip (), c_cidAttack));
@@ -921,17 +934,20 @@ namespace Training
 		// tm_4_33
 		// Enemy scout detected! Intercept it!
         {
-            Goal*               pGoal = new Goal (new GetCommandCondition (trekClient.GetShip (), c_cidAttack));
-            pGoal->AddStartAction (new SetCommandAction (m_builderID, c_cmdCurrent, NA, NA, c_cidDoNothing));
-            pGoal->AddStartAction (new SetCommandAction (m_builderID, c_cmdAccepted, NA, NA, c_cidDoNothing));
-            pGoal->AddStartAction (new SetCommandAction (trekClient.GetShip (), c_cmdQueued, OT_ship, m_enemyScoutID, c_cidAttack));
+            Goal* pGoal = new Goal (new GetCommandCondition (trekClient.GetShip (), c_cidAttack)); 
+            //pGoal->AddStartAction (new SetCommandAction(m_builderID, c_cmdCurrent, NA, NA, c_cidDoNothing)); - keep the builder moving - LANS
+            //pGoal->AddStartAction (new SetCommandAction(m_builderID, c_cmdAccepted, NA, NA, c_cidDoNothing));
+            pGoal->AddStartAction (new SetCommandAction (trekClient.GetShip (), NA, OT_ship, m_enemyScoutID, c_cidAttack));
             pGoal->AddStartAction (new MessageAction ("Press the INSERT key to accept the command."));
             pGoal->AddStartAction (new PlaySoundAction (tm_4_33Sound));
-            pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_33Sound));
+            pGoal->AddConstraintCondition(CreateTooLongCondition(30.0f, tm_4_33Sound));
             pGoalList->AddGoal (pGoal);
         }
 
-        // wait half second
+        //Prevent the builder or scout from running away
+
+
+        // wait half a second
         pGoalList->AddGoal (new Goal (new ElapsedTimeCondition (0.5f)));
 
 		// tm_4_33r
@@ -942,8 +958,7 @@ namespace Training
             pGoal->AddConstraintCondition (CreateTooLongCondition (45.0f, tm_4_33rSound));
             pGoalList->AddGoal (pGoal);
         }
-
-        // wait half second
+        
         {
             Goal*   pGoal = new Goal (new ElapsedTimeCondition (0.5f));
 
