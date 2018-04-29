@@ -438,9 +438,20 @@ namespace Training
         m_deadCameraMode = pWindow->GetCameraMode ();
         m_deadSectorID = static_cast<SectorID> (pShip->GetCluster ()->GetObjectID ());
 
+
+        /*******
+        * Note from LANS on change here
+        * Rather than only moving the player ship if it died hitting something, we want to move it no matter what
+        * This way if it died in combat, the respawn isn't in quite the same place and gives the player a moment
+        * before they get shot again
+        *
+        *
+        * To change it back to the way it was, uncomment if (pLauncher && pLauncher->GetMission ())
+        *******/
+
         // check if there was a second party involved in the player's death, and that party is valid
-        if (pLauncher && pLauncher->GetMission ())
-        {
+        //if (pLauncher && pLauncher->GetMission ())
+        //{
             // if the death occurred because the ship whacked something, we want to be sure that 
             // it won't die immediately upon returning. To that end, we move the ship away from
             // whatever it collided with, and adjust its velocity accordingly
@@ -451,11 +462,12 @@ namespace Training
             Vector      deltaUnit = delta / fDeltaLength;
             float       fNewVelocity = (pShip->GetVelocity ().Length () * 0.5f);
             Vector      newVelocity = deltaUnit * fNewVelocity;
+            //Increase distance moved. Used to be 1.5f here, not 15f.
             float       fNewSeparation = 1.5f * (pShip->GetRadius () + pLauncher->GetRadius ());
             if (fNewSeparation > fDeltaLength)
                 pShip->SetPosition (launcherPosition + (deltaUnit * fNewSeparation));
             pShip->SetVelocity (newVelocity);
-        }
+        //}
 
         // toss the player from the ship
         trekClient.EjectPlayer (pLauncher);
