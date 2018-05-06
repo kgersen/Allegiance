@@ -723,6 +723,10 @@ namespace Training
             TRef<ImodelIGC> ship = static_cast<ImodelIGC*> (trekClient.GetShip());
             Condition*      pGetStateBitsCondition = new GetStateBitsCondition(trekClient.GetShip(), afterburnerButtonIGC);
             Goal*           pGoal = new Goal(pGetStateBitsCondition);
+            SetControlConstraintsAction*    pSetControlConstraintsAction = new SetControlConstraintsAction;
+            pSetControlConstraintsAction->EnableInputAction(afterburnerButtonIGC);
+            pGoal->AddStartAction(pSetControlConstraintsAction);
+        
             if (GetWindow()->GetInputEngine()->GetJoystickCount() > 0)
             {
                 // tm_2_32
@@ -741,10 +745,9 @@ namespace Training
                 pGoal->AddConstraintCondition(CreateTooLongCondition(30.0f, tm_2_33Sound));
                 pGoal->AddStartAction(new MessageAction("Press and hold the SHIFT+SPACE key to fire the booster."));
             }
-            SetControlConstraintsAction*    pSetControlConstraintsAction = new SetControlConstraintsAction;
-            pSetControlConstraintsAction->EnableInputAction(afterburnerButtonIGC);
-            pGoal->AddStartAction(pSetControlConstraintsAction);
+
             pGoalList->AddGoal(pGoal);
+
         }
 
         // wait five seconds
