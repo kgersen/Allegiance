@@ -473,7 +473,7 @@ namespace Training
         {
             TRef<ImodelIGC>     pShip = static_cast<ImodelIGC*> (trekClient.GetShip());
             Goal*               pGoal = new Goal(new NotCondition(new GetControlActiveCondition(trekClient.GetShip(), c_axisThrottle, 1.0f)));
-            pGoal->AddStartAction(new MessageAction("Press [, ], scroll, or use your joystick throttle to adjust thrust."));
+            pGoal->AddStartAction(new MessageAction("Use your scroll wheel or joystick throttle to adjust thrust."));
             pGoal->AddStartAction(new PlaySoundAction(tm_2_18rSound));
             pGoal->AddConstraintCondition(CreateTooLongCondition(30.0f, tm_2_18rSound));
             pGoalList->AddGoal(pGoal);
