@@ -117,8 +117,8 @@ bool PromptUserForVideoSettings(bool bStartFullscreen, int iAdapter, HINSTANCE h
 		
 	HMONITOR hMon = MonitorFromPoint(Point(0,0), MONITOR_DEFAULTTOPRIMARY);
 
-    x = config->GetIntValue("Graphics.ResolutionX", config->GetIntValue("CombatFullscreenXSize", 800));
-    y = config->GetIntValue("Graphics.ResolutionY", config->GetIntValue("CombatFullscreenYSize", 600));
+    x = config->GetIntValue("Graphics.ResolutionX", config->GetIntValue("CombatFullscreenXSize", 1366));
+    y = config->GetIntValue("Graphics.ResolutionY", config->GetIntValue("CombatFullscreenYSize", 768));
 
     g_DX9Settings.m_dwAA = config->GetBoolValue("Graphics.UseAntialiasing", config->GetBoolValue("UseAntialiasing", false)) ? 1 : 0;
     g_VideoSettings.bWaitForVSync = config->GetBoolValue("Graphics.UseVSync", config->GetBoolValue("UseVSync", false));
