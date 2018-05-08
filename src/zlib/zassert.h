@@ -32,7 +32,7 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
 
 void retailf(const char* , ...);
 
-extern std::shared_ptr<ILogger> g_pDebugLogger;
+extern ILogger* g_pDebugLogger;
 
 #ifdef _DEBUG
     //

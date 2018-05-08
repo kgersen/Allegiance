@@ -140,7 +140,7 @@ std::string GetExecutablePath() {
 std::shared_ptr<SettableLogger> g_pDebugFileLogger = std::make_shared<SettableLogger>(std::make_shared<FileLogger>(GetExecutablePath() + "/debug.log", false));
 std::shared_ptr<SettableLogger> g_pDebugOutputLogger = std::make_shared<SettableLogger>(std::make_shared<OutputLogger>());
 
-std::shared_ptr<ILogger> g_pDebugLogger = std::make_shared<MultiLogger>(std::vector<std::shared_ptr<ILogger>>({
+ILogger* g_pDebugLogger = new MultiLogger(std::vector<std::shared_ptr<ILogger>>({
     g_pDebugOutputLogger,
     g_pDebugFileLogger
 }));
