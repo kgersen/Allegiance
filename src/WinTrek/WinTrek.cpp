@@ -2620,11 +2620,11 @@ public:
 
 	// BT - 9/17 - Made this a function to support chaining the opening microsoft splash with the longer classic
 	// allegiance movie. 
-	HANDLE PlayMovieClip(bool playMovies, bool isSoftware, bool isWindowed, ZString moviePath)
+	HANDLE PlayMovieClip(bool playMovies, bool isWindowed, ZString moviePath)
 	{
 		HANDLE hDDVidThread = 0;
 
-		if (!g_bQuickstart && playMovies && !g_bReloaded && !isSoftware &&
+		if (!g_bQuickstart && playMovies && !g_bReloaded &&
 			::GetFileAttributes(moviePath) != INVALID_FILE_ATTRIBUTES &&
 			!CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
 			//Imago only check for these if we have to 8/16/09
@@ -2655,11 +2655,7 @@ public:
 		// BUILD_DX9
 		const ZString& strArtPath,
 		// BUILD_DX9
-		bool           bMovies,
-		bool           bSoftware,
-		bool           bHardware,
-		bool           bPrimary,
-		bool           bSecondary
+		bool           bMovies
 	) :
 		TrekWindow(
 			papp,
@@ -2787,7 +2783,7 @@ public:
         // Rock: Converted to configuration setting
         if (m_pConfiguration->GetBool("Ui.ShowStartupCreditsMovie", false)->GetValue()) {
             ZString pathStr = GetModeler()->GetArtPath() + "/intro_microsoft.avi";
-            hDDVidThread = PlayMovieClip(bMovies, bSoftware, CD3DDevice9::Get()->IsWindowed(), pathStr);
+            hDDVidThread = PlayMovieClip(bMovies, CD3DDevice9::Get()->IsWindowed(), pathStr);
         }
 
 		debugf("Reading FFGain, MouseSensitivity\n");
@@ -3326,7 +3322,7 @@ public:
             // ffmpeg.exe -i intro_microsoft_original.avi -q:a 1 -q:v 1 -vcodec mpeg4 -acodec wmav2 intro_microsoft.avi
             pathMovieStr = GetModeler()->GetArtPath() + "/intro_movie.avi";
 
-            hDDVidThread = PlayMovieClip(bMovies, bSoftware, CD3DDevice9::Get()->IsWindowed(), pathMovieStr);
+            hDDVidThread = PlayMovieClip(bMovies, CD3DDevice9::Get()->IsWindowed(), pathMovieStr);
 
             if (hDDVidThread != NULL)
             {
@@ -11188,11 +11184,7 @@ TRef<TrekWindow> TrekWindow::Create(
 // BUILD_DX9
 	const ZString& strArtPath,					// Added for DX9 build, due to reordered startup.
 // BUILD_DX9
-    bool           bMovies,
-    bool           bSoftware,
-    bool           bHardware,
-    bool           bPrimary,
-    bool           bSecondary
+    bool           bMovies
 ) {
     return
         new TrekWindowImpl(
@@ -11201,11 +11193,7 @@ TRef<TrekWindow> TrekWindow::Create(
 // BUILD_DX9
 			strArtPath,
 // BUILD_DX9
-            bMovies,
-            bSoftware,
-            bHardware,
-            bPrimary,
-            bSecondary
+            bMovies
         );
 }
 

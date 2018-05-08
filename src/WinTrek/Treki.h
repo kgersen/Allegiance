@@ -77,11 +77,7 @@ public:
 // BUILD_DX9
 		const ZString& strArtPath,					// Added for DX9 build, due to reordered startup.
 // BUILD_DX9
-        bool           bMovies,
-        bool           bSoftware,
-        bool           bHardware,
-        bool           bPrimary,
-        bool           bSecondary
+        bool           bMovies
     );
 
     static LPCTSTR          GetWindowTitle() { return TEXT("Allegiance"); };
