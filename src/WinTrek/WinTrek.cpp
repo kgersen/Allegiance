@@ -7285,7 +7285,7 @@ public:
         m_pEngineWindow->GetInputEngine()->GetMouse()->SetEnabled((bEnable || m_pEngineWindow->GetEngine()->IsFullscreen()));
         m_pjoystickImage->SetEnabled(bEnable, bEnable);
         m_pEngineWindow->SetMoveOnHide(!bEnable);
-        ShowCursor(!bEnable);
+        m_pEngineWindow->ShowCursor(!bEnable);
     }
 
     void EvaluateFrame(Time time)
