@@ -201,8 +201,8 @@ public:
         while (pitem) {
             MissionInfo* game = (MissionInfo*)pitem;
 
-            Time timeApplicationStart = GetWindow()->GetTimeStart();
-            TRef<Number> pTimeSinceApplicationStart = GetWindow()->GetTime();
+            Time timeApplicationStart = GetEngineWindow()->GetTimeStart();
+            TRef<Number> pTimeSinceApplicationStart = GetEngineWindow()->GetTime();
 
             TRef<Number> pTimeMisisonInProgress;
             if (game->InProgress()) {
@@ -660,7 +660,7 @@ private:
         virtual void OnClose()
         {
             if (m_pkeyboardInputOldFocus)
-                GetWindow()->SetFocus(m_pkeyboardInputOldFocus);
+                GetEngineWindow()->SetFocus(m_pkeyboardInputOldFocus);
 
             m_pkeyboardInputOldFocus = NULL;
 
@@ -671,7 +671,7 @@ private:
         {
             // initialize the check boxes
             
-            m_pkeyboardInputOldFocus = GetWindow()->GetFocus();
+            m_pkeyboardInputOldFocus = GetEngineWindow()->GetFocus();
             
             IPopup::SetContainer(pcontainer);
         }
@@ -819,7 +819,7 @@ private:
 
             m_pserverSearching = new LANServerInfo(GUID_NULL, "Searching...", 0, 0);
 
-            AddEventTarget(&IntroScreen::FindServerPopup::PollForServers, GetWindow(), 1.0f);
+            AddEventTarget(&IntroScreen::FindServerPopup::PollForServers, GetEngineWindow(), 1.0f);
         }
 
         ~FindServerPopup()
@@ -1158,7 +1158,7 @@ public:
 
             std::map<std::string, std::shared_ptr<Exposer>> map;
 
-            map["time"] = NumberExposer::Create(GetWindow()->GetTime());
+            map["time"] = NumberExposer::Create(GetEngineWindow()->GetTime());
             map["callsign"] = StringExposer::CreateStatic(trekClient.GetSavedCharacterName());
 
             /*TRef<UiStateModifiableValue> login_state = new UiStateModifiableValue(UiState("Logged out", UiObjectContainer({
@@ -1284,7 +1284,7 @@ public:
         trekClient.Disconnect();
         trekClient.DisconnectLobby();
         if (g_bQuickstart || g_bReloaded)
-            AddEventTarget(&IntroScreen::OnQuickstart, GetWindow(), 0.01f);
+            AddEventTarget(&IntroScreen::OnQuickstart, GetEngineWindow(), 0.01f);
 
         // we only do this once per execution, and only if training is installed
         static  bool    bHaveVisited = false;
@@ -1405,7 +1405,7 @@ public:
 
         m_pwrapGeo  = new WrapGeo(Geo::GetEmpty());
 		m_pwrapImageGeo = new WrapImage(Image::GetEmpty());
-		m_ptime = GetWindow()->GetTime();
+		m_ptime = GetEngineWindow()->GetTime();
         GeoImage* pgeo =
 			new GeoImage(                
                     new TransformGeo(
@@ -1577,7 +1577,7 @@ public:
         GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
 
         // pause to let the "connecting..." box draw itself
-        AddEventTarget(&IntroScreen::OnTryLogon, GetWindow(), 0.1f);
+        AddEventTarget(&IntroScreen::OnTryLogon, GetEngineWindow(), 0.1f);
     }
 
     bool OnTryLogon()
@@ -1719,7 +1719,7 @@ public:
         GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
 
         // pause to let the "connecting..." box draw itself
-        AddEventTarget(&IntroScreen::OnTryLogon, GetWindow(), 0.1f);
+        AddEventTarget(&IntroScreen::OnTryLogon, GetEngineWindow(), 0.1f);
     }
 
     void OnAbort()
@@ -1729,7 +1729,7 @@ public:
 
     bool OnButtonExit()
     {
-        GetWindow()->StartClose();
+        GetEngineWindow()->StartClose();
 
         return true;
     }
@@ -1788,7 +1788,7 @@ public:
 		// BUILD_DX9
 
         TRef<INameSpace> pnsCredits = GetModeler()->GetNameSpace("creditspane");
-        m_pcreditsPopup = new CreditsPopup(pnsCredits, this, GetWindow()->GetTime());
+        m_pcreditsPopup = new CreditsPopup(pnsCredits, this, GetEngineWindow()->GetTime());
         GetWindow()->GetPopupContainer()->OpenPopup(m_pcreditsPopup, false);
         return true;
     }

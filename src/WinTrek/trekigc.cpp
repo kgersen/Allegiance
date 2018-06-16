@@ -35,7 +35,7 @@ class ClusterSiteImpl : public ClusterSite
             m_pbitsGeo = CreateBitsGeo(pmodeler, ptime);
             m_pGroupScene->AddGeo(m_pbitsGeo);
 
-            m_pexplosionGeo = CreateExplosionGeo(GetWindow()->GetTime());
+            m_pexplosionGeo = CreateExplosionGeo(GetEngineWindow()->GetTime());
             m_pGroupScene->AddGeo(m_pexplosionGeo);
 
             m_pPulseGeo = CreatePulseGeo (pmodeler, ptime);
@@ -1626,7 +1626,7 @@ class ThingSiteImpl : public ThingSitePrivate
         {
             if (m_pthing->GetFlareCount() < 4.0f)
             {
-                TRef<Number> ptimeArg = GetWindow()->GetTime();
+                TRef<Number> ptimeArg = GetEngineWindow()->GetTime();
                 TRef<Number> ptime = NumberTransform::Subtract(ptimeArg, ptimeArg->MakeConstant());
 
                 m_pthing->AddFlare(
@@ -2499,7 +2499,7 @@ void WinTrekClient::Initialize(Time timeNow)
     GetShip()->CreateDamageTrack();
 
     m_pwindow = GetWindow();
-    m_pengine = m_pwindow->GetEngine();
+    m_pengine = GetEngineWindow()->GetEngine();
     m_pmodeler = m_pwindow->GetModeler();
 
     {

@@ -109,7 +109,6 @@ protected:
     TRef<TransformImage>       m_ptransformImageCursor;
     TRef<TranslateTransform2>  m_ptranslateTransform;
     TRef<Image>                m_pimageCursor;
-    TRef<IPopupContainer>      m_ppopupContainer;
 
     WinPoint                   m_offsetWindowed;
 
@@ -149,6 +148,9 @@ protected:
     //
 
     TRef<ButtonEvent::Sink>    m_peventSink;
+
+    TRef<EventSourceImpl> m_pcloseEventSource;
+    TRef<TEvent<Time>::SourceImpl> m_pevaluateFrameEventSource;
 
     //
     // menu
@@ -263,12 +265,20 @@ public:
     Modeler*         GetModeler()        { return m_pmodeler;                }
     bool             GetFullscreen()     { return m_pengine->IsFullscreen(); }
     bool             GetShowFPS()        { return m_bFPS;                    }
-    IPopupContainer* GetPopupContainer() { return m_ppopupContainer;         }
     InputEngine*     GetInputEngine()    { return m_pinputEngine;            }
     const Point&     GetMousePosition()  { return m_ppointMouse->GetValue(); }
     ModifiablePointValue* GetMousePositionModifiable() { return m_ppointMouse; }
 	Time&		   	 GetMouseActivity()  { return m_timeLastMouseMove;		 } //Imago: Added to adjust AFK status from mouse movment
     bool             GetActive()         { return m_bActive;                 }
+    const TRef<IKeyboardInput>& GetKeyboardInput() { return m_pkeyboardInput; };
+
+    IEventSource* GetOnCloseEventSource() {
+        return m_pcloseEventSource;
+    }
+
+    TEvent<Time>::Source* GetEvaluateFrameEventSource() {
+        return m_pevaluateFrameEventSource;
+    }
 
     TRef<IPopup> GetEngineMenu(IEngineFont* pfont);
 
@@ -279,7 +289,6 @@ public:
     void SetSizeable(bool bSizeable);
     void SetFullscreenSize(const Vector& point);
     void ChangeFullscreenSize(bool bLarger);
-    void SetMouseEnabled(bool bEnable);
 
     WinPoint GetSize();
     WinPoint GetWindowedSize();
@@ -308,7 +317,6 @@ public:
 
     virtual ZString GetFPSString(float dtime, float mspf, Context* pcontext);
 
-    virtual void EvaluateFrame(Time time) {}
     virtual void RenderSizeChanged(bool bSmaller) {
         int x = (int)m_pengine->GetResolutionSizeModifiable()->GetValue().X();
         int y = (int)m_pengine->GetResolutionSizeModifiable()->GetValue().Y();

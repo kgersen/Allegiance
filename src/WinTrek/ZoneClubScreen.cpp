@@ -128,7 +128,7 @@ public:
 
         if (g_bQuickstart)
 			// mdvalley: &ZoneClubScreen:: needed.
-            AddEventTarget(&ZoneClubScreen::OnButtonGames, GetWindow(), 0.01f);
+            AddEventTarget(&ZoneClubScreen::OnButtonGames, GetEngineWindow(), 0.01f);
 
         trekClient.FlushSessionLostMessage();
     }
@@ -788,7 +788,7 @@ public:
         GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
 
         // pause to let the "connecting..." box draw itself
-        AddEventTarget(&ZoneClubScreen::OnUsernameAndPassword, GetWindow(), 0.1f);
+        AddEventTarget(&ZoneClubScreen::OnUsernameAndPassword, GetEngineWindow(), 0.1f);
     }
 
     bool OnUsernameAndPassword()

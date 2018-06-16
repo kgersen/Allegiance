@@ -51,16 +51,23 @@ UpdatingConfiguration* GetConfiguration();
 
 class ChatListPane;
 
-class TrekWindow : public EngineWindow {
+class TrekWindow : public Value, public IKeyboardInput {
 protected:
+    TRef<EngineWindow> m_pEngineWindow;
+    TRef<Modeler> m_pmodeler;
+    TRef<Engine> m_pengine;
+
+    TRef<IPopupContainer>      m_ppopupContainer;
+
     TrekWindow(
         EffectApp* papp,
         const ZString&     strCommandLine,
               bool         bStartFullscreen,
         const WinRect&     rect,
         const WinPoint&    sizeMin
-    ) :
-        EngineWindow(
+    )
+    {
+        m_pEngineWindow = new EngineWindow(
             papp,
             GetConfiguration(),
             strCommandLine,
@@ -68,11 +75,25 @@ protected:
             bStartFullscreen,
             rect,
             sizeMin
-        ) 
-    {
+        );
+
+        m_pEngineWindow->GetOnCloseEventSource()->AddSink(new CallbackSink([this]() {
+            this->Terminate();
+            return true;
+        }));
+
+        m_pEngineWindow->GetEvaluateFrameEventSource()->AddSink(new CallbackValueSink<Time>([this](Time time) {
+            this->EvaluateFrame(time);
+            return true;
+        }));
     }
 
+    virtual void Terminate() = 0;
+
+    virtual void EvaluateFrame(Time time) = 0;
+
 public:
+
     static TRef<TrekWindow> Create(
         EffectApp*     papp, 
         const ZString& strCommandLine, 
@@ -81,6 +102,20 @@ public:
 // BUILD_DX9
         bool           bMovies
     );
+
+    EngineWindow* GetEngineWindow() { 
+        return m_pEngineWindow;
+    }
+
+    Modeler* GetModeler() {
+        return m_pmodeler;
+    }
+
+    Number* GetTime() {
+        return m_pEngineWindow->GetTime();
+    }
+
+    IPopupContainer* GetPopupContainer() { return m_ppopupContainer; }
 
     static LPCTSTR          GetWindowTitle() { return TEXT("Allegiance"); };
 
@@ -196,10 +231,6 @@ public:
     virtual void SetTarget(ImodelIGC*   pmodel, CommandID cid) = 0;
     virtual void SetAccepted(ImodelIGC* pmodel, CommandID cid) = 0;
 
-    // call this to terminate this gaming session
-
-    virtual void Terminate() = 0;
-
     virtual void ChangeChatMessage(void) = 0;
     virtual void AddMuzzleFlare(const Vector& vecDirection, float duration) = 0;
 
@@ -209,7 +240,6 @@ public:
     virtual HRESULT HandleMsg(FEDMESSAGE* pfm,
                               Time        lastUpdate,
                               Time        now) = 0;
-    virtual VOID VTSetText(LPSTR szFormat, ...) = 0;
 
     virtual void SetCursor(const char* pszCursorImage) = 0;
     virtual void SetWaitCursor() = 0;
@@ -267,6 +297,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 
 TrekWindow* GetWindow();
+EngineWindow* GetEngineWindow();
 Engine*     GetEngine();
 Modeler*    GetModeler();
 

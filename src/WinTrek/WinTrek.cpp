@@ -240,7 +240,7 @@ TRef<IMessageBox> CreateMessageBox(
             );
     }
 
-    return CreateMessageBox(GetWindow(), GetModeler(), str, pbutton, false, pbuttonCancel, paintDelay);
+    return CreateMessageBox(GetEngineWindow(), GetModeler(), str, pbutton, false, pbuttonCancel, paintDelay);
 }
 
 ImodelIGC*  GetCurrentTarget(void)
@@ -725,8 +725,9 @@ TRef<UpdatingConfiguration> g_pConfiguration = new UpdatingConfiguration(
 );
 
 TrekWindow* GetWindow()     { return g_ptrekWindow;               }
-Engine*     GetEngine()     { return g_ptrekWindow->GetEngine();  }
-Modeler*    GetModeler()    { return g_ptrekWindow->GetModeler(); }
+EngineWindow* GetEngineWindow() { return g_ptrekWindow->GetEngineWindow(); }
+Engine*     GetEngine()     { return GetEngineWindow()->GetEngine();  }
+Modeler*    GetModeler()    { return GetEngineWindow()->GetModeler(); }
 UpdatingConfiguration* GetConfiguration() { return g_pConfiguration; }
 
 /*
@@ -1195,6 +1196,10 @@ public:
     // Screens
     //
 
+    TRef<InputEngine>          m_pinputEngine;
+
+    TRef<UpdatingConfiguration> m_pConfiguration;
+
     TRef<UiEngine>       m_pUiEngine;
     TRef<Image>          m_pimageScreen;
     TRef<Screen>         m_pscreen;
@@ -1433,13 +1438,6 @@ public:
     TRef<ISoundMutex>               m_psoundmutexSal;
     TRef<ISoundMutex>               m_psoundmutexVO;
 
-    //
-    // VT members.
-    //
-
-    DWORD m_cVTVersion;
-    HWND  m_hwndVTEdit;
-
     TRef<SimpleModifiableValue<bool>> m_pUseOldUi;
 
     //
@@ -1457,8 +1455,8 @@ public:
 
 public:
 
-    bool      OnActivateApp(bool bActive) override {
-        bool result = EngineWindow::OnActivateApp(bActive);
+    bool      OnActivateApp(bool bActive) {
+        bool result = m_pEngineWindow->OnActivateApp(bActive);
         UpdateMouseEnabled();
         return result;
     }
@@ -2174,7 +2172,7 @@ public:
         // Add a caption
         //
         if (ppane) {
-            SetCaption(CreateCaption(GetModeler(), ppane, this));
+            m_pEngineWindow->SetCaption(CreateCaption(GetModeler(), ppane, m_pEngineWindow));
         }
 
         if (ppane == NULL) {
@@ -2197,7 +2195,7 @@ public:
 
 		target->SetImage(m_pimageScreen);
 		
-        SetSizeable(true); // kg-: #226 always
+        m_pEngineWindow->SetSizeable(true); // kg-: #226 always
 
         //
         // keep a reference to the screen to keep it alive
@@ -2254,7 +2252,7 @@ public:
                 GetConsoleImage()->OnSwitchViewMode();
             }
 
-            SetHideCursorTimer(s == ScreenIDCombat);
+            m_pEngineWindow->SetHideCursorTimer(s == ScreenIDCombat);
 
             // destroy the old windows
 
@@ -2262,7 +2260,7 @@ public:
                 m_pwrapImageTop->SetImage(m_pgroupImageGame);
                 m_pimageScreen = NULL;
                 m_pscreen      = NULL;
-                SetCaption(NULL);
+                m_pEngineWindow->SetCaption(NULL);
             }
 
             if (s != ScreenIDCombat)
@@ -2298,7 +2296,7 @@ public:
             switch (s) {
                 case ScreenIDCombat:
                 {
-                    SetFocus();
+                    m_pEngineWindow->SetFocus();
                     m_frameID = 0;
                     m_pconsoleImage = ConsoleImage::Create(GetEngine(), m_pviewport);
                     {
@@ -2315,8 +2313,6 @@ public:
                         ? (trekClient.GetShip()->IsGhost() ? vmCommand : vmHangar)
                         : vmCombat, true);
                     PositionCommandView(NULL, 0.0f);
-
-                    VTSetText("Screen=%d", ScreenIDCombat);
 
                     //
                     // Fill in the game state dialog
@@ -2364,14 +2360,14 @@ public:
 							//dont' check for intro.avi, 
 							// let the screen flash so they at least know this works
 							DDVideo *DDVid = new DDVideo();
-							if (m_pengine->IsFullscreen()) {
+							if (m_pEngineWindow->GetFullscreen()) {
 								CD3DDevice9::Get()->ResetDevice(true, 0, 0, 0);
 							}
 
 							bool bWindowCreated = false;
 
 							// BT - 9/17 - Fixing the window frame that is shown around the movie when played in the intro screen.
-							if (m_pengine->IsFullscreen() == false) {
+							if (m_pEngineWindow->GetFullscreen() == false) {
 								DDVid->m_hWnd = FindWindow(NULL, TrekWindow::GetWindowTitle());
 							}
 							else {
@@ -2436,7 +2432,7 @@ public:
                     break;
 
                 case ScreenIDZoneClubScreen:
-					SetUiScreen(CreateZoneClubScreen(GetModeler(), GetTime()));
+					SetUiScreen(CreateZoneClubScreen(GetModeler(), m_pEngineWindow->GetTime()));
                     break;
 
                 case ScreenIDSquadsScreen:
@@ -2634,7 +2630,7 @@ public:
 			::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest);
 			if (bWMP) {
 				if (!CD3DDevice9::Get()->IsWindowed()) {
-					::ShowWindow(GetHWND(), SW_HIDE);
+					::ShowWindow(m_pEngineWindow->GetHWND(), SW_HIDE);
 				}
 
 				//#112 windowed 7/10 Imago
@@ -2669,6 +2665,8 @@ public:
 				CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY),
 			WinPoint(800, 600)
 		),
+
+        m_pConfiguration(GetConfiguration()),
 
 		m_screen(ScreenIDSplashScreen),
 		m_bShowMeteors(true),
@@ -2727,10 +2725,11 @@ public:
 
 		// DXHACKS - Could cause issues...
 		// Move this call here, so that engine initialisation is performed *AFTER* we have a valid HWND.
-		papp->Initialize(strCommandLine, GetHWND());
+		papp->Initialize(strCommandLine, m_pEngineWindow->GetHWND());
 		
 		m_pengine = papp->GetEngine();
 		m_pmodeler = papp->GetModeler();
+        m_pinputEngine = m_pEngineWindow->GetInputEngine();
 
 		debugf("Setting art path to: %s\n", (PCC) strArtPath);
 
@@ -2801,16 +2800,17 @@ public:
 		debugf("performing PostWindowCreationInit.\n");
 
 		// Perform post window creation initialisation. Initialise the time value.
-		PostWindowCreationInit( );
-		InitialiseTime();
+		m_pEngineWindow->PostWindowCreationInit( );
+        m_pEngineWindow->InitialiseTime();
+
+        // Setup the popup container
+        m_ppopupContainer = papp->GetPopupContainer();
+        IPopupContainerPrivate* ppcp; CastTo(ppcp, m_ppopupContainer);
+        ppcp->Initialize(papp->GetEngine(), m_pEngineWindow->GetScreenRectValue());
 
         if (!IsValid()) {
             return;
         }
-
-		debugf("Setting up effects window.\n");
-
-        SetEffectWindow(this);
 
 		debugf("Setting up modeler site.\n");
 
@@ -2830,10 +2830,10 @@ public:
 
         LPCTSTR pszRes = MAKEINTRESOURCE(10);
         HICON hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), pszRes, IMAGE_ICON, ::GetSystemMetrics(SM_CXICON), ::GetSystemMetrics(SM_CYICON), LR_DEFAULTCOLOR);
-        SendMessage(WM_SETICON, (WPARAM)ICON_BIG, (LPARAM)hIcon);
+        m_pEngineWindow->SendMessage(WM_SETICON, (WPARAM)ICON_BIG, (LPARAM)hIcon);
 
         HICON hIconSmall = (HICON)::LoadImage(GetModuleHandle(NULL), pszRes, IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
-        SendMessage(WM_SETICON, (WPARAM)ICON_SMALL, (LPARAM)hIconSmall);
+        m_pEngineWindow->SendMessage(WM_SETICON, (WPARAM)ICON_SMALL, (LPARAM)hIconSmall);
 
         //
         // Event sink delegates
@@ -2936,22 +2936,22 @@ public:
         //
 
         m_psuperKeyboardInputFilter = new SuperKeyboardInputFilter(this);
-        AddKeyboardInputFilter(m_psuperKeyboardInputFilter);
+        m_pEngineWindow->AddKeyboardInputFilter(m_psuperKeyboardInputFilter);
 
         //
         // Popup keyboard input
         //
 
-        AddKeyboardInputFilter(GetPopupContainer());
+        m_pEngineWindow->AddKeyboardInputFilter(GetPopupContainer());
         m_pkeyboardInput = IKeyboardInput::CreateDelegate(this);
-        SetFocus(m_pkeyboardInput);
+        m_pEngineWindow->SetFocus(m_pkeyboardInput);
 
         //
         // Filter the keyboard input
         //
 
         m_pkeyboardInputFilter = new KeyboardInputFilter(this);
-        AddKeyboardInputFilter(m_pkeyboardInputFilter);
+        m_pEngineWindow->AddKeyboardInputFilter(m_pkeyboardInputFilter);
 
         //
         // Create the virtual joystick image
@@ -2981,7 +2981,7 @@ public:
 
         if (g_bEnableSound) {
             assert (m_pSoundEngine == NULL);
-            hr = CreateSoundEngine(m_pSoundEngine, GetHWND(), m_bUseDSound8);
+            hr = CreateSoundEngine(m_pSoundEngine, m_pEngineWindow->GetHWND(), m_bUseDSound8);
         }
 
         if (FAILED(hr) || !g_bEnableSound)
@@ -3000,7 +3000,7 @@ public:
 
         InitializeSoundTemplates();
 
-        m_pUiEngine = UiEngine::Create(this, m_pengine, m_pSoundEngine, [this](std::string strWebsite) {
+        m_pUiEngine = UiEngine::Create(m_pEngineWindow, m_pengine, m_pSoundEngine, [this](std::string strWebsite) {
             this->ShowWebPage(strWebsite.c_str());
         });
 
@@ -3027,7 +3027,7 @@ public:
 
         m_bShowJoystickIndicator = (LoadPreference("ShowJoystickIndicator", 1) != 0);
 
-        GetInputEngine()->GetMouse()->SetAccel(m_iMouseAccel);
+        m_pinputEngine->GetMouse()->SetAccel(m_iMouseAccel);
 
 // BUILD_DX9
 
@@ -3051,15 +3051,15 @@ public:
         // The viewports
         //
 
-        m_pviewport        = new Viewport(m_pcamera,        GetRenderRectValue());
-        m_pviewportPosters = new Viewport(m_pcameraPosters, GetRenderRectValue());
+        m_pviewport        = new Viewport(m_pcamera,        m_pEngineWindow->GetRenderRectValue());
+        m_pviewportPosters = new Viewport(m_pcameraPosters, m_pEngineWindow->GetRenderRectValue());
         //m_pviewportTurret  = new Viewport(m_pcameraTurret,  GetRenderRectValue());
 
         //
         // put some Debris into the scene
         //
 		m_debrisDensity = new ModifiableNumber(atof(LoadPreference("Debris", "1.0"))); //variable debris - LANS
-        m_pgeoDebris = CreateDebrisGeo(GetModeler(), GetTime(), m_pviewport, m_debrisDensity);
+        m_pgeoDebris = CreateDebrisGeo(GetModeler(), m_pEngineWindow->GetTime(), m_pviewport, m_debrisDensity);
 
         //
         // Command View
@@ -3128,7 +3128,7 @@ public:
         // The muzzle flare
         //
 
-        m_pmuzzleFlareImage = CreateMuzzleFlareImage(GetModeler(), GetTime());
+        m_pmuzzleFlareImage = CreateMuzzleFlareImage(GetModeler(), m_pEngineWindow->GetTime());
 
         //
         // The HUD
@@ -3138,7 +3138,7 @@ public:
 
         m_pgroupImageHUD = new GroupImage();
 
-        m_pgroupImageHUD->AddImage(CreateIndicatorImage(GetModeler(), m_pviewport, GetTime()));
+        m_pgroupImageHUD->AddImage(CreateIndicatorImage(GetModeler(), m_pviewport, m_pEngineWindow->GetTime()));
         m_pgroupImageHUD->AddImage(m_pwrapImageRadar   = new WrapImage(m_pradarImage));
         //m_pgroupImageHUD->AddImage(m_pwrapImageTurret = new WrapImage(Image::GetEmpty()));
 
@@ -3208,24 +3208,7 @@ public:
         // Load the sounds
         //
 
-        m_ptrekInput = CreateTrekInput(GetModuleHandle(NULL), GetHWND(), GetInputEngine(), m_pjoystickImage);
-
-        //
-        // Initialize VT.
-        //
-
-        m_cVTVersion = 0;
-        m_hwndVTEdit = ::CreateWindow(TEXT("EDIT"),
-                                        TEXT("VTEdit"),
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                        TrekWindow::GetHWND(),
-                                        NULL,
-                                        GetModuleHandle(NULL),
-                                        NULL);
+        m_ptrekInput = CreateTrekInput(GetModuleHandle(NULL), m_pEngineWindow->GetHWND(), m_pinputEngine, m_pjoystickImage);
 
         //
         // Load saved settings
@@ -3331,7 +3314,7 @@ public:
             }
 
             if (!CD3DDevice9::Get()->IsWindowed()) {
-                ::ShowWindow(GetHWND(), SW_SHOWMAXIMIZED);
+                ::ShowWindow(m_pEngineWindow->GetHWND(), SW_SHOWMAXIMIZED);
             }
         }
     }
@@ -3348,7 +3331,7 @@ public:
         m_pgroupImage->AddImage(GetPopupContainer()->GetImage());
         m_pgroupImage->AddImage(m_pwrapImageHelp);
         m_pgroupImage->AddImage(m_pwrapImageTop);
-        SetImage(m_pgroupImage);
+        m_pEngineWindow->SetImage(m_pgroupImage);
     }
 
     void SetCursor(const char* pszCursor)
@@ -3357,7 +3340,7 @@ public:
         {
             m_pszCursor = pszCursor;
 
-            if (GetCursorImage() != Image::GetEmpty())
+            if (m_pEngineWindow->GetCursorImage() != Image::GetEmpty())
                 RestoreCursor();
         }
     }
@@ -3367,7 +3350,7 @@ public:
         TRef<Image> pimageCursor;
         CastTo(pimageCursor, (Value*)GetModeler()->GetNameSpace("cursor")->FindMember(m_pszCursor));
         assert(pimageCursor);
-        SetCursorImage(pimageCursor);
+        m_pEngineWindow->SetCursorImage(pimageCursor);
     }
 
     void SetWaitCursor()
@@ -3375,7 +3358,7 @@ public:
         TRef<Image> pimageCursor;
         CastTo(pimageCursor, (Value*)GetModeler()->GetNameSpace("cursor")->FindMember(AWF_CURSOR_WAIT));
         assert(pimageCursor);
-        SetCursorImage(pimageCursor);
+        m_pEngineWindow->SetCursorImage(pimageCursor);
     }
 
     void SavePreference(const ZString& szName, DWORD dwValue)
@@ -3411,15 +3394,6 @@ public:
     {
 		SetGamma(ZString(GetEngine()->GetGammaLevel())); //imago 7/8/09 #24
 
-        //
-        // Terminate VT.
-        //
-        if (NULL != m_hwndVTEdit)
-        {
-            if (TRUE == ::DestroyWindow(m_hwndVTEdit))
-                m_hwndVTEdit = NULL;
-        }
-
         // close all popups (a potential circular reference)
         if (!GetPopupContainer()->IsEmpty())
             GetPopupContainer()->ClosePopup(NULL);
@@ -3428,8 +3402,8 @@ public:
 
         m_pClientEventSource->RemoveSink(m_pClientEventSink);
 
-        RemoveKeyboardInputFilter(GetPopupContainer());
-        RemoveKeyboardInputFilter(m_pkeyboardInputFilter);
+        m_pEngineWindow->RemoveKeyboardInputFilter(GetPopupContainer());
+        m_pEngineWindow->RemoveKeyboardInputFilter(m_pkeyboardInputFilter);
 
         trekClient.Terminate();
 
@@ -3444,7 +3418,7 @@ public:
         m_pwrapImageTop->SetImage(Image::GetEmpty());
         m_pimageScreen     = NULL;
         m_pscreen          = NULL;
-        SetCaption(NULL);
+        m_pEngineWindow->SetCaption(NULL);
 
 		// BT - 10/17 - Fixing 8982261	211206	allegiance.exe	allegiance.exe	tvector.h	362	13	0	Win32 StructuredException at 0058C1DA : UNKNOWN	2017-10-08 14:33:29	0x0018C1DA	10	UNKNOWN
 		// Not sure why we need to set the image to empty when the window is closing down anyway. 
@@ -3452,7 +3426,7 @@ public:
 		// is reached. 
 		if (m_screen == ScreenIDCombat)
 		{
-			SetImage(Image::GetEmpty());
+            m_pEngineWindow->SetImage(Image::GetEmpty());
 			m_pwrapImageConsole->SetImage(Image::GetEmpty());
 			m_pwrapImageTop->SetImage(Image::GetEmpty());
 		}
@@ -3490,12 +3464,6 @@ public:
         m_ptrekInput = NULL;
     }
 
-    void OnClose()
-    {
-        Terminate();
-        EngineWindow::OnClose();
-    }
-
     void CloseMessageBox ()
     {
         m_pmessageBox = NULL;
@@ -3503,7 +3471,7 @@ public:
 
     void DoClose()
     {
-        PostMessage(WM_CLOSE);
+        m_pEngineWindow->PostMessage(WM_CLOSE);
     }
 
     TRef<IMessageBox> m_pmessageBox;
@@ -3624,7 +3592,7 @@ public:
         if (m_pimageScreen)
         {
             // center the pane on the screen
-            const Rect& rectScreen = GetScreenRectValue()->GetValue();
+            const Rect& rectScreen = m_pEngineWindow->GetScreenRectValue()->GetValue();
             Point sizeScreenBeforeScaling;
             if (m_pscreen->GetPane())
             {
@@ -3764,8 +3732,8 @@ public:
 
     void Error(const ZString& str)
     {
-        SetFullscreen(false);
-        MessageBox(str, "Error", MB_OK);
+        m_pEngineWindow->SetFullscreen(false);
+        m_pEngineWindow->MessageBox(str, "Error", MB_OK);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -3833,7 +3801,7 @@ public:
 
     bool IsValid()
     {
-        return EngineWindow::IsValid();
+        return m_pEngineWindow->EngineWindow::IsValid();
     }
 
     void ShowWebPage(const char* szURL)
@@ -4280,7 +4248,7 @@ public:
 			m_pmenu->AddMenuItem(idmContextBanPlayer, "Ban From Game", 'B');
 		}
 		
-		Point popupPosition = GetMousePosition();
+		Point popupPosition = m_pEngineWindow->GetMousePosition();
 
 
 		TRef<Pane> ppane = m_pmenu->GetPane();
@@ -4378,7 +4346,7 @@ public:
 				m_pmenu->AddMenuItem(idmContextBanPlayer, "Ban From Game", 'B');
 			}
 
-			Point popupPosition = GetMousePosition();
+			Point popupPosition = m_pEngineWindow->GetMousePosition();
 
 
 			TRef<Pane> ppane = m_pmenu->GetPane();
@@ -4466,7 +4434,7 @@ public:
 
         switch (pitem->GetID()) {
             case idmEngineOptions:
-                return GetEngineMenu(TrekResources::SmallFont());
+                return m_pEngineWindow->GetEngineMenu(TrekResources::SmallFont());
 
             case idmOptions:
                 		       		 				 pmenu->AddMenuItem(idmDeviceOptions,					"Advanced Options",				  'A', m_psubmenuEventSink);
@@ -5201,7 +5169,7 @@ public:
 	//Imago 7/10
     void ToggleEnableFFAutoCenter()
     {
-		if (GetInputEngine() == NULL || GetInputEngine()->GetJoystick(0) == NULL)
+		if (m_pinputEngine == NULL || m_pinputEngine->GetJoystick(0) == NULL)
 			return;
 
         m_bFFAutoCenter = !m_bFFAutoCenter;
@@ -5211,13 +5179,13 @@ public:
         if (m_pitemToggleFFAutoCenter != NULL) {
             m_pitemToggleFFAutoCenter->SetString(GetFFAutoCenterMenuString());
         }
-		GetInputEngine()->GetJoystick(0)->SetRanges();
+        m_pinputEngine->GetJoystick(0)->SetRanges();
     }
 
     void RenderSizeChanged(bool bSmaller)
     {
-        EngineWindow::RenderSizeChanged(bSmaller);
-        if (bSmaller && GetFullscreen()) {
+        m_pEngineWindow->RenderSizeChanged(bSmaller);
+        if (bSmaller && m_pEngineWindow->GetFullscreen()) {
             m_pwrapNumberStyleHUD->SetWrappedValue(new Number(1.0f));
         } else {
             m_pwrapNumberStyleHUD->SetWrappedValue(m_pnumberStyleHUD);
@@ -5290,7 +5258,7 @@ public:
             break;
         }
 
-		GetInputEngine()->GetMouse()->SetAccel(m_iMouseAccel);
+		m_pinputEngine->GetMouse()->SetAccel(m_iMouseAccel);
 		SavePreference("MouseAcceleration", (DWORD)m_iMouseAccel);
 
         if (m_pitemToggleMouseAccel != NULL)
@@ -5387,8 +5355,8 @@ public:
                 GetFFGainMenuString(m_pnumFFGain->GetValue(), -c_fFFGainDelta));
         }
 
-		if (GetInputEngine() != NULL && GetInputEngine()->GetJoystick(0) != NULL)
-			GetInputEngine()->GetJoystick(0)->SetRanges();
+		if (m_pinputEngine != NULL && m_pinputEngine->GetJoystick(0) != NULL)
+            m_pinputEngine->GetJoystick(0)->SetRanges();
     }
 
     void AdjustMouseSens(float fDelta)
@@ -5409,7 +5377,7 @@ public:
                 GetMouseSensMenuString(m_pnumMouseSens->GetValue(), -c_fMouseSensDelta));
         }
 		
-		GetInputEngine()->GetMouse()->SetSensitivity(fNewValue);
+		m_pinputEngine->GetMouse()->SetSensitivity(fNewValue);
     }
 	//Imago
 
@@ -5846,7 +5814,7 @@ public:
             m_ptrekInput->CreateInputMapPopup(
                 GetModeler(),
                 TrekResources::SmallFont(),
-                GetTime()
+                m_pEngineWindow->GetTime()
             );
 
         GetPopupContainer()->OpenPopup(ppopup);
@@ -6578,7 +6546,7 @@ public:
                 break;
 
             case vmLoadout:
-				SetCombatScreen(CreateLoadout(GetModeler(), GetWindow()->GetTime()));
+				SetCombatScreen(CreateLoadout(GetModeler(), m_pEngineWindow->GetTime()));
 
                 // reset the current selected cluster
                 trekClient.RequestViewCluster(NULL);
@@ -7458,7 +7426,7 @@ public:
     void UpdateMouseEnabled() {
         bool bEnable =
             m_bEnableVirtualJoystick
-            && m_bActive
+            && m_pEngineWindow->GetActive()
             && GetPopupContainer()->IsEmpty()
             && trekClient.flyingF()
             && ((m_viewmode == vmCombat) || (m_viewmode == vmOverride))
@@ -7466,9 +7434,9 @@ public:
             && (!m_bFreshInvestmentPane || (m_voverlaymask[m_viewmode] & ofInvestment) == 0);
 
         //enabling mouse means that we listen to the mouse manually and ignore window events
-        m_pmouse->SetEnabled((bEnable || m_pengine->IsFullscreen()));
+        m_pEngineWindow->GetInputEngine()->GetMouse()->SetEnabled((bEnable || m_pEngineWindow->GetEngine()->IsFullscreen()));
         m_pjoystickImage->SetEnabled(bEnable, bEnable);
-        SetMoveOnHide(!bEnable);
+        m_pEngineWindow->SetMoveOnHide(!bEnable);
         ShowCursor(!bEnable);
     }
 
@@ -7508,7 +7476,7 @@ public:
         // Handle AutoDownload as needed, if we're not downloading, do nothing
         if (trekClient.m_pAutoDownload)
         {
-            if(GetWindow()->GetFullscreen())
+            if(m_pEngineWindow->GetFullscreen())
                 trekClient.HandleAutoDownload(50); // give smaller time slice to allow for mouse to update
             else
                 trekClient.HandleAutoDownload(500); // since the mouse is hardware in not full screen, the graphics engine doesn't need much CPU
@@ -8045,7 +8013,7 @@ public:
 		// - Imago: Only set AFK from inactivity when logged on
 		if (trekClient.m_fLoggedOn) {
 			Time timeLastMouseMove;
-			timeLastMouseMove = GetMouseActivity();
+			timeLastMouseMove = m_pEngineWindow->GetMouseActivity();
 			if (g_bActivity || timeLastMouseMove.clock() >= m_timeLastActivity.clock()) {
 				m_timeLastActivity = now;
 				g_bActivity = false;
@@ -8338,18 +8306,18 @@ public:
 
                     Point point;
                     bool  bInside;
-                    Rect  rectImage = GetScreenRectValue()->GetValue();
+                    Rect  rectImage = m_pEngineWindow->GetScreenRectValue()->GetValue();
 
                     if (GetEngine()->IsFullscreen()) {
-                        point = GetMousePosition();
-                        point.SetY(GetScreenRectValue()->GetValue().YMax() - 1 - point.Y());
+                        point = m_pEngineWindow->GetMousePosition();
+                        point.SetY(m_pEngineWindow->GetScreenRectValue()->GetValue().YMax() - 1 - point.Y());
                         bInside = rectImage.Inside(point);
                         point = point - rectImage.Min();
                     } else {
                         WinPoint   xy;
                         bInside = false;
                         if (GetCursorPos(&xy)) {
-                            point   = Point::Cast(ScreenToClient(xy));
+                            point   = Point::Cast(m_pEngineWindow->ScreenToClient(xy));
                             bInside = rectImage.Inside(point);
                             point   = point - rectImage.Min();
                         }
@@ -8553,7 +8521,7 @@ public:
 
 			// //-Imago 7/13/09 we're not actually in a sector playing the game...
 			// this is the right time & place place to rest our CPU. We can also give it more of a break now.
-			if (!GetFullscreen())
+			if (!m_pEngineWindow->GetFullscreen())
 				Sleep(5);
 			else
 				Sleep(1);
@@ -11085,27 +11053,6 @@ public:
     {
         assert(result == IDOK);
         return false;
-    }
-
-    //
-    // VT functions.
-    //
-
-    VOID VTSetText(LPSTR szFormat, ...)
-    {
-        TCHAR szText[1024];
-        va_list vaList;
-        INT cchText;
-
-        if (NULL != m_hwndVTEdit)
-        {
-            cchText = sprintf(szText, "Version=%d,", ++m_cVTVersion);
-            va_start(vaList, szFormat);
-            vsprintf(szText + cchText, szFormat, vaList);
-            va_end(vaList);
-
-            ::SetWindowText(m_hwndVTEdit, szText);
-        }
     }
 
     void  SoundEngineUpdate (void)

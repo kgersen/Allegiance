@@ -110,7 +110,6 @@ public:
             }
         }
 
-
         return false;
     }
 
@@ -166,6 +165,9 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
     g_bMDLLog = m_pConfiguration->GetBool("Debug.Mdl", false)->GetValue();
     g_bWindowLog = m_pConfiguration->GetBool("Debug.Window", false)->GetValue();
     g_bLuaDebug = m_pConfiguration->GetBool("Debug.Lua", false)->GetValue();
+
+    m_pcloseEventSource = new EventSourceImpl();
+    m_pevaluateFrameEventSource = new TEvent<Time>::SourceImpl();
 
     //
     // Button Event Sink
@@ -272,6 +274,9 @@ EngineWindow::~EngineWindow()
 
 void EngineWindow::PostWindowCreationInit()
 {
+    m_pengine = m_pEngineApp->GetEngine();
+    m_pmodeler = m_pEngineApp->GetModeler();
+    
     // Tell the engine we are the window
     GetEngine()->SetFocusWindow(this, m_pPreferredFullscreen->GetValue());
 
@@ -304,12 +309,6 @@ void EngineWindow::PostWindowCreationInit()
 	m_pwrapImage			= new WrapImage(Image::GetEmpty());
     m_pgroupImage			= new GroupImage( CreateUndetectableImage( m_ptransformImageCursor ), m_pwrapImage );
 
-    //
-    // Setup the popup container
-    m_ppopupContainer = m_pEngineApp->GetPopupContainer();
-    IPopupContainerPrivate* ppcp; CastTo(ppcp, m_ppopupContainer);
-    ppcp->Initialize(m_pengine, GetScreenRectValue());
-
 	m_pfontFPS = GetModeler()->GetNameSpace("model")->FindFont("defaultFont");
 }
 
@@ -325,6 +324,8 @@ bool EngineWindow::IsValid()
 
 void EngineWindow::OnClose()
 {
+    m_pcloseEventSource->Trigger();
+
     RemoveKeyboardInputFilter(m_pkeyboardInput);
 
     m_pgroupImage           = NULL;
@@ -1050,7 +1051,9 @@ void EngineWindow::UpdateFrame()
 
     m_timeCurrent = Time::Now();
     m_pnumberTime->SetValue(m_timeCurrent - m_timeStart);
-    EvaluateFrame(m_timeCurrent);
+
+    m_pevaluateFrameEventSource->Trigger(m_timeCurrent);
+
     m_pgroupImage->Update();
 }
 

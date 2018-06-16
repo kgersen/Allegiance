@@ -598,7 +598,7 @@ public:
         //
         if (bSingleInstance)
         {
-            HWND hOldInstance = FindWindow(TrekWindow::GetTopLevelWindowClassname(), 
+            HWND hOldInstance = FindWindow(EngineWindow::GetTopLevelWindowClassname(),
                 TrekWindow::GetWindowTitle());
 
             // if we found another copy of the app
@@ -653,7 +653,7 @@ public:
                 bMovies
             );
 
-        if (!pwindow->IsValid()) {
+        if (!pwindow->GetEngineWindow()->IsValid()) {
             return E_FAIL;
         }
 
