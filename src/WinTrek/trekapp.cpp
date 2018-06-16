@@ -229,7 +229,46 @@ ZString ReadAuthPipe()
 	return ZString(buffer);
 };
 
+class ThreadedWork {
+private:
+    std::function<void()>* m_pCallback;
 
+    HANDLE m_hThread;
+
+public:
+    ThreadedWork(const std::function<void()>& callback) :
+        m_hThread(NULL)
+    {
+        //the callback needs to stay alive, copy into pointer
+        m_pCallback = new std::function<void()>(callback);
+    }
+
+    ~ThreadedWork() {
+        delete m_pCallback;
+    }
+
+    void Start() {
+        if (m_hThread != NULL) {
+            return;
+        }
+
+        m_hThread = CreateThread(NULL, 0, [](void* pData) {
+            std::function<void()> callback = *(std::function<void()>*)pData;
+
+            callback();
+
+            //delete pointer
+            return (DWORD)0;
+        }, m_pCallback, 0, NULL);
+    }
+
+    void Wait() {
+        WaitForSingleObject(m_hThread, INFINITE);
+        CloseHandle(m_hThread);
+        m_hThread = NULL;
+    }
+
+};
 
 class TrekAppImpl : public EffectApp {
 public:
@@ -300,6 +339,80 @@ public:
 
 		return ZString(tempBuffer);
 	}
+
+    // BT - 9/17 - Made this a function to support chaining the opening microsoft splash with the longer classic
+    // allegiance movie. 
+    // Rock: Adapted to not use its own threading
+    void PlayMovieClip(EngineWindow* pengineWindow, ZString moviePath)
+    {
+        if (::GetFileAttributes(moviePath) != INVALID_FILE_ATTRIBUTES &&
+            !CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
+            //Imago only check for these if we have to 8/16/09
+            HMODULE hVidTest = ::LoadLibraryA("WMVDECOD.dll");
+            HMODULE hAudTest = ::LoadLibraryA("wmadmod.dll");
+            bool bWMP = (hVidTest && hAudTest) ? true : false;
+            ::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest);
+            if (bWMP) {
+                if (!CD3DDevice9::Get()->IsWindowed()) {
+                    ::ShowWindow(pengineWindow->GetHWND(), SW_HIDE);
+                }
+
+                bool bWindowed = CD3DDevice9::Get()->IsWindowed();
+
+                DDVideo *DDVid = new DDVideo();
+                bool bOk = true;
+                bool bHide = false;
+                HWND hwndFound = NULL;
+                if (bWindowed) {
+                    hwndFound = FindWindow(NULL, TrekWindow::GetWindowTitle()); // BT - 9/17 - Updated to dynamic value.
+                }
+                else {
+                    //this window will have our "intro" in it...
+                    hwndFound = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE | WS_POPUP, 0, 0,
+                        GetSystemMetrics(SM_CXFULLSCREEN), GetSystemMetrics(SM_CYFULLSCREEN), NULL, NULL,
+                        ::GetModuleHandle(NULL), NULL);
+                    bHide = true;
+                }
+
+                DDVid->m_hWnd = hwndFound;
+
+                if (SUCCEEDED(DDVid->Play(moviePath, bWindowed))) //(WMV2 is good as most machines read it)
+                {
+                    ::ShowCursor(FALSE);
+
+                    while (DDVid->m_Running && bOk) //we can now do other stuff while playing
+                    {
+                        if (!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) ||
+                            GetAsyncKeyState(VK_SPACE) || GetAsyncKeyState(VK_RETURN) ||
+                            GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON))
+                        {
+                            DDVid->m_Running = FALSE;
+                            DDVid->m_pVideo->Stop();
+                        }
+                        else {
+                            DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
+                            if (bWindowed) {
+                                bOk = DDVid->Flip(); //windowed #112 Imagooooo
+                            }
+                            else {
+                                DDVid->m_lpDDSPrimary->Flip(0, DDFLIP_WAIT);
+                            }
+                        }
+                    }
+
+                    ::ShowCursor(TRUE);
+                    DDVid->DestroyDDVid();
+                }
+                else {
+                    DDVid->DestroyDirectDraw();
+                }
+
+                if (bHide)
+                    ::DestroyWindow(hwndFound);
+            }
+        }
+    }
+
 
     HRESULT Initialize(const ZString& strCommandLine)
     {
@@ -667,6 +780,32 @@ public:
         pengineWindow->SetEngine(this->GetEngine());
         this->SetMouse(pengineWindow->GetInputEngine()->GetMouse());
 
+        //Imago 6/29/09 7/28/09 now plays video in thread while load continues // BT - 9/17 - Refactored a bit.
+        //Rock: Refactored some more
+        ThreadedWork movies = ThreadedWork([this, pengineWindow, pathStr]() {
+            // BT - 9/17 - If you want to re-add an intro movie, you can uncomment this code, but it was causing some people to crash,
+            // and most didn't like having any intro at all. :(
+            // To make a movie that is compatible with the movie player, use this ffmpeg command line: 
+            // ffmpeg.exe -i intro_microsoft_original.avi -q:a 1 -q:v 1 -vcodec mpeg4 -acodec wmav2 intro_microsoft.avi
+            // Rock: Converted to configuration setting
+            auto pShowCreditsMovie = GetConfiguration()->GetBool("Ui.ShowStartupCreditsMovie", false);
+            if (pShowCreditsMovie->GetValue()) {
+                pShowCreditsMovie->SetValue(false); //only once
+                PlayMovieClip(pengineWindow, (ZString)pathStr + "/intro_microsoft.avi");
+            }
+
+            auto pShowIntroMovie = GetConfiguration()->GetBool("Ui.ShowStartupIntroMovie", false);
+            if (pShowIntroMovie->GetValue()) {
+                //only show on first run
+                pShowIntroMovie->SetValue(false);
+
+                // To make a movie that is compatible with the movie player, use this ffmpeg command line: 
+                // ffmpeg.exe -i intro_microsoft_original.avi -q:a 1 -q:v 1 -vcodec mpeg4 -acodec wmav2 intro_microsoft.avi
+                PlayMovieClip(pengineWindow, (ZString)pathStr + "/intro_movie.avi");
+            }
+        });
+        movies.Start();
+
         debugf("Finished graphics initialization, starting main game initialization");
 	
         TRef<TrekWindow> pwindow = 
@@ -677,6 +816,8 @@ public:
 				pathStr,
                 bMovies
             );
+
+        movies.Wait();
 
         if (!pwindow->GetEngineWindow()->IsValid()) {
             return E_FAIL;
