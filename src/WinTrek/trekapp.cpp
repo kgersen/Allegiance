@@ -645,8 +645,9 @@ public:
 
 		CD3DDevice9::Get()->UpdateCurrentMode( );
 
+        debugf("Creating window");
+
         TRef<EngineWindow> pengineWindow = new EngineWindow(
-            this,
             GetConfiguration(),
             strCommandLine,
             TrekWindow::GetWindowTitle(),
@@ -659,6 +660,14 @@ public:
                 CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY),
             WinPoint(800, 600)
         );
+
+        debugf("Finished creating window, graphics initialization");
+
+        ((EffectApp*)this)->Initialize(strCommandLine, pengineWindow->GetHWND());
+        pengineWindow->SetEngine(this->GetEngine());
+        this->SetMouse(pengineWindow->GetInputEngine()->GetMouse());
+
+        debugf("Finished graphics initialization, starting main game initialization");
 	
         TRef<TrekWindow> pwindow = 
             TrekWindow::Create(

@@ -2715,11 +2715,7 @@ public:
 
 		debugf("Setting up TrekWindow\n");
 
-		// DXHACKS - Could cause issues...
-		// Move this call here, so that engine initialisation is performed *AFTER* we have a valid HWND.
-		papp->Initialize(strCommandLine, m_pEngineWindow->GetHWND());
-		
-		m_pengine = papp->GetEngine();
+        m_pengine = papp->GetEngine();
 		m_pmodeler = papp->GetModeler();
         m_pinputEngine = m_pEngineWindow->GetInputEngine();
 
@@ -2792,7 +2788,7 @@ public:
 		debugf("performing PostWindowCreationInit.\n");
 
 		// Perform post window creation initialisation. Initialise the time value.
-		m_pEngineWindow->PostWindowCreationInit( );
+		m_pEngineWindow->SetModeler(m_pmodeler);
         m_pEngineWindow->InitialiseTime();
 
         // Setup the popup container

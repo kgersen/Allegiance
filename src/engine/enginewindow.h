@@ -96,7 +96,6 @@ protected:
     TRef<ButtonEvent::Sink>    m_pbuttonEventSink;
     TRef<MouseInputStream>     m_pmouse;
     TRef<ModifiablePointValue> m_ppointMouse;
-	EngineApp *					m_pEngineApp;
 
     TRef<Surface>              m_psurface;
     TRef<ICaption>             m_pcaption;
@@ -233,7 +232,6 @@ protected:
 
 public:
     EngineWindow(
-              EngineApp*   papp,
         UpdatingConfiguration* pConfiguration,
         const ZString&     strCommandLine,
         const ZString&     strTitle         = ZString(),
@@ -257,7 +255,10 @@ public:
 
 	// Added so that we could reorganise the device creation order.
 	void			InitialiseTime();
-	void			PostWindowCreationInit();
+
+    // These need to be set here before this object is fully functional
+    void SetEngine(Engine* pengine);
+    void SetModeler(Modeler* modeler);
 
     Number*          GetTime()           { return m_pnumberTime;             }
     Time             GetTimeStart()      { return m_timeStart;               }

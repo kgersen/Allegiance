@@ -125,8 +125,7 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-EngineWindow::EngineWindow(	EngineApp *			papp,
-                            UpdatingConfiguration* pConfiguration,
+EngineWindow::EngineWindow(	UpdatingConfiguration* pConfiguration,
 							const ZString&		strCommandLine,
 							const ZString&		strTitle,
 							bool				bStartFullscreen,
@@ -135,8 +134,8 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 							HMENU				hmenu
 ) :
 				Window(NULL, rect, strTitle, ZString(), 0, hmenu),
-				m_pengine(papp->GetEngine()),
-				m_pmodeler(papp->GetModeler()),
+				m_pengine(nullptr),
+				m_pmodeler(nullptr),
 				m_offsetWindowed(rect.Min()),
 				m_bSizeable(true),
 				m_bMinimized(false),
@@ -154,7 +153,6 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 				m_bWindowStateMinimised(false),
 				m_bWindowStateRestored(false),
 				m_bClickBreak(true), //Imago 7/10 #37
-				m_pEngineApp(papp),
                 m_pConfiguration(pConfiguration)
 {
     GlobalConfigureLoggers(
@@ -205,7 +203,6 @@ EngineWindow::EngineWindow(	EngineApp *			papp,
 
     m_pmouse = m_pinputEngine->GetMouse();
     m_pmouse->SetEnabled(bStartFullscreen);
-    papp->SetMouse(m_pmouse);
 
     m_pmouse->GetEventSource()->AddSink(m_peventSink = new ButtonEvent::Delegate(this));
 
@@ -272,44 +269,34 @@ EngineWindow::~EngineWindow()
 {
 }
 
-void EngineWindow::PostWindowCreationInit()
-{
-    m_pengine = m_pEngineApp->GetEngine();
-    m_pmodeler = m_pEngineApp->GetModeler();
-    
+void EngineWindow::SetEngine(Engine* pengine) {
+    debugf("EngineWindow: Setting engine");
+
+    m_pengine = pengine;
+
     // Tell the engine we are the window
     GetEngine()->SetFocusWindow(this, m_pPreferredFullscreen->GetValue());
 
     //
     // These rects track the size of the window
     //
-
-    m_prectValueScreen     = new ModifiableRectValue(GetClientRect());
-    m_prectValueRender     = new ModifiableRectValue(Rect(0, 0, 640, 480));
+    m_prectValueScreen = new ModifiableRectValue(GetClientRect());
+    m_prectValueRender = new ModifiableRectValue(Rect(0, 0, 640, 480));
     m_pwrapRectValueRender = new WrapRectValue(m_prectValueScreen);
-    m_modeIndex            = s_countModes;
+    m_modeIndex = s_countModes;
 
-    //
-    // Intialize all the Image stuff
- /*   m_pgroupImage =
-        new GroupImage(
-            CreateUndetectableImage(
-                m_ptransformImageCursor = new TransformImage(
-                    Image::GetEmpty(),
-                    m_ptranslateTransform = new TranslateTransform2(
-                        m_ppointMouse
-                    )
-                )
-            ),
-            m_pwrapImage = new WrapImage(Image::GetEmpty())
-        );*/
+    m_ptranslateTransform = new TranslateTransform2(m_ppointMouse);
+    m_ptransformImageCursor = new TransformImage(Image::GetEmpty(), m_ptranslateTransform);
+    m_pwrapImage = new WrapImage(Image::GetEmpty());
+    m_pgroupImage = new GroupImage(CreateUndetectableImage(m_ptransformImageCursor), m_pwrapImage);
+}
 
-	m_ptranslateTransform	= new TranslateTransform2( m_ppointMouse );
-	m_ptransformImageCursor = new TransformImage( Image::GetEmpty(), m_ptranslateTransform );
-	m_pwrapImage			= new WrapImage(Image::GetEmpty());
-    m_pgroupImage			= new GroupImage( CreateUndetectableImage( m_ptransformImageCursor ), m_pwrapImage );
+void EngineWindow::SetModeler(Modeler* pmodeler) {
+    debugf("EngineWindow: Setting modeler");
 
-	m_pfontFPS = GetModeler()->GetNameSpace("model")->FindFont("defaultFont");
+    m_pmodeler = pmodeler;
+
+    m_pfontFPS = GetModeler()->GetNameSpace("model")->FindFont("defaultFont");
 }
 
 void EngineWindow::StartClose()
