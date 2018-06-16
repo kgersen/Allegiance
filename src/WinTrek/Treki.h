@@ -60,22 +60,10 @@ protected:
     TRef<IPopupContainer>      m_ppopupContainer;
 
     TrekWindow(
-        EffectApp* papp,
-        const ZString&     strCommandLine,
-              bool         bStartFullscreen,
-        const WinRect&     rect,
-        const WinPoint&    sizeMin
-    )
+        EngineWindow* pengineWindow
+    ) :
+        m_pEngineWindow(pengineWindow)
     {
-        m_pEngineWindow = new EngineWindow(
-            papp,
-            GetConfiguration(),
-            strCommandLine,
-            GetWindowTitle(),
-            bStartFullscreen,
-            rect,
-            sizeMin
-        );
 
         m_pEngineWindow->GetOnCloseEventSource()->AddSink(new CallbackSink([this]() {
             this->Terminate();
@@ -96,6 +84,7 @@ public:
 
     static TRef<TrekWindow> Create(
         EffectApp*     papp, 
+        EngineWindow* pengineWindow,
         const ZString& strCommandLine, 
 // BUILD_DX9
 		const ZString& strArtPath,					// Added for DX9 build, due to reordered startup.

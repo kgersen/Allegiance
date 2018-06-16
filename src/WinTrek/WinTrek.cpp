@@ -2647,6 +2647,7 @@ public:
 
 	TrekWindowImpl(
 		EffectApp*     papp,
+        EngineWindow* pengineWindow,
 		const ZString& strCommandLine,
 		// BUILD_DX9
 		const ZString& strArtPath,
@@ -2654,16 +2655,7 @@ public:
 		bool           bMovies
 	) :
 		TrekWindow(
-			papp,
-			strCommandLine,
-			false, // BT - 10/17 - Set to always start windowed, then go full screen after game is initialized. Trying to find the source of the mystery "crash on launch" issues.
-			WinRect(0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
-				0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY,
-				CD3DDevice9::Get()->GetCurrentMode()->mode.Width +
-				CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
-				CD3DDevice9::Get()->GetCurrentMode()->mode.Height +
-				CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY),
-			WinPoint(800, 600)
+            pengineWindow
 		),
 
         m_pConfiguration(GetConfiguration()),
@@ -11127,6 +11119,7 @@ TrekWindowImpl::FlagsWinConditionInfo          TrekWindowImpl::s_flagsWinConditi
 
 TRef<TrekWindow> TrekWindow::Create(
     EffectApp*     papp,
+    EngineWindow* pengineWindow,
     const ZString& strCommandLine,
 // BUILD_DX9
 	const ZString& strArtPath,					// Added for DX9 build, due to reordered startup.
@@ -11136,6 +11129,7 @@ TRef<TrekWindow> TrekWindow::Create(
     return
         new TrekWindowImpl(
             papp,
+            pengineWindow,
             strCommandLine,
 // BUILD_DX9
 			strArtPath,

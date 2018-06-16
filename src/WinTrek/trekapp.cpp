@@ -644,10 +644,26 @@ public:
 		}
 
 		CD3DDevice9::Get()->UpdateCurrentMode( );
+
+        TRef<EngineWindow> pengineWindow = new EngineWindow(
+            this,
+            GetConfiguration(),
+            strCommandLine,
+            TrekWindow::GetWindowTitle(),
+            false,
+            WinRect(0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
+                0 + CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY,
+                CD3DDevice9::Get()->GetCurrentMode()->mode.Width +
+                CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetX,
+                CD3DDevice9::Get()->GetCurrentMode()->mode.Height +
+                CD3DDevice9::Get()->GetDeviceSetupParams()->iWindowOffsetY),
+            WinPoint(800, 600)
+        );
 	
         TRef<TrekWindow> pwindow = 
             TrekWindow::Create(
                 this, 
+                pengineWindow,
                 strCommandLine,
 				pathStr,
                 bMovies
