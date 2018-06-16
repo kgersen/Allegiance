@@ -10,6 +10,8 @@
 
 #include "pch.h"
 
+#include "enginewindow.h"
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // The main entry point
@@ -107,7 +109,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 
 class MDLEditWindow :
-    public EffectWindow,
+    public EngineWindow,
     public IIntegerEventSink,
     //public IEventSink,
     public IMenuCommandSink,
@@ -522,8 +524,7 @@ public:
         int initialTest,
 		const ZString& strArtPath
     ) :
-        EffectWindow(
-            papp,
+        EngineWindow(
             pConfiguration,
             strCommandLine,
             "MDLEdit",
@@ -552,10 +553,10 @@ public:
 		TrekResources::Initialize(GetModeler());
 
 		// Perform post window creation initialisation. Initialise the time value.
-		PostWindowCreationInit( );
+        SetEngine(m_pengine);
+        SetModeler(m_pmodeler);
 		InitialiseTime();
 
-        SetEffectWindow(this);
         GetModeler()->SetSite(new ModelerSiteImpl());
 
         //
@@ -1458,6 +1459,10 @@ public:
     IEngineFont* GetFont()
     {
         return GetModeler()->GetNameSpace("model")->FindFont("defaultFont");
+    }
+
+    TRef<IPopupContainer> GetPopupContainer() {
+        return CreatePopupContainer(); //todo: Rock is breaking things badly
     }
 
     void ShowMenu()
