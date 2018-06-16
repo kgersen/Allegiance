@@ -6,6 +6,8 @@
 
 #include "console.h"
 
+#include <enginewindow.h>
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Main Trek Window
@@ -49,7 +51,7 @@ UpdatingConfiguration* GetConfiguration();
 
 class ChatListPane;
 
-class TrekWindow : public EffectWindow {
+class TrekWindow : public EngineWindow {
 protected:
     TrekWindow(
         EffectApp* papp,
@@ -58,7 +60,7 @@ protected:
         const WinRect&     rect,
         const WinPoint&    sizeMin
     ) :
-        EffectWindow(
+        EngineWindow(
             papp,
             GetConfiguration(),
             strCommandLine,
