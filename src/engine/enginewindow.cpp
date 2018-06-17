@@ -1120,6 +1120,9 @@ void EngineWindow::DoIdle()
     //
     // Switch fullscreen state if requested
     //
+    if (m_pPreferredFullscreen->GetValue() != m_pengine->IsFullscreen()) {
+        SetFullscreen(m_pPreferredFullscreen->GetValue());
+    }
 
 	//Imago 7/10 #37 - Added a "clicker breaker outter", a dirty trick to get Win 5+ to give up the mouse?
     if (m_bRestore || (m_bWindowStateMinimised && !m_bClickBreak && m_pengine->IsFullscreen())) {
