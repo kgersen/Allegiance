@@ -1,6 +1,8 @@
 #ifndef _screens_h_
 #define _screens_h_
 
+#include "Configuration.h"
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Screen
@@ -38,6 +40,7 @@ TRef<Screen> CreateTrainingScreen(Modeler* pmodeler);
 TRef<Screen> CreateTrainingSlideshow (Modeler* pmodeler, const ZString& strNamespace, int iMissionIndex);
 TRef<Screen> CreatePostTrainingSlideshow (Modeler* pmodeler, const ZString& strNamespace);
 TRef<Screen> CreateGameStartingScreen(Modeler* pmodeler);
+TRef<Screen> CreateConfigScreen(UiEngine* pUiEngine, UpdatingConfiguration* pConfiguration, IEventSink* pEventSinkClose);
 
 // BUILD_DX9
 // Taken out of D3D9 build for now, movies not supported at the moment.  //Imago use DDVideo

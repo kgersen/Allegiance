@@ -174,7 +174,7 @@ public:
             }, list);
         };
 
-        table["Switch"] = [&context](sol::object value, sol::table table) {
+        table["Switch"] = [&context](sol::object value, sol::table table, sol::optional<TRef<Image>> defaultOption) {
             int count = table.size();
 
             if (value.is<TRef<Number>>() || value.is<float>()) {
@@ -185,7 +185,7 @@ public:
                     mapOptions[fKey] = value.as<const TRef<Image>&>();
                 });
 
-                return ImageTransform::Switch(wrapValue<float>(value), mapOptions);
+                return ImageTransform::Switch(wrapValue<float>(value), mapOptions, defaultOption.value_or(nullptr));
             }
             else if (value.is<TRef<TStaticValue<ZString>>>() || value.is<std::string>()) {
                 //the wrapped value is a ZString, the unwrapped value a std::string
@@ -196,7 +196,7 @@ public:
                     mapOptions[strKey] = value.as<const TRef<Image>&>();
                 });
 
-                return ImageTransform::Switch(wrapString(value), mapOptions);
+                return ImageTransform::Switch(wrapString(value), mapOptions, defaultOption.value_or(nullptr));
             }
             else if (value.is<TRef<Boolean>>() || value.is<bool>()) {
                 std::map<bool, TRef<Image>> mapOptions;
@@ -206,7 +206,7 @@ public:
                     mapOptions[bKey] = value.as<const TRef<Image>&>();
                 });
 
-                return ImageTransform::Switch(wrapValue<bool>(value), mapOptions);
+                return ImageTransform::Switch(wrapValue<bool>(value), mapOptions, defaultOption.value_or(nullptr));
             }
             else if (value.is<TRef<UiStateValue>>()) {
                 std::map<std::string, sol::function> mapOptions;
@@ -216,10 +216,10 @@ public:
                     mapOptions[strKey] = value.as<sol::function>();
                 });
 
-                return (TRef<Image>)new CallbackImage<std::shared_ptr<UiState>>([&context, mapOptions](const std::shared_ptr<UiState>& state) {
+                return (TRef<Image>)new CallbackImage<std::shared_ptr<UiState>>([&context, mapOptions, defaultOption](const std::shared_ptr<UiState>& state) {
                     auto find = mapOptions.find(state->GetName());
                     if (find == mapOptions.end()) {
-                        return (TRef<Image>)Image::GetEmpty();
+                        return defaultOption.value_or(Image::GetEmpty());
                     }
                     return (TRef<Image>)context.WrapCallback<TRef<Image>, const std::shared_ptr<UiState>&>(find->second, Image::GetEmpty())(state);
                 }, value.as<TRef<UiStateValue>>());

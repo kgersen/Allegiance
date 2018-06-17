@@ -1196,6 +1196,7 @@ public:
     TRef<WrapImage>        m_pwrapImageRadar;
     TRef<WrapImage>        m_pwrapImageConsole;
     TRef<WrapImage>        m_pwrapImageHelp;
+    TRef<WrapImage>        m_pwrapImageConfiguration;
     TRef<WrapImage>        m_pwrapImageTop;
     TRef<ConsoleImage>     m_pconsoleImage;
     TRef<RadarImage>       m_pradarImage;
@@ -3172,12 +3173,14 @@ public:
         m_pwrapImageTop = new WrapImage(Image::GetEmpty());
         m_pwrapImageLOD = new WrapImage(Image::GetEmpty());
 		m_pwrapImageHelp = new WrapImage(Image::GetEmpty());
+        m_pwrapImageConfiguration = new WrapImage(Image::GetEmpty());
 
         m_pgroupImage = new GroupImage();
         m_pgroupImage->AddImage(m_pjoystickImage);
         m_pgroupImage->AddImage(m_pwrapImageLOD);
         m_pgroupImage->AddImage(GetPopupContainer()->GetImage());
         m_pgroupImage->AddImage(m_pwrapImageHelp);
+        m_pgroupImage->AddImage(m_pwrapImageConfiguration);
         m_pgroupImage->AddImage(m_pwrapImageTop);
         m_pEngineWindow->SetImage(m_pgroupImage);
     }
@@ -3264,8 +3267,11 @@ public:
 
         TerminateGameStateContainer();
         m_pwrapImageTop->SetImage(Image::GetEmpty());
+        m_pwrapImageHelp->SetImage(Image::GetEmpty());
+        m_pwrapImageConfiguration->SetImage(Image::GetEmpty());
         m_pimageScreen     = NULL;
         m_pscreen          = NULL;
+        m_pConfigurationScreen = nullptr;
         m_pEngineWindow->SetCaption(NULL);
 
 		// BT - 10/17 - Fixing 8982261	211206	allegiance.exe	allegiance.exe	tvector.h	362	13	0	Win32 StructuredException at 0058C1DA : UNKNOWN	2017-10-08 14:33:29	0x0018C1DA	10	UNKNOWN
@@ -3664,6 +3670,8 @@ public:
         ShellExecute(NULL, NULL, szURL, NULL, NULL, SW_SHOWNORMAL);
     }
 
+    #define idmOpenNewUiConfiguration 1
+
     #define idmConfigure         3
     #define idmView              5
     #define idmOptions           6
@@ -3893,6 +3901,22 @@ public:
 	SteamClans m_availableSteamClans;
 #endif
 
+    TRef<Screen> m_pConfigurationScreen;
+    void ShowConfiguration() {
+        if (m_pConfigurationScreen == nullptr) {
+            m_pConfigurationScreen = CreateConfigScreen(m_pUiEngine, m_pConfiguration, new CallbackSink([this]() {
+                HideConfiguration();
+                return true;
+            }));
+        }
+        m_pwrapImageConfiguration->SetImage(m_pConfigurationScreen->GetImage());
+    }
+
+    void HideConfiguration() {
+        m_pwrapImageConfiguration->SetImage(Image::GetEmpty());
+        m_pConfigurationScreen = nullptr;
+    }
+
     void ShowMainMenu()
     {
         m_pmenu =
@@ -3922,6 +3946,9 @@ public:
 			DD = atoi(dDD); 	
 			DD = (DD/10)*8+(DD%10);
 		}
+
+        m_pmenu->AddMenuItem(idmOpenNewUiConfiguration, "(Test) Configuration ui", 'Q');
+        m_pmenu->AddMenuItem(0, "--------------------------");
 
 		// TE: Add version menu, mmf changed format, zero pad YY, that will last us 3 more years and saves an if
 		// TheBored 05-APR-2010: Removed leading 0 from year, hooray 2010!
@@ -5809,6 +5836,11 @@ public:
     void OnMenuCommand(IMenuItem* pitem)
     {
         switch (pitem->GetID()) {
+            case idmOpenNewUiConfiguration:
+                CloseMenu();
+                ShowConfiguration();
+                break;
+
             case idmConfigure:
                 DoInputConfigure();
                 break;
@@ -8981,6 +9013,12 @@ public:
                     return true;
 
                 case TK_MainMenu:
+                    //hacking this in here for now
+                    if (m_pConfigurationScreen != nullptr) {
+                        HideConfiguration();
+                        return true;
+                    }
+
                     if (
                            (
                                !trekClient.IsInGame()
