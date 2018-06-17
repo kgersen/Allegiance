@@ -340,79 +340,96 @@ public:
 		return ZString(tempBuffer);
 	}
 
+    bool GetSkipMovieKeyPressState() {
+        return GetAsyncKeyState(VK_ESCAPE) || GetAsyncKeyState(VK_SPACE) || GetAsyncKeyState(VK_RETURN);
+    };
+
     // BT - 9/17 - Made this a function to support chaining the opening microsoft splash with the longer classic
     // allegiance movie. 
     // Rock: Adapted to not use its own threading
     void PlayMovieClip(EngineWindow* pengineWindow, ZString moviePath)
     {
-        if (::GetFileAttributes(moviePath) != INVALID_FILE_ATTRIBUTES &&
-            !CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
-            //Imago only check for these if we have to 8/16/09
-            HMODULE hVidTest = ::LoadLibraryA("WMVDECOD.dll");
-            HMODULE hAudTest = ::LoadLibraryA("wmadmod.dll");
-            bool bWMP = (hVidTest && hAudTest) ? true : false;
-            ::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest);
-            if (bWMP) {
-                if (!CD3DDevice9::Get()->IsWindowed()) {
-                    ::ShowWindow(pengineWindow->GetHWND(), SW_HIDE);
-                }
+        debugf("Movie (%s): Attempting to play", (const char*)moviePath);
 
-                bool bWindowed = CD3DDevice9::Get()->IsWindowed();
+        if (::GetFileAttributes(moviePath) == INVALID_FILE_ATTRIBUTES) {
+            debugf("Movie (%s): File invalid", (const char*)moviePath);
+            return;
+        }
+        
+        if (CD3DDevice9::Get()->GetDeviceSetupParams()->iAdapterID) {
+            debugf("Movie (%s): iAdapterID problem", (const char*)moviePath);
+            return;
+        }
 
-                DDVideo *DDVid = new DDVideo();
-                bool bOk = true;
-                bool bHide = false;
-                HWND hwndFound = NULL;
+        //Imago only check for these if we have to 8/16/09
+        HMODULE hVidTest = ::LoadLibraryA("WMVDECOD.dll");
+        HMODULE hAudTest = ::LoadLibraryA("wmadmod.dll");
+        bool bWMP = (hVidTest && hAudTest) ? true : false;
+        ::FreeLibrary(hVidTest); ::FreeLibrary(hAudTest);
+
+        if (bWMP == false) {
+            debugf("Movie (%s): Unable to load required dll", (const char*)moviePath);
+            return;
+        }
+
+        if (!CD3DDevice9::Get()->IsWindowed()) {
+            ::ShowWindow(pengineWindow->GetHWND(), SW_HIDE);
+        }
+
+        bool bWindowed = CD3DDevice9::Get()->IsWindowed();
+
+        DDVideo *DDVid = new DDVideo();
+        bool bOk = true;
+        bool bHide = false;
+        HWND hwndFound = pengineWindow->GetHWND();
+
+        DDVid->m_hWnd = hwndFound;
+
+        if (FAILED(DDVid->Play(moviePath, bWindowed))) {
+            debugf("Movie (%s): Play call failed", (const char*)moviePath);
+            DDVid->DestroyDirectDraw();
+            return;
+        }
+
+        //if we are currently pressing the skip button, we want to wait until it has been let go
+        bool bPreviousKeyPressState = GetSkipMovieKeyPressState();
+
+        ::ShowCursor(FALSE);
+
+        debugf("Movie (%s): Playing succesfully", (const char*)moviePath);
+
+        while (DDVid->m_Running && bOk) //we can now do other stuff while playing
+        {
+            if (bPreviousKeyPressState == true) {
+                //have we stopped pressing it
+                bPreviousKeyPressState = GetSkipMovieKeyPressState();
+            }
+            if (!DDVid->m_pVideo->IsPlaying() || (bPreviousKeyPressState == false && GetSkipMovieKeyPressState()))
+            {
+                debugf("Movie (%s): End reached or manual stop trigger received", (const char*)moviePath);
+
+                DDVid->m_Running = FALSE;
+                DDVid->m_pVideo->Stop();
+            } else {
+                DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
                 if (bWindowed) {
-                    hwndFound = FindWindow(NULL, TrekWindow::GetWindowTitle()); // BT - 9/17 - Updated to dynamic value.
+                    bOk = DDVid->Flip(); //windowed #112 Imagooooo
                 }
                 else {
-                    //this window will have our "intro" in it...
-                    hwndFound = ::CreateWindow("MS_ZLib_Window", "Intro", WS_VISIBLE | WS_POPUP, 0, 0,
-                        GetSystemMetrics(SM_CXFULLSCREEN), GetSystemMetrics(SM_CYFULLSCREEN), NULL, NULL,
-                        ::GetModuleHandle(NULL), NULL);
-                    bHide = true;
+                    DDVid->m_lpDDSPrimary->Flip(0, DDFLIP_WAIT);
                 }
-
-                DDVid->m_hWnd = hwndFound;
-
-                if (SUCCEEDED(DDVid->Play(moviePath, bWindowed))) //(WMV2 is good as most machines read it)
-                {
-                    ::ShowCursor(FALSE);
-
-                    while (DDVid->m_Running && bOk) //we can now do other stuff while playing
-                    {
-                        if (!DDVid->m_pVideo->IsPlaying() || GetAsyncKeyState(VK_ESCAPE) ||
-                            GetAsyncKeyState(VK_SPACE) || GetAsyncKeyState(VK_RETURN) ||
-                            GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON))
-                        {
-                            DDVid->m_Running = FALSE;
-                            DDVid->m_pVideo->Stop();
-                        }
-                        else {
-                            DDVid->m_pVideo->Draw(DDVid->m_lpDDSBack);
-                            if (bWindowed) {
-                                bOk = DDVid->Flip(); //windowed #112 Imagooooo
-                            }
-                            else {
-                                DDVid->m_lpDDSPrimary->Flip(0, DDFLIP_WAIT);
-                            }
-                        }
-                    }
-
-                    ::ShowCursor(TRUE);
-                    DDVid->DestroyDDVid();
-                }
-                else {
-                    DDVid->DestroyDirectDraw();
-                }
-
-                if (bHide)
-                    ::DestroyWindow(hwndFound);
             }
         }
-    }
 
+        debugf("Movie (%s): Ended", (const char*)moviePath);
+
+        ::ShowCursor(TRUE);
+        DDVid->DestroyDDVid();
+
+        if (bHide) {
+            ::DestroyWindow(hwndFound);
+        }
+    }
 
     HRESULT Initialize(const ZString& strCommandLine)
     {
