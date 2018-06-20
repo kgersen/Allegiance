@@ -518,6 +518,27 @@ public:
 
 };
 
+TRef<Number> StringTransform::ToNumber(StringValue* a)
+{
+    return (TRef<Number>)new TransformedValue<float, ZString>([](ZString str) {
+        const char* c = str;
+        return (float)std::strtof(str, nullptr);
+    }, a);
+}
+
+TRef<Boolean> StringTransform::IsNumber(StringValue* a)
+{
+    return (TRef<Boolean>)new TransformedValue<bool, ZString>([](ZString str) {
+        const char* c = str;
+        char** endptr;
+
+        float result = std::strtof(str, endptr);
+        int length = *endptr - c;
+
+        return length == str.GetLength();
+    }, a);
+}
+
 TRef<Number> StringTransform::Length(StringValue* a)
 {
     return (TRef<Number>)new TransformedValue<float, ZString>([](ZString str) {

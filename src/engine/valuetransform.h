@@ -66,6 +66,9 @@ public:
 
 class StringTransform {
 public:
+    static TRef<Number> ToNumber(StringValue* string);
+    static TRef<Boolean> IsNumber(StringValue* string);
+
     static TRef<Number> Length(StringValue* a);
     static TRef<Boolean> Equals(StringValue* a, StringValue* b);
 

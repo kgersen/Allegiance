@@ -153,6 +153,23 @@ public:
 typedef UiList<TRef<UiObjectContainer>> ContainerList;
 typedef UiList<TRef<Image>> ImageList;
 
+template <typename T>
+class TableUiList : public UiList<T> {
+private:
+
+public:
+    TableUiList(sol::table table) : 
+        UiList({})
+    {
+        std::vector<T> list;
+
+        table.for_each([&list](const sol::object& key, const sol::object& value) {
+            list.push_back(value.as<T>());
+        });
+
+        GetListInternal() = list;
+    }
+};
 
 template <typename ResultEntryType, typename OriginalEntryType>
 class MappedList : public UiList<ResultEntryType> {

@@ -7348,6 +7348,10 @@ public:
         // Give the current screen a chance to do something on a per frame basis
         //
 
+        if (m_pConfigurationScreen) {
+            m_pConfigurationScreen->OnFrame();
+        }
+
         if (m_pscreen) {
             m_pscreen->OnFrame();
         }

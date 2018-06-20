@@ -125,7 +125,7 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-EngineWindow::EngineWindow(	UpdatingConfiguration* pConfiguration,
+EngineWindow::EngineWindow(	EngineConfigurationWrapper* pConfiguration,
 							const ZString&		strCommandLine,
 							const ZString&		strTitle,
 							bool				bStartFullscreen,
@@ -156,13 +156,13 @@ EngineWindow::EngineWindow(	UpdatingConfiguration* pConfiguration,
                 m_pConfiguration(pConfiguration)
 {
     GlobalConfigureLoggers(
-        m_pConfiguration->GetBool("Debug.LogToOutput", m_pConfiguration->GetBoolValue("OutputDebugString", true))->GetValue(),
-        m_pConfiguration->GetBool("Debug.LogToFile", m_pConfiguration->GetBoolValue("LogToFile", false))->GetValue()
+        m_pConfiguration->GetDebugLogToOutput()->GetValue(),
+        m_pConfiguration->GetDebugLogToFile()->GetValue()
     );
 
-    g_bMDLLog = m_pConfiguration->GetBool("Debug.Mdl", false)->GetValue();
-    g_bWindowLog = m_pConfiguration->GetBool("Debug.Window", false)->GetValue();
-    g_bLuaDebug = m_pConfiguration->GetBool("Debug.Lua", false)->GetValue();
+    g_bMDLLog = m_pConfiguration->GetDebugMdl()->GetValue();
+    g_bWindowLog = m_pConfiguration->GetDebugWindow()->GetValue();
+    g_bLuaDebug = m_pConfiguration->GetDebugLua()->GetValue();
 
     m_pcloseEventSource = new EventSourceImpl();
     m_pevaluateFrameEventSource = new TEvent<Time>::SourceImpl();
@@ -189,7 +189,7 @@ EngineWindow::EngineWindow(	UpdatingConfiguration* pConfiguration,
     // Should we start fullscreen?
 	CD3DDevice9 * pDev = CD3DDevice9::Get();
 
-    m_pPreferredFullscreen = m_pConfiguration->GetBool("Graphics.Fullscreen", pDev->GetDeviceSetupParams()->bRunWindowed ? false : true);
+    m_pPreferredFullscreen = m_pConfiguration->GetGraphicsFullscreen();
 
     bool bStartFullScreen = m_pPreferredFullscreen->GetValue();
     ParseCommandLine(strCommandLine, bStartFullScreen);
@@ -1034,8 +1034,6 @@ void EngineWindow::SetHideCursorTimer(bool bHideCursor)
 
 void EngineWindow::UpdateFrame()
 {
-    m_pConfiguration->Update();
-
     m_timeCurrent = Time::Now();
     m_pnumberTime->SetValue(m_timeCurrent - m_timeStart);
 
@@ -1122,6 +1120,13 @@ void EngineWindow::DoIdle()
     //
     if (m_pPreferredFullscreen->GetValue() != m_pengine->IsFullscreen()) {
         SetFullscreen(m_pPreferredFullscreen->GetValue());
+    }
+    if (((int)m_pConfiguration->GetGraphicsResolutionX()->GetValue()) != GetEngine()->GetFullscreenSize().X() || ((int)m_pConfiguration->GetGraphicsResolutionY()->GetValue()) != GetEngine()->GetFullscreenSize().Y()) {
+        SetFullscreenSize(Vector(
+            m_pConfiguration->GetGraphicsResolutionX()->GetValue(),
+            m_pConfiguration->GetGraphicsResolutionY()->GetValue(),
+            g_DX9Settings.m_refreshrate
+        ));
     }
 
 	//Imago 7/10 #37 - Added a "clicker breaker outter", a dirty trick to get Win 5+ to give up the mouse?

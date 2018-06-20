@@ -11,6 +11,62 @@
 
 #include "Configuration.h"
 
+class EngineConfigurationWrapper : public Value {
+protected:
+    TRef<UpdatingConfiguration> m_pconfiguration;
+
+public:
+    EngineConfigurationWrapper(TRef<UpdatingConfiguration> pconfiguration) :
+        Value(pconfiguration),
+        m_pconfiguration(pconfiguration)
+    {
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetGraphicsFullscreen() {
+        return m_pconfiguration->GetBool("Graphics.Fullscreen", false);
+    }
+
+    TRef<SimpleModifiableValue<float>> GetGraphicsResolutionX() {
+        return m_pconfiguration->GetInt("Graphics.ResolutionX", m_pconfiguration->GetIntValue("CombatFullscreenXSize", 0));
+    }
+
+    TRef<SimpleModifiableValue<float>> GetGraphicsResolutionY() {
+        return m_pconfiguration->GetInt("Graphics.ResolutionY", m_pconfiguration->GetIntValue("CombatFullscreenYSize", 0));
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetGraphicsUseVSync() {
+        return m_pconfiguration->GetBool("Graphics.UseVSync", m_pconfiguration->GetBoolValue("UseVSync", true));
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetGraphicsUseAntiAliasing() {
+        return m_pconfiguration->GetBool("Graphics.UseAntiAliasing", m_pconfiguration->GetBoolValue("UseAntialiasing", false));
+    }
+
+    TRef<SimpleModifiableValue<float>> GetGraphicsMaxTextureSizeLevel() {
+        return m_pconfiguration->GetInt("Graphics.MaxTextureSizeLevel", m_pconfiguration->GetIntValue("MaxTextureSize", 0));
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetDebugLogToOutput() {
+        return m_pconfiguration->GetBool("Debug.LogToOutput", m_pconfiguration->GetBoolValue("OutputDebugString", true));
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetDebugLogToFile() {
+        return m_pconfiguration->GetBool("Debug.LogToFile", m_pconfiguration->GetBoolValue("LogToFile", false));
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetDebugMdl() {
+        return m_pconfiguration->GetBool("Debug.Mdl", false);
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetDebugWindow() {
+        return m_pconfiguration->GetBool("Debug.Window", false);
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetDebugLua() {
+        return m_pconfiguration->GetBool("Debug.Lua", false);
+    }
+};
+
 class Context;
 class EngineApp;
 class GroupImage;
@@ -88,7 +144,7 @@ protected:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    TRef<UpdatingConfiguration> m_pConfiguration;
+    TRef<EngineConfigurationWrapper> m_pConfiguration;
 
     TRef<Engine>               m_pengine;
     TRef<Modeler>              m_pmodeler;
@@ -232,7 +288,7 @@ protected:
 
 public:
     EngineWindow(
-        UpdatingConfiguration* pConfiguration,
+        EngineConfigurationWrapper* pConfiguration,
         const ZString&     strCommandLine,
         const ZString&     strTitle         = ZString(),
               bool         bStartFullscreen = false,
@@ -321,8 +377,8 @@ public:
     virtual void RenderSizeChanged(bool bSmaller) {
         int x = (int)m_pengine->GetResolutionSizeModifiable()->GetValue().X();
         int y = (int)m_pengine->GetResolutionSizeModifiable()->GetValue().Y();
-        m_pConfiguration->GetInt("Graphics.ResolutionX", x)->SetValue((float)x);
-        m_pConfiguration->GetInt("Graphics.ResolutionY", y)->SetValue((float)y);
+        m_pConfiguration->GetGraphicsResolutionX()->SetValue((float)x);
+        m_pConfiguration->GetGraphicsResolutionY()->SetValue((float)y);
     }
 
     //

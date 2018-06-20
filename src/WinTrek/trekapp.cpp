@@ -778,7 +778,7 @@ public:
         debugf("Creating window");
 
         TRef<EngineWindow> pengineWindow = new EngineWindow(
-            GetConfiguration(),
+            new EngineConfigurationWrapper(GetConfiguration()),
             strCommandLine,
             TrekWindow::GetWindowTitle(),
             false,
