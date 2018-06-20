@@ -100,7 +100,7 @@ public:
             })) },
             { "Server has core", TypeExposer<std::function<TRef<Boolean>(const TRef<StringValue>&, const TRef<StringValue>&)>>::Create([this](const TRef<StringValue>& server_name, const TRef<StringValue>& core_name) {
 
-                return new TransformedValue2<bool, ZString, ZString>([this](ZString server_name, ZString core_name) {
+                return new TransformedValue<bool, ZString, ZString>([this](ZString server_name, ZString core_name) {
                     auto server = this->FindServer(server_name);
                     auto core = this->FindCore(core_name);
 

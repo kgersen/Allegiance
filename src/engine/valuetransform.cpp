@@ -3,12 +3,12 @@
 
 
 template <typename Type>
-class EqualsTransform : public TransformedValue2<bool, Type, Type> {
+class EqualsTransform : public TransformedValue<bool, Type, Type> {
     typedef TRef<TStaticValue<Type>> WrappedType;
 
 public:
     EqualsTransform(WrappedType const& a, WrappedType const& b) :
-        TransformedValue2([](ZString a, ZString b) {
+        TransformedValue([](ZString a, ZString b) {
         return a == b;
     }, a, b)
     {
@@ -242,7 +242,7 @@ TRef<Number> NumberTransform::Sqrt(Number* pvalue)
 
 TRef<Number> NumberTransform::Power(Number* pvalue, Number* power)
 {
-    return new TransformedValue2<float, float, float>([](float value, float power) {
+    return new TransformedValue<float, float, float>([](float value, float power) {
         return pow(value, power);
     }, pvalue, power);
 };
@@ -318,7 +318,7 @@ TRef<Number> PointTransform::Y(PointValue* ppoint) {
 };
 
 TRef<PointValue> PointTransform::Scale(PointValue* a, PointValue* b) {
-    return new TransformedValue2<Point, Point, Point>([](Point a, Point b) {
+    return new TransformedValue<Point, Point, Point>([](Point a, Point b) {
         return Point(a.X() * b.X(), a.Y() * b.Y());
     }, a, b);
 };
@@ -327,7 +327,7 @@ TRef<PointValue> PointTransform::Scale(PointValue* a, PointValue* b) {
 // ### Color
 
 TRef<ColorValue> ColorTransform::Create(Number* r, Number* g, Number* b, Number* a) {
-    return new TransformedValue4<Color, float, float, float, float>(
+    return new TransformedValue<Color, float, float, float, float>(
         [](float r, float g, float b, float a) {
             return Color(r, g, b, a);
         },
@@ -342,7 +342,7 @@ TRef<ColorValue> ColorTransform::Create(Number* r, Number* g, Number* b, Number*
 // ### Rect
 
 TRef<RectValue> RectTransform::Create(Number* xmin, Number* ymin, Number* xmax, Number* ymax) {
-    return new TransformedValue4<Rect, float, float, float, float>(
+    return new TransformedValue<Rect, float, float, float, float>(
         [](float xmin, float ymin, float xmax, float ymax) {
             return Rect(xmin, ymin, xmax, ymax);
         },
@@ -354,7 +354,7 @@ TRef<RectValue> RectTransform::Create(Number* xmin, Number* ymin, Number* xmax, 
 };
 
 TRef<RectValue> RectTransform::Create(Number* width, Number* height) {
-    return new TransformedValue2<Rect, float, float>(
+    return new TransformedValue<Rect, float, float>(
         [](float width, float height) {
             return Rect(0, 0, width, height);
         },
@@ -530,7 +530,7 @@ TRef<Boolean> StringTransform::IsNumber(StringValue* a)
 {
     return (TRef<Boolean>)new TransformedValue<bool, ZString>([](ZString str) {
         const char* c = str;
-        char** endptr;
+        char** endptr = nullptr;
 
         float result = std::strtof(str, endptr);
         int length = *endptr - c;
@@ -558,7 +558,7 @@ TRef<StringValue> StringTransform::Concat(StringValue* a, StringValue* b)
 
 TRef<StringValue> StringTransform::Slice(StringValue* string, Number* start, Number* length)
 {
-    return new TransformedValue3<ZString, ZString, float, float>([](ZString string, float fstart, float flength) {
+    return new TransformedValue<ZString, ZString, float, float>([](ZString string, float fstart, float flength) {
         int start = (int)fstart;
         int length = (int)flength;
 

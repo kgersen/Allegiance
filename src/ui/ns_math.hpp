@@ -8,7 +8,7 @@ template<typename TypeResult, typename A, typename B>
 auto createAutoWrappingFunction(std::function<TypeResult(A, B)> callback) {
 
     return [callback](sol::object a, sol::object b) {
-        return (TStaticValue<TypeResult>*)new TransformedValue2<TypeResult, A, B>(callback, wrapValue<A>(a), wrapValue<B>(b));
+        return (TStaticValue<TypeResult>*)new TransformedValue<TypeResult, A, B>(callback, wrapValue<A>(a), wrapValue<B>(b));
     };
 };
 

@@ -153,7 +153,8 @@ EngineWindow::EngineWindow(	EngineConfigurationWrapper* pConfiguration,
 				m_bWindowStateMinimised(false),
 				m_bWindowStateRestored(false),
 				m_bClickBreak(true), //Imago 7/10 #37
-                m_pConfiguration(pConfiguration)
+                m_pConfiguration(pConfiguration),
+                m_pConfigurationUpdater(new ValueList(nullptr))
 {
     GlobalConfigureLoggers(
         m_pConfiguration->GetDebugLogToOutput()->GetValue(),
@@ -163,6 +164,14 @@ EngineWindow::EngineWindow(	EngineConfigurationWrapper* pConfiguration,
     g_bMDLLog = m_pConfiguration->GetDebugMdl()->GetValue();
     g_bWindowLog = m_pConfiguration->GetDebugWindow()->GetValue();
     g_bLuaDebug = m_pConfiguration->GetDebugLua()->GetValue();
+
+    m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<bool>([this](bool bFullscreen) {
+        SetFullscreen(bFullscreen);
+    }, m_pConfiguration->GetGraphicsFullscreen()));
+
+    m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<float, float>([this](float x, float y) {
+        m_pengine->SetFullscreenSize(WinPoint((int)x, (int)y));
+    }, m_pConfiguration->GetGraphicsResolutionX(), m_pConfiguration->GetGraphicsResolutionY()));
 
     m_pcloseEventSource = new EventSourceImpl();
     m_pevaluateFrameEventSource = new TEvent<Time>::SourceImpl();
@@ -1118,16 +1127,9 @@ void EngineWindow::DoIdle()
     //
     // Switch fullscreen state if requested
     //
-    if (m_pPreferredFullscreen->GetValue() != m_pengine->IsFullscreen()) {
-        SetFullscreen(m_pPreferredFullscreen->GetValue());
-    }
-    if (((int)m_pConfiguration->GetGraphicsResolutionX()->GetValue()) != GetEngine()->GetFullscreenSize().X() || ((int)m_pConfiguration->GetGraphicsResolutionY()->GetValue()) != GetEngine()->GetFullscreenSize().Y()) {
-        SetFullscreenSize(Vector(
-            m_pConfiguration->GetGraphicsResolutionX()->GetValue(),
-            m_pConfiguration->GetGraphicsResolutionY()->GetValue(),
-            g_DX9Settings.m_refreshrate
-        ));
-    }
+    m_pConfigurationUpdater->Update();
+
+    m_pConfiguration->Update();
 
 	//Imago 7/10 #37 - Added a "clicker breaker outter", a dirty trick to get Win 5+ to give up the mouse?
     if (m_bRestore || (m_bWindowStateMinimised && !m_bClickBreak && m_pengine->IsFullscreen())) {

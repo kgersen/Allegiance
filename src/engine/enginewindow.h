@@ -145,6 +145,7 @@ protected:
     //////////////////////////////////////////////////////////////////////////////
 
     TRef<EngineConfigurationWrapper> m_pConfiguration;
+    TRef<ValueList> m_pConfigurationUpdater;
 
     TRef<Engine>               m_pengine;
     TRef<Modeler>              m_pmodeler;
