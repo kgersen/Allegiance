@@ -43,7 +43,7 @@ public:
     }
 
     TRef<SimpleModifiableValue<float>> GetGraphicsMaxTextureSizeLevel() {
-        return m_pconfiguration->GetInt("Graphics.MaxTextureSizeLevel", m_pconfiguration->GetIntValue("MaxTextureSize", 0));
+        return m_pconfiguration->GetInt("Graphics.MaxTextureSizeLevel", m_pconfiguration->GetIntValue("MaxTextureSize", 3));
     }
 
     TRef<SimpleModifiableValue<bool>> GetDebugLogToOutput() {
