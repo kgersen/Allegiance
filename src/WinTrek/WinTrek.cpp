@@ -2556,18 +2556,18 @@ public:
         return (m_screen != ScreenIDCombat) || IsProbablyNotForChat (vk) || !m_pconsoleImage->IsComposing ();
     }
 
-	TrekWindowImpl(
+    TrekWindowImpl(
         TrekApp*     papp,
         EngineWindow* pengineWindow,
-		const ZString& strCommandLine,
-		// BUILD_DX9
-		const ZString& strArtPath,
-		// BUILD_DX9
-		bool           bMovies
-	) :
-		TrekWindow(
+        const ZString& strCommandLine,
+        // BUILD_DX9
+        const ZString& strArtPath,
+        // BUILD_DX9
+        bool           bMovies
+    ) :
+        TrekWindow(
             pengineWindow
-		),
+        ),
         m_papp(papp),
         m_pConfiguration(GetConfiguration()),
 
@@ -3897,12 +3897,49 @@ public:
 	}
 
     TRef<Screen> m_pConfigurationScreen;
+    TRef<SimpleModifiableValue<bool>> m_pIsInMission;
     void ShowConfiguration() {
         if (m_pConfigurationScreen == nullptr) {
-            m_pConfigurationScreen = CreateConfigScreen(m_papp, m_pUiEngine, m_pConfiguration, new CallbackSink([this]() {
-                HideConfiguration();
-                return true;
-            }));
+            m_pIsInMission = new SimpleModifiableValue<bool>((trekClient.MyMission() != NULL) || Slideshow::IsInSlideShow());
+
+            std::unique_ptr<ConfigScreenHooks> hooks = std::make_unique<ConfigScreenHooks>();
+            hooks->CloseConfiguration = [this]() {
+                this->HideConfiguration();
+            };
+            hooks->ExitMission = [this]() {
+                if (this->m_pIsInMission->GetValue()) {
+                    this->DoQuitMission();
+                }
+                this->HideConfiguration();
+            };
+            hooks->ExitAllegiance = [this]() {
+                this->DoClose();
+            };
+            hooks->pIsInMission = m_pIsInMission;
+            hooks->OpenKeymapPopup = [this]() {
+                this->DoInputConfigure();
+            };
+            hooks->OpenPingPopup = [this]() {
+                if (this->m_pIsInMission->GetValue() && trekClient.m_fm.IsConnected()) {
+                    trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
+                    BEGIN_PFM_CREATE(trekClient.m_fm, pfmPingDataReq, C, REQPINGDATA)
+                        END_PFM_CREATE
+                }
+            };
+            hooks->OpenMissionInfoPopup = [this]() {
+                if (this->m_pIsInMission->GetValue()) {
+                    OnGameState();
+                }
+            };
+            hooks->OpenHelpPopup = [this]() {
+                this->OnHelp(true);
+            };
+
+            m_pConfigurationScreen = CreateConfigScreen(m_papp, m_pUiEngine, m_pConfiguration, std::move(hooks));
+        }
+        else {
+            //bit of a hack, just check everytime the menu is shown
+            m_pIsInMission->SetValue((trekClient.MyMission() != NULL) || Slideshow::IsInSlideShow());
         }
         m_pwrapImageConfiguration->SetImage(m_pConfigurationScreen->GetImage());
     }
@@ -7177,6 +7214,7 @@ public:
             m_bEnableVirtualJoystick
             && m_pEngineWindow->GetActive()
             && GetPopupContainer()->IsEmpty()
+            && m_pConfigurationScreen == nullptr
             && trekClient.flyingF()
             && ((m_viewmode == vmCombat) || (m_viewmode == vmOverride))
             && ((m_voverlaymask[m_viewmode] & (c_omBanishablePanes & ~ofInvestment)) == 0)

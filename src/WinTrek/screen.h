@@ -21,6 +21,20 @@ public:
 											//See the new, more agressive sleepers at the ends of DoTrekUpdate and and DoIdle
 };
 
+struct ConfigScreenHooks {
+public:
+    std::function<void()> CloseConfiguration;
+    std::function<void()> ExitMission;
+    std::function<void()> ExitAllegiance;
+
+    TRef<Boolean> pIsInMission;
+
+    std::function<void()> OpenKeymapPopup;
+    std::function<void()> OpenPingPopup;
+    std::function<void()> OpenMissionInfoPopup;
+    std::function<void()> OpenHelpPopup;
+};
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Screen Constructors
@@ -42,7 +56,7 @@ TRef<Screen> CreateTrainingScreen(Modeler* pmodeler);
 TRef<Screen> CreateTrainingSlideshow (Modeler* pmodeler, const ZString& strNamespace, int iMissionIndex);
 TRef<Screen> CreatePostTrainingSlideshow (Modeler* pmodeler, const ZString& strNamespace);
 TRef<Screen> CreateGameStartingScreen(Modeler* pmodeler);
-TRef<Screen> CreateConfigScreen(TrekApp* pTrekApp, UiEngine* pUiEngine, UpdatingConfiguration* pConfiguration, IEventSink* pEventSinkClose);
+TRef<Screen> CreateConfigScreen(TrekApp* pTrekApp, UiEngine* pUiEngine, UpdatingConfiguration* pConfiguration, std::unique_ptr<ConfigScreenHooks> phooks);
 
 // BUILD_DX9
 // Taken out of D3D9 build for now, movies not supported at the moment.  //Imago use DDVideo
@@ -61,5 +75,6 @@ extern char g_szCharName[c_cbName];
 extern char g_szCharPW[c_cbName];
 
 void LaunchFromHangar();
+
 
 #endif

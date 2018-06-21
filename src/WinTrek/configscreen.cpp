@@ -11,8 +11,7 @@ private:
     TRef<GameConfigurationWrapper> m_pConfiguration;
     TRef<Image>         m_pimage;
     TRef<TrekApp> m_pTrekApp;
-
-    TRef<IEventSink> m_pEventSinkClose;
+    std::unique_ptr<ConfigScreenHooks> m_phooks;
 
     TRef<SimpleModifiableValue<bool>> m_pHasChanges;
 
@@ -22,10 +21,10 @@ public:
         return m_pimage;
     }
 
-    ConfigScreen(TrekApp* pTrekApp, UiEngine* pUiEngine, UpdatingConfiguration* pconfiguration, IEventSink* pEventSinkClose) :
+    ConfigScreen(TrekApp* pTrekApp, UiEngine* pUiEngine, UpdatingConfiguration* pconfiguration, std::unique_ptr<ConfigScreenHooks> phooks) :
         m_pTrekApp(pTrekApp),
         m_pUiEngine(pUiEngine),
-        m_pEventSinkClose(pEventSinkClose)
+        m_phooks(std::move(phooks))
     {
         m_pConfiguration = new GameConfigurationWrapper(new UpdatingConfiguration(std::make_shared<UpdatingConfigurationStoreTransformer>(pconfiguration)));
         m_pHasChanges = new SimpleModifiableValue<bool>(false);
@@ -36,7 +35,14 @@ public:
             m_pConfiguration->Update();
             return true;
         }));
-        map["Close sink"] = TypeExposer<TRef<IEventSink>>::Create(m_pEventSinkClose);
+        map["Close sink"] = TypeExposer<TRef<IEventSink>>::Create(new CallbackSink(m_phooks->CloseConfiguration));
+        map["Quit mission sink"] = TypeExposer<TRef<IEventSink>>::Create(new CallbackSink(m_phooks->ExitMission));
+        map["Quit allegiance sink"] = TypeExposer<TRef<IEventSink>>::Create(new CallbackSink(m_phooks->ExitAllegiance));
+        map["Is in mission"] = TypeExposer<TRef<Boolean>>::Create(m_phooks->pIsInMission);
+        map["Open keymap popup"] = TypeExposer<TRef<IEventSink>>::Create(new CallbackSink(m_phooks->OpenKeymapPopup));
+        map["Open ping popup"] = TypeExposer<TRef<IEventSink>>::Create(new CallbackSink(m_phooks->OpenPingPopup));
+        map["Open mission info popup"] = TypeExposer<TRef<IEventSink>>::Create(new CallbackSink(m_phooks->OpenMissionInfoPopup));
+        map["Open help popup"] = TypeExposer<TRef<IEventSink>>::Create(new CallbackSink(m_phooks->OpenHelpPopup));
         map["time"] = NumberExposer::Create(GetEngineWindow()->GetTime());
 
         map["Configuration.Graphics.Fullscreen"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetGraphicsFullscreen());
@@ -101,9 +107,9 @@ public:
     }
 };
 
-TRef<Screen> CreateConfigScreen(TrekApp* pTrekApp, UiEngine* pUiEngine, UpdatingConfiguration* pconfiguration, IEventSink* pEventSinkClose)
+TRef<Screen> CreateConfigScreen(TrekApp* pTrekApp, UiEngine* pUiEngine, UpdatingConfiguration* pconfiguration, std::unique_ptr<ConfigScreenHooks> phooks)
 {
-    return new ConfigScreen(pTrekApp, pUiEngine, pconfiguration, pEventSinkClose);
+    return new ConfigScreen(pTrekApp, pUiEngine, pconfiguration, std::move(phooks));
 }
 
 
