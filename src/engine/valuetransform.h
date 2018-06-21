@@ -114,7 +114,7 @@ protected:
 public:
     TransformedValue(std::function<TransformedType(Types...)> callback, TStaticValue<Types>*... values) :
         m_callback(callback),
-        TStaticValue(values...)
+        TStaticValue<TransformedType>(values...)
     {}
 
     void Evaluate() override

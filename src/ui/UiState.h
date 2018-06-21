@@ -179,7 +179,7 @@ private:
 
 public:
     TransformedList(std::function<std::vector<EntryType>(Types...)> callback, TRef<TStaticValue<Types>>... values) :
-        UiList({}),
+        UiList<EntryType>({}),
         m_callback(callback)
     {
         AddChild(new CallbackWhenChanged<Types...>([this](Types... values) {
