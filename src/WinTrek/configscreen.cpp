@@ -45,6 +45,7 @@ public:
         map["Open help popup"] = TypeExposer<TRef<IEventSink>>::Create(new CallbackSink(m_phooks->OpenHelpPopup));
         map["time"] = NumberExposer::Create(GetEngineWindow()->GetTime());
 
+        //graphics
         map["Configuration.Graphics.Fullscreen"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetGraphicsFullscreen());
         map["Configuration.Graphics.ResolutionX"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetGraphicsResolutionX());
         map["Configuration.Graphics.ResolutionY"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetGraphicsResolutionY());
@@ -53,12 +54,26 @@ public:
 
         map["Configuration.Graphics.MaxTextureSizeLevel"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetGraphicsMaxTextureSizeLevel());
 
+        //online
         map["Configuration.Online.CharacterName"] = TypeExposer<TRef<SimpleModifiableValue<ZString>>>::Create(m_pConfiguration->GetOnlineCharacterName());
         map["Configuration.Online.SquadTag"] = TypeExposer<TRef<SimpleModifiableValue<ZString>>>::Create(m_pConfiguration->GetOnlineSquadTag());
         map["Configuration.Online.OfficerToken"] = TypeExposer<TRef<SimpleModifiableValue<ZString>>>::Create(m_pConfiguration->GetOnlineOfficerToken());
 
         map["AvailableSquadTags"] = TypeExposer<sol::as_table_t<std::vector<std::string>>>::Create(GetAvailableSquadTags());
         map["AvailableTokens"] = TypeExposer<TRef<UiList<TRef<StringValue>>>>::Create(GetAvailableTokens());
+
+        //debug
+        map["Configuration.Debug.LogToFile"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetDebugLogToFile());
+        map["Configuration.Debug.LogToOutput"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetDebugLogToOutput());
+        map["Configuration.Debug.Lua"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetDebugLua());
+        map["Configuration.Debug.Mdl"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetDebugMdl());
+        map["Configuration.Debug.Window"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetDebugWindow());
+
+        //ui
+        map["Configuration.Ui.ShowStartupCreditsMovie"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetUiShowStartupCreditsMovie());
+        map["Configuration.Ui.ShowStartupIntroMovie"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetUiShowStartupIntroMovie());
+        map["Configuration.Ui.ShowStartupTrainingSuggestion"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetUiShowStartupTrainingSuggestion());
+        map["Configuration.Ui.UseOldUi"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetUiUseOldUi());
 
         m_pimage = pUiEngine->LoadImageFromLua(UiScreenConfiguration::Create("menuconfig/configscreen.lua", map));
     }

@@ -27,6 +27,22 @@ public:
     TRef<SimpleModifiableValue<ZString>> GetOnlineOfficerToken() {
         return m_pconfiguration->GetString("Online.OfficerToken", m_pconfiguration->GetStringValue("SteamOfficerToken", ""));
     }
+
+    TRef<SimpleModifiableValue<bool>> GetUiShowStartupCreditsMovie() {
+        return m_pconfiguration->GetBool("Ui.ShowStartupCreditsMovie", true);
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetUiShowStartupIntroMovie() {
+        return m_pconfiguration->GetBool("Ui.ShowStartupIntroMovie", true);
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetUiShowStartupTrainingSuggestion() {
+        return m_pconfiguration->GetBool("Ui.ShowStartupTrainingSuggestion", true);
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetUiUseOldUi() {
+        return m_pconfiguration->GetBool("Ui.UseOldUi", true);
+    }
 };
 
 #include "CallsignTagInfo.h"
