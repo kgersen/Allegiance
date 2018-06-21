@@ -43,6 +43,14 @@ public:
     TRef<SimpleModifiableValue<bool>> GetUiUseOldUi() {
         return m_pconfiguration->GetBool("Ui.UseOldUi", true);
     }
+
+    TRef<SimpleModifiableValue<float>> GetSoundEffectVolume() {
+        return m_pconfiguration->GetInt("Sound.EffectVolume", -8);
+    }
+
+    TRef<SimpleModifiableValue<float>> GetSoundVoiceVolume() {
+        return m_pconfiguration->GetInt("Sound.VoiceVolume", -13);
+    }
 };
 
 #include "CallsignTagInfo.h"
@@ -50,6 +58,7 @@ public:
 class TrekApp : public EffectApp {
 public:
     virtual std::shared_ptr<CallsignHandler> GetCallsignHandler() = 0;
+    virtual TRef<GameConfigurationWrapper> GetGameConfiguration() = 0;
 };
 
 //////////////////////////////////////////////////////////////////////////////

@@ -1129,10 +1129,6 @@ public:
     TRef<ModifiableColorValue> m_pcolorHUDshadows;
     TRef<ModifiableColorValue> m_pcolorTargetHUD;
 
-    TRef<ModifiableNumber>     m_pnumSFXGain;
-    TRef<ModifiableNumber>     m_pnumMusicGain;
-    TRef<ModifiableNumber>     m_pnumVoiceOverGain;
-
     //
     // Screens
     //
@@ -2787,10 +2783,8 @@ public:
         pnsGamePanes->AddMember("hudColorshadows",m_pcolorHUDshadows       = new ModifiableColorValue(Color::Black()));
         pnsGamePanes->AddMember("targetHudColor", m_pcolorTargetHUD = new ModifiableColorValue(Color::Black()));
 
-        pnsGamePanes->AddMember("SFXGain", m_pnumSFXGain =
-            new ModifiableNumber(-(float)LoadPreference("SFXGain", 8)));
-        pnsGamePanes->AddMember("VoiceOverGain", m_pnumVoiceOverGain =
-            new ModifiableNumber(-(float)LoadPreference("VoiceOverGain", 13)));
+        pnsGamePanes->AddMember("SFXGain", (Number*)NumberTransform::Clamp(m_papp->GetGameConfiguration()->GetSoundEffectVolume(), new Number(c_nMinGain), new Number(0.0f)));
+        pnsGamePanes->AddMember("VoiceOverGain", (Number*)NumberTransform::Clamp(m_papp->GetGameConfiguration()->GetSoundVoiceVolume(), new Number(c_nMinGain), new Number(0.0f)));
         pnsGamePanes->AddMember("MutexSal", m_psoundmutexSal);
         pnsGamePanes->AddMember("MutexVO", m_psoundmutexVO);
 
@@ -4301,14 +4295,6 @@ public:
                 m_pitemSoundQuality         = pmenu->AddMenuItem(idmSoundQuality, GetSoundQualityMenuString());
                 m_pitemToggleSoundHardware  = pmenu->AddMenuItem(idmSoundHardware, GetSoundHardwareMenuString());
 				m_pitemToggleDSound8Usage   = pmenu->AddMenuItem(idmUseDSound8, GetDSound8EnabledString());
-                m_pitemSFXVolumeUp          = pmenu->AddMenuItem(idmSFXVolumeUp,
-                    GetGainMenuString("Sound Effect", m_pnumSFXGain->GetValue(), c_fVolumeDelta), 'S');
-                m_pitemSFXVolumeDown        = pmenu->AddMenuItem(idmSFXVolumeDown,
-                    GetGainMenuString("Sound Effect", m_pnumSFXGain->GetValue(), -c_fVolumeDelta), 'A');
-                m_pitemVoiceOverVolumeUp    = pmenu->AddMenuItem(idmVoiceOverVolumeUp,
-                    GetGainMenuString("Voice Over", m_pnumVoiceOverGain->GetValue(), c_fVolumeDelta), 'V');
-                m_pitemVoiceOverVolumeDown  = pmenu->AddMenuItem(idmVoiceOverVolumeDown,
-                    GetGainMenuString("Voice Over", m_pnumVoiceOverGain->GetValue(), -c_fVolumeDelta), 'C');
                 break;
 
 			//TheBored 30-JUL-07: Filter Unknown Chat patch
@@ -5111,44 +5097,6 @@ public:
 			m_pitemToggleDSound8Usage->SetString(GetDSound8EnabledString());
 	}
 
-    void AdjustSFXVolume(float fDelta)
-    {
-        float fNewValue = std::min(0.0f, std::max(c_nMinGain, m_pnumSFXGain->GetValue() + fDelta));
-        m_pnumSFXGain->SetValue(fNewValue);
-
-        SavePreference("SFXGain", (DWORD)-fNewValue);
-
-        if (m_pitemSFXVolumeUp != NULL)
-        {
-            m_pitemSFXVolumeUp->SetString(
-                GetGainMenuString("Sound Effect", m_pnumSFXGain->GetValue(), c_fVolumeDelta));
-        }
-        if (m_pitemSFXVolumeDown != NULL)
-        {
-            m_pitemSFXVolumeDown->SetString(
-                GetGainMenuString("Sound Effect", m_pnumSFXGain->GetValue(), -c_fVolumeDelta));
-        }
-    }
-
-    void AdjustVoiceOverVolume(float fDelta)
-    {
-        float fNewValue = std::min(0.0f, std::max(c_nMinGain, m_pnumVoiceOverGain->GetValue() + fDelta));
-        m_pnumVoiceOverGain->SetValue(fNewValue);
-
-        SavePreference("VoiceOverGain", (DWORD)-fNewValue);
-
-        if (m_pitemVoiceOverVolumeUp != NULL)
-        {
-            m_pitemVoiceOverVolumeUp->SetString(
-                GetGainMenuString("Voice Over", m_pnumVoiceOverGain->GetValue(), c_fVolumeDelta));
-        }
-        if (m_pitemVoiceOverVolumeDown != NULL)
-        {
-            m_pitemVoiceOverVolumeDown->SetString(
-                GetGainMenuString("Voice Over", m_pnumVoiceOverGain->GetValue(), -c_fVolumeDelta));
-        }
-    }
-
 	//Imago 7/10 #187
     void AdjustFFGain(float fDelta)
     {
@@ -5562,25 +5510,6 @@ public:
     ZString GetEnableFeedbackMenuString()
     {
         return (m_bEnableFeedback ? "Force Feedback Enabled " : "Force Feedback Disabled ");
-    }
-
-    ZString GetGainMenuString(const ZString& strSoundType, float fCurrentGain, float fDelta)
-    {
-        ZString strResult = ((fDelta > 0) ? "Raise " : "Lower ") + strSoundType + " Volume ";
-        if (fCurrentGain >= 0 && fDelta > 0)
-        {
-            strResult += "(maxed)";
-        }
-        else if (fCurrentGain <= c_nMinGain && fDelta < 0)
-        {
-            strResult += "(off)";
-        }
-        else
-        {
-            strResult += "to " + ZString(std::min(0.0f, std::max(c_nMinGain, fCurrentGain + fDelta))) + " dB";
-        }
-
-        return strResult;
     }
 
 	//Imago 7/10
@@ -6003,21 +5932,6 @@ public:
 				ToggleUseDSound8();
 				break;
 
-            case idmSFXVolumeUp:
-                AdjustSFXVolume(c_fVolumeDelta);
-                break;
-
-            case idmSFXVolumeDown:
-                AdjustSFXVolume(-c_fVolumeDelta);
-                break;
-
-            case idmVoiceOverVolumeUp:
-                AdjustVoiceOverVolume(c_fVolumeDelta);
-                break;
-
-            case idmVoiceOverVolumeDown:
-                AdjustVoiceOverVolume(-c_fVolumeDelta);
-                break;
 			// YP: Add cases for rightclick lobby patch
 			case idmContextAcceptPlayer:
 				contextAcceptPlayer();	CloseMenu();

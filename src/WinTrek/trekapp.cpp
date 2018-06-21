@@ -273,10 +273,15 @@ public:
 class TrekAppImpl : public TrekApp {
 private:
     std::shared_ptr<CallsignHandler> m_pCallsignHandler;
+    TRef<GameConfigurationWrapper> m_pGameConfiguration;
 
 public:
     std::shared_ptr<CallsignHandler> GetCallsignHandler() override {
         return m_pCallsignHandler;
+    }
+
+    TRef<GameConfigurationWrapper> GetGameConfiguration() override {
+        return m_pGameConfiguration;
     }
 
     TrekAppImpl()
@@ -775,23 +780,23 @@ public:
 
         debugf("Creating game configuration handler");
 
-        TRef<GameConfigurationWrapper> pGameConfiguration = new GameConfigurationWrapper(GetConfiguration());
+        m_pGameConfiguration = new GameConfigurationWrapper(GetConfiguration());
 
-        debugf("Saved character name: %s", pGameConfiguration->GetOnlineCharacterName()->GetValue());
+        debugf("Saved character name: %s", m_pGameConfiguration->GetOnlineCharacterName()->GetValue());
 
-        if (pGameConfiguration->GetOnlineCharacterName()->GetValue() == "") {
+        if (m_pGameConfiguration->GetOnlineCharacterName()->GetValue() == "") {
             debugf("Character name invalid, using steam persona name: %s", personaName);
             if (personaName.GetLength() <= 2) {
                 personaName = "UnnamedPilot";
                 debugf("Steam persona name invalid, set to: %s", personaName);
             }
-            pGameConfiguration->GetOnlineCharacterName()->SetValue(personaName);
+            m_pGameConfiguration->GetOnlineCharacterName()->SetValue(personaName);
         }
 
         debugf("Creating window");
 
         TRef<EngineWindow> pengineWindow = new EngineWindow(
-            pGameConfiguration,
+            m_pGameConfiguration,
             strCommandLine,
             TrekWindow::GetWindowTitle(),
             false,
@@ -838,7 +843,7 @@ public:
 
         debugf("Finished graphics initialization, starting main game initialization");
 
-        m_pCallsignHandler = CreateCallsignHandlerFromSteam(pGameConfiguration);
+        m_pCallsignHandler = CreateCallsignHandlerFromSteam(m_pGameConfiguration);
 	
         TRef<TrekWindow> pwindow = 
             TrekWindow::Create(

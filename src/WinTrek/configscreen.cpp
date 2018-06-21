@@ -75,6 +75,10 @@ public:
         map["Configuration.Ui.ShowStartupTrainingSuggestion"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetUiShowStartupTrainingSuggestion());
         map["Configuration.Ui.UseOldUi"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetUiUseOldUi());
 
+        //sound
+        map["Configuration.Sound.EffectVolume"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetSoundEffectVolume());
+        map["Configuration.Sound.VoiceVolume"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetSoundVoiceVolume());
+
         m_pimage = pUiEngine->LoadImageFromLua(UiScreenConfiguration::Create("menuconfig/configscreen.lua", map));
     }
 
