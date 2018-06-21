@@ -79,6 +79,13 @@ public:
         map["Configuration.Sound.EffectVolume"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetSoundEffectVolume());
         map["Configuration.Sound.VoiceVolume"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetSoundVoiceVolume());
 
+        //joystick
+        map["Configuration.Joystick.ControlsLinear"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetJoystickControlsLinear());
+        map["Configuration.Joystick.Deadzone"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetJoystickDeadzoneSize());
+        map["Configuration.Joystick.FlipYAxis"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetJoystickFlipYAxis());
+        map["Configuration.Joystick.UseMouseAsJoystick"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetJoystickUseMouseAsJoystick());
+        map["Configuration.Joystick.ShowDirectionIndicator"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetJoystickShowDirectionIndicator());
+
         m_pimage = pUiEngine->LoadImageFromLua(UiScreenConfiguration::Create("menuconfig/configscreen.lua", map));
     }
 

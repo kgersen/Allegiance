@@ -51,6 +51,26 @@ public:
     TRef<SimpleModifiableValue<float>> GetSoundVoiceVolume() {
         return m_pconfiguration->GetInt("Sound.VoiceVolume", -13);
     }
+
+    TRef<SimpleModifiableValue<bool>> GetJoystickControlsLinear() {
+        return m_pconfiguration->GetBool("Joystick.ControlsLinear", m_pconfiguration->GetBoolValue("LinearControlResponse", false));
+    }
+
+    TRef<SimpleModifiableValue<float>> GetJoystickDeadzoneSize() {
+        return m_pconfiguration->GetInt("Joystick.DeadzoneSize", m_pconfiguration->GetIntValue("DeadZone", 10));
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetJoystickFlipYAxis() {
+        return m_pconfiguration->GetBool("Joystick.FlipYAxis", m_pconfiguration->GetBoolValue("FlipY", false));
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetJoystickUseMouseAsJoystick() {
+        return m_pconfiguration->GetBool("Joystick.UseMouseAsJoystick", m_pconfiguration->GetBoolValue("EnableVirtualJoystick", false));
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetJoystickShowDirectionIndicator() {
+        return m_pconfiguration->GetBool("Joystick.ShowDirectionIndicator", m_pconfiguration->GetBoolValue("ShowJoystickIndicator", true));
+    }
 };
 
 #include "CallsignTagInfo.h"

@@ -88,15 +88,6 @@ const float c_fMouseSensDelta = 0.01f; //Imago 7/10 #187
 
 const float g_hudBright = 0.85f;
 
-//const float g_fJoystickDeadZoneNone = 0.0f; //imago added 7/1/09 removed 7/23/09 causes crashes /w joysticks
-const float g_fJoystickDeadZoneSmallest = 0.04f; //imago added 7/13/09
-const float g_fJoystickDeadZoneSmall = 0.1f;
-const float g_fJoystickDeadZoneLarge = 0.3f;
-
-
-float g_fJoystickDeadZone = g_fJoystickDeadZoneSmall;
-float g_fInverseJoystickDeadZone = g_fJoystickDeadZone - 1.0f;
-
 //////////////////////////////////////////////////////////////////////////////
 //
 // Joystick Helpers
@@ -1343,8 +1334,6 @@ public:
     bool                       m_bMusic;
     bool                       m_bRoundRadar;
 
-    bool                       m_bShowJoystickIndicator;
-
     //
     // CommandView
     //
@@ -1383,10 +1372,7 @@ public:
     //
 
     TRef<TrekInput> m_ptrekInput;
-    bool            m_bEnableVirtualJoystick;
-    bool            m_bFlipY;
     bool            m_bEnableFeedback;
-    bool            m_bLinearControls;
 
     AsteroidAbilityBitMask          m_aabmInvest;
     AsteroidAbilityBitMask          m_aabmCommand;
@@ -2593,7 +2579,6 @@ public:
 		m_suicideCount(0),
 		m_bLensFlare(true),
 		m_bRoundRadar(false),
-		m_bLinearControls(true),
 		m_bMusic(false),
 		m_bCommandGrid(false),
 		m_radarCockpit(RadarImage::c_rlDefault),
@@ -2605,8 +2590,6 @@ public:
 		m_ctLobbyChat(CHAT_EVERYONE),
 		m_bTrackCommandView(false),
 		m_bQuitComposing(true),
-		m_bEnableVirtualJoystick(false),
-		m_bFlipY(false),
 		m_bEnableFeedback(true),
 		m_aabmInvest(0),
 		m_aabmCommand(0),
@@ -2615,8 +2598,7 @@ public:
 		m_iMouseAccel(0), //#215
 		m_bShowInventoryPane(true), // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
 		m_bShowSectorMapPane(true),  // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
-        m_pUseOldUi(nullptr),
-        m_bShowJoystickIndicator(true)
+        m_pUseOldUi(nullptr)
     {
         HRESULT hr;
 
@@ -2890,16 +2872,12 @@ public:
         // Load Input toggles
         //
 
-        m_bEnableVirtualJoystick = (LoadPreference("EnableVirtualJoystick", 0) != 0);
-        m_bFlipY                 = (LoadPreference("FlipY",                 0) != 0);
         m_bEnableFeedback        = (LoadPreference("EnableFeedback",        1) != 0);
         m_bFFAutoCenter			 = (LoadPreference("FFAutoCenter",			0) != 0); //Imago #187
 		m_iMouseAccel			 = LoadPreference("MouseAcceleration",     0) % 3; // Imago #215 //#282 bugfix
 		m_iWheelDelay			 = LoadPreference("WheelDelay",            2) % 5; //Spunky #282
 
         m_pUseOldUi = m_pConfiguration->GetBool("Ui.UseOldUi", true);
-
-        m_bShowJoystickIndicator = (LoadPreference("ShowJoystickIndicator", 1) != 0);
 
         m_pinputEngine->GetMouse()->SetAccel(m_iMouseAccel);
 
@@ -3098,8 +3076,6 @@ public:
             ToggleFilterQuickComms();
 		if (!LoadPreference("FilterUnknownChats", TRUE))
             ToggleFilterUnknownChats(); //TheBored 30-JUL-07: Filter Unknown Chat patch
-		if (!LoadPreference("LinearControlResponse", FALSE)) // BT - 8/17 Set to quadratic by default.
-            ToggleLinearControls();
         if (!LoadPreference("Environment", TRUE) || IsWine())  //imago 9/19/09 force env in wine 8/16/09
             ToggleEnvironment();
         if (!LoadPreference("Posters", TRUE))
@@ -3127,7 +3103,6 @@ public:
             ToggleTargetHUD();
         if (LoadPreference("SoftwareHUD", FALSE))  //All we need with two styles
             CycleStyleHUD();
-		SetDeadzone(LoadPreference("DeadZone", 5)); //ToggleLargeDeadZone(); //Imago updated 7/8/09 // BT 8/17 - Small deadzone default.
 		SetRadarLOD(LoadPreference("RadarLOD", 0)); //Imago updated 7/8/09 #24 (Gamma, VirtualJoystick, RadarLOD, ShowGrid)
 		if (LoadPreference("ShowGrid", FALSE))
 			ToggleShowGrid();
@@ -3614,7 +3589,9 @@ public:
     bool             GetRoundRadarMode(void) const  { return m_bRoundRadar;                     }
     CameraMode       GetCameraMode(void) const      { return m_cm;                              }
 
-    bool             GetShowJoystickIndicator(void) const { return m_bShowJoystickIndicator; }
+    bool             GetShowJoystickIndicator(void) const { 
+        return m_papp->GetGameConfiguration()->GetJoystickShowDirectionIndicator()->GetValue();
+    }
 
     /*
     void             TurretChange(void)
@@ -4267,18 +4244,12 @@ public:
                 m_pitemStyleHUD                    = pmenu->AddMenuItem(idmStyleHUD,                    GetStyleHUDMenuString()             ,	'H'); //Imago 6/30/09 adjust new dx9 settings in game
 
                 m_pitemToggleUseOldUi     = pmenu->AddMenuItem(idmOldUi, GetOldUiMenuString(), 'G');
-
-                m_pitemToggleShowJoystickIndicator = pmenu->AddMenuItem(idmShowJoystickIndicator, GetShowJoystickIndicatorMenuString(), 'J');
  				
 				break;
 
             case idmGameOptions:
                 m_pitemMuteFilter		           = pmenu->AddMenuItem(idmMuteFilterOptions,					"Mute/Filter",						'M', m_psubmenuEventSink); //TheBored 30-JUL-07: Filter Unknown Chat patch
                 m_pitemToggleStickyChase           = pmenu->AddMenuItem(idmToggleStickyChase,           GetStickyChaseMenuString (),        'K');
-                m_pitemToggleLinearControls        = pmenu->AddMenuItem(idmToggleLinearControls,        GetLinearControlsMenuString(),      'L');
-                m_pitemToggleLargeDeadZone         = pmenu->AddMenuItem(idmToggleLargeDeadZone,         GetDeadzoneMenuString(),       'Z'); //imago updated 7/8/09
-                m_pitemToggleVirtualJoystick       = pmenu->AddMenuItem(idmToggleVirtualJoystick,       GetVirtualJoystickMenuString(),     'J');
-                m_pitemToggleFlipY                 = pmenu->AddMenuItem(idmToggleFlipY,                 GetFlipYMenuString(),               'Y');
                 //m_pitemToggleEnableFeedback        = pmenu->AddMenuItem(idmToggleEnableFeedback,        GetEnableFeedbackMenuString(),      'E'); //imago sunk 7/10
 													 pmenu->AddMenuItem(idmFFOptions,					"Force Feedback",				  'E', m_psubmenuEventSink);
 													 pmenu->AddMenuItem(idmMouseOptions,				"Mouse Options",				  'Q', m_psubmenuEventSink);
@@ -4556,23 +4527,6 @@ public:
 
 
 	//End TB 25-JUN-07
-    void ToggleLinearControls()
-    {
-        if (m_bLinearControls)
-        {
-            m_bLinearControls = false;
-            SavePreference("LinearControlResponse", FALSE);
-        }
-        else
-        {
-            m_bLinearControls = true;
-            SavePreference("LinearControlResponse", TRUE);
-        }
-
-        if (m_pitemToggleLinearControls != NULL) {
-            m_pitemToggleLinearControls->SetString(GetLinearControlsMenuString());
-        }
-    }
 
     void ToggleStars()
     {
@@ -4808,46 +4762,9 @@ public:
             m_pitemStyleHUD->SetString(GetStyleHUDMenuString());
     }
 
-	//Imago 7/8/09 7/13/09
-    void SetDeadzone(DWORD value)
-    {
-        switch (value)
-        {
-            case 0:
-			case 31:
-				//g_fJoystickDeadZone = g_fJoystickDeadZoneNone;  removed 7/23/09 causes crash imago
-				//break;
-			case 4:
-			case 1:
-				g_fJoystickDeadZone = g_fJoystickDeadZoneSmallest;
-				break;
-			case 10:
-			case 5:
-				g_fJoystickDeadZone = g_fJoystickDeadZoneSmall;
-				break;
-			case 30:
-			case 11:
-				g_fJoystickDeadZone = g_fJoystickDeadZoneLarge;
-				break;
-            default:
-                g_fJoystickDeadZone = g_fJoystickDeadZoneLarge;
-        }
-		g_fInverseJoystickDeadZone = (g_fJoystickDeadZone == 0) ? 0 : g_fJoystickDeadZone - 1.0f;
-        SavePreference("DeadZone", (DWORD) value);
-        if (m_pitemToggleLargeDeadZone != NULL) {
-           m_pitemToggleLargeDeadZone->SetString(GetDeadzoneMenuString());
-        }
-    }
-
     void ToggleVirtualJoystick()
     {
-        m_bEnableVirtualJoystick = !m_bEnableVirtualJoystick;
-
-        SavePreference("VirtualJoystick", m_bEnableVirtualJoystick);
-
-        if (m_pitemToggleVirtualJoystick != NULL) {
-            m_pitemToggleVirtualJoystick->SetString(GetVirtualJoystickMenuString());
-        }
+        m_papp->GetGameConfiguration()->GetJoystickUseMouseAsJoystick()->SetValue(!m_papp->GetGameConfiguration()->GetJoystickUseMouseAsJoystick()->GetValue());
     }
 
     class CloseNotificationSink : public IIntegerEventSink {
@@ -4877,25 +4794,6 @@ public:
         m_pmessageBox = CreateMessageBox("Enabling or Disabling the old UI will require you to restart Allegiance.", NULL, true, false);
         m_pmessageBox->GetEventSource()->AddSink(new CloseNotificationSink(this));
         GetWindow()->GetPopupContainer()->OpenPopup(m_pmessageBox, false);
-
-    }
-
-    void ToggleShowJoystickIndicator()
-    {
-        if (m_bShowJoystickIndicator)
-        {
-            m_bShowJoystickIndicator = false;
-            SavePreference("ShowJoystickIndicator", FALSE);
-        }
-        else
-        {
-            m_bShowJoystickIndicator = true;
-            SavePreference("ShowJoystickIndicator", TRUE);
-        }
-
-        if (m_pitemToggleShowJoystickIndicator != NULL) {
-            m_pitemToggleShowJoystickIndicator->SetString(GetShowJoystickIndicatorMenuString());
-        }
     }
 
 	//Imago 7/8/09 #24
@@ -4941,18 +4839,6 @@ public:
 
 		return bInRange;
 	}
-
-
-    void ToggleFlipY()
-    {
-        m_bFlipY = !m_bFlipY;
-
-        SavePreference("FlipY", m_bFlipY);
-
-        if (m_pitemToggleFlipY != NULL) {
-            m_pitemToggleFlipY->SetString(GetFlipYMenuString());
-        }
-    }
 
     void ToggleEnableFeedback()
     {
@@ -5322,11 +5208,6 @@ public:
 		return "Reduce To " + ZString((int)m_pnumberChatLinesDesired->GetValue() - 1) + " Chat Lines";
 	}
 
-    ZString GetLinearControlsMenuString()
-    {
-        return (m_bLinearControls) ? "Linear Joystick Control Response" : "Quadratic Joystick Control Response";
-    }
-
     ZString GetStarsMenuString()
     {
         return (m_pwrapImageStars->GetImage() != Image::GetEmpty()) ? "Stars On " : "Stars Off ";
@@ -5464,47 +5345,9 @@ public:
 		//return (m_pnumberStyleHUD->GetValue()) ? c_strSoftware : c_strNormal;
     }
 
-    const ZString& GetDeadzoneMenuString()
-    {
-		static const ZString    strLarge = "Large dead zone";
-		//static const ZString    strNone = "No dead zone";
-		static const ZString    strSmall = "Small dead zone";
-		static const ZString    strSmallest = "Smallest dead zone";
-		static const ZString    strInvalid = "Invalid dead zone";
-		int     iDZ = int(g_fJoystickDeadZone * 100);
-        switch (iDZ)
-        {
-           // case 0:
-			//	return strNone;
-			case 4:
-				return strSmallest;
-			case 10:
-				return strSmall;
-			case 30:
-				return strLarge;
-            default:
-				return strInvalid;
-        }
-    }
-
-    ZString GetVirtualJoystickMenuString()
-    {
-        return (m_bEnableVirtualJoystick ? "Use Mouse As Virtual Joystick: On " : "Use Mouse As Virtual Joystick: Off ");
-    }
-
-    ZString GetFlipYMenuString()
-    {
-        return (m_bFlipY ? "Y Axis Flipped " : "Y Axis Not Flipped ");
-    }
-
     ZString GetOldUiMenuString()
     {
         return "Use old UI: " + ZString(m_pUseOldUi->GetValue() ? "On" : "Off");
-    }
-
-    ZString GetShowJoystickIndicatorMenuString()
-    {
-        return "Joystick Indicator: " + ZString(m_bShowJoystickIndicator ? "On" : "Off");
     }
 
     ZString GetEnableFeedbackMenuString()
@@ -5764,10 +5607,6 @@ public:
                 ToggleOldUi();
                 break;
 
-            case idmShowJoystickIndicator:
-                ToggleShowJoystickIndicator();
-                break;
-
 			/* pkk May 6th: Disabled bandwidth patch
 			// w0dk4 June 2007: Bandwith Patch
 			case idmBandwidth:
@@ -5851,22 +5690,6 @@ public:
 			case idmReduceChatLines:
 				ReduceChatLines();
 				break;
-
-            case idmToggleLinearControls:
-                ToggleLinearControls ();
-                break;
-
-            case idmToggleLargeDeadZone:
-                SetDeadzone( (g_fJoystickDeadZone * 100) + 1 ); //Imago 7/8/09 //ToggleLargeDeadZone(); 7/13/09
-                break;
-
-            case idmToggleVirtualJoystick:
-                ToggleVirtualJoystick();
-                break;
-
-            case idmToggleFlipY:
-                ToggleFlipY();
-                break;
 
             case idmToggleEnableFeedback:
                 ToggleEnableFeedback();
@@ -7125,7 +6948,7 @@ public:
 
     void UpdateMouseEnabled() {
         bool bEnable =
-            m_bEnableVirtualJoystick
+            m_papp->GetGameConfiguration()->GetJoystickUseMouseAsJoystick()->GetValue()
             && m_pEngineWindow->GetActive()
             && GetPopupContainer()->IsEmpty()
             && m_pConfigurationScreen == nullptr
@@ -7825,7 +7648,8 @@ public:
                             }
                             else
                             {
-                                const float c_fAutopilotDisengage = g_fJoystickDeadZone * 2.0f;
+                                float fJoystickDeadzone = GetJoystickDeadzone();
+                                const float c_fAutopilotDisengage = fJoystickDeadzone * 2.0f;
                                 bControlsInUse = bControlsInUse ||
                                                  (js.controls.jsValues[c_axisYaw] - trekClient.trekJoyStick[c_axisYaw] < -c_fAutopilotDisengage) ||
                                                  (js.controls.jsValues[c_axisYaw] - trekClient.trekJoyStick[c_axisYaw] >  c_fAutopilotDisengage) ||
@@ -7860,13 +7684,14 @@ public:
 								bControlsInUse = bControlsInUse ||
 												 js.button1 || js.button2 || js.button3 || js.button4 || js.button5 || js.button6;
 							}
+                            float fJoystickDeadzone = GetJoystickDeadzone();
 							bControlsInUse = bControlsInUse ||
-								(js.controls.jsValues[c_axisYaw] - trekClient.trekJoyStick[c_axisYaw] < -g_fJoystickDeadZone) ||
-								(js.controls.jsValues[c_axisYaw] - trekClient.trekJoyStick[c_axisYaw] >  g_fJoystickDeadZone) ||
-								(js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] < -g_fJoystickDeadZone) ||
-								(js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] >  g_fJoystickDeadZone) ||
-								(js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] < -g_fJoystickDeadZone) ||
-								(js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] >  g_fJoystickDeadZone);
+								(js.controls.jsValues[c_axisYaw] - trekClient.trekJoyStick[c_axisYaw] < -fJoystickDeadzone) ||
+								(js.controls.jsValues[c_axisYaw] - trekClient.trekJoyStick[c_axisYaw] >  fJoystickDeadzone) ||
+								(js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] < -fJoystickDeadzone) ||
+								(js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] >  fJoystickDeadzone) ||
+								(js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] < -fJoystickDeadzone) ||
+								(js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] >  fJoystickDeadzone);
 
 							if (bControlsInUse) g_bActivity = true;
 						}
@@ -8827,8 +8652,8 @@ public:
 					GetViewMode() == vmOverride &&
 					!trekClient.IsLockedDown() && 
                     (m_pconsoleImage == NULL || !m_pconsoleImage->IsComposing())) {
-						m_bEnableVirtualJoystick = !m_bEnableVirtualJoystick;
-						if(m_bEnableVirtualJoystick) m_ptrekInput->ClearButtonStates();//#56
+                        ToggleVirtualJoystick();
+						if(m_papp->GetGameConfiguration()->GetJoystickUseMouseAsJoystick()->GetValue()) m_ptrekInput->ClearButtonStates();//#56
 						return true;
 					}
 					return false;
@@ -8964,12 +8789,12 @@ public:
             {
                 if (m_voverlaymask[m_viewmode] & (c_omBanishablePanes & ~ofInvestment)) {
                     TurnOffOverlayFlags(c_omBanishablePanes & ~ofInvestment);
-                    m_bEnableVirtualJoystick = true;
+                    m_papp->GetGameConfiguration()->GetJoystickUseMouseAsJoystick()->SetValue(true);
                 }
                 else if (m_bFreshInvestmentPane && (m_voverlaymask[m_viewmode] & ofInvestment))
                     m_bFreshInvestmentPane = false;
                 else
-                    m_bEnableVirtualJoystick = !m_bEnableVirtualJoystick;
+                    ToggleVirtualJoystick();
             }
             break;
 
@@ -10321,18 +10146,23 @@ public:
         return m_ctLobbyChat;
     }
 
+    float GetJoystickDeadzone() {
+        return 0.01f * std::max(1.0f, std::min(30.0f, m_papp->GetGameConfiguration()->GetJoystickDeadzoneSize()->GetValue()));
+    }
 
     float MapJoystick(float value)
     {
-        if (value > g_fJoystickDeadZone)
-            value = (value - g_fJoystickDeadZone) / g_fInverseJoystickDeadZone;
-        else if (value < -g_fJoystickDeadZone)
-            value = (value + g_fJoystickDeadZone) / g_fInverseJoystickDeadZone;
+        float fJoystickDeadzone = GetJoystickDeadzone();
+        if (value > fJoystickDeadzone)
+            value = (value - fJoystickDeadzone) / (fJoystickDeadzone - 1.0f);
+        else if (value < -fJoystickDeadzone)
+            value = (value + fJoystickDeadzone) / (fJoystickDeadzone - 1.0f);
         else
             value = 0.0f;
 
-        if (!m_bLinearControls)
-            value *= fabsf (value);
+        if (m_papp->GetGameConfiguration()->GetJoystickControlsLinear()->GetValue() == false) {
+            value *= fabsf(value);
+        }
 
         return value;
     }
@@ -10388,7 +10218,7 @@ public:
         // Flip the y axis if requested
         //
 
-        if (m_bFlipY) {
+        if (m_papp->GetGameConfiguration()->GetJoystickFlipYAxis()->GetValue() == true) {
             js->controls.jsValues[c_axisPitch] = -js->controls.jsValues[c_axisPitch];
         }
 
@@ -10405,7 +10235,7 @@ public:
             trekClient.fOldJoyThrottle = js->controls.jsValues[c_axisThrottle];
             trekClient.bInitTrekThrottle = false;
         }
-        else if (fabs(js->controls.jsValues[c_axisThrottle] - trekClient.fOldJoyThrottle) > g_fJoystickDeadZone)
+        else if (fabs(js->controls.jsValues[c_axisThrottle] - trekClient.fOldJoyThrottle) > GetJoystickDeadzone())
         {
             bThrottleChange = true;
             trekClient.joyThrottle = true;
