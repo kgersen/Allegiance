@@ -58,7 +58,9 @@ public:
     }
 
     std::vector<std::string> GetAvailableSquadTags() {
-        std::vector<std::string> result;
+        std::vector<std::string> result = std::vector<std::string>({
+            ""
+        });
 
         for (std::shared_ptr<CallsignSquad> squad : m_pTrekApp->GetCallsignHandler()->GetAvailableSquads()) {
             result.push_back(std::string(squad->GetCleanedTag()));
@@ -71,7 +73,9 @@ public:
         return new TransformedList<TRef<StringValue>, ZString>([this](ZString tag) {
             std::shared_ptr<CallsignSquad> squad = m_pTrekApp->GetCallsignHandler()->GetSquadForTag(tag);
 
-            std::vector<TRef<StringValue>> result;
+            std::vector<TRef<StringValue>> result = std::vector<TRef<StringValue>>({
+                new StringValue("")
+            });
             if (squad != nullptr) {
                 for (ZString str : squad->GetAvailableOfficerTokens()) {
                     result.push_back(new StringValue(str));
