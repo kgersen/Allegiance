@@ -3,6 +3,8 @@
 
 #include "Configuration.h"
 
+class TrekApp;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Screen
@@ -27,12 +29,12 @@ public:
 
 TRef<Screen> CreateTeamScreen(Modeler* pmodeler);
 TRef<Screen> CreateGameScreen(Modeler* pmodeler);
-TRef<Screen> CreateIntroScreen(Modeler* pmodeler, UiEngine& uiEngine, bool bUseOldUi);
+TRef<Screen> CreateIntroScreen(TrekApp* pTrekApp, Modeler* pmodeler, UiEngine& uiEngine, bool bUseOldUi);
 TRef<Screen> CreateNewGameScreen(Modeler* pmodeler);
 TRef<Screen> CreateGameOverScreen(Modeler* pmodeler);
 TRef<Screen> CreateLeaderBoardScreen(Modeler* pmodeler, ZString strCharacter);
 TRef<Screen> CreateZoneEventsScreen(Modeler* pmodeler);
-TRef<Screen> CreateZoneClubScreen(Modeler* pmodeler, Number * ptime);
+TRef<Screen> CreateZoneClubScreen(TrekApp* pTrekApp, Modeler* pmodeler, Number * ptime);
 TRef<Screen> CreateSquadsScreen(Modeler* pmodeler, const char * szNameDudeX, int idZoneDudeX, const char * szSquad);
 TRef<Screen> CreateCharInfoScreen(Modeler* pmodeler, int idZone); // if id is NA, current player is used
 TRef<Screen> CreateHangarScreen(Modeler* pmodeler, const ZString& strNamespace);
@@ -40,7 +42,7 @@ TRef<Screen> CreateTrainingScreen(Modeler* pmodeler);
 TRef<Screen> CreateTrainingSlideshow (Modeler* pmodeler, const ZString& strNamespace, int iMissionIndex);
 TRef<Screen> CreatePostTrainingSlideshow (Modeler* pmodeler, const ZString& strNamespace);
 TRef<Screen> CreateGameStartingScreen(Modeler* pmodeler);
-TRef<Screen> CreateConfigScreen(UiEngine* pUiEngine, UpdatingConfiguration* pConfiguration, IEventSink* pEventSinkClose);
+TRef<Screen> CreateConfigScreen(TrekApp* pTrekApp, UiEngine* pUiEngine, UpdatingConfiguration* pConfiguration, IEventSink* pEventSinkClose);
 
 // BUILD_DX9
 // Taken out of D3D9 build for now, movies not supported at the moment.  //Imago use DDVideo

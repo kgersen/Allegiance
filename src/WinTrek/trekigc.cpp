@@ -3099,16 +3099,6 @@ void WinTrekClient::EjectPlayer(ImodelIGC*  pcredit)
     GetWindow()->OverrideCamera(trekClient.m_now, pcredit, true);
 }
 
-ZString WinTrekClient::GetSavedCharacterName()
-{
-    return GetConfiguration()->GetStringValue("Online.CharacterName", GetConfiguration()->GetStringValue("CharacterName", "")).c_str();
-}
-
-void WinTrekClient::SaveCharacterName(ZString strName)
-{
-    GetConfiguration()->GetString("Online.CharacterName", std::string(strName))->SetValue(strName);
-}
-
 int WinTrekClient::GetSavedWingAssignment(){ // kolie 6/10
     return GetConfiguration()->GetIntValue("Ui.DefaultWing", GetConfiguration()->GetIntValue("WingAssignment", 0));
 }

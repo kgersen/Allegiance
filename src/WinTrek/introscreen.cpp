@@ -300,6 +300,7 @@ public:
 
 class LoginHelper : public IClientEventSink {
 private:
+    TRef<TrekApp> m_pTrekApp;
     TRef<UiStateModifiableValue> m_state;
     TRef<IClientEventSink>      m_pClientEventSink;
     TRef<IEventSink>            m_pServerlistChangedSink;
@@ -314,7 +315,8 @@ private:
     static const int STEP_LOBBY_MISSIONLIST = 4;
 
 public:
-    LoginHelper() :
+    LoginHelper(TrekApp* pTrekApp) :
+        m_pTrekApp(pTrekApp),
         m_state(new UiStateModifiableValue(std::make_shared<LoggedOutState>(new UiStateValue(std::make_shared<NoErrorState>()), GetLoginSink())))
     {
 
@@ -403,22 +405,7 @@ public:
         m_state->SetValue(std::make_shared<LoggingInState>());
         m_state->GetValue()->as<LoggingInState>()->SetStep(STEP_CONFIG_DOWNLOAD, "Downloading configuration file");
 
-        ZString name = trekClient.GetSavedCharacterName();
-
-        // BT - Steam - User is logged into steam, and has a steam profile name
-        // The steam reviewer was somehow launching the game with steam authorization but no persona name. If 
-        // there is an player name, then the server rejects the user as a hacker with a DPlay error. 
-        bool isUserLoggedIntoSteamWithValidPlayerName = SteamUser() != nullptr && strlen(name) > 0;
-
-        if (isUserLoggedIntoSteamWithValidPlayerName == false)
-        {
-            SetLoginError("Invalid user supplied by Steam");
-            return;
-        }
-
-        // BT - STEAM - Add players callsign and token.
-        CallsignTagInfo callSignTagInfo;
-        ZString characterName = callSignTagInfo.Render(name);
+        ZString characterName = m_pTrekApp->GetCallsignHandler()->GetCleanedFullCallsign()->GetValue();
 
         std::string configPath = GetConfiguration()->GetStringValue(
             "Online.ConfigFile", 
@@ -562,6 +549,8 @@ class IntroScreen :
     public PasswordDialogSink
 {
 private:
+    TRef<TrekApp> m_pTrekApp;
+
     bool                m_bUseOldUi;
 
     TRef<Modeler>       m_pmodeler;
@@ -1102,7 +1091,8 @@ public:
         return m_pimage;
     }
 
-    IntroScreen(Modeler* pmodeler, UiEngine& uiEngine, bool bUseOldUi) :
+    IntroScreen(TrekApp* pTrekApp, Modeler* pmodeler, UiEngine& uiEngine, bool bUseOldUi) :
+        m_pTrekApp(pTrekApp),
         m_pmodeler(pmodeler),
         m_uiEngine(uiEngine),
         m_bUseOldUi(bUseOldUi)
@@ -1159,14 +1149,14 @@ public:
             std::map<std::string, std::shared_ptr<Exposer>> map;
 
             map["time"] = NumberExposer::Create(GetEngineWindow()->GetTime());
-            map["callsign"] = StringExposer::CreateStatic(trekClient.GetSavedCharacterName());
+            map["callsign"] = StringExposer::Create(m_pTrekApp->GetCallsignHandler()->GetCleanedFullCallsign());
 
             /*TRef<UiStateModifiableValue> login_state = new UiStateModifiableValue(UiState("Logged out", UiObjectContainer({
                 {"event.login", (TRef<IEventSink>)new CallbackSink([]() {
                     //auto screen = CreateZoneClubScreen();
                 })}
             })));*/
-            m_pLoginHelper = new LoginHelper();
+            m_pLoginHelper = new LoginHelper(pTrekApp);
             map["Login state"] = TypeExposer<TRef<UiStateValue>>::Create(m_pLoginHelper->GetState());
 
             m_pimage = m_uiEngine.LoadImageFromLua(UiScreenConfiguration::Create("menuintroscreen/introscreen.lua", listeners, map));
@@ -1464,7 +1454,7 @@ public:
         //
 
         TRef<IPopup> plogonPopup = CreateLogonPopup(m_pmodeler, this, LogonLAN, 
-            "Enter a call sign to use for this game.", trekClient.GetSavedCharacterName(), "", false);
+            "Enter a call sign to use for this game.", m_pTrekApp->GetCallsignHandler()->GetCleanedFullCallsign()->GetValue(), "", false);
         GetWindow()->GetPopupContainer()->OpenPopup(plogonPopup, false);
 
         return true;
@@ -1566,8 +1556,6 @@ public:
 
     void OnLogon(const ZString& strName, const ZString& strPassword, BOOL fRememberPW)
     {
-        // remember the character name for next time
-        trekClient.SaveCharacterName(strName);
         m_strCharacterName = strName;
         m_strPassword = "";
 
@@ -1610,7 +1598,7 @@ public:
         {
             // pop up the call sign/login dialog
             TRef<IPopup> plogonPopup = CreateLogonPopup(m_pmodeler, this, LogonLAN, 
-                szReason, trekClient.GetSavedCharacterName(), "", false);
+                szReason, m_pTrekApp->GetCallsignHandler()->GetCleanedFullCallsign()->GetValue(), "", false);
             GetWindow()->GetPopupContainer()->OpenPopup(plogonPopup, false);
         }
         else
@@ -1898,9 +1886,9 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-TRef<Screen> CreateIntroScreen(Modeler* pmodeler, UiEngine& uiEngine, bool bUseOldUi)
+TRef<Screen> CreateIntroScreen(TrekApp* pTrekApp, Modeler* pmodeler, UiEngine& uiEngine, bool bUseOldUi)
 {
-    return new IntroScreen(pmodeler, uiEngine, bUseOldUi);
+    return new IntroScreen(pTrekApp, pmodeler, uiEngine, bUseOldUi);
 }
 
 

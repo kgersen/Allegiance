@@ -8,6 +8,34 @@
 
 #include <enginewindow.h>
 
+class GameConfigurationWrapper : public EngineConfigurationWrapper {
+
+public:
+    GameConfigurationWrapper(TRef<UpdatingConfiguration> pconfiguration) :
+        EngineConfigurationWrapper(pconfiguration)
+    {}
+
+    TRef<SimpleModifiableValue<ZString>> GetOnlineCharacterName() {
+        return m_pconfiguration->GetString("Online.CharacterName", m_pconfiguration->GetStringValue("CharacterName", ""));
+    }
+
+    TRef<SimpleModifiableValue<ZString>> GetOnlineSquadTag() {
+        //we are going to store the string tag, we used to store the steam id of the squad
+        return m_pconfiguration->GetString("Online.SquadTag", m_pconfiguration->GetStringValue("SteamClanId", ""));
+    }
+
+    TRef<SimpleModifiableValue<ZString>> GetOnlineOfficerToken() {
+        return m_pconfiguration->GetString("Online.OfficerToken", m_pconfiguration->GetStringValue("SteamOfficerToken", ""));
+    }
+};
+
+#include "CallsignTagInfo.h"
+
+class TrekApp : public EffectApp {
+public:
+    virtual std::shared_ptr<CallsignHandler> GetCallsignHandler() = 0;
+};
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Main Trek Window
@@ -83,7 +111,7 @@ protected:
 public:
 
     static TRef<TrekWindow> Create(
-        EffectApp*     papp, 
+        TrekApp*     papp,
         EngineWindow* pengineWindow,
         const ZString& strCommandLine, 
 // BUILD_DX9

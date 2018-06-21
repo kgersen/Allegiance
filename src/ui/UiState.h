@@ -171,6 +171,23 @@ public:
     }
 };
 
+template <typename EntryType, typename ...Types>
+class TransformedList : public UiList<EntryType> {
+
+private:
+    std::function<std::vector<EntryType>(Types...)> m_callback;
+
+public:
+    TransformedList(std::function<std::vector<EntryType>(Types...)> callback, TRef<TStaticValue<Types>>... values) :
+        UiList({}),
+        m_callback(callback)
+    {
+        AddChild(new CallbackWhenChanged<Types...>([this](Types... values) {
+            GetListInternal() = m_callback(values...);
+        }, values...));
+    }
+};
+
 template <typename ResultEntryType, typename OriginalEntryType>
 class MappedList : public UiList<ResultEntryType> {
 private:

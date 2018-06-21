@@ -38,6 +38,7 @@ class ZoneClubScreen :
     public EventTargetContainer<ZoneClubScreen>
 {
 private:
+    TRef<TrekApp>      m_pTrekApp;
     TRef<Modeler>      m_pmodeler;
     TRef<Pane>         m_ppane;
     TRef<ButtonPane>   m_pbuttonGames;
@@ -69,7 +70,8 @@ private:
     static bool s_bWasAuthenticated;
  
 public:
-    ZoneClubScreen(Modeler* pmodeler, Number* ptime) :
+    ZoneClubScreen(TrekApp* pTrekApp, Modeler* pmodeler, Number* ptime) :
+        m_pTrekApp(pTrekApp),
         m_pSession(NULL),
         m_bErrorOccured(false),
         m_bMessageStage(false),
@@ -272,21 +274,12 @@ public:
             if (g_fZoneAuth)
             pzac->GetDefaultLogonInfo(m_szName, m_szPWOrig, &m_fRememberPW);
 #else
-            lstrcpy(m_szName, trekClient.GetSavedCharacterName());
-
-			// BT - Steam - User is logged into steam, and has a steam profile name
-			// The steam reviewer was somehow launching the game with steam authorization but no persona name. If 
-			// there is an player name, then the server rejects the user as a hacker with a DPlay error. 
-			bool isUserLoggedIntoSteamWithValidPlayerName = SteamUser() != nullptr && strlen(m_szName) > 0;
 
 #endif
 		  // wlp - don't ask for callsign if it was on the command line
-          if (!g_bAskForCallSign || isUserLoggedIntoSteamWithValidPlayerName == true) // BT - STEAM
+          if (!g_bAskForCallSign) // BT - STEAM
 		  {
-			  // BT - STEAM - Add players callsign and token.
-			  CallsignTagInfo callSignTagInfo;
-
-			  ZString characterName = callSignTagInfo.Render(m_szName);
+              ZString characterName = m_pTrekApp->GetCallsignHandler()->GetCleanedFullCallsign()->GetValue();
 
 			  this->OnLogon(characterName, "", false);
 	      } // wlp - end of dont ask for callsign 
@@ -932,8 +925,8 @@ bool ZoneClubScreen::s_bWasAuthenticated = false;
 //
 //////////////////////////////////////////////////////////////////////////////
 
-TRef<Screen> CreateZoneClubScreen(Modeler* pmodeler, Number * ptime)
+TRef<Screen> CreateZoneClubScreen(TrekApp* pTrekApp, Modeler* pmodeler, Number * ptime)
 {
-    return new ZoneClubScreen(pmodeler, ptime);
+    return new ZoneClubScreen(pTrekApp, pmodeler, ptime);
 }
 

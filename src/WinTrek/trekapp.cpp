@@ -270,8 +270,15 @@ public:
 
 };
 
-class TrekAppImpl : public EffectApp {
+class TrekAppImpl : public TrekApp {
+private:
+    std::shared_ptr<CallsignHandler> m_pCallsignHandler;
+
 public:
+    std::shared_ptr<CallsignHandler> GetCallsignHandler() override {
+        return m_pCallsignHandler;
+    }
+
     TrekAppImpl()
     {
         AddRef();
@@ -631,13 +638,6 @@ public:
                     bMovies = false;
                 } else if (str == "nooutput") {
                     //todo, change logging based on this
-                } else if (str == "quickstart") {
-					//Imago dont quickstart if no saved name 7/21/09
-					if (trekClient.GetSavedCharacterName().GetLength())
-                    	g_bQuickstart = true;
-                    float civStart;
-                    if (token.IsNumber(civStart)) 
-                        g_civStart = (int)civStart;
                 } else if (str == "nocfgdl")  {
                     g_bDownloadNewConfig = false;
                 } else if (str == "checkfiles") {
@@ -678,9 +678,9 @@ public:
                 // wlp 2006 - added debug option to turn on debug output
 				} else if (str == "debug") {
                     //todo, change logging based on this
-                } else if (str.Left(9) == "callsign=") { // wlp - 2006, added new ASGS token
-                    trekClient.SaveCharacterName(str.RightOf(9)) ; // Use CdKey for ASGS callsign storage
-                    g_bAskForCallSign = false ; // wlp callsign was entered on commandline
+                //} else if (str.Left(9) == "callsign=") { // wlp - 2006, added new ASGS token
+                //    trekClient.SaveCharacterName(str.RightOf(9)) ; // Use CdKey for ASGS callsign storage
+                //    g_bAskForCallSign = false ; // wlp callsign was entered on commandline
                 } else if (str == "windowed") {  //imago sucked these in here to accommidate the way we now create the D3DDevice
 	                bStartFullscreen = false;
 	            } else if (str == "fullscreen") {
@@ -701,20 +701,18 @@ public:
 
 		debugf("Logging into steam.\n");
 
+        ZString personaName = "";
+
 		// BT - STEAM
 		if (SteamUser() != nullptr && SteamUser()->BLoggedOn() == true)
 		{
-			ZString personaName = SteamFriends()->GetPersonaName();
+            personaName = SteamFriends()->GetPersonaName();
 
 			debugf("Steam Persona Name: " + personaName + "\n");
 
 			personaName = CleanUpSteamName(personaName);
 
 			debugf("Cleaned Persona Name: " + personaName + "\n");
-
-			trekClient.SaveCharacterName(personaName);
-
-			debugf("trekClient - Saved persona name as character name.\n");
 
 			char steamID[64];
 			sprintf(steamID, "%" PRIu64, SteamUser()->GetSteamID().ConvertToUint64());
@@ -775,10 +773,25 @@ public:
 
 		CD3DDevice9::Get()->UpdateCurrentMode( );
 
+        debugf("Creating game configuration handler");
+
+        TRef<GameConfigurationWrapper> pGameConfiguration = new GameConfigurationWrapper(GetConfiguration());
+
+        debugf("Saved character name: %s", pGameConfiguration->GetOnlineCharacterName()->GetValue());
+
+        if (pGameConfiguration->GetOnlineCharacterName()->GetValue() == "") {
+            debugf("Character name invalid, using steam persona name: %s", personaName);
+            if (personaName.GetLength() <= 2) {
+                personaName = "UnnamedPilot";
+                debugf("Steam persona name invalid, set to: %s", personaName);
+            }
+            pGameConfiguration->GetOnlineCharacterName()->SetValue(personaName);
+        }
+
         debugf("Creating window");
 
         TRef<EngineWindow> pengineWindow = new EngineWindow(
-            new EngineConfigurationWrapper(GetConfiguration()),
+            pGameConfiguration,
             strCommandLine,
             TrekWindow::GetWindowTitle(),
             false,
@@ -824,6 +837,8 @@ public:
         movies.Start();
 
         debugf("Finished graphics initialization, starting main game initialization");
+
+        m_pCallsignHandler = CreateCallsignHandlerFromSteam(pGameConfiguration);
 	
         TRef<TrekWindow> pwindow = 
             TrekWindow::Create(

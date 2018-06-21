@@ -11,7 +11,6 @@
 #include "slideshow.h"
 #include "Training.h"
 #include "CommandAcknowledgedCondition.h"
-#include "SteamClans.h" // BT - STEAM
 
 #include <Delayimp.h>   // For error handling & advanced features
 //#include "..\\icqapi\\ICQAPIInterface.h"
@@ -716,6 +715,8 @@ class TrekWindowImpl :
     public ModelerSite,
     public TrekInputSite
 {
+private:
+    TrekApp* m_papp;
 public:
     const char*     m_pszCursor;
 
@@ -2286,7 +2287,7 @@ public:
                     break;
 
                 case ScreenIDIntroScreen:
-					SetUiScreen(CreateIntroScreen(GetModeler(), *m_pUiEngine, m_pUseOldUi->GetValue()));
+					SetUiScreen(CreateIntroScreen(m_papp, GetModeler(), *m_pUiEngine, m_pUseOldUi->GetValue()));
                     break;
 
 				case ScreenIDSplashScreen:
@@ -2363,7 +2364,7 @@ public:
 							}
 						}
 						GetWindow()->screen(ScreenIDIntroScreen);
-						SetUiScreen(CreateIntroScreen(GetModeler(), *m_pUiEngine, m_pUseOldUi->GetValue()));
+						SetUiScreen(CreateIntroScreen(m_papp, GetModeler(), *m_pUiEngine, m_pUseOldUi->GetValue()));
 	                    break;
 					}
 
@@ -2373,7 +2374,7 @@ public:
                     break;
 
                 case ScreenIDZoneClubScreen:
-					SetUiScreen(CreateZoneClubScreen(GetModeler(), m_pEngineWindow->GetTime()));
+					SetUiScreen(CreateZoneClubScreen(m_papp, GetModeler(), m_pEngineWindow->GetTime()));
                     break;
 
                 case ScreenIDSquadsScreen:
@@ -2556,7 +2557,7 @@ public:
     }
 
 	TrekWindowImpl(
-		EffectApp*     papp,
+        TrekApp*     papp,
         EngineWindow* pengineWindow,
 		const ZString& strCommandLine,
 		// BUILD_DX9
@@ -2567,7 +2568,7 @@ public:
 		TrekWindow(
             pengineWindow
 		),
-
+        m_papp(papp),
         m_pConfiguration(GetConfiguration()),
 
 		m_screen(ScreenIDSplashScreen),
@@ -3162,7 +3163,7 @@ public:
         //
         // intro.avi video moved up
         //
-		TRef<Screen> introscr = CreateIntroScreen(GetModeler(), *m_pUiEngine, m_pUseOldUi->GetValue());
+		TRef<Screen> introscr = CreateIntroScreen(m_papp, GetModeler(), *m_pUiEngine, m_pUseOldUi->GetValue());
 		SetUiScreen(introscr);
         m_screen = ScreenIDIntroScreen;
         RestoreCursor();
@@ -3895,16 +3896,10 @@ public:
 		//DeleteObject(hCaptureBitmap);
 	}
 
-	// BT - STEAM - TODO Move these to where the other globals are hiding?
-	CallsignTagInfo m_currentCallsignTag;
-#ifdef STEAM_APP_ID
-	SteamClans m_availableSteamClans;
-#endif
-
     TRef<Screen> m_pConfigurationScreen;
     void ShowConfiguration() {
         if (m_pConfigurationScreen == nullptr) {
-            m_pConfigurationScreen = CreateConfigScreen(m_pUiEngine, m_pConfiguration, new CallbackSink([this]() {
+            m_pConfigurationScreen = CreateConfigScreen(m_papp, m_pUiEngine, m_pConfiguration, new CallbackSink([this]() {
                 HideConfiguration();
                 return true;
             }));
@@ -3977,46 +3972,6 @@ public:
         m_pmenu->AddMenuItem(idmOptions      , "Graphics", 'O', m_psubmenuEventSink);
         m_pmenu->AddMenuItem(idmGameOptions  , "Game",     'G', m_psubmenuEventSink);
 		m_pmenu->AddMenuItem(idmSoundOptions , "Sound"   , 'S', m_psubmenuEventSink);
-
-		
-		// BT - STEAM - Let the user select their steam call sign from a list of options.
-#ifdef STEAM_APP_ID
-		if (m_availableSteamClans.GetAvailableCallsignTags()->GetCount() > 0)
-		{
-			ZString menuOption = "Squad Tags";
-			if (m_currentCallsignTag.m_steamGroupID > 0)
-			{
-				ZString currentName = trekClient.GetSavedCharacterName();
-				ZString renderedName = m_currentCallsignTag.Render(currentName);
-				menuOption = ZString("Squad Tags (") + renderedName + ")   ";
-			}
-
-			if (m_screen == ScreenIDSplashScreen || m_screen == ScreenIDIntroScreen || m_screen == ScreenIDZoneClubScreen)
-			{
-
-				m_pmenu->AddMenuItem(0, "");
-				m_pmenu->AddMenuItem(0, "Only Available Before");
-				m_pmenu->AddMenuItem(0, "Connecting to the Lobby");
-				m_pmenu->AddMenuItem(0, "--------------------------");
-				m_pmenu->AddMenuItem(idmTags, menuOption, 'T', m_psubmenuEventSink);
-
-				
-				ZString tokens = m_currentCallsignTag.GetAvailableTokens();
-				if (tokens.GetLength() > 0)
-				{
-					for (int i = 0; i < tokens.GetLength(); i++)
-					{
-						if (tokens[i] == m_currentCallsignTag.m_callsignToken[0])
-							continue;
-
-						m_pmenu->AddMenuItem(idmToken0 + i, "Add Officer Token: ", tokens[i]);
-					}
-				}
-			}
-		}
-
-		// BT - STEAM - END.
-#endif
 
         if (trekClient.MyMission() != NULL) {
 			m_pmenu->AddMenuItem(0               , "");
@@ -4250,54 +4205,6 @@ public:
         OpenPopup(m_pmenu, Point(10, 10));
     }
 
-
-	// BT - STEAM 
-#ifdef STEAM_APP_ID
-	void AddAvailablePlayerTagsToMenu(TRef<IMenu> pmenu)
-	{
-		pmenu->AddMenuItem(0, "Squad Tags");
-		pmenu->AddMenuItem(0, "--------------------------");
-
-		pmenu->AddMenuItem(idmCallsignTagNone, "<None>", 'X');
-
-		// Allow up to 30 tags to be shown.
-		// Backing this out for now, forgot to add additional idmCallsignTag* slots. 
-		for (int i = 0; i < m_availableSteamClans.GetAvailableCallsignTags()->GetCount() && i < 10; i++)
-		{
-			CallsignTagInfo item = m_availableSteamClans.GetAvailableCallsignTags()->Get(i);
-			pmenu->AddMenuItem(idmCallsignTag0 + i, item.m_callsignTag, 48 + item.m_index); // 48 = ASCII code for '0'.
-		}
-	}
-
-	// BT - STEAM
-	void SetPlayerCallsign(int playerCallsignIndex)
-	{
-		for (int i = 0; i < m_availableSteamClans.GetAvailableCallsignTags()->GetCount(); i++)
-		{
-			CallsignTagInfo callsignTagInfo = m_availableSteamClans.GetAvailableCallsignTags()->Get(i);
-
-			if (callsignTagInfo.m_index == playerCallsignIndex - idmCallsignTag0)
-			{
-				m_currentCallsignTag.SetSteamGroupID(callsignTagInfo.m_steamGroupID, callsignTagInfo.m_callsignTag);
-				break;
-			}
-		}
-	}
-
-	// BT - STEAM
-	void UnsetPlayerCallsign()
-	{
-		m_currentCallsignTag.SetSteamGroupID(0, "");
-	}
-
-	// BT - STEAM
-	void SetPlayerToken(int playerTokenIndex)
-	{
-		ZString tokens = m_currentCallsignTag.GetAvailableTokens();
-		m_currentCallsignTag.SetToken(tokens.Middle(idmToken0 - playerTokenIndex, 1));
-	}
-#endif
-
     TRef<IPopup> GetSubMenu(IMenuItem* pitem)
     {
         TRef<IMenu> pmenu =
@@ -4367,12 +4274,6 @@ public:
                     GetGainMenuString("Voice Over", m_pnumVoiceOverGain->GetValue(), -c_fVolumeDelta), 'C');
                 break;
 
-				// BT - STEAM
-#ifdef STEAM_APP_ID
-			case idmTags:
-				AddAvailablePlayerTagsToMenu(pmenu);
-				break;
-#endif
 			//TheBored 30-JUL-07: Filter Unknown Chat patch
 			case idmMuteFilterOptions:
                 m_pitemToggleCensorChats           = pmenu->AddMenuItem(idmToggleCensorChats,           GetCensorChatsMenuString(),         'D');
@@ -6148,38 +6049,6 @@ public:
 				break;
 			// End Imago
 
-#ifdef STEAM_APP_ID
-			// BT - STEAM
-			case idmCallsignTag0:
-			case idmCallsignTag1:
-			case idmCallsignTag2:
-			case idmCallsignTag3:
-			case idmCallsignTag4:
-			case idmCallsignTag5:
-			case idmCallsignTag6:
-			case idmCallsignTag7:
-			case idmCallsignTag8:
-			case idmCallsignTag9:
-				SetPlayerCallsign(pitem->GetID());
-				CloseMenu();
-				break;
-
-				// BT - STEAM
-			case idmCallsignTagNone:
-				UnsetPlayerCallsign();
-				CloseMenu();
-				break;
-
-				// BT - STEAM
-			case idmToken0:
-			case idmToken1:
-			case idmToken2:
-			case idmToken3:
-			case idmToken4:
-				SetPlayerToken(pitem->GetID());
-				CloseMenu();
-				break;
-#endif
         }
     }
 
@@ -11016,7 +10885,7 @@ TrekWindowImpl::ArtifactsWinConditionInfo      TrekWindowImpl::s_artifactsWinCon
 TrekWindowImpl::FlagsWinConditionInfo          TrekWindowImpl::s_flagsWinConditionInfo;
 
 TRef<TrekWindow> TrekWindow::Create(
-    EffectApp*     papp,
+    TrekApp*     papp,
     EngineWindow* pengineWindow,
     const ZString& strCommandLine,
 // BUILD_DX9
