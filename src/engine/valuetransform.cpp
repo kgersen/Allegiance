@@ -225,7 +225,7 @@ TRef<Number> NumberTransform::Max(Number* pvalue1, Number* pvalue2)
 
 TRef<Number> NumberTransform::Clamp(Number* pvalue1, Number* pvalue2, Number* pvalue3)
 {
-    return new TransformedValue<float, float, float>([](float number, float min, float max) {
+    return new TransformedValue<float, float, float, float>([](float number, float min, float max) {
         if (number < min) {
             return min;
         }
