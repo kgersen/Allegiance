@@ -223,6 +223,19 @@ TRef<Number> NumberTransform::Max(Number* pvalue1, Number* pvalue2)
     return new MaxNumber(pvalue1, pvalue2);
 }
 
+TRef<Number> NumberTransform::Clamp(Number* pvalue1, Number* pvalue2, Number* pvalue3)
+{
+    return new TransformedValue<float, float, float>([](float number, float min, float max) {
+        if (number < min) {
+            return min;
+        }
+        if (number > max) {
+            return max;
+        }
+        return number;
+    }, pvalue1, pvalue2, pvalue3);
+}
+
 TRef<Number> NumberTransform::Sin(Number* pvalue)
 {
     return new SinNumber(pvalue);

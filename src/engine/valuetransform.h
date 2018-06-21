@@ -17,6 +17,7 @@ public:
     static TRef<Number> Multiply(Number* a, Number* b);
     static TRef<Number> Min(Number* a, Number* b);
     static TRef<Number> Max(Number* a, Number* b);
+    static TRef<Number> Clamp(Number* a, Number* b, Number* c);
     static TRef<Number> Mod(Number* a, Number* b);
 
     static TRef<Number> Round(Number* a, int decimals);
