@@ -107,6 +107,42 @@ public:
     TRef<SimpleModifiableValue<float>> GetMouseAcceleration() {
         return m_pconfiguration->GetInt("Mouse.Acceleration", m_pconfiguration->GetIntValue("MouseAcceleration", 0));
     }
+
+    TRef<SimpleModifiableValue<bool>> GetGraphicsEnvironment() {
+        return m_pconfiguration->GetBool("Graphics.Environment", m_pconfiguration->GetBoolValue("Environment", true));
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetGraphicsPosters() {
+        return m_pconfiguration->GetBool("Graphics.Posters", m_pconfiguration->GetBoolValue("Posters", true));
+    }
+
+    TRef<SimpleModifiableValue<float>> GetGraphicsDebris() {
+        return m_pconfiguration->GetFloat("Graphics.Debris", m_pconfiguration->GetFloatValue("Debris", 1.0f));
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetGraphicsStars() {
+        return m_pconfiguration->GetBool("Graphics.Stars", m_pconfiguration->GetBoolValue("Stars", true));
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetGraphicsBoundingBoxes() {
+        return m_pconfiguration->GetBool("Graphics.BoundingBoxes", m_pconfiguration->GetBoolValue("Bounds", true));
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetGraphicsTransparentObjects() {
+        return m_pconfiguration->GetBool("Graphics.TransparentObjects", m_pconfiguration->GetBoolValue("TransparentObjects", true));
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetGraphicsParticles() {
+        return m_pconfiguration->GetBool("Graphics.Particles", m_pconfiguration->GetIntValue("SmokeEffects", 3) == 3);
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetGraphicsLensFlare() {
+        return m_pconfiguration->GetBool("Graphics.LensFlare", m_pconfiguration->GetBoolValue("LensFlare", true));
+    }
+
+    TRef<SimpleModifiableValue<float>> GetUiHudStyle() {
+        return m_pconfiguration->GetInt("Ui.HudStyle", 0);
+    }
 };
 
 #include "CallsignTagInfo.h"

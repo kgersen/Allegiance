@@ -75,7 +75,7 @@ public:
                 std::map<float, TRef<StringValue>> mapOptions;
 
                 table.for_each([&mapOptions](sol::object key, sol::object entry_value) {
-                    int fKey = (int)key.as<float>();
+                    float fKey = key.as<float>();
                     mapOptions[fKey] = wrapString(entry_value);
                 });
 

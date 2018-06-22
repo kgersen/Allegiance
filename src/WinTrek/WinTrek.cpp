@@ -1156,7 +1156,7 @@ public:
 
     TRef<Geo>        m_pgeoDebris;
     TRef<WrapGeo>          m_pwrapGeoDebris;
-	TRef<ModifiableNumber> m_debrisDensity; //LANS
+	TRef<Number> m_debrisDensity; //LANS
     //TRef<Geo>              m_pgeoTurret;
     //TRef<MatrixTransform>  m_pmtTurret;
     TRef<WrapGeo>          m_pgeoScene;
@@ -2880,7 +2880,9 @@ public:
         }, m_papp->GetGameConfiguration()->GetChatFilterChatsFromLobby()));
 
         m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<bool>([this](bool value) {
-            ToggleCensorDisplay();
+            if (CensorDisplay() != value) {
+                ToggleCensorDisplay();
+            }
         }, m_papp->GetGameConfiguration()->GetChatCensorChat()));
 
         m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<float>([this](float value) {
@@ -2898,6 +2900,40 @@ public:
                 m_pnumberChatLines->SetValue(lines);
             }
         }, m_papp->GetGameConfiguration()->GetChatNumberOfLines()));
+
+        m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<float>([this](float value) {
+            m_pnumberStyleHUD->SetValue((float)(int)value);
+        }, m_papp->GetGameConfiguration()->GetUiHudStyle()));
+
+        m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<bool>([this](bool value) {
+            m_pwrapImageEnvironment->SetImage(value ? m_pimageEnvironment : Image::GetEmpty());
+        }, m_papp->GetGameConfiguration()->GetGraphicsEnvironment()));
+
+        m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<bool>([this](bool value) {
+            m_pwrapImagePosters->SetImage(value ? m_pwrapImagePostersInside : Image::GetEmpty());
+        }, m_papp->GetGameConfiguration()->GetGraphicsPosters()));
+
+        m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<bool>([this](bool value) {
+            m_pwrapImageStars->SetImage(value ? m_pimageStars : Image::GetEmpty());
+        }, m_papp->GetGameConfiguration()->GetGraphicsStars()));
+
+        m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<bool>([this](bool value) {
+            ThingGeo::SetShowBounds(value);
+        }, m_papp->GetGameConfiguration()->GetGraphicsBoundingBoxes()));
+
+        m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<bool>([this](bool value) {
+            ThingGeo::SetTransparentObjects(value);
+        }, m_papp->GetGameConfiguration()->GetGraphicsTransparentObjects()));
+
+        m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<bool>([this](bool value) {
+            ThingGeo::SetShowSmoke(value ? 3 : 0);
+        }, m_papp->GetGameConfiguration()->GetGraphicsParticles()));
+
+        m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<bool>([this](bool value) {
+            if (!CommandCamera(m_cm)) {
+                m_pwrapImageLensFlare->SetImage(value ? m_pimageLensFlare : Image::GetEmpty());
+            }
+        }, m_papp->GetGameConfiguration()->GetGraphicsLensFlare()));
 
 		m_iWheelDelay			 = 2; //Spunky #282 //rock: removed as an option
 
@@ -2932,7 +2968,7 @@ public:
         //
         // put some Debris into the scene
         //
-		m_debrisDensity = new ModifiableNumber(atof(LoadPreference("Debris", "1.0"))); //variable debris - LANS
+        m_debrisDensity = m_papp->GetGameConfiguration()->GetGraphicsDebris(); //variable debris - LANS
         m_pgeoDebris = CreateDebrisGeo(GetModeler(), m_pEngineWindow->GetTime(), m_pviewport, m_debrisDensity);
 
         //
@@ -2957,11 +2993,6 @@ public:
                 m_pviewport,
                 true
             );
-
-		//LANS - zero out debris if option is off
-		if (m_debrisDensity->GetValue() == 0.0f) {
-			m_pwrapGeoDebris->SetGeo(Geo::GetEmpty());
-		}
 
         UpdateBidirectionalLighting();
 
@@ -3090,33 +3121,12 @@ public:
 
         if (LoadPreference ("PreferChaseView", FALSE))
             ToggleStickyChase ();
-        if (!LoadPreference("Environment", TRUE) || IsWine())  //imago 9/19/09 force env in wine 8/16/09
-            ToggleEnvironment();
-        if (!LoadPreference("Posters", TRUE))
-            TogglePosters();
-        if (!LoadPreference("Stars", TRUE))
-            ToggleStars();
-        if (!LoadPreference("Strobes", TRUE))
-            ToggleStrobes();
-        if (!LoadPreference("Trails", TRUE))
-            ToggleTrails();
-        if (!LoadPreference("Bounds", TRUE))
-            ToggleBounds();
-        if (!LoadPreference("TransparentObjects", TRUE))
-            ToggleTransparentObjects();
-        SetSmoke (LoadPreference ("SmokeEffects", 3));
-        if (!LoadPreference("Lens Flare", TRUE))
-            ToggleLensFlare();
-        if (!LoadPreference("BidirectionalLighting", TRUE))
-            ToggleBidirectionalLighting();
         if (!LoadPreference("ChatHistory", TRUE))
             ToggleChatHistoryHUD();
         if (!LoadPreference("CenterHUD", TRUE))
             ToggleCenterHUD();
         if (!LoadPreference("TargetHUD", TRUE))
             ToggleTargetHUD();
-        if (LoadPreference("SoftwareHUD", FALSE))  //All we need with two styles
-            CycleStyleHUD();
 		SetRadarLOD(LoadPreference("RadarLOD", 0)); //Imago updated 7/8/09 #24 (Gamma, VirtualJoystick, RadarLOD, ShowGrid)
 		if (LoadPreference("ShowGrid", FALSE))
 			ToggleShowGrid();
@@ -4228,27 +4238,6 @@ public:
             case idmEngineOptions:
                 return m_pEngineWindow->GetEngineMenu(TrekResources::SmallFont());
 
-            case idmOptions:
-                		       		 				 pmenu->AddMenuItem(idmDeviceOptions,					"Advanced Options",				  'A', m_psubmenuEventSink);
-                m_pitemToggleEnvironment           = pmenu->AddMenuItem(idmToggleEnvironment,           GetEnvironmentMenuString()          , 'E');
-                m_pitemTogglePosters               = pmenu->AddMenuItem(idmTogglePosters,               GetPostersMenuString()              , 'P');
-                m_pitemToggleDebris                = pmenu->AddMenuItem(idmToggleDebris,                GetDebrisMenuString()               , 'D');
-                m_pitemToggleStars                 = pmenu->AddMenuItem(idmToggleStars,                 GetStarsMenuString()                , 'S');
-                m_pitemToggleStrobes               = pmenu->AddMenuItem(idmToggleStrobes,               GetStrobesMenuString()              , 'R');
-                m_pitemToggleTrails                = pmenu->AddMenuItem(idmToggleTrails,                GetTrailsMenuString()               , 'T');
-                #ifdef _DEBUG
-                    m_pitemToggleBounds                = pmenu->AddMenuItem(idmToggleBounds,                GetBoundsMenuString()               , 'N');
-                    m_pitemToggleTransparentObjects    = pmenu->AddMenuItem(idmToggleTransparentObjects,    GetTransparentObjectsMenuString()   , 'O');
-                #endif
-                m_pitemToggleSmoke                 = pmenu->AddMenuItem(idmToggleSmoke,                 GetSmokeMenuString()                ,	'L'); //was same as posters - Imago 8/8/09
-                m_pitemToggleLensFlare             = pmenu->AddMenuItem(idmToggleLensFlare,             GetLensFlareMenuString()            ,	'F');
-                m_pitemToggleBidirectionalLighting = pmenu->AddMenuItem(idmToggleBidirectionalLighting, GetBidirectionalLightingMenuString(),	'B');
-                m_pitemStyleHUD                    = pmenu->AddMenuItem(idmStyleHUD,                    GetStyleHUDMenuString()             ,	'H'); //Imago 6/30/09 adjust new dx9 settings in game
-
-                m_pitemToggleUseOldUi     = pmenu->AddMenuItem(idmOldUi, GetOldUiMenuString(), 'G');
- 				
-				break;
-
             case idmGameOptions:
                 m_pitemToggleStickyChase           = pmenu->AddMenuItem(idmToggleStickyChase,           GetStickyChaseMenuString (),        'K');
 													 pmenu->AddMenuItem(idmMouseOptions,				"Mouse Options",				  'Q', m_psubmenuEventSink);
@@ -4273,54 +4262,11 @@ public:
 			    //m_pitemMip				= pmenu->AddMenuItem(idmMip    			  , GetMipString()                                      , 'M'); // BT - Disable MipMaps for now
 				m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V'); //Spunky #265 backing out //Imago 7/10
 				// yp Your_Persona August 2 2006 : MaxTextureSize Patch
-				m_pitemMaxTextureSize	= pmenu->AddMenuItem(idmMaxTextureSize,     GetMaxTextureSizeMenuString(),    					  'X');
 				break;
 
         }
 
         return pmenu;
-    }
-
-    void ToggleDebris()
-    {
-		//LANS - allow off/low/medium/high debris settings
-		//lower numbers = more debris
-		if (m_debrisDensity->GetValue() == 1.5f) { //low -> medium
-			m_debrisDensity->SetValue(1.0f);
-			SavePreference("Debris", "1.0");
-		}
-		else if (m_debrisDensity->GetValue() == 1.0f) { //medium -> high
-			m_debrisDensity->SetValue(0.8f);
-			SavePreference("Debris", "0.8");
-		}
-		else if (m_debrisDensity->GetValue() == 0.8f) { //high -> off
-			m_debrisDensity->SetValue(0.0f);
-			m_pwrapGeoDebris->SetGeo(Geo::GetEmpty());
-			SavePreference("Debris", "0");
-		}
-		else { //off -> low
-			m_debrisDensity->SetValue(1.5f);
-			m_pwrapGeoDebris->SetGeo(m_pgeoDebris);
-			SavePreference("Debris", "1.5");
-		}
-		if (m_pitemToggleDebris != NULL) {
-			m_pitemToggleDebris->SetString(GetDebrisMenuString());
-		}
-    }
-
-    void ToggleEnvironment()
-    {
-		if (m_pwrapImageEnvironment->GetImage() == m_pimageEnvironment || IsWine()) { //Imago 8/17/09
-            m_pwrapImageEnvironment->SetImage(Image::GetEmpty());
-            SavePreference("Environment", FALSE);
-        } else {
-			m_pwrapImageEnvironment->SetImage(m_pimageEnvironment);
-            SavePreference("Environment", TRUE);
-        }
-
-        if (m_pitemToggleEnvironment != NULL) {
-            m_pitemToggleEnvironment->SetString(GetEnvironmentMenuString());
-        }
     }
 
     void ToggleStickyChase ()
@@ -4340,95 +4286,11 @@ public:
             m_pitemToggleStickyChase->SetString (GetStickyChaseMenuString ());
     }
 
-    void ToggleStars()
-    {
-        if (m_pwrapImageStars->GetImage() == Image::GetEmpty()) {
-            m_pwrapImageStars->SetImage(m_pimageStars);
-            SavePreference("Stars", TRUE);
-        } else {
-            m_pwrapImageStars->SetImage(Image::GetEmpty());
-            SavePreference("Stars", FALSE);
-        }
-
-        if (m_pitemToggleStars != NULL) {
-            m_pitemToggleStars->SetString(GetStarsMenuString());
-        }
-    }
-
-    void TogglePosters()
-    {
-        if (m_pwrapImagePosters->GetImage() == Image::GetEmpty()) {
-			m_pwrapImagePosters->SetImage(m_pwrapImagePostersInside);
-			SavePreference("Posters", TRUE);
-        } else {
-            m_pwrapImagePosters->SetImage(Image::GetEmpty());
-            SavePreference("Posters", FALSE);
-        }
-
-        if (m_pitemTogglePosters != NULL) {
-            m_pitemTogglePosters->SetString(GetPostersMenuString());
-        }
-    }
-
-    void ToggleLensFlare()
-    {
-        m_bLensFlare = !m_bLensFlare;
-
-        SavePreference("Lens Flare", (DWORD)m_bLensFlare);
-
-        if (!CommandCamera(m_cm)) {
-            if (m_bLensFlare) {
-                m_pwrapImageLensFlare->SetImage(m_pimageLensFlare);
-            } else {
-                m_pwrapImageLensFlare->SetImage(Image::GetEmpty());
-            }
-        }
-
-        if (m_pitemToggleLensFlare != NULL) {
-            m_pitemToggleLensFlare->SetString(GetLensFlareMenuString());
-        }
-    }
-
     void UpdateBidirectionalLighting()
     {
-        if (m_bBidirectionalLighting) {
-            m_pimageScene->SetLight(m_color, m_colorAlt);
-            m_pimageScene->SetAmbientLevel(m_ambientLevelBidirectional);
-        } else {
-            m_pimageScene->SetLight(m_color);
-            m_pimageScene->SetAmbientLevel(m_ambientLevel);
-        }
+        m_pimageScene->SetLight(m_color, m_colorAlt);
+        m_pimageScene->SetAmbientLevel(m_ambientLevelBidirectional);
     }
-
-    void ToggleBidirectionalLighting()
-    {
-        m_bBidirectionalLighting = !m_bBidirectionalLighting;
-
-        SavePreference("BidirectionalLighting", (DWORD)m_bBidirectionalLighting);
-
-        UpdateBidirectionalLighting();
-
-        if (m_pitemToggleBidirectionalLighting != NULL) {
-            m_pitemToggleBidirectionalLighting->SetString(GetBidirectionalLightingMenuString());
-        }
-    }
-
-	// yp Your_Persona August 2 2006 : MaxTextureSize Patch  //Imago OBSOLOETE REMOVE REVIEW 7/20/09
-	void ToggleMaxTextureSize(DWORD dwNewMaxSize)
-	{
-		if(dwNewMaxSize > 3){dwNewMaxSize =0;}
-        trekClient.MaxTextureSize(dwNewMaxSize); //? Imago REVIEW we use g_DX9Settings.m_iMaxTextureSize now
-
-		g_DX9Settings.m_iMaxTextureSize = dwNewMaxSize;
-
-		GetEngine()->SetMaxTextureSize(trekClient.MaxTextureSize());
-        SavePreference("MaxTextureSize", trekClient.MaxTextureSize());
-
-        if (m_pitemMaxTextureSize != NULL) {
-            m_pitemMaxTextureSize->SetString(GetMaxTextureSizeMenuString());
-        }
-	}
-
 	/* pkk May 6th: Disabled bandwidth patch
 	// w0dk4 June 2007: Bandwith Patch
 	void ToggleBandwidth(unsigned int iBandwidth)
@@ -4442,97 +4304,6 @@ public:
             m_pitemToggleBandwidth->SetString(GetBandwidthMenuString());
         }
 	}*/
-
-    void ToggleStrobes()
-    {
-        ThingGeo::SetShowLights(!ThingGeo::GetShowLights());
-
-        SavePreference("Strobes", (DWORD)ThingGeo::GetShowLights());
-
-        if (m_pitemToggleStrobes != NULL) {
-            m_pitemToggleStrobes->SetString(GetStrobesMenuString());
-        }
-    }
-
-    void ToggleTrails()
-    {
-        ThingGeo::SetShowTrails(!ThingGeo::GetShowTrails());
-
-        SavePreference("Trails", (DWORD)ThingGeo::GetShowTrails());
-
-        if (m_pitemToggleTrails != NULL) {
-            m_pitemToggleTrails->SetString(GetTrailsMenuString());
-        }
-    }
-
-    void ToggleBounds()
-    {
-        ThingGeo::SetShowBounds(!ThingGeo::GetShowBounds());
-
-        SavePreference("Bounds", (DWORD)ThingGeo::GetShowBounds());
-
-        if (m_pitemToggleBounds != NULL) {
-            m_pitemToggleBounds->SetString(GetBoundsMenuString());
-        }
-    }
-
-    void ToggleTransparentObjects()
-    {
-        ThingGeo::SetTransparentObjects(!ThingGeo::GetTransparentObjects());
-
-        SavePreference("TransparentObjects", (DWORD)ThingGeo::GetTransparentObjects());
-
-        if (m_pitemToggleTransparentObjects != NULL) {
-            m_pitemToggleTransparentObjects->SetString(GetTransparentObjectsMenuString());
-        }
-    }
-
-    void SetSmoke (DWORD value)
-    {
-        if (value == 2) { //imago 8/16/09
-			ThingGeo::SetPerformance(true);
-            ThingGeo::SetShowSmoke (1);
-        } else {
-            ThingGeo::SetShowSmoke (int (value));
-           }
-    }
-
-    void ToggleSmoke()
-    {
-        int     iSmoke = ThingGeo::GetShowSmoke();
-        if (iSmoke == 0) 
-            iSmoke = 2;
-        else if (iSmoke == 2) 
-            iSmoke = 0;
-        bool bPerformance = false;
-        switch (iSmoke)
-        {
-            case 2: //Imago 8/16/09
-                bPerformance = true;
-                iSmoke = 1;
-                break;
-            case 0:
-                iSmoke = 1;
-                break;
-            case 1:
-                iSmoke = 3;
-                break;
-            case 3:
-                iSmoke = 5;
-                break;
-            default:
-                iSmoke = 0;
-        }
-        
-		ThingGeo::SetPerformance(bPerformance);
-
-        ThingGeo::SetShowSmoke(iSmoke);
-        SavePreference("SmokeEffects", (DWORD) (bPerformance) ? 2 : iSmoke);
-
-        if (m_pitemToggleSmoke != NULL) {
-            m_pitemToggleSmoke->SetString(GetSmokeMenuString());
-        }
-    }
 
     void ToggleChatHistoryHUD()
     {
@@ -4559,19 +4330,6 @@ public:
 
         if (m_pitemToggleTargetHUD != NULL)
             m_pitemToggleTargetHUD->SetString(GetTargetHUDMenuString());
-    }
-
-    //Something of a misnomer since there are only two styles but this may change
-	//Andon: Changed to support up to 5 styles
-    void CycleStyleHUD()
-    {
-        int style = (int(m_pnumberStyleHUD->GetValue()) + 1) % 5;
-        m_pnumberStyleHUD->SetValue(float(style));
-
-        SavePreference("SoftwareHUD", (DWORD)style);
-
-        if (m_pitemStyleHUD != NULL)
-            m_pitemStyleHUD->SetString(GetStyleHUDMenuString());
     }
 
     void ToggleVirtualJoystick()
@@ -4696,51 +4454,6 @@ public:
 			m_pitemToggleDSound8Usage->SetString(GetDSound8EnabledString());
 	}
 
-    ZString GetPostersMenuString()
-    {
-        return (m_pwrapImagePosters->GetImage() != Image::GetEmpty()) ? "Posters On " : "Posters Off ";
-    }
-
-    ZString GetDebrisMenuString()
-    {
-		//LANS - multiple debris options
-		static const ZString	c_strLow("Debris Low");
-		static const ZString	c_strMed("Debris Medium");
-		static const ZString	c_strHigh("Debris High");
-		static const ZString	c_strOff("Debris Off");
-
-		if (m_debrisDensity->GetValue() == 0.8f) {
-			return c_strHigh;
-		}
-		else if (m_debrisDensity->GetValue() == 1.0f) {
-			return c_strMed;
-		}
-		else if (m_debrisDensity->GetValue() == 1.5f) {
-			return c_strLow;
-		}
-		else {
-			return c_strOff;
-		}
-        //return (m_pwrapGeoDebris->GetGeo() != Geo::GetEmpty())   ? "Debris On " : "Debris Off ";
-    }
-
-    ZString GetEnvironmentMenuString()
-    {
-        return (m_pwrapImageEnvironment->GetImage() == m_pimageEnvironment) ? "Environment On " : "Environment Off ";
-    }
-
-// yp Your_Persona August 2 2006 : MaxTextureSize Patch //Imago 7/18/09
-	ZString GetMaxTextureSizeMenuString()
-    {
-		int i = 0;
-		int j = 2;
-
-		i = 8 + g_DX9Settings.m_iMaxTextureSize;
-
-		j = pow((float)j,(float)i);
-        return "Max Texture Size ("  + ZString( j)  + ") ";
-    }
-
 	/* pkk May 6th: Disabled bandwidth patch
 	// w0dk4 June 2007: Bandwith Patch
 	ZString GetBandwidthMenuString()
@@ -4764,102 +4477,9 @@ public:
         return (m_bRoundRadar) ? "Round Radar" : "Square Radar";
     }
 
-    ZString GetCensorChatsMenuString()
-    {
-        return (CensorDisplay ()) ? "Censor Display" : "Don't Censor Display";
-    }
-
     ZString GetStickyChaseMenuString ()
     {
         return m_bPreferChaseView ? "Default To Chase View" : "Default To Cockpit View";
-    }
-
-    ZString GetFilterChatsToAllMenuString()
-    {
-        return trekClient.FilterChatsToAll() ? "Filter Chats Sent To All" : "Don't Filter Chats Sent To All";
-    }
-
-    ZString GetFilterQuickCommsMenuString()
-    {
-        return trekClient.FilterQuickComms() ? "Filter Voice Commands" : "Don't Filter Voice Commands";
-    }
-
-	//TheBored 30-JUL-07: Filter Unknown Chat patch
-    ZString GetFilterUnknownChatsString()
-    {
-        return trekClient.FilterUnknownChats() ? "Filter Unknown Chats" : "Don't Filter Unknown Chats";
-    }
-
-    ZString GetFilterLobbyChatsMenuString()
-    {
-		//TheBored 25-JUN-07: Added a new option so the user can choose if PMs are filtered.
-        switch (trekClient.FilterLobbyChats())
-        {
-            case 1:
-                return "Filter Chats Sent From Lobby";
-                break;
-            case 2:
-                return "Filter Chats Sent From Lobby Including PMs";
-                break;
-            case 3:
-                return "Don't Filter Chats Sent From Lobby";
-                break;
-            default:
-                return "Default Case"; //TB: Shouldn't happen, but left in for testing.
-                break;
-        }
-    }
-
-    ZString GetStarsMenuString()
-    {
-        return (m_pwrapImageStars->GetImage() != Image::GetEmpty()) ? "Stars On " : "Stars Off ";
-    }
-
-    ZString GetStrobesMenuString()
-    {
-        return ThingGeo::GetShowLights() ? "Strobes On " : "Strobes Off ";
-    }
-
-    ZString GetTrailsMenuString()
-    {
-        return ThingGeo::GetShowTrails() ? "Trails On " : "Trails Off ";
-    }
-
-    ZString GetBoundsMenuString()
-    {
-        return ThingGeo::GetShowBounds() ? "Bounds On " : "Bounds Off ";
-    }
-
-    ZString GetTransparentObjectsMenuString()
-    {
-        return ThingGeo::GetTransparentObjects() ? "TransparentObjects On " : "TransparentObjects Off ";
-    }
-
-    ZString GetLensFlareMenuString()
-    {
-        return (m_bLensFlare) ? "Lens Flare On " : "Lens Flare Off ";
-    }
-
-    ZString GetSmokeMenuString()
-    {
-        switch (ThingGeo::GetShowSmoke())
-        {
-            case 0:
-                return ZString ("Particles Off");
-                break;
-            case 2: //Imago 8/16/09
-                return ZString ("Particles On - Performance");
-                break;
-            case 1:
-                return ZString ("Particles On - Low Quality");
-                break;
-            case 3:
-                return ZString ("Particles On - Medium Quality");
-                break;
-            default:
-                return ZString ("Particles On - High Quality");
-                break;
-        }
     }
 
     ZString GetSoundQualityMenuString()
@@ -4911,40 +4531,6 @@ public:
     ZString GetTargetHUDMenuString()
     {
         return (m_pboolTargetHUD->GetValue()) ? "Target HUD On " : "Target HUD Off ";
-    }
-
-    //Andon: Expanding the number of HUD style switches available
-	const ZString& GetStyleHUDMenuString()
-    {
-        static const ZString    c_strNormal("Style: Normal");
-        static const ZString    c_strSoftware("Style: Software");
-		static const ZString    c_strCust1("Style: Custom Hud 1");//Add in the first custom one
-		static const ZString    c_strCust2("Style: Custom Hud 2");//Add in the second custom one
-		static const ZString    c_strCust3("Style: Custom Hud 3");//Add in the third custom one
-		static const ZString    c_strOops("Style: Error"); //Just in case I goofed
-
-		if (m_pnumberStyleHUD->GetValue() == 0)
-		{
-			return c_strNormal;
-		}
-		else if (m_pnumberStyleHUD->GetValue() == 1)
-		{
-			return c_strSoftware;
-		}
-		else if (m_pnumberStyleHUD->GetValue() == 2)
-		{
-			return c_strCust1;
-		}
-		else if (m_pnumberStyleHUD->GetValue() == 3)
-		{
-			return c_strCust2;
-		}
-		else
-		{
-			return c_strCust3;
-		}
-		//Andon: The old version, was simply True/False
-		//return (m_pnumberStyleHUD->GetValue()) ? c_strSoftware : c_strNormal;
     }
 
     ZString GetOldUiMenuString()
@@ -5164,22 +4750,6 @@ public:
                 StartClose();
                 break;
 
-            case idmTogglePosters:
-                TogglePosters();
-                break;
-
-            case idmToggleDebris:
-                ToggleDebris();
-                break;
-
-            case idmToggleStars:
-                ToggleStars();
-                break;
-
-            case idmToggleEnvironment:
-                ToggleEnvironment();
-                break;
-
             case idmOldUi:
                 ToggleOldUi();
                 break;
@@ -5197,17 +4767,6 @@ public:
 				}
                 break;*/
 
-			//Imago 7/18/09
-			// yp Your_Persona August 2 2006 : MaxTextureSize Patch
-            case idmMaxTextureSize:
-				//ToggleMaxTextureSize(trekClient.MaxTextureSize()+1); Obsolete REMOVE REVIEW, extra, unneeded functions
-				GetEngine()->SetMaxTextureSize(g_DX9Settings.m_iMaxTextureSize + 1);
-				SavePreference("MaxTextureSize", g_DX9Settings.m_iMaxTextureSize);
-				if (m_pitemMaxTextureSize != NULL) {
-					m_pitemMaxTextureSize->SetString(GetMaxTextureSizeMenuString());
-				}
-				break;
-
 			case idmAA:
 				GetEngine()->SetAA(g_DX9Settings.m_dwAA + 1);
 				SavePreference("UseAntialiasing", g_DX9Settings.m_dwAA);
@@ -5223,43 +4782,6 @@ public:
 				}
 				break;
 
-			case idmVsync:
-				//only does anything if the device is fullscreen...but we'll let them push it anyways.
-				GetEngine()->SetVSync(!g_DX9Settings.m_bVSync);
-				SavePreference("UseVSync", g_DX9Settings.m_bVSync);
-				if (m_pitemVsync != NULL) {
-					m_pitemVsync->SetString(GetVsyncString());
-				}
-				break;
-
-            case idmToggleStrobes:
-                ToggleStrobes();
-                break;
-
-            case idmToggleTrails:
-                ToggleTrails();
-                break;
-
-            case idmToggleBounds:
-                ToggleBounds();
-                break;
-
-            case idmToggleTransparentObjects:
-                ToggleTransparentObjects();
-                break;
-
-            case idmToggleSmoke:
-                ToggleSmoke();
-                break;
-
-            case idmToggleLensFlare:
-                ToggleLensFlare();
-                break;
-
-            case idmToggleBidirectionalLighting:
-                ToggleBidirectionalLighting();
-                break;
-
             case idmToggleChatHistoryHUD:
                 ToggleChatHistoryHUD();     //Not persisted
                 break;
@@ -5270,11 +4792,7 @@ public:
 
             case idmToggleTargetHUD:
                 ToggleTargetHUD();
-                break;
-
-            case idmStyleHUD:
-                CycleStyleHUD();
-                break;
+                break; 
 
             case idmResetSound:
                 ResetSound();

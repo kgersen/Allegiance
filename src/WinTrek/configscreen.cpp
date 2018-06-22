@@ -54,6 +54,15 @@ public:
 
         map["Configuration.Graphics.Gamma"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetGraphicsGamma());
 
+        map["Configuration.Graphics.Environment"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetGraphicsEnvironment());
+        map["Configuration.Graphics.Posters"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetGraphicsPosters());
+        map["Configuration.Graphics.Stars"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetGraphicsStars());
+        map["Configuration.Graphics.BoundingBoxes"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetGraphicsBoundingBoxes());
+        map["Configuration.Graphics.TransparentObjects"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetGraphicsTransparentObjects());
+        map["Configuration.Graphics.Particles"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetGraphicsParticles());
+        map["Configuration.Graphics.LensFlare"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetGraphicsLensFlare());
+        map["Configuration.Graphics.Debris"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetGraphicsDebris());
+
         map["Configuration.Graphics.MaxTextureSizeLevel"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetGraphicsMaxTextureSizeLevel());
 
         //online
@@ -76,6 +85,8 @@ public:
         map["Configuration.Ui.ShowStartupIntroMovie"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetUiShowStartupIntroMovie());
         map["Configuration.Ui.ShowStartupTrainingSuggestion"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetUiShowStartupTrainingSuggestion());
         map["Configuration.Ui.UseOldUi"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetUiUseOldUi());
+
+        map["Configuration.Ui.HudStyle"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetUiHudStyle());
 
         //chat
         map["Configuration.Chat.FilterChatsToAll"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetChatFilterChatsToAll());
