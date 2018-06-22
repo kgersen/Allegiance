@@ -268,6 +268,11 @@ public:
         m_hThread = NULL;
     }
 
+    bool PeekIsRunning() {
+        DWORD ret = WaitForSingleObject(m_hThread, 10);
+        return ret == WAIT_TIMEOUT;
+    }
+
 };
 
 class TrekAppImpl : public TrekApp {
@@ -840,18 +845,36 @@ public:
 
         debugf("Finished graphics initialization, starting main game initialization");
 
-        m_pCallsignHandler = CreateCallsignHandlerFromSteam(m_pGameConfiguration);
-	
-        TRef<TrekWindow> pwindow = 
-            TrekWindow::Create(
-                this, 
-                pengineWindow,
-                strCommandLine,
-				pathStr,
-                bMovies
-            );
+        TRef<TrekWindow> pwindow;
+        ThreadedWork threadInitialization = ThreadedWork([this, pengineWindow, pathStr, strCommandLine, bMovies, &pwindow]() {
+            m_pCallsignHandler = CreateCallsignHandlerFromSteam(m_pGameConfiguration);
 
-        movies.Wait();
+            pwindow =
+                TrekWindow::Create(
+                    this,
+                    pengineWindow,
+                    strCommandLine,
+                    pathStr,
+                    bMovies
+                );
+        });
+
+        threadInitialization.Start();
+        
+        MSG msg;
+        BOOL bRet;
+        while ((movies.PeekIsRunning() || threadInitialization.PeekIsRunning()) && (bRet = GetMessage(&msg, NULL, 0, 0)) != 0)
+        {
+            if (bRet == -1)
+            {
+                // handle the error and possibly exit
+            }
+            else
+            {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+        }
 
         if (!pwindow->GetEngineWindow()->IsValid()) {
             return E_FAIL;
