@@ -534,16 +534,17 @@ public:
 //		EffectApp::Initialize(strCommandLine);
 // BUILD_DX9
 
+        debugf("Creating game configuration handler");
+
+        m_pGameConfiguration = new GameConfigurationWrapper(GetConfiguration());
+
         //
         // get the artpath
         //
-        PathString pathStr = GetConfiguration()->GetStringValue(
-            "Data.Path",
-            GetConfiguration()->GetStringValue(
-                "ArtPath",
-                GetExecutablePath() + "\\Artwork" 
-            )
-        ).c_str();
+        if (m_pGameConfiguration->GetDataArtworkPath()->GetValue() == "") {
+            m_pGameConfiguration->GetDataArtworkPath()->SetValue(GetExecutablePath().c_str() + ZString("\\Artwork"));
+        }
+        PathString pathStr = m_pGameConfiguration->GetDataArtworkPath()->GetValue();
 
         bool bLogFrameData = GetConfiguration()->GetBoolValue(
             "Debug.LogFrameData",
@@ -777,10 +778,6 @@ public:
 		}
 
 		CD3DDevice9::Get()->UpdateCurrentMode( );
-
-        debugf("Creating game configuration handler");
-
-        m_pGameConfiguration = new GameConfigurationWrapper(GetConfiguration());
 
         debugf("Saved character name: %s", m_pGameConfiguration->GetOnlineCharacterName()->GetValue());
 

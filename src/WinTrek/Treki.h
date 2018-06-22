@@ -15,6 +15,10 @@ public:
         EngineConfigurationWrapper(pconfiguration)
     {}
 
+    TRef<SimpleModifiableValue<ZString>> GetDataArtworkPath() {
+        return m_pconfiguration->GetString("Data.ArtworkPath", m_pconfiguration->GetStringValue("ArtPath", ""));
+    }
+
     TRef<SimpleModifiableValue<ZString>> GetOnlineCharacterName() {
         return m_pconfiguration->GetString("Online.CharacterName", m_pconfiguration->GetStringValue("CharacterName", ""));
     }

@@ -74,6 +74,8 @@ public:
         map["AvailableTokens"] = TypeExposer<TRef<UiList<TRef<StringValue>>>>::Create(GetAvailableTokens());
 
         //debug
+        map["Configuration.Data.ArtworkPath"] = TypeExposer<TRef<SimpleModifiableValue<ZString>>>::Create(m_pConfiguration->GetDataArtworkPath());
+
         map["Configuration.Debug.LogToFile"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetDebugLogToFile());
         map["Configuration.Debug.LogToOutput"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetDebugLogToOutput());
         map["Configuration.Debug.Lua"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetDebugLua());
