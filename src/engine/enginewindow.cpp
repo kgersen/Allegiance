@@ -165,17 +165,25 @@ EngineWindow::EngineWindow(	EngineConfigurationWrapper* pConfiguration,
     g_bWindowLog = m_pConfiguration->GetDebugWindow()->GetValue();
     g_bLuaDebug = m_pConfiguration->GetDebugLua()->GetValue();
 
-    m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<bool>([this](bool bFullscreen) {
+    m_pConfigurationUpdater->PushEnd(new CallbackWhenChanged<bool>([this](bool bFullscreen) {
         SetFullscreen(bFullscreen);
     }, m_pConfiguration->GetGraphicsFullscreen()));
 
-    m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<float, float>([this](float x, float y) {
+    m_pConfigurationUpdater->PushEnd(new CallbackWhenChanged<float, float>([this](float x, float y) {
         m_pengine->SetFullscreenSize(WinPoint((int)x, (int)y));
     }, m_pConfiguration->GetGraphicsResolutionX(), m_pConfiguration->GetGraphicsResolutionY()));
 
-    m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<float>([this](float gamma) {
+    m_pConfigurationUpdater->PushEnd(new CallbackWhenChanged<float>([this](float gamma) {
         m_pengine->SetGammaLevel(gamma);
     }, m_pConfiguration->GetGraphicsGamma()));
+
+    m_pConfigurationUpdater->PushEnd(new CallbackWhenChanged<bool>([this](bool vsync) {
+        m_pengine->SetVSync(vsync);
+    }, m_pConfiguration->GetGraphicsUseVSync()));
+
+    m_pConfigurationUpdater->PushEnd(new CallbackWhenChanged<bool>([this](bool aa) {
+        m_pengine->SetAA(aa ? 1 : 0);
+    }, m_pConfiguration->GetGraphicsUseAntiAliasing()));
 
     m_pcloseEventSource = new EventSourceImpl();
     m_pevaluateFrameEventSource = new TEvent<Time>::SourceImpl();
@@ -461,7 +469,6 @@ void EngineWindow::UpdateWindowStyle()
             //windowed, but we do not fit with the selected resolution, switch to borderless
             //set to monitor resolution
             
-            SetFullscreenSize(Vector(screenWidth, screenHeight, g_DX9Settings.m_refreshrate));
             size = m_pengine->GetFullscreenSize();
             SetClientRect(WinRect(WinPoint(0, 0), size));
 
