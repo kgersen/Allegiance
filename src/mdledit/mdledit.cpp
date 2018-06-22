@@ -517,7 +517,7 @@ public:
 
     MDLEditWindow(
         EffectApp* papp, 
-        UpdatingConfiguration* pConfiguration,
+        EngineConfigurationWrapper* pConfiguration,
         const ZString& strCommandLine, 
         bool bImageTest,
         bool bTest, 
@@ -1715,7 +1715,7 @@ public:
         // Create the window
         //
 
-        m_pwindow = new MDLEditWindow(this, pConfiguration, strCommandLine, bImageTest, bTest, initialTest, pathStr);
+        m_pwindow = new MDLEditWindow(this, new EngineConfigurationWrapper(pConfiguration), strCommandLine, bImageTest, bTest, initialTest, pathStr);
 
         //
         // Parse the command line
