@@ -779,7 +779,7 @@ public:
 
 		CD3DDevice9::Get()->UpdateCurrentMode( );
 
-        debugf("Saved character name: %s", m_pGameConfiguration->GetOnlineCharacterName()->GetValue());
+        debugf("Saved character name: %s", (const char*)m_pGameConfiguration->GetOnlineCharacterName()->GetValue());
 
         if (m_pGameConfiguration->GetOnlineCharacterName()->GetValue() == "") {
             debugf("Character name invalid, using steam persona name: %s", personaName);
