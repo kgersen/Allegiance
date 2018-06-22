@@ -129,11 +129,11 @@ public:
     }
 
     TRef<SimpleModifiableValue<bool>> GetGraphicsBoundingBoxes() {
-        return m_pconfiguration->GetBool("Graphics.BoundingBoxes", m_pconfiguration->GetBoolValue("Bounds", true));
+        return m_pconfiguration->GetBool("Graphics.BoundingBoxes", m_pconfiguration->GetBoolValue("Bounds", false));
     }
 
     TRef<SimpleModifiableValue<bool>> GetGraphicsTransparentObjects() {
-        return m_pconfiguration->GetBool("Graphics.TransparentObjects", m_pconfiguration->GetBoolValue("TransparentObjects", true));
+        return m_pconfiguration->GetBool("Graphics.TransparentObjects", m_pconfiguration->GetBoolValue("TransparentObjects", false));
     }
 
     TRef<SimpleModifiableValue<bool>> GetGraphicsParticles() {

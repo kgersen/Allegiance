@@ -2861,6 +2861,7 @@ public:
         }, m_papp->GetGameConfiguration()->GetGraphicsTransparentObjects()));
 
         m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<bool>([this](bool value) {
+            ThingGeo::SetPerformance(false);
             ThingGeo::SetShowSmoke(value ? 3 : 0);
         }, m_papp->GetGameConfiguration()->GetGraphicsParticles()));
 
