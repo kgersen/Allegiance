@@ -700,7 +700,6 @@ LONG WINAPI DelayLoadDllExceptionFilter(PEXCEPTION_POINTERS pep)
 class TrekWindowImpl :
     public TrekWindow,
     public IIntegerEventSink,
-    public ISubmenuEventSink,
     public IMenuCommandSink,
     public IClientEventSink,
     public ModelerSite,
@@ -1258,7 +1257,6 @@ public:
 
     TRef<IMenu>                m_pmenu;
     TRef<IMenuCommandSink>     m_pmenuCommandSink;
-    TRef<ISubmenuEventSink>    m_psubmenuEventSink;
     TRef<IIntegerEventSink>    m_pintegerEventSink;
     TRef<IKeyboardInput>       m_pkeyboardInput;
     TRef<IClientEventSink>     m_pClientEventSink;
@@ -2688,7 +2686,6 @@ public:
         m_pClientEventSink  = IClientEventSink::CreateDelegate(this);
         m_pintegerEventSink = IIntegerEventSink::CreateDelegate(this);
         m_pmenuCommandSink  = IMenuCommandSink::CreateDelegate(this);
-        m_psubmenuEventSink = ISubmenuEventSink::CreateDelegate(this);
 
         //
         // advise us of client notifications
@@ -3656,21 +3653,6 @@ public:
         ShellExecute(NULL, NULL, szURL, NULL, NULL, SW_SHOWNORMAL);
     }
 
-    #define idmOpenNewUiConfiguration 1
-
-    #define idmConfigure         3
-    #define idmView              5
-    #define idmOptions           6
-    #define idmHelp              7
-    #define idmExitGame          8
-    #define idmEngineOptions     9
-    #define idmSoundOptions      10
-    #define idmGameOptions       11
-    #define idmExitApp           12
-    #define idmGameDetails       13
-	#define idmVersion           14 // TE: Added Version menu
-	#define idmTags				 15 // BT - STEAM - Let the user select thier group tag.
-
     #define idmChannelN          101
     #define idmChannelShow       102
     #define idmChannelHide       103
@@ -3697,107 +3679,15 @@ public:
     #define idmCMLoadout         505
     #define idmCMTeamPane        506
 
-    #define idmSound                       601
-    #define idmTogglePosters               602
-    #define idmToggleDebris                603
-    #define idmToggleStars                 604
-    #define idmToggleStrobes               605
-    #define idmToggleLensFlare             606
-    #define idmToggleTrails                609
-    #define idmToggleEnvironment           611
-    #define idmToggleBidirectionalLighting 612
-    #define idmToggleChatHistoryHUD        614
-    #define idmToggleCenterHUD             615
-    #define idmToggleTargetHUD             616
-    #define idmStyleHUD                    618
-    #define idmToggleCensorChats           619
-    #define idmToggleLinearControls        620
-    #define idmToggleSmoke                 621
-    #define idmToggleBounds                622
-    #define idmToggleTransparentObjects    623
-    #define idmFilterChatsToAll            624
-    #define idmFilterQuickComms            625
-    #define idmFilterLobbyChats            626
-    #define idmToggleLargeDeadZone         627
-    #define idmToggleVirtualJoystick       628
-    #define idmToggleFlipY                 629
-    #define idmToggleStickyChase           630
-    #define idmMaxTextureSize              632 // yp Your_Persona August 2 2006 : MaxTextureSize Patch
-    #define idmPings                       633 // w0dk4 player-pings feature
-    /* pkk May 6th: Disabled bandwidth patch
-    #define idmBandwidth		       634 // w0dk4 June 2007: Bandwith Patch */
-    #define	idmMuteFilterOptions		 635 //TheBored 30-JUL-07: Filter Unknown Chat patch
-    #define idmFilterUnknownChats		 636 //TheBored 30-JUL-07: Filter Unknown Chat patch
-	#define idmScrollbar				 637 // #294 - Turkey
-	#define idmIncreaseChatLines		 638 // #294 - Turkey
-	#define idmReduceChatLines			 639 // #294 - Turkey
-	#define idmCycleTimestamp			 640 // #294 - Turkey
-
-    #define idmResetSound           701
-    #define idmSoundQuality         702
-    #define idmSoundHardware        703
-    #define idmToggleMusic          704
-    #define idmMusicVolumeUp        705
-    #define idmMusicVolumeDown      706
-    #define idmSFXVolumeUp          707
-    #define idmSFXVolumeDown        708
-    #define idmVoiceOverVolumeUp    709
-    #define idmVoiceOverVolumeDown  710
-	#define idmUseDSound8           711
-
 	#define idmContextAcceptPlayer	801
 	#define idmContextRejectPlayer	802
 	#define idmContextMakeLeader	803
 	#define idmContextMutePlayer	804
-
-	//imago 6/30/09
-	#define idmDeviceOptions		805
-	#define idmAA					806
-	#define idmMip					807
-	#define idmPack					808
-	#define idmVsync				810
-	
-    //Imago 7/10
-    #define idmFFOptions            811
-    #define idmFFGainUp             812
-    #define idmFFGainDown           813
-    #define idmFFAutoCenter         814
-
 	
 	//Xynth #48 8/2010
 	#define idmContextDockDrone		815
 	//Xynth #197 8/2010
 	#define idmContextChat			816
-
-	//Imago 8/10 #215
-	#define idmMouseOptions		817
-	#define idmMouseSensUp		818
-	#define idmMouseSensDown	819
-	#define idmWheelDelay		821 //Spunky #282
-
-    #define idmOldUi	        823
-
-    #define idmShowJoystickIndicator 824
-
-	// BT - STEAM
-	#define idmCallsignTag0		900
-	#define idmCallsignTag1		901
-	#define idmCallsignTag2		902
-	#define idmCallsignTag3		903
-	#define idmCallsignTag4		904
-	#define idmCallsignTag5		905
-	#define idmCallsignTag6		906
-	#define idmCallsignTag7		907
-	#define idmCallsignTag8		908
-	#define idmCallsignTag9		909
-	#define idmCallsignTagNone	910 
-	
-	// BT - STEAM
-	#define idmToken0			920
-	#define idmToken1			921
-	#define idmToken2			922
-	#define idmToken3			923
-	#define idmToken4			924
 
 	// BT - STEAM - New player context menu options
 	#define idmContextKickPlayer	1000
@@ -3934,81 +3824,7 @@ public:
 
     void ShowMainMenu()
     {
-        m_pmenu =
-            CreateMenu(
-                GetModeler(),
-                TrekResources::SmallFont(),
-                m_pmenuCommandSink
-            );
-
-		// mmf format octal version (defined in SlmVer.h) to decimal YY.MM.DD
-		int YY,MM,DD;
-		ZString dR;
-		{
-			ZString dVer, dYY, dMM, dDD;
-			dVer = ZVersionInfo().GetStringValue("FileVersion").Right(6);
-			dR = ZVersionInfo().GetProductVersionString().Middle(3,1); //Imago good till R10
-			dDD = dVer.Right(2);
-			dMM = dVer.Middle(2,2);
-			dYY = dVer.Middle(0,2);
-
-			YY = atoi(dYY); 	
-			YY = (YY/10)*8+(YY%10);
-			
-			MM = atoi(dMM); 	
-			MM = (MM/10)*8+(MM%10);
-			
-			DD = atoi(dDD); 	
-			DD = (DD/10)*8+(DD%10);
-		}
-
-        m_pmenu->AddMenuItem(idmOpenNewUiConfiguration, "(Test) Configuration ui", 'Q');
-        m_pmenu->AddMenuItem(0, "--------------------------");
-
-		// TE: Add version menu, mmf changed format, zero pad YY, that will last us 3 more years and saves an if
-		// TheBored 05-APR-2010: Removed leading 0 from year, hooray 2010!
-		// mmf added ifs to zero pad MM and DD
-		if (MM<10 && DD<10) m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # " + ZString(YY) + ".0" + ZString(MM) + ".0" + ZString(DD));
-		if (MM<10 && DD>9)  m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # " + ZString(YY) + ".0" + ZString(MM) + "." + ZString(DD));
-		if (MM>9 && DD<10)  m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # " + ZString(YY) + "." + ZString(MM) + ".0" + ZString(DD));
-		if (MM>9 && DD>9)   m_pmenu->AddMenuItem(0, "FAZ R"+dR+" Build # " + ZString(YY) + "." + ZString(MM) + "." + ZString(DD));
-		//#62 Imago 7/10
-		if (trekClient.m_pMissionInfo) {
-			ZString zVer = UTL::GetServerVersion(trekClient.m_pMissionInfo->GetCookie());
-			if (zVer.IsEmpty() == false) {
-				m_pmenu->AddMenuItem(0, PCC("Server v" + zVer));
-			}
-		}
-		//AEM, redesigned ESC menu 7/6/07
-		// mmf 10/07 swapped position of S and G
-		m_pmenu->AddMenuItem(0               , "");
-		m_pmenu->AddMenuItem(0				 , "HELP");
-		m_pmenu->AddMenuItem(0               , "--------------------------");
-		m_pmenu->AddMenuItem(idmHelp         , "Manual & Quick Reference"            , 'H'                     );
-		m_pmenu->AddMenuItem(0               , "");
-		m_pmenu->AddMenuItem(0               , "OPTIONS");
-		m_pmenu->AddMenuItem(0               , "--------------------------");
-        m_pmenu->AddMenuItem(idmEngineOptions, "Graphics Device" , 'D', m_psubmenuEventSink);
-        m_pmenu->AddMenuItem(idmOptions      , "Graphics", 'O', m_psubmenuEventSink);
-        m_pmenu->AddMenuItem(idmGameOptions  , "Game",     'G', m_psubmenuEventSink);
-		m_pmenu->AddMenuItem(idmSoundOptions , "Sound"   , 'S', m_psubmenuEventSink);
-
-        if (trekClient.MyMission() != NULL) {
-			m_pmenu->AddMenuItem(0               , "");
-			m_pmenu->AddMenuItem(0               , "INFORMATION");
-			m_pmenu->AddMenuItem(0               , "--------------------------");
-            m_pmenu->AddMenuItem(idmGameDetails, "Game Details",   'I');
-			m_pmenu->AddMenuItem(idmPings  ,     "Player Pings",   'P');	// w0dk4 player-pings feature
-		}
-
-        m_pmenu->AddMenuItem(0               , "");
-		m_pmenu->AddMenuItem(0               , "QUIT");
-		m_pmenu->AddMenuItem(0               , "--------------------------");
-        if ((trekClient.MyMission() != NULL) || Slideshow::IsInSlideShow ())
-            m_pmenu->AddMenuItem(idmExitGame , "Mission"    , 'Q'                 );
-        m_pmenu->AddMenuItem(idmExitApp      , "Allegiance" , 'X'                     );
-
-        OpenPopup(m_pmenu, Point(10, 10));
+        ShowConfiguration();
     }
 
 	// BT - Steam
@@ -4210,63 +4026,7 @@ public:
 
     void ShowOptionsMenu()
     {
-        m_pmenu =
-            CreateMenu(
-                GetModeler(),
-                TrekResources::SmallFont(),
-                m_pmenuCommandSink
-            );
-
-        m_pmenu->AddMenuItem(idmEngineOptions, "Graphics Device" , 'D', m_psubmenuEventSink);
-        m_pmenu->AddMenuItem(idmOptions      , "Graphics Options", 'O', m_psubmenuEventSink);
-        m_pmenu->AddMenuItem(idmSoundOptions , "Sound Options"   , 'S', m_psubmenuEventSink);
-        m_pmenu->AddMenuItem(idmGameOptions  , "Game Options" ,    'G', m_psubmenuEventSink);
-
-        OpenPopup(m_pmenu, Point(10, 10));
-    }
-
-    TRef<IPopup> GetSubMenu(IMenuItem* pitem)
-    {
-        TRef<IMenu> pmenu =
-            CreateMenu(
-                GetModeler(),
-                TrekResources::SmallFont(),
-                m_pmenuCommandSink
-            );
-
-        switch (pitem->GetID()) {
-            case idmEngineOptions:
-                return m_pEngineWindow->GetEngineMenu(TrekResources::SmallFont());
-
-            case idmGameOptions:
-                m_pitemToggleStickyChase           = pmenu->AddMenuItem(idmToggleStickyChase,           GetStickyChaseMenuString (),        'K');
-													 pmenu->AddMenuItem(idmMouseOptions,				"Mouse Options",				  'Q', m_psubmenuEventSink);
-					
-				/* pkk May 6th: Disabled bandwidth patch // w0dk4 June 2007: Bandwith Patch
-				m_pitemToggleBandwidth			   = pmenu->AddMenuItem(idmBandwidth,					GetBandwidthMenuString(),		    'B');*/
-                                                     pmenu->AddMenuItem(idmConfigure           ,        "Map Keys and Controls"      ,      'C');
-                break;
-
-            case idmSoundOptions:
-                #ifdef _DEBUG
-                pmenu->AddMenuItem(idmResetSound, "Reset Sound", 'R');
-                #endif
-                m_pitemSoundQuality         = pmenu->AddMenuItem(idmSoundQuality, GetSoundQualityMenuString());
-                m_pitemToggleSoundHardware  = pmenu->AddMenuItem(idmSoundHardware, GetSoundHardwareMenuString());
-				m_pitemToggleDSound8Usage   = pmenu->AddMenuItem(idmUseDSound8, GetDSound8EnabledString());
-                break;
-
-			//imago 6/30/09: new graphics options dx9, removed vsync 7/10
-			case idmDeviceOptions:
-				m_pitemAA				= pmenu->AddMenuItem(idmAA   			  , GetAAString()                                       , 'A');
-			    //m_pitemMip				= pmenu->AddMenuItem(idmMip    			  , GetMipString()                                      , 'M'); // BT - Disable MipMaps for now
-				m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V'); //Spunky #265 backing out //Imago 7/10
-				// yp Your_Persona August 2 2006 : MaxTextureSize Patch
-				break;
-
-        }
-
-        return pmenu;
+        ShowConfiguration();
     }
 
     void ToggleStickyChase ()
@@ -4709,107 +4469,6 @@ public:
     void OnMenuCommand(IMenuItem* pitem)
     {
         switch (pitem->GetID()) {
-            case idmOpenNewUiConfiguration:
-                CloseMenu();
-                ShowConfiguration();
-                break;
-
-            case idmConfigure:
-                DoInputConfigure();
-                break;
-
-            case idmHelp:
-                CloseMenu();
-                OnHelp(true);
-                break;
-
-            case idmGameDetails:
-                CloseMenu();
-                OnGameState();
-                break;
-
-			// w0dk4 player-pings feature
-			case idmPings:
-				{
-					CloseMenu();
-					if (trekClient.m_fm.IsConnected()){
-						trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
-						BEGIN_PFM_CREATE(trekClient.m_fm, pfmPingDataReq, C, REQPINGDATA)
-						END_PFM_CREATE
-					}
-				}
-				break;
-
-            case idmExitGame:
-                CloseMenu();
-                StartQuitMission();
-                break;
-
-            case idmExitApp:
-                CloseMenu();
-                StartClose();
-                break;
-
-            case idmOldUi:
-                ToggleOldUi();
-                break;
-
-			/* pkk May 6th: Disabled bandwidth patch
-			// w0dk4 June 2007: Bandwith Patch
-			case idmBandwidth:
-				ToggleBandwidth(trekClient.MaxBandwidth()*2);
-				if(trekClient.m_fLoggedOn) {
-					// send change to server if connected
-					trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
-					BEGIN_PFM_CREATE(trekClient.m_fm, pfmBandwidth, C, BANDWIDTH)
-					END_PFM_CREATE
-					pfmBandwidth->value = trekClient.MaxBandwidth();
-				}
-                break;*/
-
-			case idmAA:
-				GetEngine()->SetAA(g_DX9Settings.m_dwAA + 1);
-				SavePreference("UseAntialiasing", g_DX9Settings.m_dwAA);
-				if (m_pitemAA != NULL) {
-					m_pitemAA->SetString(GetAAString());
-				}
-				break;
-			case idmMip:
-				GetEngine()->SetAutoGenMipMaps(!g_DX9Settings.m_bAutoGenMipmaps);
-				SavePreference("UseAutoMipMaps", g_DX9Settings.m_bAutoGenMipmaps);
-				if (m_pitemMip != NULL) {
-					m_pitemMip->SetString(GetMipString());
-				}
-				break;
-
-            case idmToggleChatHistoryHUD:
-                ToggleChatHistoryHUD();     //Not persisted
-                break;
-
-            case idmToggleCenterHUD:
-                ToggleCenterHUD();
-                break;
-
-            case idmToggleTargetHUD:
-                ToggleTargetHUD();
-                break; 
-
-            case idmResetSound:
-                ResetSound();
-                break;
-
-            case idmSoundQuality:
-                SwitchSoundQuality();
-                break;
-
-            case idmSoundHardware:
-                ToggleSoundHardware();
-                break;
-
-			case idmUseDSound8:
-				ToggleUseDSound8();
-				break;
-
 			// YP: Add cases for rightclick lobby patch
 			case idmContextAcceptPlayer:
 				contextAcceptPlayer();	CloseMenu();
