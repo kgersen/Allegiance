@@ -75,6 +75,14 @@ public:
     TRef<SimpleModifiableValue<bool>> GetJoystickEnableForceFeedback() {
         return m_pconfiguration->GetBool("Joystick.EnableForceFeedback", m_pconfiguration->GetBoolValue("EnableFeedback", false));
     }
+
+    TRef<SimpleModifiableValue<float>> GetMouseSensitivity() {
+        return m_pconfiguration->GetFloat("Mouse.Sensitivity", m_pconfiguration->GetFloatValue("MouseSensitivity", 0.6f));
+    }
+
+    TRef<SimpleModifiableValue<float>> GetMouseAcceleration() {
+        return m_pconfiguration->GetInt("Mouse.Acceleration", m_pconfiguration->GetIntValue("MouseAcceleration", 0));
+    }
 };
 
 #include "CallsignTagInfo.h"

@@ -708,6 +708,7 @@ class TrekWindowImpl :
 {
 private:
     TrekApp* m_papp;
+    TRef<ValueList> m_pConfigurationUpdater;
 public:
     const char*     m_pszCursor;
 
@@ -1077,10 +1078,7 @@ public:
 	// -Imago: Last activity timer
 	Time				m_timeLastActivity;
 	
-	//8/10
-	int						m_iMouseAccel;
 	int						m_iWheelDelay; //Spunky #282
-	TRef<ModifiableNumber>  m_pnumMouseSens;
 	//
 
     //
@@ -1282,10 +1280,7 @@ public:
 	TRef<IMenuItem>            m_pitemToggleFFAutoCenter; 
 	TRef<IMenuItem>            m_pitemToggleFFGainUp; 
 	TRef<IMenuItem>            m_pitemToggleFFGainDown;
-	// 8/10 #215
-	TRef<IMenuItem>            m_pitemToggleMouseSensUp;
-	TRef<IMenuItem>            m_pitemToggleMouseSensDown;
-	TRef<IMenuItem>            m_pitemToggleMouseAccel;
+	// 8/10 #215=
 	TRef<IMenuItem>            m_pitemToggleWheelDelay; //Spunky #282
 	 //
     TRef<IMenuItem>            m_pitemToggleStrobes;
@@ -2548,7 +2543,7 @@ public:
         ),
         m_papp(papp),
         m_pConfiguration(GetConfiguration()),
-
+        m_pConfigurationUpdater(new ValueList(nullptr)),
 		m_screen(ScreenIDSplashScreen),
 		m_bShowMeteors(true),
 		m_bShowStations(true),
@@ -2588,7 +2583,6 @@ public:
 		m_bQuitComposing(true),
 		m_aabmInvest(0),
 		m_aabmCommand(0),
-		m_iMouseAccel(0), //#215
 		m_bShowInventoryPane(true), // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
 		m_bShowSectorMapPane(true),  // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
         m_pUseOldUi(nullptr)
@@ -2641,12 +2635,6 @@ public:
         if (g_bLuaDebug) {
             UiEngine::m_stringLogPath = (std::string)"lua.log";
         }
-
-		debugf("Reading FFGain, MouseSensitivity\n");
-
-		m_pnumMouseSens = new ModifiableNumber(atof(LoadPreference("MouseSensitivity", "0.6")));
-
-        m_pinputEngine->GetMouse()->SetSensitivity(m_pnumMouseSens->GetValue());
 
 		debugf("TrekResources::Initialize() - Loading fonts.\n");
 
@@ -2864,12 +2852,17 @@ public:
         // Load Input toggles
         //
 
-		m_iMouseAccel			 = LoadPreference("MouseAcceleration",     0) % 3; // Imago #215 //#282 bugfix
+        m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<float>([this](float sensitivity) {
+            m_pinputEngine->GetMouse()->SetSensitivity(sensitivity);
+        }, m_papp->GetGameConfiguration()->GetMouseSensitivity()));
+
+        m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<float>([this](float value) {
+            m_pinputEngine->GetMouse()->SetAccel((int)value);
+        }, m_papp->GetGameConfiguration()->GetMouseAcceleration()));
+
 		m_iWheelDelay			 = LoadPreference("WheelDelay",            2) % 5; //Spunky #282
 
         m_pUseOldUi = m_pConfiguration->GetBool("Ui.UseOldUi", true);
-
-        m_pinputEngine->GetMouse()->SetAccel(m_iMouseAccel);
 
 // BUILD_DX9
 
@@ -3749,7 +3742,6 @@ public:
 	#define idmMouseOptions		817
 	#define idmMouseSensUp		818
 	#define idmMouseSensDown	819
-	#define idmMouseAccel		820
 	#define idmWheelDelay		821 //Spunky #282
 
     #define idmOldUi	        823
@@ -4282,10 +4274,7 @@ public:
                                  pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
                                  pmenu->AddMenuItem(0                     , "Options are only valid when in fullscreen"     );
                                  pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
-				m_pitemToggleMouseAccel		        = pmenu->AddMenuItem(idmMouseAccel			  , GetMouseAccelMenuString()										, 'A');
-				m_pitemToggleWheelDelay				= pmenu->AddMenuItem(idmWheelDelay			  ,	GetWheelDelayMenuString(), 'W'); //Spunky #282
-				m_pitemToggleMouseSensUp			= pmenu->AddMenuItem(idmMouseSensUp			  , GetMouseSensMenuString(m_pnumMouseSens->GetValue(), c_fMouseSensDelta)		, 'U');
-				m_pitemToggleMouseSensDown			= pmenu->AddMenuItem(idmMouseSensDown		  , GetMouseSensMenuString(m_pnumMouseSens->GetValue(), -c_fMouseSensDelta)		, 'D');
+				m_pitemToggleWheelDelay				= pmenu->AddMenuItem(idmWheelDelay			  ,	GetWheelDelayMenuString(), 'W'); //Spunky #282	, 'D');
 				break;
 
 
@@ -4872,36 +4861,6 @@ public:
             m_pitemSoundQuality->SetString(GetSoundQualityMenuString());
     };
 
-	//Imago #215 8/10
-    void SwitchMouseAccel()
-    {
-        switch (m_iMouseAccel)
-        {
-        case 0:
-            m_iMouseAccel = 1;
-            break;
-
-        case 1:
-            m_iMouseAccel = 2;
-            break;
-
-        case 2:
-            m_iMouseAccel = 0;
-            break;
-
-        default:
-            ZAssert(false);
-            m_iMouseAccel = 0;
-            break;
-        }
-
-		m_pinputEngine->GetMouse()->SetAccel(m_iMouseAccel);
-		SavePreference("MouseAcceleration", (DWORD)m_iMouseAccel);
-
-        if (m_pitemToggleMouseAccel != NULL)
-            m_pitemToggleMouseAccel->SetString(GetMouseAccelMenuString());
-    };
-
     void SwitchWheelDelay() //Spunky #282
     {
 		if (++m_iWheelDelay == 5)
@@ -4934,28 +4893,6 @@ public:
 		if(m_pitemToggleDSound8Usage != NULL)
 			m_pitemToggleDSound8Usage->SetString(GetDSound8EnabledString());
 	}
-
-    void AdjustMouseSens(float fDelta)
-    {
-        float fNewValue = std::min(2.0f, std::max(0.1f, m_pnumMouseSens->GetValue() + fDelta));
-        m_pnumMouseSens->SetValue(fNewValue);
-
-        SavePreference("MouseSensitivity", ZString(fNewValue));
-
-        if (m_pitemToggleMouseSensUp != NULL)
-        {
-            m_pitemToggleMouseSensUp->SetString(
-                GetMouseSensMenuString(m_pnumMouseSens->GetValue(), c_fMouseSensDelta));
-        }
-        if (m_pitemToggleMouseSensDown != NULL)
-        {
-            m_pitemToggleMouseSensDown->SetString(
-                GetMouseSensMenuString(m_pnumMouseSens->GetValue(), -c_fMouseSensDelta));
-        }
-		
-		m_pinputEngine->GetMouse()->SetSensitivity(fNewValue);
-    }
-	//Imago
 
     ZString GetPostersMenuString()
     {
@@ -5019,42 +4956,6 @@ public:
 
 		return "Error";
 	}*/
-
-
-	// Imago #215 8/10
-    ZString GetMouseSensMenuString(float fCurrentSens, float fDelta)
-    {
-        ZString strResult = ((fDelta > 0) ? "Raise " : "Lower ") + ZString("Mouse Sensitivity ");
-        if (fCurrentSens >= 2 && fDelta > 0)
-        {
-            strResult += "(highest)";
-        }
-        else if (fCurrentSens <= 0.1f && fDelta < 0)
-        {
-            strResult += "(lowest)";
-        }
-        else
-        {
-			float value = (std::min(2.0f, std::max(0.1f, fCurrentSens + fDelta))) * 100;
-			char szValue[4] = {'\0'};
-			sprintf(szValue,"%.0f",value);
-            strResult += "to " + ZString(szValue) + " %";
-        }
-
-        return strResult;
-    }
-
-	ZString GetMouseAccelMenuString()
-	{
-		if(m_iMouseAccel == 0)
-			return "Mouse Acceleration: Off";
-		if(m_iMouseAccel == 1)
-			return "Mouse Acceleration: Low (2x)";
-		if(m_iMouseAccel == 2)
-			return "Mouse Acceleration: High (4x)";
-
-		return "Error";
-	}
 
 	//Spunky #282
 	ZString GetWheelDelayMenuString()
@@ -5684,23 +5585,11 @@ public:
 				contextChat();		CloseMenu();
 				break;	
 			// #215 8/10
-			case idmMouseAccel:
-				SwitchMouseAccel();
-				break;
 
 			//Spunky #282
 			case idmWheelDelay: 
 				SwitchWheelDelay();
 				break;
-
-			case idmMouseSensUp:
-				AdjustMouseSens(c_fMouseSensDelta);
-				break;
-
-			case idmMouseSensDown:
-				AdjustMouseSens(-c_fMouseSensDelta);
-				break;
-			// End Imago
 
         }
     }
@@ -6860,6 +6749,8 @@ public:
 
         float dtime = m_fDeltaTime = (float)(time - m_timeLastFrame);
         ZAssert(dtime >= 0);
+
+        m_pConfigurationUpdater->Update();
 
         //
         // Turn on the virtual joystick if the right conditions are met
