@@ -2860,6 +2860,45 @@ public:
             m_pinputEngine->GetMouse()->SetAccel((int)value);
         }, m_papp->GetGameConfiguration()->GetMouseAcceleration()));
 
+        m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<bool>([this](bool value) {
+            trekClient.FilterChatsToAll(value);
+        }, m_papp->GetGameConfiguration()->GetChatFilterChatsToAll()));
+
+        m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<bool>([this](bool value) {
+            trekClient.FilterQuickComms(value);
+        }, m_papp->GetGameConfiguration()->GetChatFilterVoiceChats()));
+
+        m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<bool>([this](bool value) {
+            trekClient.FilterUnknownChats(value);
+        }, m_papp->GetGameConfiguration()->GetChatFilterUnknownChats()));
+
+        m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<bool>([this](bool value) {
+            //1 = filter lobby except PMs
+            //2 = filter lobby including PMs (why would we want this ever?)
+            //3 = no filtering
+            trekClient.FilterLobbyChats(value ? 1 : 3);
+        }, m_papp->GetGameConfiguration()->GetChatFilterChatsFromLobby()));
+
+        m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<bool>([this](bool value) {
+            ToggleCensorDisplay();
+        }, m_papp->GetGameConfiguration()->GetChatCensorChat()));
+
+        m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<float>([this](float value) {
+            int lines = (int)value;
+
+            m_pnumberChatLinesDesired->SetValue(value);
+            if (m_viewmode == vmLoadout)
+            {
+                m_pchatListPane->SetChatLines(std::min(lines, 6));
+                m_pnumberChatLines->SetValue(std::min(lines, 6));
+            }
+            else if (m_viewmode <= vmOverride)
+            {
+                m_pchatListPane->SetChatLines(lines);
+                m_pnumberChatLines->SetValue(lines);
+            }
+        }, m_papp->GetGameConfiguration()->GetChatNumberOfLines()));
+
 		m_iWheelDelay			 = 2; //Spunky #282 //rock: removed as an option
 
         m_pUseOldUi = m_pConfiguration->GetBool("Ui.UseOldUi", true);
@@ -3049,16 +3088,8 @@ public:
         // Load saved settings
         //
 
-        if (!LoadPreference("CensorChats", TRUE))
-            ToggleCensorChats();
         if (LoadPreference ("PreferChaseView", FALSE))
             ToggleStickyChase ();
-        if (!LoadPreference("FilterChatsToAll", TRUE))
-            ToggleFilterChatsToAll();
-        if (!LoadPreference("FilterQuickComms", TRUE))
-            ToggleFilterQuickComms();
-		if (!LoadPreference("FilterUnknownChats", TRUE))
-            ToggleFilterUnknownChats(); //TheBored 30-JUL-07: Filter Unknown Chat patch
         if (!LoadPreference("Environment", TRUE) || IsWine())  //imago 9/19/09 force env in wine 8/16/09
             ToggleEnvironment();
         if (!LoadPreference("Posters", TRUE))
@@ -3092,11 +3123,6 @@ public:
 		SetGamma(LoadPreference("Gamma", "1.13"));
 	    if (LoadPreference("VirtualJoystick", TRUE)) // BT - 10/17 - Enable virtual JS by default, not many people have joysticks now-a-days.
 			ToggleVirtualJoystick();
-
-		ToggleFilterLobbyChats(LoadPreference("FilterLobbyChats", 0)); //TheBored 25-JUN-07: Mute lobby chat patch // mmf 04/08 default this to 0
-
-		// #294 - Turkey
-		SetChatLines(LoadPreference("ChatLines", 10));
 
 		/* pkk May 6th: Disabled bandwidth patch
 		ToggleBandwidth(LoadPreference("Bandwidth",32)); // w0dk4 June 2007: Bandwith Patch - Increase default to max Imago 8/10*/
@@ -4229,7 +4255,6 @@ public:
 				break;
 
             case idmGameOptions:
-                m_pitemMuteFilter		           = pmenu->AddMenuItem(idmMuteFilterOptions,					"Mute/Filter",						'M', m_psubmenuEventSink); //TheBored 30-JUL-07: Filter Unknown Chat patch
                 m_pitemToggleStickyChase           = pmenu->AddMenuItem(idmToggleStickyChase,           GetStickyChaseMenuString (),        'K');
 													 pmenu->AddMenuItem(idmMouseOptions,				"Mouse Options",				  'Q', m_psubmenuEventSink);
 					
@@ -4247,19 +4272,6 @@ public:
 				m_pitemToggleDSound8Usage   = pmenu->AddMenuItem(idmUseDSound8, GetDSound8EnabledString());
                 break;
 
-			//TheBored 30-JUL-07: Filter Unknown Chat patch
-			case idmMuteFilterOptions:
-                m_pitemToggleCensorChats           = pmenu->AddMenuItem(idmToggleCensorChats,           GetCensorChatsMenuString(),         'D');
-				m_pitemFilterChatsToAll            = pmenu->AddMenuItem(idmFilterChatsToAll,            GetFilterChatsToAllMenuString(),    'A');
-                m_pitemFilterQuickComms            = pmenu->AddMenuItem(idmFilterQuickComms,            GetFilterQuickCommsMenuString(),    'V');
-				m_pitemFilterUnknownChats          = pmenu->AddMenuItem(idmFilterUnknownChats,          GetFilterUnknownChatsString(),      'U');
-                m_pitemFilterLobbyChats            = pmenu->AddMenuItem(idmFilterLobbyChats,            GetFilterLobbyChatsMenuString(),    'L');
-				
-				// #294 - Turkey
-				m_pitemIncreaseChatLines		   = pmenu->AddMenuItem(idmIncreaseChatLines,			GetIncreaseChatLinesMenuString(),	'I');
-				m_pitemReduceChatLines			   = pmenu->AddMenuItem(idmReduceChatLines,				GetReduceChatLinesMenuString(),		'R');
-				break;
-			//End TB 30-JUL-07
 			//imago 6/30/09: new graphics options dx9, removed vsync 7/10
 			case idmDeviceOptions:
 				m_pitemAA				= pmenu->AddMenuItem(idmAA   			  , GetAAString()                                       , 'A');
@@ -4316,20 +4328,6 @@ public:
         }
     }
 
-    void ToggleCensorChats()
-    {
-        if (CensorDisplay ())
-            SavePreference("CensorChats", FALSE);
-        else
-            SavePreference("CensorChats", TRUE);
-
-        ToggleCensorDisplay ();
-
-        if (m_pitemToggleCensorChats != NULL) {
-            m_pitemToggleCensorChats->SetString(GetCensorChatsMenuString());
-        }
-    }
-
     void ToggleStickyChase ()
     {
         if (m_bPreferChaseView)
@@ -4346,145 +4344,6 @@ public:
         if (m_pitemToggleStickyChase != NULL)
             m_pitemToggleStickyChase->SetString (GetStickyChaseMenuString ());
     }
-
-    void ToggleFilterChatsToAll()
-    {
-        if (trekClient.FilterChatsToAll())
-        {
-            trekClient.FilterChatsToAll(false);
-            SavePreference("FilterChatsToAll", FALSE);
-        }
-        else
-        {
-            trekClient.FilterChatsToAll(true);
-            SavePreference("FilterChatsToAll", TRUE);
-        }
-
-        if (m_pitemFilterChatsToAll != NULL) {
-            m_pitemFilterChatsToAll->SetString(GetFilterChatsToAllMenuString());
-        }
-    }
-
-    void ToggleFilterQuickComms()
-    {
-        if (trekClient.FilterQuickComms())
-        {
-            trekClient.FilterQuickComms(false);
-            SavePreference("FilterQuickComms", FALSE);
-        }
-        else
-        {
-            trekClient.FilterQuickComms(true);
-            SavePreference("FilterQuickComms", TRUE);
-        }
-
-        if (m_pitemFilterQuickComms != NULL) {
-            m_pitemFilterQuickComms->SetString(GetFilterQuickCommsMenuString());
-        }
-    }
-	//TheBored 30-JUL-07: Filter Unknown Chat patch
-    void ToggleFilterUnknownChats()
-    {
-        if (trekClient.FilterUnknownChats())
-        {
-            trekClient.FilterUnknownChats(false);
-            SavePreference("FilterUnknownChats", FALSE);
-        }
-        else
-        {
-            trekClient.FilterUnknownChats(true);
-            SavePreference("FilterUnknownChats", TRUE);
-        }
-
-        if (m_pitemFilterUnknownChats != NULL) {
-            m_pitemFilterUnknownChats->SetString(GetFilterUnknownChatsString());
-        }
-    }
-	//End TB 30-JUL-07
-	//TheBored 25-JUN-07: Altered function allowing for 3 options. 1 = Filter Lobby, 2 = Filter Lobby and PMs, 3 = Dont Filter Anything
-    void ToggleFilterLobbyChats(DWORD dwLobbyChatSetting)
-    {
-		if (dwLobbyChatSetting > 3){dwLobbyChatSetting = 1;}
-		switch (dwLobbyChatSetting)
-		{
-			case 1:
-				trekClient.FilterLobbyChats(dwLobbyChatSetting);
-				SavePreference("FilterLobbyChats", dwLobbyChatSetting);
-				break;
-			case 2:
-				trekClient.FilterLobbyChats(dwLobbyChatSetting);
-				SavePreference("FilterLobbyChats", dwLobbyChatSetting);
-			case 3:
-				trekClient.FilterLobbyChats(dwLobbyChatSetting);
-				SavePreference("FilterLobbyChats", dwLobbyChatSetting);
-		}
-        if (m_pitemFilterLobbyChats != NULL) {
-            m_pitemFilterLobbyChats->SetString(GetFilterLobbyChatsMenuString());
-        }
-    }
-
-	// #294 - Turkey 8/13
-	void IncreaseChatLines()
-	{
-		int lines = (int)m_pnumberChatLinesDesired->GetValue() + 1;
-
-		if (SetChatLines(lines))
-		{
-			m_pitemIncreaseChatLines->SetString(GetIncreaseChatLinesMenuString());
-			m_pitemReduceChatLines->SetString(GetReduceChatLinesMenuString());
-
-			if (m_pchatListPane)
-			{
-				if (GetViewMode() == vmLoadout)
-				{
-					m_pchatListPane->SetChatLines(std::min(lines, 6));
-					m_pnumberChatLines->SetValue(std::min(lines, 6));
-				}
-				else if (GetViewMode() <= vmOverride)
-				{
-					m_pchatListPane->SetChatLines(lines);
-					m_pnumberChatLines->SetValue(lines);
-				}
-			}
-
-			SavePreference("ChatLines", lines);
-		}
-	}
-
-	void ReduceChatLines()
-	{
-		int lines = (int)m_pnumberChatLinesDesired->GetValue() - 1;
-
-		if (SetChatLines(lines))
-		{
-			m_pitemIncreaseChatLines->SetString(GetIncreaseChatLinesMenuString());
-			m_pitemReduceChatLines->SetString(GetReduceChatLinesMenuString());
-
-			if (m_pchatListPane)
-			{
-				if (GetViewMode() == vmLoadout)
-				{
-					m_pchatListPane->SetChatLines(std::min(lines, 6));
-					m_pnumberChatLines->SetValue(std::min(lines, 6));
-				}
-				else if (GetViewMode() <= vmOverride)
-				{
-					m_pchatListPane->SetChatLines(lines);
-					m_pnumberChatLines->SetValue(lines);
-				}
-			}
-
-
-			SavePreference("ChatLines", lines);
-		}
-	}
-
-
-
-	// end #294
-
-
-	//End TB 25-JUN-07
 
     void ToggleStars()
     {
@@ -4775,29 +4634,6 @@ public:
         SavePreference("Gamma", value);
     }
 
-	// #294 - Turkey returns true if the requested value was within range (1-10), false otherwise
-	bool SetChatLines(DWORD value)
-	{
-		bool bInRange = false;
-		if (value >= 1)
-		{
-			if (value > 10) m_pnumberChatLinesDesired->SetValue(10.0f);
-			else
-			{
-				m_pnumberChatLinesDesired->SetValue((float)value);
-				bInRange = true;
-			}
-		}
-		else
-		{
-			m_pnumberChatLinesDesired->SetValue(1.0f);
-		}
-
-		m_pnumberChatLines->SetValue(m_pnumberChatLinesDesired->GetValue());
-
-		return bInRange;
-	}
-
     void RenderSizeChanged(bool bSmaller)
     {
         m_pEngineWindow->RenderSizeChanged(bSmaller);
@@ -4986,20 +4822,6 @@ public:
                 break;
         }
     }
-
-	// #294 - Turkey
-	ZString GetIncreaseChatLinesMenuString()
-	{
-		if (m_pnumberChatLinesDesired->GetValue() > 9.9f) return "Chat Lines At Maximum";
-		return "Increase To " + ZString((int)m_pnumberChatLinesDesired->GetValue() + 1) + " Chat Lines";
-	}
-
-	// #294 - Turkey
-	ZString GetReduceChatLinesMenuString()
-	{
-		if (m_pnumberChatLinesDesired->GetValue() < 1.1f) return "Chat Lines At Minimum";
-		return "Reduce To " + ZString((int)m_pnumberChatLinesDesired->GetValue() - 1) + " Chat Lines";
-	}
 
     ZString GetStarsMenuString()
     {
@@ -5421,42 +5243,6 @@ public:
 				if (m_pitemVsync != NULL) {
 					m_pitemVsync->SetString(GetVsyncString());
 				}
-				break;
-
-            case idmToggleCensorChats:
-                ToggleCensorChats ();
-                break;
-
-            case idmToggleStickyChase:
-                ToggleStickyChase ();
-                break;
-
-            case idmFilterChatsToAll:
-                ToggleFilterChatsToAll();
-                break;
-
-            case idmFilterQuickComms:
-                ToggleFilterQuickComms();
-                break;
-
-			//TheBored 30-JUL-07: Filter Unknown Chat patch
-			case idmFilterUnknownChats:
-                ToggleFilterUnknownChats();
-                break;
-
-            case idmFilterLobbyChats:
-                //TheBored 25-JUN-07: Lobby filter change.
-				ToggleFilterLobbyChats(trekClient.FilterLobbyChats() + 1);
-                break;
-
-				// #294 - Turkey
-			case idmIncreaseChatLines:
-				IncreaseChatLines();
-				break;
-
-				// #294 - Turkey
-			case idmReduceChatLines:
-				ReduceChatLines();
 				break;
 
             case idmToggleStrobes:

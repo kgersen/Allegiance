@@ -44,6 +44,30 @@ public:
         return m_pconfiguration->GetBool("Ui.UseOldUi", true);
     }
 
+    TRef<SimpleModifiableValue<bool>> GetChatFilterChatsToAll() {
+        return m_pconfiguration->GetBool("Chat.FilterChatsToAll", false);
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetChatFilterVoiceChats() {
+        return m_pconfiguration->GetBool("Chat.FilterVoiceChats", false);
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetChatFilterChatsFromLobby() {
+        return m_pconfiguration->GetBool("Chat.FilterChatsFromLobby", false);
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetChatFilterUnknownChats() {
+        return m_pconfiguration->GetBool("Chat.FilterUnknownChats", false);
+    }
+
+    TRef<SimpleModifiableValue<bool>> GetChatCensorChat() {
+        return m_pconfiguration->GetBool("Chat.CensorChat", m_pconfiguration->GetBoolValue("CensorChats", true));
+    }
+
+    TRef<SimpleModifiableValue<float>> GetChatNumberOfLines() {
+        return m_pconfiguration->GetInt("Chat.NumberOfLines", m_pconfiguration->GetIntValue("ChatLines", 10));
+    }
+
     TRef<SimpleModifiableValue<float>> GetSoundEffectVolume() {
         return m_pconfiguration->GetInt("Sound.EffectVolume", -8);
     }

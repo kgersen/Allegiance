@@ -75,6 +75,14 @@ public:
         map["Configuration.Ui.ShowStartupTrainingSuggestion"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetUiShowStartupTrainingSuggestion());
         map["Configuration.Ui.UseOldUi"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetUiUseOldUi());
 
+        //chat
+        map["Configuration.Chat.FilterChatsToAll"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetChatFilterChatsToAll());
+        map["Configuration.Chat.FilterVoiceChats"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetChatFilterVoiceChats());
+        map["Configuration.Chat.FilterChatsFromLobby"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetChatFilterChatsFromLobby());
+        map["Configuration.Chat.FilterUnknownChats"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetChatFilterUnknownChats());
+        map["Configuration.Chat.CensorChat"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetChatCensorChat());
+        map["Configuration.Chat.NumberOfLines"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetChatNumberOfLines());
+
         //sound
         map["Configuration.Sound.EffectVolume"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetSoundEffectVolume());
         map["Configuration.Sound.VoiceVolume"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetSoundVoiceVolume());
