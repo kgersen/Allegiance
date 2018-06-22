@@ -46,6 +46,8 @@ public:
         map["time"] = NumberExposer::Create(GetEngineWindow()->GetTime());
 
         //graphics
+        map["Fullscreen modes"] = TypeExposer<TRef<ContainerList>>::Create(GetFullscreenModes());
+
         map["Configuration.Graphics.Fullscreen"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetGraphicsFullscreen());
         map["Configuration.Graphics.ResolutionX"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetGraphicsResolutionX());
         map["Configuration.Graphics.ResolutionY"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetGraphicsResolutionY());
@@ -143,6 +145,21 @@ public:
             }
             return result;
         }, (TRef<StringValue>)m_pConfiguration->GetOnlineSquadTag());
+    }
+
+    TRef<UiList<TRef<UiObjectContainer>>> GetFullscreenModes() {
+        std::vector<TRef<UiObjectContainer>> list = {};
+        for (int i = 0; i < CD3DDevice9::Get()->GetDeviceSetupParams()->iNumRes; i++)
+        {
+            auto mode = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i];
+            list.push_back(new UiObjectContainer({
+                { "Width", TypeExposer<int>::Create(mode.iWidth) },
+                { "Height", TypeExposer<int>::Create(mode.iHeight) },
+                { "Rate", TypeExposer<int>::Create(mode.iFreq) }
+            }));
+        }
+
+        return new UiList<TRef<UiObjectContainer>>(list);
     }
 
     ~ConfigScreen() {

@@ -153,6 +153,34 @@ public:
             }, list);
         };
 
+        table["StackHorizontal"] = [](sol::object obj, sol::optional<TRef<Number>> separation) {
+            TRef<ImageList> list;
+
+            if (obj.is<sol::table>() && obj.get_type() == sol::type::table) {
+                list = new TableUiList<TRef<Image>>(obj.as<sol::table>());
+            }
+            else {
+                list = obj.as<TRef<ImageList>>();
+            }
+            return (TRef<Image>)new NonStaticCallbackImage<ImageList*>([separation](ImageList* varlist) {
+                TRef<GroupImage> pgroup = new GroupImage();
+
+                TRef<Number> pZero = new Number(0.0f);
+                TRef<Number> offset = pZero;
+
+                for (TRef<Image> entry : varlist->GetList()) {
+                    pgroup->AddImageToTop(ImageTransform::Translate(entry, PointTransform::Create(offset, pZero)));
+
+                    offset = NumberTransform::Add(offset, PointTransform::X(ImageTransform::Size(entry)));
+                    if (separation) {
+                        offset = NumberTransform::Add(offset, separation.value());
+                    }
+                }
+
+                return (TRef<Image>)pgroup;
+            }, list);
+        };
+
         table["Switch"] = [&context](sol::object value, sol::table table, sol::optional<TRef<Image>> defaultOption) {
             int count = table.size();
 
