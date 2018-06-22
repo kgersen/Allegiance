@@ -3120,9 +3120,6 @@ public:
 		SetRadarLOD(LoadPreference("RadarLOD", 0)); //Imago updated 7/8/09 #24 (Gamma, VirtualJoystick, RadarLOD, ShowGrid)
 		if (LoadPreference("ShowGrid", FALSE))
 			ToggleShowGrid();
-		SetGamma(LoadPreference("Gamma", "1.13"));
-	    if (LoadPreference("VirtualJoystick", TRUE)) // BT - 10/17 - Enable virtual JS by default, not many people have joysticks now-a-days.
-			ToggleVirtualJoystick();
 
 		/* pkk May 6th: Disabled bandwidth patch
 		ToggleBandwidth(LoadPreference("Bandwidth",32)); // w0dk4 June 2007: Bandwith Patch - Increase default to max Imago 8/10*/
@@ -3222,8 +3219,6 @@ public:
 
     void Terminate()
     {
-		SetGamma(ZString(GetEngine()->GetGammaLevel())); //imago 7/8/09 #24
-
         // close all popups (a potential circular reference)
         if (!GetPopupContainer()->IsEmpty())
             GetPopupContainer()->ClosePopup(NULL);
@@ -4624,14 +4619,6 @@ public:
     {
 		//only do this when loading, save is in the cycle
 		m_radarCockpit = m_radarCommand = value;
-    }
-
-	//Imago 7/8/09 #24
-    void SetGamma(ZString& value)
-    {
-       //we save only when loading non-default or terminate()
-		GetEngine()->SetGammaLevel(atof(ZString(value)));
-        SavePreference("Gamma", value);
     }
 
     void RenderSizeChanged(bool bSmaller)

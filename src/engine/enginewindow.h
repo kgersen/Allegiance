@@ -46,6 +46,10 @@ public:
         return m_pconfiguration->GetInt("Graphics.MaxTextureSizeLevel", m_pconfiguration->GetIntValue("MaxTextureSize", 3));
     }
 
+    TRef<SimpleModifiableValue<float>> GetGraphicsGamma() {
+        return m_pconfiguration->GetFloat("Graphics.Gamma", m_pconfiguration->GetFloatValue("Gamma", 1.13f));
+    }
+
     TRef<SimpleModifiableValue<bool>> GetDebugLogToOutput() {
         return m_pconfiguration->GetBool("Debug.LogToOutput", m_pconfiguration->GetBoolValue("OutputDebugString", true));
     }

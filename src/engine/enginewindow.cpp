@@ -173,6 +173,10 @@ EngineWindow::EngineWindow(	EngineConfigurationWrapper* pConfiguration,
         m_pengine->SetFullscreenSize(WinPoint((int)x, (int)y));
     }, m_pConfiguration->GetGraphicsResolutionX(), m_pConfiguration->GetGraphicsResolutionY()));
 
+    m_pConfigurationUpdater->PushFront(new CallbackWhenChanged<float>([this](float gamma) {
+        m_pengine->SetGammaLevel(gamma);
+    }, m_pConfiguration->GetGraphicsGamma()));
+
     m_pcloseEventSource = new EventSourceImpl();
     m_pevaluateFrameEventSource = new TEvent<Time>::SourceImpl();
 
@@ -905,18 +909,6 @@ void EngineWindow::OnEngineWindowMenuCommand(IMenuItem* pitem)
 
         case idmLowerResolution:
             ChangeFullscreenSize(false);
-            break;
-
-        case idmBrightnessUp:
-            GetEngine()->SetGammaLevel(
-                GetEngine()->GetGammaLevel() * 1.01f
-            );
-			break;
-
-        case idmBrightnessDown:
-            GetEngine()->SetGammaLevel(
-                GetEngine()->GetGammaLevel() / 1.01f
-            );
             break;
     }
 }
