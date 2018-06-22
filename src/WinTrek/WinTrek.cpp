@@ -1077,9 +1077,6 @@ public:
 	// -Imago: Last activity timer
 	Time				m_timeLastActivity;
 	
-    //Imago 7/10
-    bool					m_bFFAutoCenter;
-	TRef<ModifiableNumber>  m_pnumFFGain;
 	//8/10
 	int						m_iMouseAccel;
 	int						m_iWheelDelay; //Spunky #282
@@ -1372,7 +1369,6 @@ public:
     //
 
     TRef<TrekInput> m_ptrekInput;
-    bool            m_bEnableFeedback;
 
     AsteroidAbilityBitMask          m_aabmInvest;
     AsteroidAbilityBitMask          m_aabmCommand;
@@ -2590,11 +2586,8 @@ public:
 		m_ctLobbyChat(CHAT_EVERYONE),
 		m_bTrackCommandView(false),
 		m_bQuitComposing(true),
-		m_bEnableFeedback(true),
 		m_aabmInvest(0),
 		m_aabmCommand(0),
-		//Imago 7/10
-		m_bFFAutoCenter(false),
 		m_iMouseAccel(0), //#215
 		m_bShowInventoryPane(true), // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
 		m_bShowSectorMapPane(true),  // BT - 10/17 - Map and Sector Panes are now shown on launch and remember the pilots settings on last dock. 
@@ -2651,7 +2644,6 @@ public:
 
 		debugf("Reading FFGain, MouseSensitivity\n");
 
-		m_pnumFFGain = new ModifiableNumber((float)LoadPreference("FFGain", 10000)); //Imago #187 
 		m_pnumMouseSens = new ModifiableNumber(atof(LoadPreference("MouseSensitivity", "0.6")));
 
         m_pinputEngine->GetMouse()->SetSensitivity(m_pnumMouseSens->GetValue());
@@ -2872,8 +2864,6 @@ public:
         // Load Input toggles
         //
 
-        m_bEnableFeedback        = (LoadPreference("EnableFeedback",        1) != 0);
-        m_bFFAutoCenter			 = (LoadPreference("FFAutoCenter",			0) != 0); //Imago #187
 		m_iMouseAccel			 = LoadPreference("MouseAcceleration",     0) % 3; // Imago #215 //#282 bugfix
 		m_iWheelDelay			 = LoadPreference("WheelDelay",            2) % 5; //Spunky #282
 
@@ -3708,7 +3698,6 @@ public:
     #define idmToggleVirtualJoystick       628
     #define idmToggleFlipY                 629
     #define idmToggleStickyChase           630
-    #define idmToggleEnableFeedback        631
     #define idmMaxTextureSize              632 // yp Your_Persona August 2 2006 : MaxTextureSize Patch
     #define idmPings                       633 // w0dk4 player-pings feature
     /* pkk May 6th: Disabled bandwidth patch
@@ -4250,8 +4239,6 @@ public:
             case idmGameOptions:
                 m_pitemMuteFilter		           = pmenu->AddMenuItem(idmMuteFilterOptions,					"Mute/Filter",						'M', m_psubmenuEventSink); //TheBored 30-JUL-07: Filter Unknown Chat patch
                 m_pitemToggleStickyChase           = pmenu->AddMenuItem(idmToggleStickyChase,           GetStickyChaseMenuString (),        'K');
-                //m_pitemToggleEnableFeedback        = pmenu->AddMenuItem(idmToggleEnableFeedback,        GetEnableFeedbackMenuString(),      'E'); //imago sunk 7/10
-													 pmenu->AddMenuItem(idmFFOptions,					"Force Feedback",				  'E', m_psubmenuEventSink);
 													 pmenu->AddMenuItem(idmMouseOptions,				"Mouse Options",				  'Q', m_psubmenuEventSink);
 					
 				/* pkk May 6th: Disabled bandwidth patch // w0dk4 June 2007: Bandwith Patch
@@ -4288,14 +4275,6 @@ public:
 				m_pitemVsync			= pmenu->AddMenuItem(idmVsync  			  , GetVsyncString()                                    , 'V'); //Spunky #265 backing out //Imago 7/10
 				// yp Your_Persona August 2 2006 : MaxTextureSize Patch
 				m_pitemMaxTextureSize	= pmenu->AddMenuItem(idmMaxTextureSize,     GetMaxTextureSizeMenuString(),    					  'X');
-				break;
-
-			//Imago 7/10 #187
-			case idmFFOptions:
-				m_pitemToggleEnableFeedback         = pmenu->AddMenuItem(idmToggleEnableFeedback  , GetEnableFeedbackMenuString(),      'E'); //imago sunk 7/10
-				m_pitemToggleFFGainUp				= pmenu->AddMenuItem(idmFFGainUp			  , GetFFGainMenuString(m_pnumFFGain->GetValue(), c_fFFGainDelta)   , 'U');
-				m_pitemToggleFFGainDown				= pmenu->AddMenuItem(idmFFGainDown			  , GetFFGainMenuString(m_pnumFFGain->GetValue(), -c_fFFGainDelta)  , 'D');
-			    m_pitemToggleFFAutoCenter			= pmenu->AddMenuItem(idmFFAutoCenter		  , GetFFAutoCenterMenuString()                                     , 'C');
 				break;
 
 			//Imago 8/10 #215
@@ -4840,33 +4819,6 @@ public:
 		return bInRange;
 	}
 
-    void ToggleEnableFeedback()
-    {
-        m_bEnableFeedback = !m_bEnableFeedback;
-
-        SavePreference("EnableFeedback", m_bEnableFeedback);
-
-        if (m_pitemToggleEnableFeedback != NULL) {
-            m_pitemToggleEnableFeedback->SetString(GetEnableFeedbackMenuString());
-        }
-    }
-	
-	//Imago 7/10
-    void ToggleEnableFFAutoCenter()
-    {
-		if (m_pinputEngine == NULL || m_pinputEngine->GetJoystick(0) == NULL)
-			return;
-
-        m_bFFAutoCenter = !m_bFFAutoCenter;
-
-        SavePreference("FFAutoCenter", m_bFFAutoCenter);
-
-        if (m_pitemToggleFFAutoCenter != NULL) {
-            m_pitemToggleFFAutoCenter->SetString(GetFFAutoCenterMenuString());
-        }
-        m_pinputEngine->GetJoystick(0)->SetRanges();
-    }
-
     void RenderSizeChanged(bool bSmaller)
     {
         m_pEngineWindow->RenderSizeChanged(bSmaller);
@@ -4982,29 +4934,6 @@ public:
 		if(m_pitemToggleDSound8Usage != NULL)
 			m_pitemToggleDSound8Usage->SetString(GetDSound8EnabledString());
 	}
-
-	//Imago 7/10 #187
-    void AdjustFFGain(float fDelta)
-    {
-        float fNewValue = std::min(10000.0f, std::max(c_nMinFFGain, m_pnumFFGain->GetValue() + fDelta));
-        m_pnumFFGain->SetValue(fNewValue);
-
-        SavePreference("FFGain", fNewValue);
-
-        if (m_pitemToggleFFGainUp != NULL)
-        {
-            m_pitemToggleFFGainUp->SetString(
-                GetFFGainMenuString(m_pnumFFGain->GetValue(), c_fFFGainDelta));
-        }
-        if (m_pitemToggleFFGainDown != NULL)
-        {
-            m_pitemToggleFFGainDown->SetString(
-                GetFFGainMenuString(m_pnumFFGain->GetValue(), -c_fFFGainDelta));
-        }
-
-		if (m_pinputEngine != NULL && m_pinputEngine->GetJoystick(0) != NULL)
-            m_pinputEngine->GetJoystick(0)->SetRanges();
-    }
 
     void AdjustMouseSens(float fDelta)
     {
@@ -5135,13 +5064,6 @@ public:
 			return "Wheel & Keyboard Throttle Delay: " + str[m_iWheelDelay];
 		return "Error";
 	}
-
-	//Imago 7/10
-    ZString GetFFAutoCenterMenuString()
-    {
-        return (m_bFFAutoCenter) ? "Auto Center On" : "Auto Center Off ";
-    }
-	//
 
     ZString GetRoundRadarMenuString()
     {
@@ -5348,31 +5270,6 @@ public:
     ZString GetOldUiMenuString()
     {
         return "Use old UI: " + ZString(m_pUseOldUi->GetValue() ? "On" : "Off");
-    }
-
-    ZString GetEnableFeedbackMenuString()
-    {
-        return (m_bEnableFeedback ? "Force Feedback Enabled " : "Force Feedback Disabled ");
-    }
-
-	//Imago 7/10
-    ZString GetFFGainMenuString(float fCurrentGain, float fDelta)
-    {
-        ZString strResult = ((fDelta > 0) ? "Raise " : "Lower ") + ZString("Force Feedback Gain ");
-        if (fCurrentGain >= 10000 && fDelta > 0)
-        {
-            strResult += "(maxed)";
-        }
-        else if (fCurrentGain <= c_nMinFFGain && fDelta < 0)
-        {
-            strResult += "(off)";
-        }
-        else
-        {
-            strResult += "to " + ZString(std::min(10000.0f, std::max(c_nMinFFGain, fCurrentGain + fDelta) / 100)) + " %";
-        }
-
-        return strResult;
     }
 
 	//imago WIP 6/30/09 7/18/09
@@ -5691,10 +5588,6 @@ public:
 				ReduceChatLines();
 				break;
 
-            case idmToggleEnableFeedback:
-                ToggleEnableFeedback();
-                break;
-
             case idmToggleStrobes:
                 ToggleStrobes();
                 break;
@@ -5790,20 +5683,6 @@ public:
 			case idmContextChat:
 				contextChat();		CloseMenu();
 				break;	
-
-			//Imago #187 7/10
-			case idmFFAutoCenter:
-				ToggleEnableFFAutoCenter();
-				break;
-
-			case idmFFGainUp:
-				AdjustFFGain(c_fFFGainDelta);
-				break;
-
-			case idmFFGainDown:
-				AdjustFFGain(-c_fFFGainDelta);
-				break;
-
 			// #215 8/10
 			case idmMouseAccel:
 				SwitchMouseAccel();
@@ -7520,7 +7399,7 @@ public:
 
     void PlayFFEffect(ForceEffectID effectID, LONG lDirection = 0)
     {
-        if (m_bEnableFeedback) {
+        if (m_papp->GetGameConfiguration()->GetJoystickEnableForceFeedback()->GetValue()) {
             m_ptrekInput->PlayFFEffect(effectID, lDirection);
         }
     }

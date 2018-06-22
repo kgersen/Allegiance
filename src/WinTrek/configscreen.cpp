@@ -85,6 +85,7 @@ public:
         map["Configuration.Joystick.FlipYAxis"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetJoystickFlipYAxis());
         map["Configuration.Joystick.UseMouseAsJoystick"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetJoystickUseMouseAsJoystick());
         map["Configuration.Joystick.ShowDirectionIndicator"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetJoystickShowDirectionIndicator());
+        map["Configuration.Joystick.EnableForceFeedback"] = TypeExposer<TRef<SimpleModifiableValue<bool>>>::Create(m_pConfiguration->GetJoystickEnableForceFeedback());
 
         m_pimage = pUiEngine->LoadImageFromLua(UiScreenConfiguration::Create("menuconfig/configscreen.lua", map));
     }

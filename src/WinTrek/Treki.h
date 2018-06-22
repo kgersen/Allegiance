@@ -71,6 +71,10 @@ public:
     TRef<SimpleModifiableValue<bool>> GetJoystickShowDirectionIndicator() {
         return m_pconfiguration->GetBool("Joystick.ShowDirectionIndicator", m_pconfiguration->GetBoolValue("ShowJoystickIndicator", true));
     }
+
+    TRef<SimpleModifiableValue<bool>> GetJoystickEnableForceFeedback() {
+        return m_pconfiguration->GetBool("Joystick.EnableForceFeedback", m_pconfiguration->GetBoolValue("EnableFeedback", false));
+    }
 };
 
 #include "CallsignTagInfo.h"
