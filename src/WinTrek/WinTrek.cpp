@@ -1262,66 +1262,6 @@ public:
     TRef<IClientEventSink>     m_pClientEventSink;
     TRef<IClientEventSource>   m_pClientEventSource;
 
-    TRef<IMenuItem>            m_pitemTogglePosters;
-    TRef<IMenuItem>            m_pitemToggleDebris;
-    TRef<IMenuItem>            m_pitemToggleStars;
-    TRef<IMenuItem>            m_pitemToggleEnvironment;
-    TRef<IMenuItem>			   m_pitemToggleUseOldUi;
-    TRef<IMenuItem>			   m_pitemToggleShowJoystickIndicator;
-    TRef<IMenuItem>            m_pitemToggleRoundRadar;
-    TRef<IMenuItem>            m_pitemToggleLinearControls;
-    TRef<IMenuItem>            m_pitemToggleLargeDeadZone;
-    TRef<IMenuItem>            m_pitemToggleVirtualJoystick;
-    TRef<IMenuItem>            m_pitemToggleFlipY;
-    //Imago 7/10
-    TRef<IMenuItem>            m_pitemToggleEnableFeedback; //moved around & fixed up 7/10 #187
-	TRef<IMenuItem>            m_pitemToggleFFAutoCenter; 
-	TRef<IMenuItem>            m_pitemToggleFFGainUp; 
-	TRef<IMenuItem>            m_pitemToggleFFGainDown;
-	// 8/10 #215=
-	TRef<IMenuItem>            m_pitemToggleWheelDelay; //Spunky #282
-	 //
-    TRef<IMenuItem>            m_pitemToggleStrobes;
-    TRef<IMenuItem>            m_pitemToggleTrails;
-    TRef<IMenuItem>            m_pitemToggleBounds;
-    TRef<IMenuItem>            m_pitemToggleTransparentObjects;
-    TRef<IMenuItem>            m_pitemToggleSmoke;
-    TRef<IMenuItem>            m_pitemToggleLensFlare;
-    TRef<IMenuItem>            m_pitemToggleBidirectionalLighting;
-    TRef<IMenuItem>            m_pitemToggleChatHistoryHUD;
-    TRef<IMenuItem>            m_pitemToggleCenterHUD;
-    TRef<IMenuItem>            m_pitemToggleTargetHUD;
-    TRef<IMenuItem>            m_pitemStyleHUD;
-    TRef<IMenuItem>            m_pitemToggleCensorChats;
-    TRef<IMenuItem>            m_pitemToggleStickyChase;
-    TRef<IMenuItem>            m_pitemFilterChatsToAll;
-    TRef<IMenuItem>            m_pitemFilterQuickComms;
-    TRef<IMenuItem>            m_pitemFilterLobbyChats;
-	TRef<IMenuItem>			   m_pitemIncreaseChatLines;	// #294 - Turkey
-	TRef<IMenuItem>			   m_pitemReduceChatLines;		// #294 - Turkey
-    TRef<IMenuItem>            m_pitemSoundQuality;
-    TRef<IMenuItem>            m_pitemToggleSoundHardware;
-    TRef<IMenuItem>            m_pitemToggleDSound8Usage;
-    TRef<IMenuItem>            m_pitemToggleMusic;
-    TRef<IMenuItem>            m_pitemMusicVolumeUp;
-    TRef<IMenuItem>            m_pitemMusicVolumeDown;
-    TRef<IMenuItem>            m_pitemSFXVolumeUp;
-    TRef<IMenuItem>            m_pitemSFXVolumeDown;
-    TRef<IMenuItem>            m_pitemVoiceOverVolumeUp;
-    TRef<IMenuItem>            m_pitemVoiceOverVolumeDown;
-    TRef<IMenuItem>            m_pitemMaxTextureSize;		// yp Your_Persona August 2 2006 : MaxTextureSize Patch
-    /* pkk May 6th: Disabled bandwidth patch
-    TRef<IMenuItem>            m_pitemToggleBandwidth; // w0dk4 June 2007: Bandwith Patch*/
-    TRef<IMenuItem>            m_pitemMuteFilter;			//TheBored 30-JUL-07: Filter Unknown Chat patch
-    TRef<IMenuItem>            m_pitemFilterUnknownChats;	//TheBored 30-JUL-07: Filter Unknown Chat patch
-	//imago added -- 6/29/09
-	TRef<IMenuItem>            m_pitemMip;
-	TRef<IMenuItem>            m_pitemPack;
-	TRef<IMenuItem>            m_pitemAA;
-	TRef<IMenuItem>            m_pitemVsync;
-
-    bool                       m_bLensFlare;
-    bool                       m_bMusic;
     bool                       m_bRoundRadar;
 
     //
@@ -2566,9 +2506,7 @@ public:
 		m_rollCommandCamera(0.0f),
 		m_bEnableDisplacementCommandView(true),
 		m_suicideCount(0),
-		m_bLensFlare(true),
 		m_bRoundRadar(false),
-		m_bMusic(false),
 		m_bCommandGrid(false),
 		m_radarCockpit(RadarImage::c_rlDefault),
 		m_radarCommand(RadarImage::c_rlAll),
@@ -2934,7 +2872,7 @@ public:
 
 		m_iWheelDelay			 = 2; //Spunky #282 //rock: removed as an option
 
-        m_pUseOldUi = m_pConfiguration->GetBool("Ui.UseOldUi", true);
+        m_pUseOldUi = m_papp->GetGameConfiguration()->GetUiUseOldUi();
 
 // BUILD_DX9
 
@@ -3118,12 +3056,6 @@ public:
 
         if (LoadPreference ("PreferChaseView", FALSE))
             ToggleStickyChase ();
-        if (!LoadPreference("ChatHistory", TRUE))
-            ToggleChatHistoryHUD();
-        if (!LoadPreference("CenterHUD", TRUE))
-            ToggleCenterHUD();
-        if (!LoadPreference("TargetHUD", TRUE))
-            ToggleTargetHUD();
 		SetRadarLOD(LoadPreference("RadarLOD", 0)); //Imago updated 7/8/09 #24 (Gamma, VirtualJoystick, RadarLOD, ShowGrid)
 		if (LoadPreference("ShowGrid", FALSE))
 			ToggleShowGrid();
@@ -4041,9 +3973,6 @@ public:
             m_bPreferChaseView = true;
             SavePreference ("PreferChaseView", TRUE);
         }
-
-        if (m_pitemToggleStickyChase != NULL)
-            m_pitemToggleStickyChase->SetString (GetStickyChaseMenuString ());
     }
 
     void UpdateBidirectionalLighting()
@@ -4065,33 +3994,6 @@ public:
         }
 	}*/
 
-    void ToggleChatHistoryHUD()
-    {
-        m_pboolChatHistoryHUD->SetValue(!m_pboolChatHistoryHUD->GetValue());
-        //SavePreference("ChatHistory", (DWORD)m_pboolChatHistoryHUD->GetValue());
-
-        if (m_pitemToggleChatHistoryHUD != NULL)
-            m_pitemToggleChatHistoryHUD->SetString(GetChatHistoryHUDMenuString());
-    }
-
-    void ToggleCenterHUD()
-    {
-        m_pboolCenterHUD->SetValue(!m_pboolCenterHUD->GetValue());
-        SavePreference("CenterHUD", (DWORD)m_pboolCenterHUD->GetValue());
-
-        if (m_pitemToggleCenterHUD != NULL)
-            m_pitemToggleCenterHUD->SetString(GetCenterHUDMenuString());
-    }
-
-    void ToggleTargetHUD()
-    {
-        m_pboolTargetHUD->SetValue(!m_pboolTargetHUD->GetValue());
-        SavePreference("TargetHUD", (DWORD)m_pboolTargetHUD->GetValue());
-
-        if (m_pitemToggleTargetHUD != NULL)
-            m_pitemToggleTargetHUD->SetString(GetTargetHUDMenuString());
-    }
-
     void ToggleVirtualJoystick()
     {
         m_papp->GetGameConfiguration()->GetJoystickUseMouseAsJoystick()->SetValue(!m_papp->GetGameConfiguration()->GetJoystickUseMouseAsJoystick()->GetValue());
@@ -4112,19 +4014,6 @@ public:
             return false;
         }
     };
-
-    void ToggleOldUi()
-    {
-        m_pUseOldUi->SetValue(!m_pUseOldUi->GetValue());
-
-        if (m_pitemToggleUseOldUi != NULL) {
-            m_pitemToggleUseOldUi->SetString(GetOldUiMenuString());
-        }
-
-        m_pmessageBox = CreateMessageBox("Enabling or Disabling the old UI will require you to restart Allegiance.", NULL, true, false);
-        m_pmessageBox->GetEventSource()->AddSink(new CloseNotificationSink(this));
-        GetWindow()->GetPopupContainer()->OpenPopup(m_pmessageBox, false);
-    }
 
 	//Imago 7/8/09 #24
     void ToggleShowGrid()
@@ -4163,57 +4052,6 @@ public:
         trekClient.ResetSound();
     }
 
-    void SwitchSoundQuality()
-    {
-        switch (m_soundquality)
-        {
-        case ISoundEngine::minQuality:
-            m_soundquality = ISoundEngine::midQuality;
-            break;
-
-        case ISoundEngine::midQuality:
-            m_soundquality = ISoundEngine::maxQuality;
-            break;
-
-        case ISoundEngine::maxQuality:
-            m_soundquality = ISoundEngine::minQuality;
-            break;
-
-        default:
-            ZAssert(false);
-            m_soundquality = ISoundEngine::minQuality;
-            break;
-        }
-
-        ZSucceeded(m_pSoundEngine->SetQuality(m_soundquality));
-        SavePreference("SoundQuality", (DWORD)m_soundquality);
-
-        if (m_pitemSoundQuality != NULL)
-            m_pitemSoundQuality->SetString(GetSoundQualityMenuString());
-    };
-
-    void ToggleSoundHardware()
-    {
-        m_bEnableSoundHardware = !m_bEnableSoundHardware;
-
-        SavePreference("SoundHardwareAcceleration", (DWORD)m_bEnableSoundHardware);
-
-        ZSucceeded(m_pSoundEngine->EnableHardware(m_bEnableSoundHardware));
-
-        if (m_pitemToggleSoundHardware != NULL)
-            m_pitemToggleSoundHardware->SetString(GetSoundHardwareMenuString());
-    }
-
-	void ToggleUseDSound8()
-	{
-		m_bUseDSound8 = !m_bUseDSound8;
-
-		SavePreference("UseDSound8", (DWORD)m_bUseDSound8);
-
-		if(m_pitemToggleDSound8Usage != NULL)
-			m_pitemToggleDSound8Usage->SetString(GetDSound8EnabledString());
-	}
-
 	/* pkk May 6th: Disabled bandwidth patch
 	// w0dk4 June 2007: Bandwith Patch
 	ZString GetBandwidthMenuString()
@@ -4231,89 +4069,6 @@ public:
 
 		return "Error";
 	}*/
-
-    ZString GetRoundRadarMenuString()
-    {
-        return (m_bRoundRadar) ? "Round Radar" : "Square Radar";
-    }
-
-    ZString GetStickyChaseMenuString ()
-    {
-        return m_bPreferChaseView ? "Default To Chase View" : "Default To Cockpit View";
-    }
-
-    ZString GetSoundQualityMenuString()
-    {
-        switch (m_soundquality)
-        {
-        case ISoundEngine::minQuality:
-            return "Sound Quality: Low";
-
-        case ISoundEngine::midQuality:
-            return "Sound Quality: Default";
-
-        case ISoundEngine::maxQuality:
-            return "Sound Quality: High";
-
-        default:
-            ZAssert(false);
-            return "<bug>";
-        }
-    }
-
-    ZString GetSoundHardwareMenuString()
-    {
-        return m_bEnableSoundHardware ? "Sound Card Acceleration On" : "Sound Card Acceleration Off";
-    }
-
-	// mdv new sound8 or old sound engine
-	// mmf changed wording
-	ZString GetDSound8EnabledString()
-	{
-		return m_bUseDSound8 ? "DirectSound (Restart Reqd.): New" : "DirectSound (Restart Reqd.): Old";
-	}
-
-    ZString GetBidirectionalLightingMenuString()
-    {
-        return (m_bBidirectionalLighting) ? "Bidirectional Lighting On " : "Bidirectional Lighting Off ";
-    }
-
-    ZString GetChatHistoryHUDMenuString()
-    {
-        return (m_pboolChatHistoryHUD->GetValue()) ? "Chat History On " : "Chat History Off ";
-    }
-
-    ZString GetCenterHUDMenuString()
-    {
-        return (m_pboolCenterHUD->GetValue()) ? "Center HUD On " : "Center HUD Off ";
-    }
-
-    ZString GetTargetHUDMenuString()
-    {
-        return (m_pboolTargetHUD->GetValue()) ? "Target HUD On " : "Target HUD Off ";
-    }
-
-    ZString GetOldUiMenuString()
-    {
-        return "Use old UI: " + ZString(m_pUseOldUi->GetValue() ? "On" : "Off");
-    }
-
-	//imago WIP 6/30/09 7/18/09
-
-	ZString GetAAString()
-	{
-		return "Antialiasing (" + ZString(CD3DDevice9::Get()->GetDeviceSetupParams()->szAAType) + ")";
-	}
-	ZString GetMipString()
-	{
-		ZString strResult = (CD3DDevice9::Get()->GetDeviceSetupParams()->bAutoGenMipmap) ? "Yes" : "No";
-		return "Auto Mipmap (" + strResult + ")";
-	}
-	ZString GetVsyncString()
-	{
-		ZString strResult = (CD3DDevice9::Get()->GetDeviceSetupParams()->bWaitForVSync) ? "On" : "Off";
-		return "Vertical Sync (" + strResult + ")";
-	}
 
     void DoInputConfigure()
     {
@@ -4628,7 +4383,7 @@ public:
             if (!CommandCamera(cm))
             {
                 m_cameraControl.SetAnimation (InternalCamera(cm) ? 1.0f : 2.0f);
-                if (m_bLensFlare)
+                if (m_papp->GetGameConfiguration()->GetGraphicsLensFlare()->GetValue())
                     m_pwrapImageLensFlare->SetImage(m_pimageLensFlare);
             }
 
