@@ -2860,7 +2860,7 @@ public:
             m_pinputEngine->GetMouse()->SetAccel((int)value);
         }, m_papp->GetGameConfiguration()->GetMouseAcceleration()));
 
-		m_iWheelDelay			 = LoadPreference("WheelDelay",            2) % 5; //Spunky #282
+		m_iWheelDelay			 = 2; //Spunky #282 //rock: removed as an option
 
         m_pUseOldUi = m_pConfiguration->GetBool("Ui.UseOldUi", true);
 
@@ -4269,16 +4269,6 @@ public:
 				m_pitemMaxTextureSize	= pmenu->AddMenuItem(idmMaxTextureSize,     GetMaxTextureSizeMenuString(),    					  'X');
 				break;
 
-			//Imago 8/10 #215
-			case idmMouseOptions:
-                                 pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
-                                 pmenu->AddMenuItem(0                     , "Options are only valid when in fullscreen"     );
-                                 pmenu->AddMenuItem(0                     , "------------------------------------------------"     );
-				m_pitemToggleWheelDelay				= pmenu->AddMenuItem(idmWheelDelay			  ,	GetWheelDelayMenuString(), 'W'); //Spunky #282	, 'D');
-				break;
-
-
-
         }
 
         return pmenu;
@@ -4861,17 +4851,6 @@ public:
             m_pitemSoundQuality->SetString(GetSoundQualityMenuString());
     };
 
-    void SwitchWheelDelay() //Spunky #282
-    {
-		if (++m_iWheelDelay == 5)
-			m_iWheelDelay = 0;
-
-        SavePreference("WheelDelay", (DWORD)m_iWheelDelay);
-
-		if (m_pitemToggleWheelDelay != NULL)
-            m_pitemToggleWheelDelay->SetString(GetWheelDelayMenuString());
-	};
-
     void ToggleSoundHardware()
     {
         m_bEnableSoundHardware = !m_bEnableSoundHardware;
@@ -4956,15 +4935,6 @@ public:
 
 		return "Error";
 	}*/
-
-	//Spunky #282
-	ZString GetWheelDelayMenuString()
-	{
-		static const ZString str[] = {"Max", "High", "Med", "Min", "None"};
-		if (m_iWheelDelay >= 0 && m_iWheelDelay < 5)
-			return "Wheel & Keyboard Throttle Delay: " + str[m_iWheelDelay];
-		return "Error";
-	}
 
     ZString GetRoundRadarMenuString()
     {
@@ -5584,12 +5554,6 @@ public:
 			case idmContextChat:
 				contextChat();		CloseMenu();
 				break;	
-			// #215 8/10
-
-			//Spunky #282
-			case idmWheelDelay: 
-				SwitchWheelDelay();
-				break;
 
         }
     }
