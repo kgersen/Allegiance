@@ -62,12 +62,14 @@ public:
 };
 
 class UiState : public UiObjectContainer {
+public:
+    typedef std::map<std::string, std::shared_ptr<Exposer>> UiState::InnerMapType;
 
 private:
     std::string m_name;
 public:
     using UiObjectContainer::UiObjectContainer;
-    UiState(std::string name, std::map<std::string, std::shared_ptr<Exposer>> map = {}) :
+    UiState(std::string name, UiState::InnerMapType map = {}) :
         m_name(name),
         UiObjectContainer(map)
     {}

@@ -78,6 +78,9 @@ public:
     LoggedInState(IEventSink* sinkLogout, IEventSink* sinkCreateGame) :
         UiState("Logged in", {
             { "Callsign", TypeExposer<std::string>::Create(std::string(trekClient.GetNameLogonZoneServer())) },
+            { "Join mission state", TypeExposer<TRef<UiStateModifiableValue>>::Create(new UiStateModifiableValue(std::make_shared<UiState>("Idle", UiState::InnerMapType({
+                { "Has error", TypeExposer<TRef<UiStateValue>>::Create(new UiStateValue(std::make_shared<UiState>("No"))) }
+            })))) },
             { "Mission list", TypeExposer<TRef<ContainerList>>::Create(new ContainerList({})) },
             { "Server list", TypeExposer<TRef<ContainerList>>::Create(new ContainerList({})) },
             { "Core list", TypeExposer<TRef<ContainerList>>::Create(new ContainerList({})) },
@@ -116,6 +119,10 @@ public:
             }) }
         })
     {}
+
+    void SetJoinMissionState(std::string name, const UiState::InnerMapType& map = {}) {
+        Get<TRef<UiStateModifiableValue>>("Join mission state")->SetValue(std::make_shared<UiState>(name, map));
+    }
 
     TRef<UiObjectContainer> FindCore(ZString coreName) {
         auto listCores = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Core list")->GetList();
@@ -218,8 +225,9 @@ public:
             }
 
             current_modifiablelist->Insert(i, new UiObjectContainer({
-                { "Join", TypeExposer<TRef<IEventSink>>::Create(new CallbackSink([game]() {
-                    trekClient.JoinMission(game, "");
+                { "Join", TypeExposer<TRef<TEvent<ZString>::Sink>>::Create(new CallbackValueSink<ZString>([this, game](ZString strPassword) {
+                    SetJoinMissionState("Joining");
+                    trekClient.JoinMission(game, strPassword);
                     return false;
                 })) },
                 { "Name", StringExposer::CreateStatic(game->Name()) },
@@ -521,6 +529,62 @@ public:
         m_state->GetValue()->as<LoggedInState>()->SetCoreList(cCores, pcores);
         m_state->GetValue()->as<LoggedInState>()->SetServerList(cServers, pservers);
     };
+
+    ZString GetJoinFailureMessage(DelPositionReqReason reason) {
+        switch (reason) {
+        case DPR_BadPassword:
+            return "You supplied an incorrect password";
+        case DPR_NoMission:
+            return "The mission you were trying to join has ended.";
+        case DPR_LobbyLocked:
+            return "The lobby for this mission is locked.";
+        case DPR_InvalidRank:
+            return "You are the wrong rank for this mission.";
+        case DPR_OutOfLives:
+            return "You have run out of lives in this mission.";
+        case DPR_Banned:
+            return "You have been removed (i.e. booted) from this game by the commander(s).";
+        case DPR_GameFull:
+            return "This server has reached its maximum number of players.";
+        case DPR_PrivateGame:
+            return "The game you tried to join is private.  You do not have access to this game.";
+        case DPR_DuplicateLogin:
+            return "Someone else is already using that name in this game.";
+        case DPR_ServerPaused:
+            return "The server for this game is shutting down and is not accepting new users.";
+        default:
+            return "You have not been accepted into the game.";
+        }
+    }
+
+    void OnDelRequest(MissionInfo* pMissionInfo, SideID sideID, PlayerInfo* pPlayerInfo, DelPositionReqReason reason) override {
+        // We have a connection to the server, but we are not allowed to join or are removed.
+        debugf("OnDelRequest received");
+
+        if (pPlayerInfo != trekClient.MyPlayerInfo()) {
+            debugf("OnDelRequest received: Not for this user");
+            return;
+        }
+
+        if (m_state->GetValue()->GetName() != "Logged in") {
+            debugf("OnDelRequest received: Not logged in to the lobby");
+            return;
+        }
+
+        ZString messsage = GetJoinFailureMessage(reason);
+        m_state->GetValue()->as<LoggedInState>()->SetJoinMissionState("Failed", UiState::InnerMapType({
+            { "Has error", TypeExposer<TRef<UiStateValue>>::Create(new UiStateValue(std::make_shared<UiState>("Yes", UiState::InnerMapType({
+                { "Reason", TypeExposer<std::string>::Create(std::string(messsage)) },
+                { "Reason is incorrect password", BooleanExposer::CreateStatic(reason == DPR_BadPassword) },
+                { "Retry", TypeExposer<TRef<TEvent<ZString>::Sink>>::Create(new CallbackValueSink<ZString>([pMissionInfo](ZString strPassword) {
+                    trekClient.JoinMission(pMissionInfo, strPassword);
+                    return true;
+                }))}
+            })))) }
+        }));
+
+        trekClient.Disconnect();
+    }
 
     TRef<IEventSink> GetShowNewGamePopupSink() {
         return new CallbackSink([this]() {
