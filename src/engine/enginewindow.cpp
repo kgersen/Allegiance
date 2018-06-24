@@ -466,11 +466,7 @@ void EngineWindow::UpdateWindowStyle()
         LONG screenHeight = rectWindow.bottom - rectWindow.top;
 
         if (screenWidth <= size.X() && screenHeight <= size.Y()) {
-            //windowed, but we do not fit with the selected resolution, switch to borderless
-            //set to monitor resolution
-            
-            size = m_pengine->GetFullscreenSize();
-            SetClientRect(WinRect(WinPoint(0, 0), size));
+            //windowed, but we do not fit with the selected resolution, switch to borderless and zero the offset
 
             //set window properties
             SetHasMinimize(false);
@@ -710,7 +706,7 @@ void EngineWindow::Invalidate()
 
 void EngineWindow::RectChanged()
 {
-	ZDebugOutput("EngineWindow::RectChanged() moving="+ZString(m_bMovingWindow)+"\n");
+	ZDebugOutput("EngineWindow::RectChanged() moving="+ZString(m_bMovingWindow) + " WindowRect=" + GetRect().GetString() + " ClientRect=" + GetClientRect().GetString());
     if (
            (!m_bMovingWindow)
         && (m_pengine && !m_pengine->IsFullscreen())
