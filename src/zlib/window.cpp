@@ -351,7 +351,7 @@ void Window::SetPosition(const WinPoint& point)
 //		SetWindowPos(m_hwnd, HWND_NOTOPMOST, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED);
 //		SetWindowPos(m_hwnd, HWND_TOP, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
 //#else  //Imago put this back 7/6/09
-		SetWindowPos(m_hwnd, nullptr, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		SetWindowPos(m_hwnd, nullptr, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 // BUILD_DX9
 }
 

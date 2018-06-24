@@ -445,17 +445,12 @@ void EngineWindow::UpdateWindowStyle()
         //
         // Size the window to cover the entire desktop
         // Win32 doesn't recognize the style change unless we resize the window
-        //
+        // or use SetWindowPos
 
         WinRect rect = GetRect();
-        SetClientRect(
-            WinRect(
-                rect.Min(),
-                rect.Max() + WinPoint(1, 1)
-            )
-        );
 
         SetClientRect(rect);
+        SetPosition(WinPoint(0, 0));
     } else {
         WinPoint size = m_pengine->GetFullscreenSize();
 
@@ -486,9 +481,8 @@ void EngineWindow::UpdateWindowStyle()
             SetTopMost(false);
         }
 
-        // Win32 doesn't recognize the style change unless we resize the window
+        // Win32 doesn't recognize the style change unless we make a call to SetWindowPos
         m_bMovingWindow = true;
-        SetClientSize(size + WinPoint(1, 1));
         SetClientSize(size);
         SetPosition(m_offsetWindowed);
         m_bMovingWindow = false;
