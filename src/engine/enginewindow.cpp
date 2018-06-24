@@ -460,31 +460,22 @@ void EngineWindow::UpdateWindowStyle()
         LONG screenWidth = rectWindow.right - rectWindow.left;
         LONG screenHeight = rectWindow.bottom - rectWindow.top;
 
-        if (screenWidth <= size.X() && screenHeight <= size.Y()) {
-            //windowed, but we do not fit with the selected resolution, switch to borderless and zero the offset
+        //windowed, but we do not fit with the selected resolution, switch to borderless
+        bool bMakeBorderless = screenWidth <= size.X() && screenHeight <= size.Y();
 
-            //set window properties
-            SetHasMinimize(false);
-            SetHasMaximize(false);
-            SetHasSysMenu(false);
-            Window::SetSizeable(false);
+        //set window properties
+        SetHasMinimize(!bMakeBorderless);
+        SetHasMaximize(!bMakeBorderless);
+        SetHasSysMenu(!bMakeBorderless);
+        Window::SetSizeable(!bMakeBorderless && m_bSizeable);
 
-            //make sure we are on top of everything
-            SetTopMost(true);
-        }
-        else
-        {
-            SetHasMinimize(true);
-            SetHasMaximize(true);
-            SetHasSysMenu(true);
-            Window::SetSizeable(m_bSizeable);
-            SetTopMost(false);
-        }
+        //make sure we are on top of everything if we are borderless
+        SetTopMost(bMakeBorderless);
 
         // Win32 doesn't recognize the style change unless we make a call to SetWindowPos
         m_bMovingWindow = true;
-        SetClientSize(size);
         SetPosition(m_offsetWindowed);
+        SetClientSize(size);
         m_bMovingWindow = false;
     }
 
@@ -1033,7 +1024,9 @@ void EngineWindow::SetHideCursorTimer(bool bHideCursor)
 void EngineWindow::UpdateFrame()
 {
     m_timeCurrent = Time::Now();
-    m_pnumberTime->SetValue(m_timeCurrent - m_timeStart);
+    if (m_pnumberTime) {
+        m_pnumberTime->SetValue(m_timeCurrent - m_timeStart);
+    }
 
     m_pevaluateFrameEventSource->Trigger(m_timeCurrent);
 
@@ -1143,7 +1136,7 @@ void EngineWindow::DoIdle()
     //
 
     bool bChanges = false;
-    if (m_pengine->IsDeviceReady(bChanges)) 
+    if (m_pengine && m_pengine->IsDeviceReady(bChanges))
 	{
         if (bChanges || m_bInvalid) 
 		{
