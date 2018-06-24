@@ -116,6 +116,10 @@ public:
         map["Configuration.Mouse.Sensitivity"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetMouseSensitivity());
         map["Configuration.Mouse.Acceleration"] = TypeExposer<TRef<SimpleModifiableValue<float>>>::Create(m_pConfiguration->GetMouseAcceleration());
 
+        //modding
+        map["Configuration.Modding.Path"] = StringExposer::CreateStatic(m_pTrekApp->GetModdingEngine()->GetPath().c_str());
+        map["Installed mods"] = TypeExposer<TRef<ContainerList>>::Create(GetMods());
+
         m_pimage = pUiEngine->LoadImageFromLua(UiScreenConfiguration::Create("menuconfig/configscreen.lua", map));
     }
 
@@ -160,6 +164,16 @@ public:
         }
 
         return new UiList<TRef<UiObjectContainer>>(list);
+    }
+
+    TRef<ContainerList> GetMods() {
+        std::vector<TRef<UiObjectContainer>> list = {};
+        for (std::shared_ptr<Mod> mod : m_pTrekApp->GetModdingEngine()->GetMods()) {
+            list.push_back(new UiObjectContainer({
+                { "Name", StringExposer::CreateStatic(mod->GetName().c_str()) }
+            }));
+        }
+        return new ContainerList(list);
     }
 
     ~ConfigScreen() {

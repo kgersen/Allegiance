@@ -279,6 +279,7 @@ class TrekAppImpl : public TrekApp {
 private:
     std::shared_ptr<CallsignHandler> m_pCallsignHandler;
     TRef<GameConfigurationWrapper> m_pGameConfiguration;
+    std::shared_ptr<ModdingEngine> m_pModdingEngine;
 
 public:
     std::shared_ptr<CallsignHandler> GetCallsignHandler() override {
@@ -287,6 +288,10 @@ public:
 
     TRef<GameConfigurationWrapper> GetGameConfiguration() override {
         return m_pGameConfiguration;
+    }
+
+    std::shared_ptr<ModdingEngine> GetModdingEngine() override {
+        return m_pModdingEngine;
     }
 
     TrekAppImpl()
@@ -847,6 +852,7 @@ public:
 
         TRef<TrekWindow> pwindow;
         ThreadedWork threadInitialization = ThreadedWork([this, pengineWindow, pathStr, strCommandLine, bMovies, &pwindow]() {
+            m_pModdingEngine = ModdingEngine::Create();
             m_pCallsignHandler = CreateCallsignHandlerFromSteam(m_pGameConfiguration);
 
             pwindow =

@@ -2535,18 +2535,8 @@ public:
 
         std::vector<ZString> vArtPaths;
         {
-            //Go through the mod directory and add each directory in there
-
-            std::string search_path = "./Mods/*";
-            WIN32_FIND_DATA fd;
-            HANDLE hFind = ::FindFirstFile(search_path.c_str(), &fd);
-            if (hFind != INVALID_HANDLE_VALUE) {
-                do {
-                    if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && fd.cFileName[0] != '.') {
-                        vArtPaths.push_back(ZString("./Mods/") + fd.cFileName);
-                    }
-                } while (::FindNextFile(hFind, &fd));
-                ::FindClose(hFind);
+            for (std::shared_ptr<Mod> mod : papp->GetModdingEngine()->GetMods()) {
+                vArtPaths.push_back(mod->GetArtPath().c_str());
             }
         }
 
