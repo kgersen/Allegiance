@@ -2047,6 +2047,8 @@ public:
 		);
 
 		target->SetImage(m_pimageScreen);
+
+        m_ptrekInput->SetFocus(false); //Rock: Another attempt at resolving the stuck key bug
 		
         m_pEngineWindow->SetSizeable(true); // kg-: #226 always
 
