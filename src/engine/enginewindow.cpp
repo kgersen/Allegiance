@@ -464,16 +464,18 @@ void EngineWindow::UpdateWindowStyle()
         bool bMakeBorderless = screenWidth <= size.X() && screenHeight <= size.Y();
 
         //set window properties
+        m_bMovingWindow = true;
+
         SetHasMinimize(!bMakeBorderless);
         SetHasMaximize(!bMakeBorderless);
         SetHasSysMenu(!bMakeBorderless);
+
         Window::SetSizeable(!bMakeBorderless && m_bSizeable);
 
         //make sure we are on top of everything if we are borderless
         SetTopMost(bMakeBorderless);
 
         // Win32 doesn't recognize the style change unless we make a call to SetWindowPos
-        m_bMovingWindow = true;
         SetPosition(m_offsetWindowed);
         SetClientSize(size);
         m_bMovingWindow = false;
