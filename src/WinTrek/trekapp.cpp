@@ -244,12 +244,15 @@ public:
     }
 
     ~ThreadedWork() {
+        if (m_hThread) {
+            CloseHandle(m_hThread);
+        }
         delete m_pCallback;
     }
 
-    void Start() {
+    HANDLE Start() {
         if (m_hThread != NULL) {
-            return;
+            return m_hThread;
         }
 
         m_hThread = CreateThread(NULL, 0, [](void* pData) {
@@ -257,9 +260,11 @@ public:
 
             callback();
 
-            //delete pointer
+            debugf("Thread completed");
             return (DWORD)0;
         }, m_pCallback, 0, NULL);
+
+        return m_hThread;
     }
 
     void Wait() {
@@ -846,7 +851,6 @@ public:
                 PlayMovieClip(pengineWindow, (ZString)pathStr + "/intro_movie.avi");
             }
         });
-        movies.Start();
 
         debugf("Finished graphics initialization, starting main game initialization");
 
@@ -865,20 +869,38 @@ public:
                 );
         });
 
-        threadInitialization.Start();
-        
-        MSG msg;
-        BOOL bRet;
-        while ((movies.PeekIsRunning() || threadInitialization.PeekIsRunning()) && (bRet = GetMessage(&msg, NULL, 0, 0)) != 0)
-        {
-            if (bRet == -1)
-            {
-                // handle the error and possibly exit
+        //create a thread that completes when both the initialization and the movies are complete
+        ThreadedWork threadAllWork = ThreadedWork([&threadInitialization, &movies]() {
+            HANDLE handles[] = {
+                threadInitialization.Start(),
+                movies.Start()
+            };
+
+            // third argument is TRUE, so waits for all handles
+            WaitForMultipleObjects(2, handles, TRUE, INFINITE);
+        });
+
+        HANDLE handleThreadAllWork = threadAllWork.Start();
+
+        //MsgWaitForMultipleObjects returns when either the all work thread has finished, or a message is posted. third arg is FALSE, so waits until any handle.
+        DWORD ret;
+        while (WAIT_OBJECT_0 != (ret = MsgWaitForMultipleObjects(1, &handleThreadAllWork, FALSE, INFINITE, QS_ALLINPUT))) {
+            if (ret == WAIT_OBJECT_0 + 1) {
+                //message
+                MSG msg;
+                while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+                    TranslateMessage(&msg);
+                    DispatchMessage(&msg);
+                }
             }
-            else
-            {
-                TranslateMessage(&msg);
-                DispatchMessage(&msg);
+            else if (ret == WAIT_TIMEOUT) {
+                //timeout reached
+                debugf("MsgWaitForMultipleObjects timeout");
+            }
+            else {
+                //unexpected
+                debugf("Unexpected return from MsgWaitForMultipleObjects");
+                break;
             }
         }
 
