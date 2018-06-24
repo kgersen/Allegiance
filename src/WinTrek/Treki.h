@@ -214,15 +214,6 @@ protected:
         m_pEngineWindow(pengineWindow)
     {
 
-        m_pEngineWindow->GetOnCloseEventSource()->AddSink(new CallbackSink([this]() {
-            this->Terminate();
-            return true;
-        }));
-
-        m_pEngineWindow->GetEvaluateFrameEventSource()->AddSink(new CallbackValueSink<Time>([this](Time time) {
-            this->EvaluateFrame(time);
-            return true;
-        }));
     }
 
     virtual void Terminate() = 0;
@@ -240,6 +231,18 @@ public:
 // BUILD_DX9
         bool           bMovies
     );
+
+    virtual void Start() {
+        m_pEngineWindow->GetOnCloseEventSource()->AddSink(new CallbackSink([this]() {
+            this->Terminate();
+            return true;
+        }));
+
+        m_pEngineWindow->GetEvaluateFrameEventSource()->AddSink(new CallbackValueSink<Time>([this](Time time) {
+            this->EvaluateFrame(time);
+            return true;
+        }));
+    }
 
     EngineWindow* GetEngineWindow() { 
         return m_pEngineWindow;

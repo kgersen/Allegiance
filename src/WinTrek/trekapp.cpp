@@ -884,6 +884,8 @@ public:
         // Handling command line options
         //
 
+        pwindow->Start();
+
         if (bStartTraining)
             GetWindow ()->screen (ScreenIDTrainScreen);
 

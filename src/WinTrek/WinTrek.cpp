@@ -767,8 +767,6 @@ public:
         return false;
     }
 
-    TRef<SuperKeyboardInputFilter> m_psuperKeyboardInputFilter;
-
     //////////////////////////////////////////////////////////////////////////////
     //
     // KeyboardInputFilter
@@ -1258,7 +1256,6 @@ public:
     TRef<IMenu>                m_pmenu;
     TRef<IMenuCommandSink>     m_pmenuCommandSink;
     TRef<IIntegerEventSink>    m_pintegerEventSink;
-    TRef<IKeyboardInput>       m_pkeyboardInput;
     TRef<IClientEventSink>     m_pClientEventSink;
     TRef<IClientEventSource>   m_pClientEventSource;
 
@@ -2710,27 +2707,6 @@ public:
         );
         pnsGamePanes->AddMember("targetCamera", m_cameraControl.m_pcameraTarget);
 
-        //
-        // Keyboard input
-        //
-
-        m_psuperKeyboardInputFilter = new SuperKeyboardInputFilter(this);
-        m_pEngineWindow->AddKeyboardInputFilter(m_psuperKeyboardInputFilter);
-
-        //
-        // Popup keyboard input
-        //
-
-        m_pEngineWindow->AddKeyboardInputFilter(GetPopupContainer());
-        m_pkeyboardInput = IKeyboardInput::CreateDelegate(this);
-        m_pEngineWindow->SetFocus(m_pkeyboardInput);
-
-        //
-        // Filter the keyboard input
-        //
-
-        m_pkeyboardInputFilter = new KeyboardInputFilter(this);
-        m_pEngineWindow->AddKeyboardInputFilter(m_pkeyboardInputFilter);
 
         //
         // Create the virtual joystick image
@@ -3084,6 +3060,30 @@ public:
 		SetUiScreen(introscr);
         m_screen = ScreenIDIntroScreen;
         RestoreCursor();
+    }
+
+    void Start() override {
+        //
+        // Keyboard input
+        //
+
+        m_pEngineWindow->AddKeyboardInputFilter(new SuperKeyboardInputFilter(this));
+
+        //
+        // Popup keyboard input
+        //
+
+        m_pEngineWindow->AddKeyboardInputFilter(GetPopupContainer());
+        m_pEngineWindow->SetFocus(IKeyboardInput::CreateDelegate(this));
+
+        //
+        // Filter the keyboard input
+        //
+
+        m_pkeyboardInputFilter = new KeyboardInputFilter(this);
+        m_pEngineWindow->AddKeyboardInputFilter(m_pkeyboardInputFilter);
+
+        TrekWindow::Start();
     }
 
     void InitializeImages()
