@@ -186,11 +186,17 @@ std::shared_ptr<CallsignSquad> CreateSquadFromSteam(CSteamID squadSteamClanId, C
     }
 
     std::vector<ZString> tokens = std::vector<ZString>({});
-
     if (bIsOfficer) {
         tokens.push_back("*");
         tokens.push_back("^");
     }
+
+    ZString token_debug_string = "";
+    for (ZString token : tokens) {
+        token_debug_string += token;
+    }
+
+    debugf("Finding squad tags. Added tag. fixed_tag=%s, tokens=%s", (const char*)strSteamTag, (const char*)token_debug_string);
 
     return std::make_shared<CallsignSquad>(strSteamTag, tokens);
 }
@@ -203,8 +209,10 @@ std::shared_ptr<CallsignHandler> CreateCallsignHandlerFromSteam(const TRef<GameC
     if (SteamUser() != nullptr)
         currentUser = SteamUser()->GetSteamID();
 
-    int nGroups = SteamFriends()->GetClanCount();
-    nGroups = std::min(10, nGroups); //only do the first 10
+    int nGroupsFound = SteamFriends()->GetClanCount();
+    int nGroups = std::min(20, nGroupsFound); //only do the first 20
+
+    debugf("Finding squad tags. %d groups found, iterating over %d groups (possibly limit reached)", nGroupsFound, nGroups);
 
     std::vector<std::shared_ptr<CallsignSquad>> vSquads;
     for (int i = 0; i < nGroups; ++i)
@@ -213,8 +221,11 @@ std::shared_ptr<CallsignHandler> CreateCallsignHandlerFromSteam(const TRef<GameC
         ZString szGroupName = SteamFriends()->GetClanName(groupSteamID);
         ZString szGroupTag = SteamFriends()->GetClanTag(groupSteamID);
 
+        debugf("Finding squad tags. Found name=%s, tag=%s", (const char*)szGroupName, (const char*)szGroupTag);
+
         // Don't do the expensive officer call unless there is actually a tag associated with the group.
         if (szGroupTag.GetLength() == 0) {
+            debugf("Finding squad tags. Tag empty, skipping");
             continue;
         }
         
