@@ -191,6 +191,7 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
     <ClCompile Include="..\src\WinTrek\logon.cpp" />
     <ClCompile Include="..\src\WinTrek\mappreview.cpp" />
     <ClCompile Include="..\src\WinTrek\mappvmaker.cpp" />
+    <ClCompile Include="..\src\WinTrek\ModdingEngine.cpp" />
     <ClCompile Include="..\src\WinTrek\netinfo.cpp" />
     <ClCompile Include="..\src\WinTrek\newgamescreen.cpp" />
     <ClCompile Include="..\src\WinTrek\passworddialog.cpp" />
@@ -241,6 +242,7 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
     <ClInclude Include="..\src\WinTrek\logon.h" />
     <ClInclude Include="..\src\WinTrek\mappreview.h" />
     <ClInclude Include="..\src\WinTrek\mappvmaker.h" />
+    <ClInclude Include="..\src\WinTrek\ModdingEngine.h" />
     <ClInclude Include="..\src\WinTrek\passworddialog.h" />
     <ClInclude Include="..\src\WinTrek\pch.h" />
     <ClInclude Include="..\src\WinTrek\radarimage.h" />
