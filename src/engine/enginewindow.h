@@ -356,6 +356,8 @@ public:
     WinPoint GetWindowedSize();
     WinPoint GetFullscreenSize();
 
+    TRef<PointValue> GetResolution();
+
     void OutputPerformanceCounters();
     void SetImage(Image* pimage);
     void SetCursorImage(Image* pimage);

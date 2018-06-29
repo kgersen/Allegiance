@@ -26,6 +26,8 @@ class QuickChatNode : public IMDLObject {};
 
 #include "Configuration.h"
 
+#include "imagetransform.h"
+
 // Tell the linker that my DLL should be delay loaded
 //#pragma comment(linker, "/DelayLoad:icqmapi.dll")
 
@@ -6985,8 +6987,8 @@ public:
             m_timeStart(ptime->GetValue()),
             m_valueStart(0),
             m_value(0),
-            m_positionOn(30, 30),
-            m_positionOff(-1300, 30)
+            m_positionOn(-30, -30),
+            m_positionOff(1300, -30)
         {
             peventSource->AddSink(this);
         }
@@ -7043,13 +7045,16 @@ public:
 
 		GetModeler()->SetColorKeyHint( true );
 
+        TRef<Image> ppaneImage = CreatePaneImage(
+            GetEngine(),
+            true,
+            m_phelp
+        );
+
         m_pwrapImageHelp->SetImage(
             new TransformImage(
-                CreatePaneImage(
-                    GetEngine(),
-                    true,
-                    m_phelp
-                ),
+                //Rock: TopRight actually, don't know why it has its y flipped here.
+                ImageTransform::Justify(ppaneImage, m_pEngineWindow->GetResolution(), JustifyBottom() | JustifyRight()),
                 new TranslateTransform2(m_phelpPosition)
             )
         );

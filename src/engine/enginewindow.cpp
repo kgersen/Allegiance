@@ -747,6 +747,13 @@ WinPoint EngineWindow::GetFullscreenSize()
     return m_pengine->GetFullscreenSize();
 }
 
+TRef<PointValue> EngineWindow::GetResolution()
+{
+    return new TransformedValue<Point, WinPoint>([](WinPoint winpoint) {
+        return Point((float)winpoint.X(), (float)winpoint.Y());
+    }, m_pengine->GetResolutionSizeModifiable());
+}
+
 void EngineWindow::SetFullscreenSize(const Vector& size)
 {
     m_pengine->SetFullscreenSize(size);
