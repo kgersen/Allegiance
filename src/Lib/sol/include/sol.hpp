@@ -1808,8 +1808,6 @@ namespace sol {
 		struct is_pointer_like : std::is_pointer<T> {};
 		template <typename T, typename D>
 		struct is_pointer_like<std::unique_ptr<T, D>> : std::true_type {};
-		template <typename T>
-		struct is_pointer_like<std::shared_ptr<T>> : std::true_type {};
 
 		template <std::size_t I, typename Tuple>
 		decltype(auto) forward_get(Tuple&& tuple) {
@@ -4748,27 +4746,6 @@ namespace sol {
 		template <typename U>
 		static auto get(U&& value) {
 			return std::addressof(detail::deref(value));
-		}
-	};
-
-	template <typename T>
-	struct unique_usertype_traits<std::shared_ptr<T>> {
-		typedef T type;
-		typedef std::shared_ptr<T> actual_type;
-		// rebind is non-void
-		// if and only if unique usertype
-		// is cast-capable
-		template <typename X>
-		using rebind_base = std::shared_ptr<X>;
-
-		static const bool value = true;
-
-		static bool is_null(const actual_type& p) {
-			return p == nullptr;
-		}
-
-		static type* get(const actual_type& p) {
-			return p.get();
 		}
 	};
 

@@ -1,5 +1,12 @@
 
-#include "ui.h"
+#include "UiEngine.h"
+
+#include "soundengine.h"
+#include "engine.h"
+#include "model.h"
+#include "image.h"
+
+#include "ui_sol.h"
 #include "items.hpp"
 
 #include "ns_math.hpp"

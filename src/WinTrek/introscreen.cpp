@@ -5,7 +5,7 @@
 
 #include "CreateGameDialog.h"
 
-#include "ui.h"
+#include "UiEngine.h"
 #include "downloader.h"
 
 extern bool CheckNetworkDevices(ZString& strDriverURL);
@@ -86,20 +86,25 @@ public:
             { "Core list", TypeExposer<TRef<ContainerList>>::Create(new ContainerList({})) },
             { "Logout", TypeExposer<TRef<IEventSink>>::Create(sinkLogout) },
             { "Create mission dialog", TypeExposer<TRef<IEventSink>>::Create(sinkCreateGame) },
-            { "Create mission", TypeExposer<TRef<TEvent<ZString, ZString, ZString>::Sink>>::Create(new CallbackValueSink<ZString, ZString, ZString>([this](ZString serverName, ZString coreName, ZString missionName) {
-                auto server = this->GetServer(serverName);
-                auto core = this->GetCore(coreName);
+            { "Create mission", TypeExposer<std::shared_ptr<SolEventSinkInitializer>>::Create(SolEventSinkInitializer::Create([this](std::vector<sol::object> obj) {
+                TRef<StringValue> pserver = obj.at(0).as<TRef<StringValue>>();
+                TRef<StringValue> pcore = obj.at(1).as<TRef<StringValue>>();
+                TRef<StringValue> pmission = obj.at(2).as<TRef<StringValue>>();
 
-                ServerCoreInfo serverinfo = server->Get<ServerCoreInfo>("ServerCoreInfo");
-                StaticCoreInfo coreinfo = core->Get<StaticCoreInfo>("StaticCoreInfo");
+                return [this, pserver, pcore, pmission]() {
+                    auto server = this->GetServer(pserver->GetValue());
+                    auto core = this->GetCore(pcore->GetValue());
 
-                trekClient.CreateMissionReq(
-                    serverinfo.szName,
-                    serverinfo.szRemoteAddress,
-                    coreinfo.cbIGCFile,
-                    missionName
-                );
-                return true;
+                    ServerCoreInfo serverinfo = server->Get<ServerCoreInfo>("ServerCoreInfo");
+                    StaticCoreInfo coreinfo = core->Get<StaticCoreInfo>("StaticCoreInfo");
+
+                    trekClient.CreateMissionReq(
+                        serverinfo.szName,
+                        serverinfo.szRemoteAddress,
+                        coreinfo.cbIGCFile,
+                        pmission->GetValue()
+                    );
+                };
             })) },
             { "Server has core", TypeExposer<std::function<TRef<Boolean>(const TRef<StringValue>&, const TRef<StringValue>&)>>::Create([this](const TRef<StringValue>& server_name, const TRef<StringValue>& core_name) {
 

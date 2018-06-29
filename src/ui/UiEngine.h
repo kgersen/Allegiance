@@ -2,6 +2,12 @@
 
 #include "FileLoader.h"
 
+#include "UiState.h"
+#include "window.h"
+#include "soundengine.h"
+
+#include "ui_types.h"
+
 class UiScreenConfiguration : public UiObjectContainer {
 public:
     UiScreenConfiguration(std::map<std::string, std::shared_ptr<Exposer>> map) :

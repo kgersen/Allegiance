@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include "ui.h"
 #include "items.hpp"
 #include "D3DDevice9.h"
 

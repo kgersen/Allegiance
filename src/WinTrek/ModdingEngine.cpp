@@ -27,3 +27,13 @@ std::shared_ptr<ModdingEngine> ModdingEngine::Create() {
 
     return std::make_shared<ModdingEngine>(vMods);
 }
+
+std::shared_ptr<Mod> ModdingEngine::CreateMod(std::string name)
+{
+    return std::shared_ptr<Mod>();
+}
+
+std::shared_ptr<ModUploadProgress> Mod::UploadToWorkshop()
+{
+    return std::shared_ptr<ModUploadProgress>();
+}

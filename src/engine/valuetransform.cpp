@@ -8,9 +8,9 @@ class EqualsTransform : public TransformedValue<bool, Type, Type> {
 
 public:
     EqualsTransform(WrappedType const& a, WrappedType const& b) :
-        TransformedValue([](ZString a, ZString b) {
-        return a == b;
-    }, a, b)
+        TransformedValue([](Type a, Type b) {
+            return a == b;
+        }, a, b)
     {
     }
 };

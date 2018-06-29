@@ -126,6 +126,31 @@ public:
     }
 };
 
+template<class TransformedType, class... Types>
+class TransformedValueNotStatic : public TStaticValue<TransformedType> {
+
+    std::function<TransformedType(Types...)> m_callback;
+
+protected:
+    template<int... Indices>
+    TransformedType GetEvaluatedValue(std::index_sequence<Indices...>) {
+        return m_callback(((Types)GetChild(Indices))...);
+    }
+
+public:
+    TransformedValueNotStatic(std::function<TransformedType(Types...)> callback, Types... values) :
+        m_callback(callback),
+        TStaticValue<TransformedType>(values...)
+    {}
+
+    void Evaluate() override
+    {
+        TransformedType evaluated = GetEvaluatedValue(std::make_index_sequence<sizeof...(Types)>{});
+
+        GetValueInternal() = evaluated;
+    }
+};
+
 template <typename Type>
 class SimpleModifiableValue : public TStaticValue<Type>, public TEvent<Type>::Sink {
 public:
