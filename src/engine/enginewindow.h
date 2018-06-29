@@ -211,6 +211,7 @@ protected:
 
     TRef<EventSourceImpl> m_pcloseEventSource;
     TRef<TEvent<Time>::SourceImpl> m_pevaluateFrameEventSource;
+    TRef<TEvent<bool>::SourceImpl> m_pactivateEventSource;
 
     //
     // menu
@@ -340,6 +341,10 @@ public:
 
     TEvent<Time>::Source* GetEvaluateFrameEventSource() {
         return m_pevaluateFrameEventSource;
+    }
+
+    TEvent<bool>::Source* GetActivateEventSource() {
+        return m_pactivateEventSource;
     }
 
     TRef<IPopup> GetEngineMenu(IEngineFont* pfont);

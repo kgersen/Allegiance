@@ -1307,10 +1307,9 @@ public:
 
 public:
 
-    bool      OnActivateApp(bool bActive) {
-        bool result = m_pEngineWindow->OnActivateApp(bActive);
+    void OnActivate(bool bActive) {
         UpdateMouseEnabled();
-        return result;
+        m_ptrekInput->SetFocus(bActive);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -6010,435 +6009,433 @@ public:
 		{
             //For now, leave joystick specific code here.
             //Only process joystick if we have focus
-            if (GetFocus())
+            
+            bool bAllowKeyboardMovement = !m_pconsoleImage->IsComposing() && GetPopupContainer()->IsEmpty();
+            bool bNoCameraControl = NoCameraControl(m_cm);
+
+            if (trekClient.flyingF())
             {
-                bool bAllowKeyboardMovement = !m_pconsoleImage->IsComposing() && GetPopupContainer()->IsEmpty();
-                bool bNoCameraControl = NoCameraControl(m_cm);
+                //
+                // Handle any joystick button commands
+                //
 
-                if (trekClient.flyingF())
+                m_ptrekInput->GetButtonTrekKeys(this);
+
+                //Process joystick input for the player
+                //Carry over persistent bits
+                int buttonsM = trekClient.GetShip()->GetStateM() & (coastButtonIGC | cloakActiveIGC);
+
+                //Controls default to what the ship has now
+                JoystickResults js;
+                js.controls.jsValues[c_axisYaw] = js.controls.jsValues[c_axisPitch] = js.controls.jsValues[c_axisRoll] = 0.0f;
+                js.controls.jsValues[c_axisThrottle] = trekClient.GetShip()->GetControls().jsValues[c_axisThrottle];
+
+                bool fAutoPilot = trekClient.autoPilot();
+                if (!GetUI() && activeControlsF)
                 {
-                    //
-                    // Handle any joystick button commands
-                    //
-
-                    m_ptrekInput->GetButtonTrekKeys(this);
-
-                    //Process joystick input for the player
-                    //Carry over persistent bits
-                    int buttonsM = trekClient.GetShip()->GetStateM() & (coastButtonIGC | cloakActiveIGC);
-
-                    //Controls default to what the ship has now
-                    JoystickResults js;
-                    js.controls.jsValues[c_axisYaw] = js.controls.jsValues[c_axisPitch] = js.controls.jsValues[c_axisRoll] = 0.0f;
-                    js.controls.jsValues[c_axisThrottle] = trekClient.GetShip()->GetControls().jsValues[c_axisThrottle];
-
-                    bool fAutoPilot = trekClient.autoPilot();
-                    if (!GetUI() && activeControlsF)
-                    {
-                        //Spunky #76 #282
-						if (!bUpdateThrottle)
-							if ((TimeSinceThrottleUpdate += dt) > delay[m_iWheelDelay])
-							{
-								bUpdateThrottle = true;
-								TimeSinceThrottleUpdate = 0;
-							}
-
-						bool    bControlsInUse = SenseJoystick(&js, bNoCameraControl, bAllowKeyboardMovement, bUpdateThrottle);
-                        int     oldButtonsM = buttonsM;
-
-                        if (!CommandCamera(m_cm)) {
-                            if (m_ptrekInput->IsTrekKeyDown(TK_ThrustLeft, bAllowKeyboardMovement))
-                                buttonsM |= leftButtonIGC;
-                            if (m_ptrekInput->IsTrekKeyDown(TK_ThrustRight, bAllowKeyboardMovement))
-                                buttonsM |= rightButtonIGC;
-                            if (m_ptrekInput->IsTrekKeyDown(TK_ThrustUp, bAllowKeyboardMovement))
-                                buttonsM |= upButtonIGC;
-                            if (m_ptrekInput->IsTrekKeyDown(TK_ThrustDown, bAllowKeyboardMovement))
-                                buttonsM |= downButtonIGC;
-                        }
-                        if (m_ptrekInput->IsTrekKeyDown(TK_ThrustForward, bAllowKeyboardMovement))
-                            buttonsM |= forwardButtonIGC;
-                        if (m_ptrekInput->IsTrekKeyDown(TK_ThrustBackward, bAllowKeyboardMovement))
-                            buttonsM |= backwardButtonIGC;
-                        if (m_ptrekInput->IsTrekKeyDown(TK_FireBooster, bAllowKeyboardMovement))
-                            buttonsM |= afterburnerButtonIGC;
-
-                        if (fAutoPilot)
-                        {
-                            if (oldButtonsM != buttonsM)
-                                bControlsInUse = true;
-                            else
-                            {
-                                bControlsInUse = bControlsInUse ||
-                                                 js.button1 || js.button2 || js.button3 || js.button4 || js.button5 || js.button6;
-                            }
-
-                            if (trekClient.bInitTrekJoyStick)
-                            {
-                                trekClient.trekJoyStick[0] = js.controls.jsValues[0];
-                                trekClient.trekJoyStick[1] = js.controls.jsValues[1];
-                                trekClient.trekJoyStick[2] = js.controls.jsValues[2];
-                                trekClient.bInitTrekJoyStick = false;
-                            }
-                            else
-                            {
-                                float fJoystickDeadzone = GetJoystickDeadzone();
-                                const float c_fAutopilotDisengage = fJoystickDeadzone * 2.0f;
-                                bControlsInUse = bControlsInUse ||
-                                                 (js.controls.jsValues[c_axisYaw] - trekClient.trekJoyStick[c_axisYaw] < -c_fAutopilotDisengage) ||
-                                                 (js.controls.jsValues[c_axisYaw] - trekClient.trekJoyStick[c_axisYaw] >  c_fAutopilotDisengage) ||
-                                                 (js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] < -c_fAutopilotDisengage) ||
-                                                 (js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] >  c_fAutopilotDisengage) ||
-                                                 (js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] < -c_fAutopilotDisengage) ||
-                                                 (js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] >  c_fAutopilotDisengage);
-                            }
-
-                            if (bControlsInUse)
-                            {
-                                /*
-                                if (now >= m_timeAutopilotWarning)
-                                {
-                                    m_timeAutopilotWarning = now + 5.0f;
-                                    trekClient.PostText(true, "Hit P to disengage the autopilot");
-                                }
-                                */
-
-                                trekClient.SetAutoPilot(false);
-                                SwitchToJoyThrottle();
-                                fAutoPilot = false;
-                                trekClient.PlaySoundEffect(salAutopilotDisengageSound);
-								g_bActivity = true; // Imago: Joystick movment while Autopiloting = active!
-                            }
-                        } else //Imago: Joystick movment while not Autopiloting = active!
-                        {
-							if (oldButtonsM != buttonsM)
-								bControlsInUse = true;
-							else
-							{
-								bControlsInUse = bControlsInUse ||
-												 js.button1 || js.button2 || js.button3 || js.button4 || js.button5 || js.button6;
-							}
-                            float fJoystickDeadzone = GetJoystickDeadzone();
-							bControlsInUse = bControlsInUse ||
-								(js.controls.jsValues[c_axisYaw] - trekClient.trekJoyStick[c_axisYaw] < -fJoystickDeadzone) ||
-								(js.controls.jsValues[c_axisYaw] - trekClient.trekJoyStick[c_axisYaw] >  fJoystickDeadzone) ||
-								(js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] < -fJoystickDeadzone) ||
-								(js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] >  fJoystickDeadzone) ||
-								(js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] < -fJoystickDeadzone) ||
-								(js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] >  fJoystickDeadzone);
-
-							if (bControlsInUse) g_bActivity = true;
+                    //Spunky #76 #282
+					if (!bUpdateThrottle)
+						if ((TimeSinceThrottleUpdate += dt) > delay[m_iWheelDelay])
+						{
+							bUpdateThrottle = true;
+							TimeSinceThrottleUpdate = 0;
 						}
+
+					bool    bControlsInUse = SenseJoystick(&js, bNoCameraControl, bAllowKeyboardMovement, bUpdateThrottle);
+                    int     oldButtonsM = buttonsM;
+
+                    if (!CommandCamera(m_cm)) {
+                        if (m_ptrekInput->IsTrekKeyDown(TK_ThrustLeft, bAllowKeyboardMovement))
+                            buttonsM |= leftButtonIGC;
+                        if (m_ptrekInput->IsTrekKeyDown(TK_ThrustRight, bAllowKeyboardMovement))
+                            buttonsM |= rightButtonIGC;
+                        if (m_ptrekInput->IsTrekKeyDown(TK_ThrustUp, bAllowKeyboardMovement))
+                            buttonsM |= upButtonIGC;
+                        if (m_ptrekInput->IsTrekKeyDown(TK_ThrustDown, bAllowKeyboardMovement))
+                            buttonsM |= downButtonIGC;
                     }
-                    else
+                    if (m_ptrekInput->IsTrekKeyDown(TK_ThrustForward, bAllowKeyboardMovement))
+                        buttonsM |= forwardButtonIGC;
+                    if (m_ptrekInput->IsTrekKeyDown(TK_ThrustBackward, bAllowKeyboardMovement))
+                        buttonsM |= backwardButtonIGC;
+                    if (m_ptrekInput->IsTrekKeyDown(TK_FireBooster, bAllowKeyboardMovement))
+                        buttonsM |= afterburnerButtonIGC;
+
+                    if (fAutoPilot)
                     {
-                        js.controls.Reset();
-                        js.hat = 0;
-                        js.button1 = js.button2 = js.button3 = js.button4 = js.button5 = js.button6 = 0x00;
-                    }
-
-                    IshipIGC*   pshipParent = trekClient.GetShip()->GetParentShip();
-                    if (fAutoPilot && (pshipParent == NULL))
-                    {
-                        js.controls = trekClient.GetShip()->GetControls();
-                        // use the controls decided by autoPilot.Update()
-                        buttonsM = trekClient.GetShip()->GetStateM();
-
-                        // we want to poll the joystick, and ignore everything but the hat.
-                    }
-                    else // autoPilot doesn't need these
-                    {
-                        // Pay attention to the joystick buttons.
-                        buttonsM |= (trekClient.m_selectedWeapon << selectedWeaponShiftIGC);
-                        if (js.button1 & buttonDown)
-                            buttonsM |= trekClient.fGroupFire
-                                        ? allWeaponsIGC
-                                        : oneWeaponIGC;
-
-                        if (js.button2 & buttonDown)
-                            buttonsM |= missileFireIGC;
-
-                        if (js.button3 & buttonDown)
-                            buttonsM |= afterburnerButtonIGC;
-                    }
-
-                    if (m_ptrekInput->IsTrekKeyDown(TK_DropMine, bAllowKeyboardMovement))
-                        buttonsM |= mineFireIGC;
-                    else
-                        buttonsM &= ~mineFireIGC;
-
-                    if (m_ptrekInput->IsTrekKeyDown(TK_DropChaff, bAllowKeyboardMovement))
-                        buttonsM |= chaffFireIGC;
-                    else
-                        buttonsM &= ~chaffFireIGC;
-
-                    // training mission hook
-                    Training::ApproveControls (js.controls);
-                    buttonsM = Training::ApproveActions (buttonsM);
-                    // end training mission hook
-
-                    if (m_cm == cmCockpit)
-					{
-                        if (trekClient.GetShip()->GetTurretID() != NA)
+                        if (oldButtonsM != buttonsM)
+                            bControlsInUse = true;
+                        else
                         {
-                            float   fov = (s_fMinFOV + 0.5f * (s_fMaxFOV - s_fMinFOV)) +
-                                          (0.5f * (s_fMaxFOV - s_fMinFOV)) * js.controls.jsValues[c_axisThrottle];
-                            m_cameraControl.SetFOV(fov);
+                            bControlsInUse = bControlsInUse ||
+                                                js.button1 || js.button2 || js.button3 || js.button4 || js.button5 || js.button6;
+                        }
+
+                        if (trekClient.bInitTrekJoyStick)
+                        {
+                            trekClient.trekJoyStick[0] = js.controls.jsValues[0];
+                            trekClient.trekJoyStick[1] = js.controls.jsValues[1];
+                            trekClient.trekJoyStick[2] = js.controls.jsValues[2];
+                            trekClient.bInitTrekJoyStick = false;
                         }
                         else
+                        {
+                            float fJoystickDeadzone = GetJoystickDeadzone();
+                            const float c_fAutopilotDisengage = fJoystickDeadzone * 2.0f;
+                            bControlsInUse = bControlsInUse ||
+                                                (js.controls.jsValues[c_axisYaw] - trekClient.trekJoyStick[c_axisYaw] < -c_fAutopilotDisengage) ||
+                                                (js.controls.jsValues[c_axisYaw] - trekClient.trekJoyStick[c_axisYaw] >  c_fAutopilotDisengage) ||
+                                                (js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] < -c_fAutopilotDisengage) ||
+                                                (js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] >  c_fAutopilotDisengage) ||
+                                                (js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] < -c_fAutopilotDisengage) ||
+                                                (js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] >  c_fAutopilotDisengage);
+                        }
+
+                        if (bControlsInUse)
+                        {
+                            /*
+                            if (now >= m_timeAutopilotWarning)
+                            {
+                                m_timeAutopilotWarning = now + 5.0f;
+                                trekClient.PostText(true, "Hit P to disengage the autopilot");
+                            }
+                            */
+
+                            trekClient.SetAutoPilot(false);
+                            SwitchToJoyThrottle();
+                            fAutoPilot = false;
+                            trekClient.PlaySoundEffect(salAutopilotDisengageSound);
+							g_bActivity = true; // Imago: Joystick movment while Autopiloting = active!
+                        }
+                    } else //Imago: Joystick movment while not Autopiloting = active!
+                    {
+						if (oldButtonsM != buttonsM)
+							bControlsInUse = true;
+						else
 						{
-                            float   fov = m_cameraControl.GetFOV();
-                            if (m_ptrekInput->IsTrekKeyDown(TK_ZoomIn, true))
-                            {
-                                fov -= dt;
-                                if (fov < s_fMinFOV)
-                                    fov = s_fMinFOV;
+							bControlsInUse = bControlsInUse ||
+												js.button1 || js.button2 || js.button3 || js.button4 || js.button5 || js.button6;
+						}
+                        float fJoystickDeadzone = GetJoystickDeadzone();
+						bControlsInUse = bControlsInUse ||
+							(js.controls.jsValues[c_axisYaw] - trekClient.trekJoyStick[c_axisYaw] < -fJoystickDeadzone) ||
+							(js.controls.jsValues[c_axisYaw] - trekClient.trekJoyStick[c_axisYaw] >  fJoystickDeadzone) ||
+							(js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] < -fJoystickDeadzone) ||
+							(js.controls.jsValues[c_axisPitch] - trekClient.trekJoyStick[c_axisPitch] >  fJoystickDeadzone) ||
+							(js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] < -fJoystickDeadzone) ||
+							(js.controls.jsValues[c_axisRoll] - trekClient.trekJoyStick[c_axisRoll] >  fJoystickDeadzone);
 
-                                m_cameraControl.SetFOV(fov);
-                            }
-                            else if (m_ptrekInput->IsTrekKeyDown(TK_ZoomOut, true))
-                            {
-                                fov += dt;
-                                if (fov > s_fMaxFOV)
-                                    fov = s_fMaxFOV;
-
-                                m_cameraControl.SetFOV(fov);
-                            }
-
-							// BT 3/13/2016 - Wasp's slew rate fix. 
-							if (trekClient.GetShip()->GetBaseHullType() != NULL)
-							{
-								//What is the maximum desired rate of turn for this field of view?
-								//Use the same calculation as for turrets.
-								//Keep in sync with wintrek.cpp's FOV by throttle
-								static const float  c_minRate = RadiansFromDegrees(7.5f);
-								static const float  c_maxRate = RadiansFromDegrees(75.0f);
-								float   maxSlewRate = c_minRate +
-									(c_maxRate - c_minRate) * fov / s_fMaxFOV;
-
-								const IhullTypeIGC* pht = trekClient.GetShip()->GetHullType();
-								{
-									float               pitch = pht->GetMaxTurnRate(c_axisPitch);
-
-									if (pitch > maxSlewRate)
-										js.controls.jsValues[c_axisPitch] *= maxSlewRate / pitch;
-								}
-								{
-									float               yaw = pht->GetMaxTurnRate(c_axisYaw);
-
-									if (yaw > maxSlewRate)
-										js.controls.jsValues[c_axisYaw] *= maxSlewRate / yaw;
-								}
-							}
-                        }
-                    }
-
-
-                    trekClient.GetShip()->SetControls(js.controls);
-                    trekClient.GetShip()->SetStateBits(buttonsMaskIGC | weaponsMaskIGC | selectedWeaponMaskIGC |
-                                                       missileFireIGC | mineFireIGC | chaffFireIGC, buttonsM);
-
-					if ((m_cm == cmCockpit) || (m_cm == cmExternalChase)) { 
-						if (!m_ptrekInput->IsTrekKeyDown(TK_ViewRearLeft,bAllowKeyboardMovement) //TheRock 31-7-2009 Allow keyboard users to look around
-							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewRearRight,bAllowKeyboardMovement) 
-							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewFrontLeft,bAllowKeyboardMovement)
-							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewFrontRight,bAllowKeyboardMovement)
-							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewRear,bAllowKeyboardMovement)
-							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewLeft,bAllowKeyboardMovement)
-							&& !m_ptrekInput->IsTrekKeyDown(TK_ViewRight,bAllowKeyboardMovement))
-
-							m_cameraControl.SetHeadOrientation(js.hat);
+						if (bControlsInUse) g_bActivity = true;
 					}
+                }
+                else
+                {
+                    js.controls.Reset();
+                    js.hat = 0;
+                    js.button1 = js.button2 = js.button3 = js.button4 = js.button5 = js.button6 = 0x00;
+                }
+
+                IshipIGC*   pshipParent = trekClient.GetShip()->GetParentShip();
+                if (fAutoPilot && (pshipParent == NULL))
+                {
+                    js.controls = trekClient.GetShip()->GetControls();
+                    // use the controls decided by autoPilot.Update()
+                    buttonsM = trekClient.GetShip()->GetStateM();
+
+                    // we want to poll the joystick, and ignore everything but the hat.
+                }
+                else // autoPilot doesn't need these
+                {
+                    // Pay attention to the joystick buttons.
+                    buttonsM |= (trekClient.m_selectedWeapon << selectedWeaponShiftIGC);
+                    if (js.button1 & buttonDown)
+                        buttonsM |= trekClient.fGroupFire
+                                    ? allWeaponsIGC
+                                    : oneWeaponIGC;
+
+                    if (js.button2 & buttonDown)
+                        buttonsM |= missileFireIGC;
+
+                    if (js.button3 & buttonDown)
+                        buttonsM |= afterburnerButtonIGC;
+                }
+
+                if (m_ptrekInput->IsTrekKeyDown(TK_DropMine, bAllowKeyboardMovement))
+                    buttonsM |= mineFireIGC;
+                else
+                    buttonsM &= ~mineFireIGC;
+
+                if (m_ptrekInput->IsTrekKeyDown(TK_DropChaff, bAllowKeyboardMovement))
+                    buttonsM |= chaffFireIGC;
+                else
+                    buttonsM &= ~chaffFireIGC;
+
+                // training mission hook
+                Training::ApproveControls (js.controls);
+                buttonsM = Training::ApproveActions (buttonsM);
+                // end training mission hook
+
+                if (m_cm == cmCockpit)
+				{
+                    if (trekClient.GetShip()->GetTurretID() != NA)
+                    {
+                        float   fov = (s_fMinFOV + 0.5f * (s_fMaxFOV - s_fMinFOV)) +
+                                        (0.5f * (s_fMaxFOV - s_fMinFOV)) * js.controls.jsValues[c_axisThrottle];
+                        m_cameraControl.SetFOV(fov);
+                    }
                     else
-                        m_cameraControl.SetHeadOrientation(0.0f);
+					{
+                        float   fov = m_cameraControl.GetFOV();
+                        if (m_ptrekInput->IsTrekKeyDown(TK_ZoomIn, true))
+                        {
+                            fov -= dt;
+                            if (fov < s_fMinFOV)
+                                fov = s_fMinFOV;
 
+                            m_cameraControl.SetFOV(fov);
+                        }
+                        else if (m_ptrekInput->IsTrekKeyDown(TK_ZoomOut, true))
+                        {
+                            fov += dt;
+                            if (fov > s_fMaxFOV)
+                                fov = s_fMaxFOV;
 
-                    m_pplayerThrottle->SetValue(pshipParent
-                                                ? 0.0f
-                                                : ((buttonsM & (leftButtonIGC | rightButtonIGC | upButtonIGC | downButtonIGC |
-                                                                forwardButtonIGC | backwardButtonIGC | afterburnerButtonIGC))
-                                                   ? 1.0f
-                                                   : (js.controls.jsValues[c_axisThrottle] * 0.5f + 0.5f)));
+                            m_cameraControl.SetFOV(fov);
+                        }
+
+						// BT 3/13/2016 - Wasp's slew rate fix. 
+						if (trekClient.GetShip()->GetBaseHullType() != NULL)
+						{
+							//What is the maximum desired rate of turn for this field of view?
+							//Use the same calculation as for turrets.
+							//Keep in sync with wintrek.cpp's FOV by throttle
+							static const float  c_minRate = RadiansFromDegrees(7.5f);
+							static const float  c_maxRate = RadiansFromDegrees(75.0f);
+							float   maxSlewRate = c_minRate +
+								(c_maxRate - c_minRate) * fov / s_fMaxFOV;
+
+							const IhullTypeIGC* pht = trekClient.GetShip()->GetHullType();
+							{
+								float               pitch = pht->GetMaxTurnRate(c_axisPitch);
+
+								if (pitch > maxSlewRate)
+									js.controls.jsValues[c_axisPitch] *= maxSlewRate / pitch;
+							}
+							{
+								float               yaw = pht->GetMaxTurnRate(c_axisYaw);
+
+								if (yaw > maxSlewRate)
+									js.controls.jsValues[c_axisYaw] *= maxSlewRate / yaw;
+							}
+						}
+                    }
                 }
 
-                if (CommandCamera(m_cm) && m_bEnableDisplacementCommandView && !m_pconsoleImage->DrawSelectionBox())
-                {
-                    float delta = dt * m_distanceCommandCamera;
 
-                    float   dRight = 0.0f;
-                    float   dUp = 0.0f;
+                trekClient.GetShip()->SetControls(js.controls);
+                trekClient.GetShip()->SetStateBits(buttonsMaskIGC | weaponsMaskIGC | selectedWeaponMaskIGC |
+                                                    missileFireIGC | mineFireIGC | chaffFireIGC, buttonsM);
 
-                    Point point;
-                    bool  bInside;
-                    Rect  rectImage = m_pEngineWindow->GetScreenRectValue()->GetValue();
+				if ((m_cm == cmCockpit) || (m_cm == cmExternalChase)) { 
+					if (!m_ptrekInput->IsTrekKeyDown(TK_ViewRearLeft,bAllowKeyboardMovement) //TheRock 31-7-2009 Allow keyboard users to look around
+						&& !m_ptrekInput->IsTrekKeyDown(TK_ViewRearRight,bAllowKeyboardMovement) 
+						&& !m_ptrekInput->IsTrekKeyDown(TK_ViewFrontLeft,bAllowKeyboardMovement)
+						&& !m_ptrekInput->IsTrekKeyDown(TK_ViewFrontRight,bAllowKeyboardMovement)
+						&& !m_ptrekInput->IsTrekKeyDown(TK_ViewRear,bAllowKeyboardMovement)
+						&& !m_ptrekInput->IsTrekKeyDown(TK_ViewLeft,bAllowKeyboardMovement)
+						&& !m_ptrekInput->IsTrekKeyDown(TK_ViewRight,bAllowKeyboardMovement))
 
-                    if (GetEngine()->IsFullscreen()) {
-                        point = m_pEngineWindow->GetMousePosition();
-                        point.SetY(m_pEngineWindow->GetScreenRectValue()->GetValue().YMax() - 1 - point.Y());
+						m_cameraControl.SetHeadOrientation(js.hat);
+				}
+                else
+                    m_cameraControl.SetHeadOrientation(0.0f);
+
+
+                m_pplayerThrottle->SetValue(pshipParent
+                                            ? 0.0f
+                                            : ((buttonsM & (leftButtonIGC | rightButtonIGC | upButtonIGC | downButtonIGC |
+                                                            forwardButtonIGC | backwardButtonIGC | afterburnerButtonIGC))
+                                                ? 1.0f
+                                                : (js.controls.jsValues[c_axisThrottle] * 0.5f + 0.5f)));
+            }
+
+            if (CommandCamera(m_cm) && m_bEnableDisplacementCommandView && !m_pconsoleImage->DrawSelectionBox())
+            {
+                float delta = dt * m_distanceCommandCamera;
+
+                float   dRight = 0.0f;
+                float   dUp = 0.0f;
+
+                Point point;
+                bool  bInside;
+                Rect  rectImage = m_pEngineWindow->GetScreenRectValue()->GetValue();
+
+                if (GetEngine()->IsFullscreen()) {
+                    point = m_pEngineWindow->GetMousePosition();
+                    point.SetY(m_pEngineWindow->GetScreenRectValue()->GetValue().YMax() - 1 - point.Y());
+                    bInside = rectImage.Inside(point);
+                    point = point - rectImage.Min();
+                } else {
+                    WinPoint   xy;
+                    bInside = false;
+                    if (GetCursorPos(&xy)) {
+                        point   = Point::Cast(m_pEngineWindow->ScreenToClient(xy));
                         bInside = rectImage.Inside(point);
-                        point = point - rectImage.Min();
+                        point   = point - rectImage.Min();
+                    }
+                }
+
+                if (bInside) {
+                    static const float gutter = 8.0f;
+                    static const float maxGutter = 12.0f;
+
+                    if (point.X() < gutter) {
+                        dRight = delta * (point.X() - gutter) / maxGutter;
                     } else {
-                        WinPoint   xy;
-                        bInside = false;
-                        if (GetCursorPos(&xy)) {
-                            point   = Point::Cast(m_pEngineWindow->ScreenToClient(xy));
-                            bInside = rectImage.Inside(point);
-                            point   = point - rectImage.Min();
+                        float x = rectImage.XSize() - point.X();
+                        if (x < gutter) {
+                            dRight = delta * (gutter - x) / maxGutter;
                         }
                     }
 
-                    if (bInside) {
-                        static const float gutter = 8.0f;
-                        static const float maxGutter = 12.0f;
-
-                        if (point.X() < gutter) {
-                            dRight = delta * (point.X() - gutter) / maxGutter;
-                        } else {
-                            float x = rectImage.XSize() - point.X();
-                            if (x < gutter) {
-                                dRight = delta * (gutter - x) / maxGutter;
-                            }
+                    if (point.Y() < gutter) {
+                        dUp = delta * (point.Y() - gutter) / maxGutter;
+                    } else {
+                        float y = rectImage.YSize() - point.Y();
+                        if (y < gutter) {
+                            dUp = delta * (gutter - y) / maxGutter;
                         }
-
-                        if (point.Y() < gutter) {
-                            dUp = delta * (point.Y() - gutter) / maxGutter;
-                        } else {
-                            float y = rectImage.YSize() - point.Y();
-                            if (y < gutter) {
-                                dUp = delta * (gutter - y) / maxGutter;
-                            }
-                        }
-                    }
-
-                    // Cheat ... horizontal is always parallel to the plane
-
-                    if (m_ptrekInput->IsTrekKeyDown(TK_YawLeft, bAllowKeyboardMovement))
-                    {
-                        dRight -= delta;
-                    }
-                    else if (m_ptrekInput->IsTrekKeyDown(TK_YawRight, bAllowKeyboardMovement))
-                    {
-                        dRight += delta;
-                    }
-
-                    if (m_ptrekInput->IsTrekKeyDown(TK_PitchUp, bAllowKeyboardMovement))
-                    {
-                        dUp -= delta;
-                    }
-                    else if (m_ptrekInput->IsTrekKeyDown(TK_PitchDown, bAllowKeyboardMovement))
-                    {
-                        dUp += delta;
-                    }
-
-                    if (m_ptrekInput->IsTrekKeyDown(TK_ZoomOut, bAllowKeyboardMovement))
-                    {
-                        m_distanceCommandCamera += delta * 2.0f;
-                        if (m_distanceCommandCamera > s_fCommandViewDistanceMax)
-                            m_distanceCommandCamera = s_fCommandViewDistanceMax;
-                    }
-                    else if (m_ptrekInput->IsTrekKeyDown(TK_ZoomIn, bAllowKeyboardMovement))
-                    {
-                        m_distanceCommandCamera -= delta * 2.0f;
-
-                        if (m_distanceCommandCamera < s_fCommandViewDistanceMin)
-                            m_distanceCommandCamera = s_fCommandViewDistanceMin;
-                    }
-
-                    if (m_ptrekInput->IsTrekKeyDown(TK_RollRight, bAllowKeyboardMovement))
-                    {
-                        m_rollCommandCamera += dt;
-
-                        if (m_rollCommandCamera >= 2.0f * pi)
-                            m_rollCommandCamera -= 2.0f * pi;
-
-                        OrientCommandView();
-                    }
-                    else if (m_ptrekInput->IsTrekKeyDown(TK_RollLeft, bAllowKeyboardMovement))
-                    {
-                        m_rollCommandCamera -= dt;
-
-                        if (m_rollCommandCamera < 0.0f)
-                            m_rollCommandCamera += 2.0f * pi;
-
-                        OrientCommandView();
-                    }
-
-                    if (m_ptrekInput->IsTrekKeyDown(TK_ThrustRight, bAllowKeyboardMovement))
-                        dRight += delta / 2;
-                    if (m_ptrekInput->IsTrekKeyDown(TK_ThrustLeft, bAllowKeyboardMovement))
-                        dRight -= delta / 2;
-                    if (m_ptrekInput->IsTrekKeyDown(TK_ThrustUp, bAllowKeyboardMovement))
-                        dUp -= delta / 2; // Something is off here - should be called dDown. This is what happens if you don't just stick with top/left as 0/0 as it's meant to be done. Also costs performance above.
-                    if (m_ptrekInput->IsTrekKeyDown(TK_ThrustDown, bAllowKeyboardMovement))
-                        dUp += delta / 2;
-
-                    if (dRight)
-                    {
-                        Vector  v = m_cameraControl.GetOrientation().GetRight() * dRight;
-                        m_displacementCommandView += v;
-                        m_positionCommandView += v;
-                    }
-
-                    if (dUp)
-                    {
-                        Vector  up = m_cameraControl.GetOrientation().GetUp();
-                        up.z = 0.0f;
-
-                        float   l = (float)sqrt(up.x * up.x + up.y * up.y);
-                        assert (l != 0.0f);
-
-
-                        Vector  v = up * (dUp / l);
-                        m_displacementCommandView -= v;
-                        m_positionCommandView -= v;
                     }
                 }
-                else if (!bNoCameraControl)
+
+                // Cheat ... horizontal is always parallel to the plane
+
+                if (m_ptrekInput->IsTrekKeyDown(TK_YawLeft, bAllowKeyboardMovement))
                 {
-                    if (m_ptrekInput->IsTrekKeyDown(TK_PitchUp, bAllowKeyboardMovement))
-                        m_orientationExternalCamera.Pitch(dt);
-                    else  if (m_ptrekInput->IsTrekKeyDown(TK_PitchDown, bAllowKeyboardMovement))
-                        m_orientationExternalCamera.Pitch(-dt);
-
-                    if (m_ptrekInput->IsTrekKeyDown(TK_YawLeft, bAllowKeyboardMovement))
-                        m_orientationExternalCamera.Yaw(dt);
-                    else  if (m_ptrekInput->IsTrekKeyDown(TK_YawRight, bAllowKeyboardMovement))
-                        m_orientationExternalCamera.Yaw(-dt);
-
-                    if (m_ptrekInput->IsTrekKeyDown(TK_RollLeft, bAllowKeyboardMovement))
-                        m_orientationExternalCamera.Roll(dt);
-                    else  if (m_ptrekInput->IsTrekKeyDown(TK_RollRight, bAllowKeyboardMovement))
-                        m_orientationExternalCamera.Roll(-dt);
-
-                    if (m_ptrekInput->IsTrekKeyDown(TK_ZoomOut, bAllowKeyboardMovement))
-                    {
-                        m_distanceExternalCamera += dt * m_distanceExternalCamera;
-                        if (m_distanceExternalCamera > s_fExternalViewDistanceMax)
-                            m_distanceExternalCamera = s_fExternalViewDistanceMax;
-                    }
-                    else if (m_ptrekInput->IsTrekKeyDown(TK_ZoomIn, bAllowKeyboardMovement))
-                    {
-                        m_distanceExternalCamera -= dt * m_distanceExternalCamera;
-
-                        if (m_distanceExternalCamera < s_fExternalViewDistanceMin)
-                            m_distanceExternalCamera = s_fExternalViewDistanceMin;
-                    }
+                    dRight -= delta;
                 }
-                else if (m_cm == cmExternalChase)
+                else if (m_ptrekInput->IsTrekKeyDown(TK_YawRight, bAllowKeyboardMovement))
                 {
-                    if (m_ptrekInput->IsTrekKeyDown(TK_ZoomOut, bAllowKeyboardMovement))
-                    {
-                        m_distanceExternalCamera += dt * m_distanceExternalCamera;
-                        if (m_distanceExternalCamera > s_fExternalViewDistanceMax)
-                            m_distanceExternalCamera = s_fExternalViewDistanceMax;
-                    }
-                    else if (m_ptrekInput->IsTrekKeyDown(TK_ZoomIn, bAllowKeyboardMovement))
-                    {
-                        m_distanceExternalCamera -= dt * m_distanceExternalCamera;
+                    dRight += delta;
+                }
 
-                        if (m_distanceExternalCamera < s_fExternalViewDistanceMin)
-                            m_distanceExternalCamera = s_fExternalViewDistanceMin;
-                    }
+                if (m_ptrekInput->IsTrekKeyDown(TK_PitchUp, bAllowKeyboardMovement))
+                {
+                    dUp -= delta;
+                }
+                else if (m_ptrekInput->IsTrekKeyDown(TK_PitchDown, bAllowKeyboardMovement))
+                {
+                    dUp += delta;
+                }
+
+                if (m_ptrekInput->IsTrekKeyDown(TK_ZoomOut, bAllowKeyboardMovement))
+                {
+                    m_distanceCommandCamera += delta * 2.0f;
+                    if (m_distanceCommandCamera > s_fCommandViewDistanceMax)
+                        m_distanceCommandCamera = s_fCommandViewDistanceMax;
+                }
+                else if (m_ptrekInput->IsTrekKeyDown(TK_ZoomIn, bAllowKeyboardMovement))
+                {
+                    m_distanceCommandCamera -= delta * 2.0f;
+
+                    if (m_distanceCommandCamera < s_fCommandViewDistanceMin)
+                        m_distanceCommandCamera = s_fCommandViewDistanceMin;
+                }
+
+                if (m_ptrekInput->IsTrekKeyDown(TK_RollRight, bAllowKeyboardMovement))
+                {
+                    m_rollCommandCamera += dt;
+
+                    if (m_rollCommandCamera >= 2.0f * pi)
+                        m_rollCommandCamera -= 2.0f * pi;
+
+                    OrientCommandView();
+                }
+                else if (m_ptrekInput->IsTrekKeyDown(TK_RollLeft, bAllowKeyboardMovement))
+                {
+                    m_rollCommandCamera -= dt;
+
+                    if (m_rollCommandCamera < 0.0f)
+                        m_rollCommandCamera += 2.0f * pi;
+
+                    OrientCommandView();
+                }
+
+                if (m_ptrekInput->IsTrekKeyDown(TK_ThrustRight, bAllowKeyboardMovement))
+                    dRight += delta / 2;
+                if (m_ptrekInput->IsTrekKeyDown(TK_ThrustLeft, bAllowKeyboardMovement))
+                    dRight -= delta / 2;
+                if (m_ptrekInput->IsTrekKeyDown(TK_ThrustUp, bAllowKeyboardMovement))
+                    dUp -= delta / 2; // Something is off here - should be called dDown. This is what happens if you don't just stick with top/left as 0/0 as it's meant to be done. Also costs performance above.
+                if (m_ptrekInput->IsTrekKeyDown(TK_ThrustDown, bAllowKeyboardMovement))
+                    dUp += delta / 2;
+
+                if (dRight)
+                {
+                    Vector  v = m_cameraControl.GetOrientation().GetRight() * dRight;
+                    m_displacementCommandView += v;
+                    m_positionCommandView += v;
+                }
+
+                if (dUp)
+                {
+                    Vector  up = m_cameraControl.GetOrientation().GetUp();
+                    up.z = 0.0f;
+
+                    float   l = (float)sqrt(up.x * up.x + up.y * up.y);
+                    assert (l != 0.0f);
+
+
+                    Vector  v = up * (dUp / l);
+                    m_displacementCommandView -= v;
+                    m_positionCommandView -= v;
+                }
+            }
+            else if (!bNoCameraControl)
+            {
+                if (m_ptrekInput->IsTrekKeyDown(TK_PitchUp, bAllowKeyboardMovement))
+                    m_orientationExternalCamera.Pitch(dt);
+                else  if (m_ptrekInput->IsTrekKeyDown(TK_PitchDown, bAllowKeyboardMovement))
+                    m_orientationExternalCamera.Pitch(-dt);
+
+                if (m_ptrekInput->IsTrekKeyDown(TK_YawLeft, bAllowKeyboardMovement))
+                    m_orientationExternalCamera.Yaw(dt);
+                else  if (m_ptrekInput->IsTrekKeyDown(TK_YawRight, bAllowKeyboardMovement))
+                    m_orientationExternalCamera.Yaw(-dt);
+
+                if (m_ptrekInput->IsTrekKeyDown(TK_RollLeft, bAllowKeyboardMovement))
+                    m_orientationExternalCamera.Roll(dt);
+                else  if (m_ptrekInput->IsTrekKeyDown(TK_RollRight, bAllowKeyboardMovement))
+                    m_orientationExternalCamera.Roll(-dt);
+
+                if (m_ptrekInput->IsTrekKeyDown(TK_ZoomOut, bAllowKeyboardMovement))
+                {
+                    m_distanceExternalCamera += dt * m_distanceExternalCamera;
+                    if (m_distanceExternalCamera > s_fExternalViewDistanceMax)
+                        m_distanceExternalCamera = s_fExternalViewDistanceMax;
+                }
+                else if (m_ptrekInput->IsTrekKeyDown(TK_ZoomIn, bAllowKeyboardMovement))
+                {
+                    m_distanceExternalCamera -= dt * m_distanceExternalCamera;
+
+                    if (m_distanceExternalCamera < s_fExternalViewDistanceMin)
+                        m_distanceExternalCamera = s_fExternalViewDistanceMin;
+                }
+            }
+            else if (m_cm == cmExternalChase)
+            {
+                if (m_ptrekInput->IsTrekKeyDown(TK_ZoomOut, bAllowKeyboardMovement))
+                {
+                    m_distanceExternalCamera += dt * m_distanceExternalCamera;
+                    if (m_distanceExternalCamera > s_fExternalViewDistanceMax)
+                        m_distanceExternalCamera = s_fExternalViewDistanceMax;
+                }
+                else if (m_ptrekInput->IsTrekKeyDown(TK_ZoomIn, bAllowKeyboardMovement))
+                {
+                    m_distanceExternalCamera -= dt * m_distanceExternalCamera;
+
+                    if (m_distanceExternalCamera < s_fExternalViewDistanceMin)
+                        m_distanceExternalCamera = s_fExternalViewDistanceMin;
                 }
             }
 

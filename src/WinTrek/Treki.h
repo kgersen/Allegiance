@@ -244,6 +244,15 @@ public:
             this->EvaluateFrame(time);
             return true;
         }));
+
+        m_pEngineWindow->GetActivateEventSource()->AddSink(new CallbackValueSink<bool>([this](bool bActive) {
+            this->OnActivate(bActive);
+            return true;
+        }));
+    }
+
+    virtual void OnActivate(bool bActive) {
+
     }
 
     EngineWindow* GetEngineWindow() { 

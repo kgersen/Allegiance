@@ -187,6 +187,7 @@ EngineWindow::EngineWindow(	EngineConfigurationWrapper* pConfiguration,
 
     m_pcloseEventSource = new EventSourceImpl();
     m_pevaluateFrameEventSource = new TEvent<Time>::SourceImpl();
+    m_pactivateEventSource = new TEvent<bool>::SourceImpl();
 
     //
     // Button Event Sink
@@ -1253,6 +1254,7 @@ bool EngineWindow::OnActivateApp(bool bActive)
 		{
 			SetActiveWindow( GetHWND() );
         }
+        m_pactivateEventSource->Trigger(m_bActive);
     }
 
     if (g_bWindowLog) {
