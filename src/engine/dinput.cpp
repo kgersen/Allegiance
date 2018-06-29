@@ -9,6 +9,8 @@
 #include "inputengine.h"
 #include "value.h"
 
+#define DINPUT_BUFFERSIZE 32
+
 #ifndef DIFEF_MODIFYIFNEEDED
 # define DIFEF_MODIFYIFNEEDED		0x00000010
 #endif
@@ -333,7 +335,7 @@ public:
             dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER); 
             dipdw.diph.dwObj        = 0; 
             dipdw.diph.dwHow        = DIPH_DEVICE; 
-            dipdw.dwData            = 32; 
+            dipdw.dwData            = DINPUT_BUFFERSIZE;
 
             DDCall(m_pdid->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph));
         }
@@ -439,77 +441,72 @@ public:
         // Get the data
         //
 
-        DIDEVICEOBJECTDATA didod;
-        DWORD count = 1;
+        DIDEVICEOBJECTDATA didod[DINPUT_BUFFERSIZE];
+        DWORD count = DINPUT_BUFFERSIZE;
         int dx = 0;
         int dy = 0;
         int dz = 0;
 
-        while (count == 1) {
-            HRESULT hr = m_pdid->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), &didod, &count, 0);
+        HRESULT hr = m_pdid->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), didod, &count, 0);
 
-            if (FAILED(hr)) {
-                return;
+        if (FAILED(hr)) {
+            return;
+        }
+
+        if (hr == DI_BUFFEROVERFLOW) {
+            debugf("Mouse buffer overflow, samples returned: %d", count);
+        }
+
+        for (int i = 0; i < count; ++i) {
+            DIDEVICEOBJECTDATA& entry = didod[i];
+            switch (entry.dwOfs) {
+            case DIMOFS_BUTTON0:
+                DeltaPosition(dx, dy);
+                ButtonChanged(0, ((entry.dwData & 0x80) != 0));
+                break;
+
+            case DIMOFS_BUTTON1:
+                ButtonChanged(1, ((entry.dwData & 0x80) != 0));
+                break;
+
+            case DIMOFS_BUTTON2:
+                ButtonChanged(2, ((entry.dwData & 0x80) != 0));
+                break;
+
+            case DIMOFS_BUTTON3:
+                ButtonChanged(3, ((entry.dwData & 0x80) != 0));
+                break;
+
+                // mdvalley: More buttons
+
+            case DIMOFS_BUTTON4:
+                ButtonChanged(4, ((entry.dwData & 0x80) != 0));
+                break;
+
+            case DIMOFS_BUTTON5:
+                ButtonChanged(5, ((entry.dwData & 0x80) != 0));
+                break;
+
+            case DIMOFS_BUTTON6:
+                ButtonChanged(6, ((entry.dwData & 0x80) != 0));
+                break;
+
+            case DIMOFS_BUTTON7:
+                ButtonChanged(7, ((entry.dwData & 0x80) != 0));
+                break;
+
+            case DIMOFS_X:
+                dx += int(entry.dwData);
+                break;
+
+            case DIMOFS_Y:
+                dy += int(entry.dwData);
+                break;
+
+            case DIMOFS_Z:
+                dz += int(entry.dwData);
+                break;
             }
-
-            if (count == 1) {
-                //
-                // Unpack the data
-                //
-
-                switch  (didod.dwOfs) {
-                    case DIMOFS_BUTTON0: 
-                        DeltaPosition(dx, dy);
-                        ButtonChanged(0, ((didod.dwData & 0x80) != 0)); 
-                        break;
-
-                    case DIMOFS_BUTTON1: 
-                        ButtonChanged(1, ((didod.dwData & 0x80) != 0)); 
-                        break;
-
-                    case DIMOFS_BUTTON2: 
-                        ButtonChanged(2, ((didod.dwData & 0x80) != 0)); 
-                        break;
-
-                    case DIMOFS_BUTTON3: 
-                        ButtonChanged(3, ((didod.dwData & 0x80) != 0)); 
-                        break;
-
-					// mdvalley: More buttons
-
-					case DIMOFS_BUTTON4:
-						ButtonChanged(4, ((didod.dwData & 0x80) != 0));
-						break;
-
-					case DIMOFS_BUTTON5:
-						ButtonChanged(5, ((didod.dwData & 0x80) != 0));
-						break;
-
-					case DIMOFS_BUTTON6:
-						ButtonChanged(6, ((didod.dwData & 0x80) != 0));
-						break;
-
-					case DIMOFS_BUTTON7:
-						ButtonChanged(7, ((didod.dwData & 0x80) != 0));
-						break;
-
-                    case DIMOFS_X:
-                        dx += int(didod.dwData);
-                        break;
-
-                    case DIMOFS_Y:
-                        dy += int(didod.dwData);
-                        break;
-
-                    case DIMOFS_Z:
-                        dz += int(didod.dwData);
-                        break;
-                }
-            }
-
-            //
-            // do the mouse change
-            //
 
             DeltaPosition(dx, dy);
         }
