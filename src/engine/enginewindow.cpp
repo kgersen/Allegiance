@@ -1054,6 +1054,10 @@ bool EngineWindow::RenderFrame()
 
 	HRESULT hr = CD3DDevice9::Get()->BeginScene();
     ZAssert( hr == D3D_OK );
+
+    if (hr != D3D_OK) {
+        debugf("RenderFrame: BeginScene failed (0x%x)", hr);
+    }
     ZAssert( m_psurface != NULL );
 
 	TRef<Context> pcontext = m_psurface->GetContext();
