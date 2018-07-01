@@ -383,12 +383,14 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	// ATI Radeon 9600 (RV350) specific, find out why the TMeshGeo DrawTriangles are failing completley, 
 	// I gather this is (related to) the Intel 8xx issue.  --Imago 7/28/09
 	if (Identifier.VendorId == 0x1002 && Identifier.DeviceId == 0x4151 ) {
+        debugf("Problematic device detected: Setting D3DCREATE_SOFTWARE_VERTEXPROCESSING");
 		dwCreationFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
 		bForceSWVP = true;
 	}
 
     // SiS 661FX/M661FX/760/741/M760/M741 specific --Imago 11/30/09
 	if (Identifier.VendorId == 0x1039 && Identifier.DeviceId == 0x6330 ) {
+        debugf("Problematic device detected: Setting D3DCREATE_SOFTWARE_VERTEXPROCESSING");
 		dwCreationFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
 		bForceSWVP = true;
 	}

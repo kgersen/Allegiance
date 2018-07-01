@@ -433,6 +433,10 @@ HRESULT CVRAMManager::CreateTextureD3DX(TEXHANDLE				texHandle,
 		NULL,
 		NULL,
 		&pTexture->pTexture);
+
+    if (hr != D3D_OK) {
+        debugf("Creating texture from file failed: 0x%x", hr);
+    }
     ZAssert(hr == D3D_OK);
 
 	D3DSURFACE_DESC surfDesc;

@@ -1182,14 +1182,17 @@ private:
 				// Device lost - for example, full screen window lost focus.
 				// Sleep but carry on running. At some point we should hit a D3DERR_DEVICENOTRESET
 				// return value in TestCooperativeLevel().
+                debugf("Device: D3DERR_DEVICELOST");
 				m_bValidDevice = false;
 				m_bValid       = false;
 				break;
 
 			case D3DERR_DEVICENOTRESET:
+                debugf("Device: D3DERR_DEVICENOTRESET");
 				hr = pDev->ResetDevice( pDev->IsWindowed() );
 				if( hr == D3D_OK )
 				{
+                    debugf("Device: Reset happened and succeeded");
 					m_bValid = true;
 					return DeviceOK(bChanges);
 				}
