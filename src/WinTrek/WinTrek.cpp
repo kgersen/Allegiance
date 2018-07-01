@@ -792,6 +792,13 @@ public:
 
         bool OnKey(IInputProvider* pprovider, const KeyState& ks, bool& fForceTranslate)
         {
+            bool bChanges = false;
+            if (GetEngine()->IsDeviceReady(bChanges) == false) {
+                //Rock: Check for IsDeviceReady.
+                //Some events that happen through the input access the device (like loading a texture).
+                //Only update input if we also have a valid device. Otherwise we would crash.
+                return false;
+            }
             return m_pwindow->OnKeyFilter(pprovider, ks, fForceTranslate);
         }
 
