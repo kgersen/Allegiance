@@ -787,7 +787,7 @@ public:
 		// imago 6/29/09 7/1/09 removed hardware, asgs sends this under normal conditions
 		// BT - 10/17 - Force the client to launch windowed, then we'll take it full screen later. 
 		// BT - 10/17 - The video picker no longer creates devices that work with the create texture D3D functions. This may be from me forcing it to load windowed and then pulling it full screen. However, starting windowed and then pulling full screen seems to have fixed a whole bunch of start up issues. 
-		if( PromptUserForVideoSettings(false, iUseAdapter, GetModuleHandle(NULL), pathStr , GetConfiguration()) == false )
+		if( PromptUserForVideoSettings(false, iUseAdapter, GetModuleHandle(NULL), pathStr , GetGameConfiguration()) == false )
 		{
 			return E_FAIL;
 		}
