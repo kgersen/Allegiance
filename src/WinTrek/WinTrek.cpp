@@ -6489,11 +6489,13 @@ public:
 
 			// //-Imago 7/13/09 we're not actually in a sector playing the game...
 			// this is the right time & place place to rest our CPU. We can also give it more of a break now.
-			if (!m_pEngineWindow->GetFullscreen())
-				Sleep(5);
-			else
-				Sleep(1);
-		}
+            //Rock: Only sleep when vsync is disabled. with vsync enabled there is no need to limit the frame rate.
+            //Also removed the sleep time difference between windowed/fullscreen
+            if (g_DX9Settings.m_bVSync == false) {
+                Sleep(5);
+            }
+        }
+
         //
         // Handle sending network messages
         //
