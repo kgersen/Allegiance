@@ -11,6 +11,7 @@
 #include "pch.h"
 
 #include "enginewindow.h"
+#include "VideoSettingsDX9.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -1664,12 +1665,12 @@ public:
             pathStr = szValue;
 		}
 
-        TRef<UpdatingConfiguration> pConfiguration = new UpdatingConfiguration(
+        TRef<EngineConfigurationWrapper> pConfiguration = new EngineConfigurationWrapper(new UpdatingConfiguration(
             std::make_shared<FallbackConfigurationStore>(
                 CreateJsonConfigurationStore(GetExecutablePath() + "\\config_mdledit.json"),
                 std::make_shared<RegistryConfigurationStore>(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT "\\MDLEdit3DSettings")
             )
-        );
+        ));
 
 		// Ask the user for video settings.
 		if( PromptUserForVideoSettings(false, 0, GetModuleHandle(NULL), pathStr, pConfiguration) == false )
@@ -1715,7 +1716,7 @@ public:
         // Create the window
         //
 
-        m_pwindow = new MDLEditWindow(this, new EngineConfigurationWrapper(pConfiguration), strCommandLine, bImageTest, bTest, initialTest, pathStr);
+        m_pwindow = new MDLEditWindow(this, pConfiguration, strCommandLine, bImageTest, bTest, initialTest, pathStr);
 
         //
         // Parse the command line
