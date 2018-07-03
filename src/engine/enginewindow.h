@@ -98,7 +98,6 @@ protected:
 
     TRef<Surface>              m_psurface;
     TRef<ICaption>             m_pcaption;
-    WinRect                    m_rectWindowed;
 
     TRef<IKeyboardInput>       m_pkeyboardInput;
 

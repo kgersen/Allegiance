@@ -283,8 +283,6 @@ EngineWindow::EngineWindow(	EngineConfigurationWrapper* pConfiguration,
 	CVertexGenerator::Get()->Initialise( );
 
 	devLog.OutputString("CVertexGenerator::Get()->Initialise( );\n");
-
-	pDev->ResetDevice(bStartFullscreen == false);
 }
 
 EngineWindow::~EngineWindow()
@@ -311,6 +309,21 @@ void EngineWindow::SetEngine(Engine* pengine) {
     m_ptransformImageCursor = new TransformImage(Image::GetEmpty(), m_ptranslateTransform);
     m_pwrapImage = new WrapImage(Image::GetEmpty());
     m_pgroupImage = new GroupImage(CreateUndetectableImage(m_ptransformImageCursor), m_pwrapImage);
+
+    //continue initialization now that we have the engine
+    SetClientRect(WinRect(
+        0,
+        0,
+        (int)m_pConfiguration->GetGraphicsResolutionX()->GetValue(),
+        (int)m_pConfiguration->GetGraphicsResolutionY()->GetValue()
+    ));
+    UpdateWindowStyle();
+    CD3DDevice9 * pDev = CD3DDevice9::Get();
+    CD3DDevice9::Get()->ResetDevice(
+        true,
+        (int)m_pConfiguration->GetGraphicsResolutionX()->GetValue(),
+        (int)m_pConfiguration->GetGraphicsResolutionY()->GetValue()
+    );
 }
 
 void EngineWindow::SetModeler(Modeler* pmodeler) {
@@ -658,7 +671,7 @@ bool EngineWindow::OnWindowPosChanging(WINDOWPOS* pwp)
 
 	//NYI TTHIS BREAKS MULTIMON 7/29/09
 
-    if ((pwp->x != 0 && pwp->y !=0) && GetFullscreen()) { //imago fixed crash 7/6/09
+    if ((pwp->x != 0 && pwp->y !=0) && m_pengine && GetFullscreen()) { //imago fixed crash 7/6/09
         pwp->x = 0;
         pwp->y = 0;
     } 
