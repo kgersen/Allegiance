@@ -28,8 +28,11 @@ ZString CallsignHandler::CleanupCallsign(ZString callsign)
 
     //if it's too small, do something with it
     if (s.size() <= 2) {
-        return ZString("Pilot_") + ZString(s.c_str());
+        s = std::string("Pilot_") + s;
     }
+
+    //cut off after a certain size. 24 is the max for the full callsign
+    s = s.substr(0, 16);
 
     return s.c_str();
 }
@@ -137,6 +140,10 @@ ZString CallsignSquad::CleanupSquadTag(ZString tag)
         }
         return false;
     }), s.end());
+
+    //cut off after a certain size, 24 is the max for the full callsign. 
+    // 16 reserved for the non-squad part of the callsign. minus one for the token. minus one for the @. So a max of 6
+    s = s.substr(0, 6);
 
     return ZString(s.c_str());
 }
