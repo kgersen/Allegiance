@@ -94,7 +94,6 @@ protected:
     TRef<Modeler>              m_pmodeler;
     TRef<InputEngine>          m_pinputEngine;
     TRef<ButtonEvent::Sink>    m_pbuttonEventSink;
-    TRef<MouseInputStream>     m_pmouse;
     TRef<ModifiablePointValue> m_ppointMouse;
 
     TRef<Surface>              m_psurface;

@@ -64,6 +64,10 @@ public:
     TRef<SimpleModifiableValue<bool>> GetDebugLua() {
         return m_pconfiguration->GetBool("Debug.Lua", false);
     }
+
+    TRef<SimpleModifiableValue<bool>> GetMouseUseRawInput() {
+        return m_pconfiguration->GetBool("Mouse.UseRawInput", false);
+    }
 };
 
 //Imago added bool bStartFullscreen, bool bRaise 6/29/09, only prompts when "Safe Mode" and restored the -windowed command line switch

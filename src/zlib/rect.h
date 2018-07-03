@@ -101,6 +101,32 @@ public:
 		RectType::SetYMax(std::min(RectType::YMax(), rect.YMax()));
     }
 
+    void Clip(typename RectType::PointType& point)
+    {
+        if (
+            RectType::XMax() < RectType::XMin()
+            && RectType::YMax() < RectType::YMin()
+            ) {
+            return;
+        }
+
+        if (point.X() < RectType::XMin()) {
+            point.SetX(RectType::XMin());
+        }
+
+        if (point.X() > RectType::XMax()) {
+            point.SetX(RectType::XMax());
+        }
+
+        if (point.Y() < RectType::YMin()) {
+            point.SetY(RectType::YMin());
+        }
+
+        if (point.Y() > RectType::YMax()) {
+            point.SetY(RectType::YMax());
+        }
+    }
+
     void Accumulate(const TRect& rect)
     {
 		RectType::SetXMin(std::min(RectType::XMin(), rect.XMin()));

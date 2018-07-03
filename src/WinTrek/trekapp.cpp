@@ -825,7 +825,7 @@ public:
 
         ((EffectApp*)this)->Initialize(strCommandLine, pengineWindow->GetHWND());
         pengineWindow->SetEngine(this->GetEngine());
-        this->SetMouse(pengineWindow->GetInputEngine()->GetMouse());
+        this->SetInput(pengineWindow->GetInputEngine());
 
         //Imago 6/29/09 7/28/09 now plays video in thread while load continues // BT - 9/17 - Refactored a bit.
         //Rock: Refactored some more

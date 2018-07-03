@@ -204,7 +204,7 @@ EngineWindow::EngineWindow(	EngineConfigurationWrapper* pConfiguration,
     // Create the input engine
     //
 
-    m_pinputEngine = CreateInputEngine(GetHWND());
+    m_pinputEngine = CreateInputEngine(GetHWND(), m_pConfiguration->GetMouseUseRawInput());
     m_pinputEngine->SetFocus(true);
 
     //
@@ -223,10 +223,10 @@ EngineWindow::EngineWindow(	EngineConfigurationWrapper* pConfiguration,
     // Get the mouse
     //
 
-    m_pmouse = m_pinputEngine->GetMouse();
-    m_pmouse->SetEnabled(bStartFullscreen);
+    TRef<MouseInputStream> pmouse = m_pinputEngine->GetMouse();
+    pmouse->SetEnabled(bStartFullscreen);
 
-    m_pmouse->GetEventSource()->AddSink(m_peventSink = new ButtonEvent::Delegate(this));
+    pmouse->GetEventSource()->AddSink(m_peventSink = new ButtonEvent::Delegate(this));
 
     //
     // Make the minimum window size
@@ -486,7 +486,7 @@ void EngineWindow::UpdateWindowStyle()
     // Enable DInput if we are fullscreen
     //
 
-    m_pmouse->SetEnabled(m_bActive && m_pengine->IsFullscreen());
+    m_pinputEngine->GetMouse()->SetEnabled(m_bActive && m_pengine->IsFullscreen());
 }
 
 void EngineWindow::UpdateRectValues()
@@ -499,27 +499,18 @@ void EngineWindow::UpdateRectValues()
     // The screen rect
     //
 
-    if (m_pengine->IsFullscreen()) {
-        WinRect 
-            rect(
-                WinPoint(0, 0),
-                m_pengine->GetFullscreenSize()
-            );
+    WinRect rect(WinPoint(0, 0), m_pengine->GetFullscreenSize());
 
-        if (g_bWindowLog) {
+    m_prectValueScreen->SetValue(rect);
+    m_pinputEngine->GetMouse()->SetClipRect(rect);
+
+    if (g_bWindowLog) {
+        if (m_pengine->IsFullscreen()) {
             ZDebugOutput("  Fullscreen: " + GetString(0, rect) + "\n");
         }
-
-        m_prectValueScreen->SetValue(rect);
-        m_pmouse->SetClipRect(rect);
-    } else {
-		WinRect rect(WinPoint(0, 0), m_pengine->GetFullscreenSize());
-        if (g_bWindowLog) {
+        else {
             ZDebugOutput("  Windowed: " + GetString(0, rect) + "\n");
         }
-
-        m_prectValueScreen->SetValue(rect);
-        m_pmouse->SetClipRect(rect);
     }
 
     //
@@ -645,8 +636,8 @@ void EngineWindow::SetFullscreen(bool bFullscreen)
         // Enable DirectInput mouse?
         //
 
-        m_pmouse->SetEnabled(m_pengine->IsFullscreen() && m_bActive);
-        m_pmouse->SetPosition(m_prectValueScreen->GetValue().Center());
+        m_pinputEngine->GetMouse()->SetEnabled(m_pengine->IsFullscreen() && m_bActive);
+        m_pinputEngine->GetMouse()->SetPosition(m_prectValueScreen->GetValue().Center());
 
         //
         // Done, start listening to window sizing notifications
@@ -1348,8 +1339,8 @@ bool EngineWindow::IsDoubleClick()
 
 void EngineWindow::SetCursorPos(const Point& point)
 {
-    if (m_pmouse->IsEnabled()) {
-        m_pmouse->SetPosition(point);
+    if (m_pinputEngine->GetMouse()->IsEnabled()) {
+        m_pinputEngine->GetMouse()->SetPosition(point);
         //HandleMouseMessage(WM_MOUSEMOVE, point);
     } else {
         //If disabled, send a new mouse position to the window.
@@ -1492,11 +1483,11 @@ void EngineWindow::HandleMouseMessage(UINT message, const Point& point, UINT nFl
                 if (nFlags >2) {
                     if (GET_WHEEL_DELTA_WPARAM(nFlags) < 0) {
                         mouseResult = pimage->Button(this,point, 8, m_bCaptured, m_bHit, true );
-                        if (!m_pmouse->IsEnabled())
+                        if (!m_pinputEngine->GetMouse()->IsEnabled())
                             mouseResult = pimage->Button(this,point, 8, m_bCaptured, m_bHit, false );
                     } else {
                         mouseResult = pimage->Button(this, point, 9, m_bCaptured, m_bHit, true );
-                        if (!m_pmouse->IsEnabled())
+                        if (!m_pinputEngine->GetMouse()->IsEnabled())
                             mouseResult = pimage->Button(this, point, 9, m_bCaptured, m_bHit, false );
                     }
                 } else if (nFlags == 1) {
@@ -1531,7 +1522,7 @@ void EngineWindow::HandleMouseMessage(UINT message, const Point& point, UINT nFl
 
 bool EngineWindow::OnMouseMessage(UINT message, UINT nFlags, const WinPoint& point)
 {
-    if (!m_pmouse->IsEnabled()) {
+    if (!m_pinputEngine->GetMouse()->IsEnabled()) {
         //we are not ignoring window mouse events
         HandleMouseMessage(message, Point::Cast(point), nFlags);
     }
@@ -1545,68 +1536,69 @@ bool EngineWindow::OnEvent(ButtonEvent::Source* pevent, ButtonEventData be)
     // button state change
     //
 
+    const Point& position = m_pinputEngine->GetMouse()->GetPosition();
     if (be.GetButton() == 0) {
         if (be.IsDown()) {
-            HandleMouseMessage(WM_LBUTTONDOWN, m_pmouse->GetPosition());
+            HandleMouseMessage(WM_LBUTTONDOWN, position);
         } else {
-            HandleMouseMessage(WM_LBUTTONUP,   m_pmouse->GetPosition());
+            HandleMouseMessage(WM_LBUTTONUP, position);
         }
     } else if (be.GetButton() == 1) {
         if (be.IsDown()) {
-            HandleMouseMessage(WM_RBUTTONDOWN, m_pmouse->GetPosition());
+            HandleMouseMessage(WM_RBUTTONDOWN, position);
         } else {
-            HandleMouseMessage(WM_RBUTTONUP,   m_pmouse->GetPosition());
+            HandleMouseMessage(WM_RBUTTONUP, position);
         }
     } else if (be.GetButton() == 2) {
         if (be.IsDown()) {
-            HandleMouseMessage(WM_MBUTTONDOWN, m_pmouse->GetPosition());
+            HandleMouseMessage(WM_MBUTTONDOWN, position);
         } else {
-            HandleMouseMessage(WM_MBUTTONUP,   m_pmouse->GetPosition());
+            HandleMouseMessage(WM_MBUTTONUP, position);
         }
 
     //Imago 8/15/09
     } else if (be.GetButton() == 3) {
         if (be.IsDown()) {
-            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), MAKEWPARAM(0,1));
+            HandleMouseMessage(WM_XBUTTONDOWN, position, MAKEWPARAM(0,1));
         } else {
-            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), MAKEWPARAM(0,1));
+            HandleMouseMessage(WM_XBUTTONUP, position, MAKEWPARAM(0,1));
         }
     } else if (be.GetButton() == 4) {
         if (be.IsDown()) {
-            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), MAKEWPARAM(0,2));
+            HandleMouseMessage(WM_XBUTTONDOWN, position, MAKEWPARAM(0,2));
         } else {
-            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), MAKEWPARAM(0,2));
+            HandleMouseMessage(WM_XBUTTONUP, position, MAKEWPARAM(0,2));
         }
     } else if (be.GetButton() == 5) {
         if (be.IsDown()) {
-            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), MAKEWPARAM(0,3));
+            HandleMouseMessage(WM_XBUTTONDOWN, position, MAKEWPARAM(0,3));
         } else {
-            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), MAKEWPARAM(0,3));
+            HandleMouseMessage(WM_XBUTTONUP, position, MAKEWPARAM(0,3));
         }
     } else if (be.GetButton() == 6) {
         if (be.IsDown()) {
-            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), MAKEWPARAM(0,4));
+            HandleMouseMessage(WM_XBUTTONDOWN, position, MAKEWPARAM(0,4));
         } else {
-            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), MAKEWPARAM(0,4));
+            HandleMouseMessage(WM_XBUTTONUP, position, MAKEWPARAM(0,4));
         }
     } else if (be.GetButton() == 7) {
         if (be.IsDown()) {
-            HandleMouseMessage(WM_XBUTTONDOWN, m_pmouse->GetPosition(), MAKEWPARAM(0,5));
+            HandleMouseMessage(WM_XBUTTONDOWN, position, MAKEWPARAM(0,5));
         } else {
-            HandleMouseMessage(WM_XBUTTONUP,   m_pmouse->GetPosition(), MAKEWPARAM(0,5));
+            HandleMouseMessage(WM_XBUTTONUP, position, MAKEWPARAM(0,5));
         }
 
     } else if (be.GetButton() == 8) {
         if (be.IsDown()) {
-            HandleMouseMessage(WM_MOUSEWHEEL, m_pmouse->GetPosition(), -WHEEL_DELTA);
+            HandleMouseMessage(WM_MOUSEWHEEL, position, -WHEEL_DELTA);
         } else {
-            HandleMouseMessage(WM_MOUSEWHEEL, m_pmouse->GetPosition(), 1);
+            HandleMouseMessage(WM_MOUSEWHEEL, position, 1);
         }
     } else if (be.GetButton() == 9) {
         if (be.IsDown()) {
-            HandleMouseMessage(WM_MOUSEWHEEL, m_pmouse->GetPosition(), WHEEL_DELTA);
+            HandleMouseMessage(WM_MOUSEWHEEL, position, WHEEL_DELTA);
         } else {
-            HandleMouseMessage(WM_MOUSEWHEEL, m_pmouse->GetPosition(), 0);
+            HandleMouseMessage(WM_MOUSEWHEEL, position, 0);
         }
     }
 
@@ -1621,13 +1613,13 @@ void EngineWindow::UpdateInput()
     // Update the mouse position
     //
 
-    if (m_pmouse->IsEnabled()) {
+    if (m_pinputEngine->GetMouse()->IsEnabled()) {
         // we have to manually fire mouse move events
-        if (m_ppointMouse->GetValue() != m_pmouse->GetPosition() || (s_forceHitTestCount >> 0)) {
+        if (m_ppointMouse->GetValue() != m_pinputEngine->GetMouse()->GetPosition() || (s_forceHitTestCount >> 0)) {
             if (s_forceHitTestCount > 0) {
                 s_forceHitTestCount--;
             }
-            HandleMouseMessage(WM_MOUSEMOVE, m_pmouse->GetPosition());
+            HandleMouseMessage(WM_MOUSEMOVE, m_pinputEngine->GetMouse()->GetPosition());
         }
     }
 }

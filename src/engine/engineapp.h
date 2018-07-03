@@ -12,14 +12,14 @@
 //////////////////////////////////////////////////////////////////////////////
 class Engine;
 class Modeler;
-class MouseInputStream;
+class InputEngine;
 
 class EngineApp : public Win32App {
 private:
     TRef<Engine>           m_pengine;
     TRef<Modeler>          m_pmodeler;
     TRef<IPopupContainer>  m_ppopupContainer;
-    TRef<MouseInputStream> m_pmouse;
+    TRef<InputEngine> m_pinput;
 
     void ParseCommandLine(
         const ZString& strCommandLine,
@@ -37,7 +37,7 @@ public:
     Modeler*         GetModeler()        { return m_pmodeler;        }
     IPopupContainer* GetPopupContainer() { return m_ppopupContainer; }
 
-    void SetMouse(MouseInputStream* pmouse);
+    void SetInput(InputEngine* pinput);
 
     //
     // Win32App methods

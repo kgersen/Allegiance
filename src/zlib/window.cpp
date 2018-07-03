@@ -25,6 +25,8 @@ void FillSolidRect(HDC hdc, const WinRect& rect, COLORREF color)
 //
 //////////////////////////////////////////////////////////////////////////////
 
+bool Window::s_bUseRawInput = false;
+
 void Window::Construct()
 {
     m_pfnWndProc    = DefWindowProc;
@@ -1106,6 +1108,14 @@ void Window::SetContinuousIdle(bool b)
     }
 #endif
 
+bool RunPeekMessage(MSG& msg, bool bUseRawInput) {
+    if (bUseRawInput) {
+        return ::PeekMessage(&msg, nullptr, 0, WM_INPUT - 1, PM_REMOVE) != 0 || ::PeekMessage(&msg, nullptr, WM_INPUT + 1, UINT_MAX, PM_REMOVE) != 0;
+    }
+
+    return ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != 0;
+}
+
 HRESULT Window::MessageLoop()
 {
     MSG msg;
@@ -1148,7 +1158,7 @@ HRESULT Window::MessageLoop()
 
         bool bAnyMessage = true;
         if (g_bContinuousIdle) {
-            bAnyMessage = ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != 0;
+            bAnyMessage = RunPeekMessage(msg, s_bUseRawInput);
         } else {
             ::GetMessage(&msg, nullptr, 0, 0);
         }
@@ -1223,7 +1233,7 @@ HRESULT Window::MessageLoop()
                         ::DispatchMessage(&msg);
                         break;
                 } 
-            } while (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE));
+            } while (RunPeekMessage(msg, s_bUseRawInput));
         }
     }
 }
