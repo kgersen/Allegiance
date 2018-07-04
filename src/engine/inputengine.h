@@ -60,7 +60,7 @@ public:
     virtual bool IsEnabled()                         = 0;
     virtual void SetEnabled(bool bEnabled)           = 0;
 
-    virtual const Point& GetPosition()               = 0;
+    virtual TRef<TStaticValue<Point>> GetPosition()               = 0;
 
     virtual void Update() = 0;
 };

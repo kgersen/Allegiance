@@ -62,8 +62,6 @@ private:
     bool     m_bMouseInside;
     WinPoint m_lastPointMouse;
 
-    static bool s_bUseRawInput;
-
     Window* m_pwindowParent;
 
     TList<TRef<Window> > m_listChildren;
@@ -240,10 +238,6 @@ public:
     void SetHasSysMenu(bool bSysMenu);
 
     void SetCursor(HCURSOR hcursor);
-
-    static void SetUseRawInput(bool bUseRawInput) {
-        s_bUseRawInput = bUseRawInput;
-    }
 
     //
     // Idle processing

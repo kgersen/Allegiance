@@ -105,7 +105,7 @@ protected:
     TRef<WrapImage>            m_pwrapImage;
     TRef<TransformImage>       m_ptransformImageCursor;
     TRef<TranslateTransform2>  m_ptranslateTransform;
-    TRef<Image>                m_pimageCursor;
+    TRef<WrapImage>            m_pimageCursor;
 
     WinPoint                   m_offsetWindowed;
 

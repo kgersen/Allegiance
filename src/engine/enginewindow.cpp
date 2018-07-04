@@ -140,7 +140,7 @@ EngineWindow::EngineWindow(	EngineConfigurationWrapper* pConfiguration,
 				m_bSizeable(true),
 				m_bMinimized(false),
 				m_bMovingWindow(false),
-				m_pimageCursor(Image::GetEmpty()),
+				m_pimageCursor(new WrapImage(Image::GetEmpty())),
 				m_bHideCursor(false),
 				m_bCaptured(false),
 				m_bHit(false),
@@ -306,9 +306,12 @@ void EngineWindow::SetEngine(Engine* pengine) {
     m_modeIndex = s_countModes;
 
     m_ptranslateTransform = new TranslateTransform2(m_ppointMouse);
-    m_ptransformImageCursor = new TransformImage(Image::GetEmpty(), m_ptranslateTransform);
+    m_ptransformImageCursor = new TransformImage(m_pimageCursor, m_ptranslateTransform);
     m_pwrapImage = new WrapImage(Image::GetEmpty());
-    m_pgroupImage = new GroupImage(CreateUndetectableImage(m_ptransformImageCursor), m_pwrapImage);
+    m_pgroupImage = new GroupImage(
+        CreateUndetectableImage(m_ptransformImageCursor),
+        m_pwrapImage
+    );
 
     //continue initialization now that we have the engine
     SetClientRect(WinRect(
@@ -1274,14 +1277,12 @@ bool EngineWindow::OnActivateApp(bool bActive)
 
 void EngineWindow::SetCursorImage(Image* pimage)
 {
-    if (m_pimageCursor != pimage) {
-        m_pimageCursor = pimage;
-    }
+    m_pimageCursor->SetImage(pimage);
 }
 
 Image* EngineWindow::GetCursorImage(void) const
 {
-    return m_pimageCursor;
+    return m_pimageCursor->GetImage();
 }
 
 bool EngineWindow::OnSysCommand(UINT uCmdType, const WinPoint &point)
@@ -1549,7 +1550,7 @@ bool EngineWindow::OnEvent(ButtonEvent::Source* pevent, ButtonEventData be)
     // button state change
     //
 
-    const Point& position = m_pinputEngine->GetMouse()->GetPosition();
+    const Point& position = m_pinputEngine->GetMouse()->GetPosition()->GetValue();
     if (be.GetButton() == 0) {
         if (be.IsDown()) {
             HandleMouseMessage(WM_LBUTTONDOWN, position);
@@ -1628,11 +1629,11 @@ void EngineWindow::UpdateInput()
 
     if (m_pinputEngine->GetMouse()->IsEnabled()) {
         // we have to manually fire mouse move events
-        if (m_ppointMouse->GetValue() != m_pinputEngine->GetMouse()->GetPosition() || (s_forceHitTestCount >> 0)) {
+        if (m_ppointMouse->GetValue() != m_pinputEngine->GetMouse()->GetPosition()->GetValue() || (s_forceHitTestCount >> 0)) {
             if (s_forceHitTestCount > 0) {
                 s_forceHitTestCount--;
             }
-            HandleMouseMessage(WM_MOUSEMOVE, m_pinputEngine->GetMouse()->GetPosition());
+            HandleMouseMessage(WM_MOUSEMOVE, m_pinputEngine->GetMouse()->GetPosition()->GetValue());
         }
     }
 }

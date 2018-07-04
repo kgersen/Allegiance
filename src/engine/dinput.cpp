@@ -209,7 +209,7 @@ public:
 class MouseInputStreamState : public InputStreamState {
 public:
     Rect                                m_rectClip;
-    Point                               m_point;
+    TRef<SimpleModifiableValue<Point>> m_point;
 
     float                               m_z;
     bool                                m_bEnabled;
@@ -218,19 +218,25 @@ public:
     int                                 m_acceleration;
     float                               m_sensitivity;
 
-    void SetXY(float x, float y) {
-        m_point.SetX(x);
-        m_point.SetY(y);
-        m_rectClip.Clip(m_point);
+    MouseInputStreamState() :
+        m_point(new SimpleModifiableValue<Point>(Point(0, 0)))
+    {
+    }
 
-        m_vvalueObject[0]->GetValue()->SetValue(m_point.X());
-        m_vvalueObject[1]->GetValue()->SetValue(m_point.Y());
+    void SetXY(float x, float y) {
+        Point point(x, y);
+        m_rectClip.Clip(point);
+        m_point->SetValue(point);
+
+        m_vvalueObject[0]->GetValue()->SetValue(point.X());
+        m_vvalueObject[1]->GetValue()->SetValue(point.Y());
     }
 
     void SetRelativeXY(float x, float y) {
+        const Point& point = m_point->GetValue();
         SetXY(
-            m_point.X() + x,
-            m_point.Y() + y
+            point.X() + x,
+            point.Y() + y
         );
     }
 
@@ -334,15 +340,16 @@ public:
     
     void SetClipRect(const Rect& rect) override {
         m_pstate->m_rectClip = rect;
-        m_pstate->m_rectClip.Clip(m_pstate->m_point);
+
+        Point point = m_pstate->m_point->GetValue();
+        m_pstate->SetXY(point.X(), point.Y());
     }
 
     void SetPosition(const Point& point) override {
-        m_pstate->m_point = point;
-        m_pstate->m_rectClip.Clip(m_pstate->m_point);
+        m_pstate->SetXY(point.X(), point.Y());
     }
 
-    const Point& GetPosition() override {
+    TRef<TStaticValue<Point>> GetPosition() override {
         return m_pstate->m_point;
     }
 
@@ -1909,7 +1916,6 @@ public:
                 bCurrentlyEnabled = m_pmouseInputStream->IsEnabled();
                 m_pmouseInputStream->SetEnabled(false);
             }
-            Window::SetUseRawInput(bUseRaw);
 
             if (bUseRaw) {
                 m_pmouseInputStream = new RawMouseInputStreamImpl(m_hwnd, m_pMouseState, m_pRawInputPump);

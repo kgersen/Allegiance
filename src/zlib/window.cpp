@@ -25,8 +25,6 @@ void FillSolidRect(HDC hdc, const WinRect& rect, COLORREF color)
 //
 //////////////////////////////////////////////////////////////////////////////
 
-bool Window::s_bUseRawInput = false;
-
 void Window::Construct()
 {
     m_pfnWndProc    = DefWindowProc;
@@ -1108,12 +1106,9 @@ void Window::SetContinuousIdle(bool b)
     }
 #endif
 
-bool RunPeekMessage(MSG& msg, bool bUseRawInput) {
-    if (bUseRawInput) {
-        return ::PeekMessage(&msg, nullptr, 0, WM_INPUT - 1, PM_REMOVE) != 0 || ::PeekMessage(&msg, nullptr, WM_INPUT + 1, UINT_MAX, PM_REMOVE) != 0;
-    }
-
-    return ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != 0;
+bool RunPeekMessage(MSG& msg) {
+    //the message WM_INPUT is handled in dinput.cpp
+    return ::PeekMessage(&msg, nullptr, 0, WM_INPUT - 1, PM_REMOVE) != 0 || ::PeekMessage(&msg, nullptr, WM_INPUT + 1, UINT_MAX, PM_REMOVE) != 0;
 }
 
 HRESULT Window::MessageLoop()
@@ -1158,7 +1153,7 @@ HRESULT Window::MessageLoop()
 
         bool bAnyMessage = true;
         if (g_bContinuousIdle) {
-            bAnyMessage = RunPeekMessage(msg, s_bUseRawInput);
+            bAnyMessage = RunPeekMessage(msg);
         } else {
             ::GetMessage(&msg, nullptr, 0, 0);
         }
@@ -1233,7 +1228,7 @@ HRESULT Window::MessageLoop()
                         ::DispatchMessage(&msg);
                         break;
                 } 
-            } while (RunPeekMessage(msg, s_bUseRawInput));
+            } while (RunPeekMessage(msg));
         }
     }
 }
