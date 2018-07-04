@@ -148,64 +148,137 @@ ZString CallsignSquad::CleanupSquadTag(ZString tag)
     return ZString(s.c_str());
 }
 
-CallsignSquad::CallsignSquad(ZString tag, std::vector<ZString> vAvailableTokens) :
-    m_tag(tag),
-    m_availableTokens(vAvailableTokens)
-{
-}
+class OfficierCallbackClass {
+    CCallResult<OfficierCallbackClass, ClanOfficerListResponse_t> m_response;
+    bool m_bError;
+    bool m_bDone;
+    CSteamID m_idSteamClan;
 
-const std::vector<ZString>& CallsignSquad::GetAvailableOfficerTokens() const
-{
-    return m_availableTokens;
-}
+public:
+    OfficierCallbackClass(CSteamID idSteamClan) :
+        m_idSteamClan(idSteamClan),
+        m_bError(false),
+        m_bDone(false)
+    {
+    }
 
-ZString CallsignSquad::GetCleanedTag() const
-{
-    return CallsignSquad::CleanupSquadTag(m_tag);
-}
+    bool RunQuery() {
+        m_bError = false;
+        m_bDone = false;
+        SteamAPICall_t handle = SteamFriends()->RequestClanOfficerList(m_idSteamClan);
+        m_response.Set(handle, this, &OfficierCallbackClass::OnClanOfficerListResponse);
+
+        for (int i = 0; i < 30 && m_bDone == false; i++)
+        {
+            Sleep(100);
+            SteamAPI_RunCallbacks();
+        }
+
+        if (m_bDone == false) {
+            debugf("Steam officier query took too long, cancelling");
+            m_response.Cancel();
+        }
+
+        if (m_bError == true || m_bDone == false) {
+            debugf("Steam officier query had an error");
+            return false;
+        }
+        return true;
+    }
+
+    void OnClanOfficerListResponse(ClanOfficerListResponse_t *pCallback, bool bIOFailure) {
+        m_bDone = true;
+        m_bError = bIOFailure || !pCallback->m_bSuccess;
+    }
+
+    int GetClanOfficerCount() {
+        return SteamFriends()->GetClanOfficerCount(m_idSteamClan);
+    }
+
+    CSteamID GetClanOfficerByIndex(int index) {
+        return SteamFriends()->GetClanOfficerByIndex(m_idSteamClan, index);
+    }
+
+    CSteamID GetClanOwner() {
+        return SteamFriends()->GetClanOwner(m_idSteamClan);
+    }
+};
+
+class SteamCallsignSquad : public CallsignSquad {
+private:
+    CSteamID m_SteamClanId;
+    CSteamID m_SteamUserId;
+
+    std::shared_ptr<OfficierCallbackClass> m_pcallback;
+
+    ZString m_tag;
+    bool m_bTokensLoaded;
+    std::vector<ZString> m_availableTokens;
+
+    const std::shared_ptr<OfficierCallbackClass>& GetCallback() {
+        if (!m_pcallback) {
+            m_pcallback = std::make_shared<OfficierCallbackClass>(m_SteamClanId);
+            m_pcallback->RunQuery();
+        }
+        return m_pcallback;
+    }
+
+public:
+    SteamCallsignSquad(CSteamID steamClanId, CSteamID steamUserId) :
+        m_SteamClanId(steamClanId),
+        m_SteamUserId(steamUserId),
+        m_bTokensLoaded(false),
+        m_availableTokens({})
+    {
+        m_tag = FixupCallsignTag(SteamFriends()->GetClanTag(m_SteamClanId));
+    }
+
+    const std::vector<ZString>& GetAvailableOfficerTokens() override {
+        if (!m_bTokensLoaded) {
+
+            bool bIsOfficer = false;
+
+            int officerCount = GetCallback()->GetClanOfficerCount();
+            for (int j = 0; j < officerCount; j++)
+            {
+                if (GetCallback()->GetClanOfficerByIndex(j) == m_SteamUserId)
+                {
+                    bIsOfficer = true;
+                    break;
+                }
+            }
+
+            // If the user is the group owner, then they are an officer.
+            if (m_SteamUserId == GetCallback()->GetClanOwner())
+            {
+                bIsOfficer = true;
+            }
+
+            if (m_tag == "Dev" || m_tag == "Alleg")
+            {
+                bIsOfficer = true;
+            }
+
+            m_availableTokens = std::vector<ZString>({});
+            if (bIsOfficer) {
+                m_availableTokens.push_back("*");
+                m_availableTokens.push_back("^");
+            }
+
+            m_bTokensLoaded = true;
+        }
+
+        return m_availableTokens;
+    }
+
+    const ZString GetCleanedTag() {
+        return m_tag;
+    };
+};
 
 std::shared_ptr<CallsignSquad> CreateSquadFromSteam(CSteamID squadSteamClanId, CSteamID userSteamId)
 {
-    ZString strSteamTag = FixupCallsignTag(SteamFriends()->GetClanTag(squadSteamClanId));
-
-    bool bIsOfficer = false;
-
-    // If the user is on the officer's list, then they are an officer.
-    int officerCount = SteamFriends()->GetClanOfficerCount(squadSteamClanId);
-    for (int j = 0; j < officerCount; j++)
-    {
-        if (SteamFriends()->GetClanOfficerByIndex(squadSteamClanId, j) == userSteamId)
-        {
-            bIsOfficer = true;
-            break;
-        }
-    }
-
-    // If the user is the group owner, then they are an officer.
-    if (userSteamId == SteamFriends()->GetClanOwner(squadSteamClanId))
-    {
-        bIsOfficer = true;
-    }
-
-    if (strSteamTag == "Dev" || strSteamTag == "Alleg")
-    {
-        bIsOfficer = true;
-    }
-
-    std::vector<ZString> tokens = std::vector<ZString>({});
-    if (bIsOfficer) {
-        tokens.push_back("*");
-        tokens.push_back("^");
-    }
-
-    ZString token_debug_string = "";
-    for (ZString token : tokens) {
-        token_debug_string += token;
-    }
-
-    debugf("Finding squad tags. Added tag. fixed_tag=%s, tokens=%s", (const char*)strSteamTag, (const char*)token_debug_string);
-
-    return std::make_shared<CallsignSquad>(strSteamTag, tokens);
+    return std::make_shared<SteamCallsignSquad>(squadSteamClanId, userSteamId);
 }
 
 std::shared_ptr<CallsignHandler> CreateCallsignHandlerFromSteam(const TRef<GameConfigurationWrapper>& pconfiguration)
@@ -217,7 +290,7 @@ std::shared_ptr<CallsignHandler> CreateCallsignHandlerFromSteam(const TRef<GameC
         currentUser = SteamUser()->GetSteamID();
 
     int nGroupsFound = SteamFriends()->GetClanCount();
-    int nGroups = std::min(20, nGroupsFound); //only do the first 20
+    int nGroups = std::min(1000, nGroupsFound); //only do the first n clans
 
     debugf("Finding squad tags. %d groups found, iterating over %d groups (possibly limit reached)", nGroupsFound, nGroups);
 
@@ -235,8 +308,16 @@ std::shared_ptr<CallsignHandler> CreateCallsignHandlerFromSteam(const TRef<GameC
             debugf("Finding squad tags. Tag empty, skipping");
             continue;
         }
-        
-        vSquads.push_back(CreateSquadFromSteam(groupSteamID, currentUser));
+
+        std::shared_ptr<CallsignSquad> squad = CreateSquadFromSteam(groupSteamID, currentUser);
+        if (squad->GetCleanedTag() == "") {
+            debugf("Finding squad tags. Cleaned up tag empty, skipping");
+            continue;
+        }
+
+        debugf("Finding squad tags. Added tag. fixed_tag=%s, available tokens determined lazily", (const char*)squad->GetCleanedTag());
+
+        vSquads.push_back(squad);
     }
 
     return std::make_shared<CallsignHandler>(pconfiguration, vSquads);

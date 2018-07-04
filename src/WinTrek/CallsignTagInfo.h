@@ -4,16 +4,12 @@
 
 class CallsignSquad {
 
-private:
-    ZString m_tag;
-    std::vector<ZString> m_availableTokens;
-    static ZString CleanupSquadTag(ZString tag);
 public:
-    CallsignSquad(ZString tag, std::vector<ZString> vAvailableTokens);
+    static ZString CleanupSquadTag(ZString tag);
 
-    const std::vector<ZString>& GetAvailableOfficerTokens() const;
+    virtual const std::vector<ZString>& GetAvailableOfficerTokens() = 0;
 
-    ZString GetCleanedTag() const;
+    virtual const ZString GetCleanedTag() = 0;
 };
 
 std::shared_ptr<CallsignSquad> CreateSquadFromSteam(CSteamID squadSteamClanId, CSteamID userSteamId);
