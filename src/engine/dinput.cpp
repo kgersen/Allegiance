@@ -364,13 +364,50 @@ public:
 
 };
 
-class RawMouseInputStreamImpl : virtual public MouseInputStream, MouseInputStreamStateWrapper {
+class RawInputPump : public TEvent<PRAWINPUT>::SourceImpl {
+private:
+    
+public:
+    void Pump() {
+        MSG msg;
+        while (::PeekMessage(&msg, NULL, WM_INPUT, WM_INPUT, PM_REMOVE)) {
+            UINT dwSize;
+
+            if (0 != GetRawInputData((HRAWINPUT)msg.lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER))) {
+                //an error
+                continue;
+            }
+            if (dwSize == 0) {
+                //empty
+                continue;
+            }
+            LPBYTE lpb = new BYTE[dwSize];
+
+            if (GetRawInputData((HRAWINPUT)msg.lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize) {
+                //incorrect length
+                continue;
+            }
+
+            PRAWINPUT pri = (PRAWINPUT)lpb;
+
+            this->Trigger(pri);
+
+            delete[] lpb;
+        }
+    }
+};
+
+class RawMouseInputStreamImpl : virtual public MouseInputStream, MouseInputStreamStateWrapper, TEvent<PRAWINPUT>::Sink {
     HWND								m_hwnd;
+    TRef<RawInputPump> m_ppump;
+    TRef<TEvent<PRAWINPUT>::Sink> m_sinkDelegate;
 
 public:
-    RawMouseInputStreamImpl(HWND hwnd, const std::shared_ptr<MouseInputStreamState> pstate) :
+    RawMouseInputStreamImpl(HWND hwnd, const std::shared_ptr<MouseInputStreamState> pstate, TRef<RawInputPump> ppump) :
         m_hwnd(hwnd),
-        MouseInputStreamStateWrapper(pstate)
+        MouseInputStreamStateWrapper(pstate),
+        m_ppump(ppump),
+        m_sinkDelegate(nullptr)
     {
     }
 
@@ -391,10 +428,16 @@ public:
         if (IsEnabled()) {
             Rid[0].dwFlags = RIDEV_EXINPUTSINK | RIDEV_CAPTUREMOUSE | RIDEV_NOLEGACY;
             Rid[0].hwndTarget = m_hwnd;
+
+            m_sinkDelegate = TEvent<PRAWINPUT>::Sink::CreateDelegate(this);
+            m_ppump->AddSink(m_sinkDelegate);
         }
         else {
             Rid[0].dwFlags = RIDEV_REMOVE;
             Rid[0].hwndTarget = NULL;
+
+            m_ppump->RemoveSink(m_sinkDelegate);
+            m_sinkDelegate = nullptr;
         }
         if (RegisterRawInputDevices(Rid, 1, sizeof(Rid[0])) != TRUE) {
             debugf("Mouse input: Failed SetEnable (%s)", IsEnabled() ? "true" : "false");
@@ -402,69 +445,50 @@ public:
     }
 
     void Update() override {
+        m_pstate->ResetWheel();
+    }
+
+    bool OnEvent(TEvent<PRAWINPUT>::Source* pevent, PRAWINPUT pri) override {
         if (this->IsEnabled() == false) {
-            return;
+            return true;
         }
 
-        m_pstate->ResetWheel();
+        if (pri->header.dwType != RIM_TYPEMOUSE) {
+            // not the mouse
+            return true;
+        }
 
-        MSG msg;
-        while (::PeekMessage(&msg, NULL, WM_INPUT, WM_INPUT, PM_REMOVE)) {
-            UINT dwSize;
+        RAWMOUSE data = pri->data.mouse;
 
-            if (0 != GetRawInputData((HRAWINPUT)msg.lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER))) {
-                //an error
-                continue;
+        bool bMouseAbsolute;
+        bMouseAbsolute = data.usFlags & MOUSE_MOVE_ABSOLUTE;
+
+        if (bMouseAbsolute == false) {
+            if (data.lLastX != 0 || data.lLastY != 0) {
+                m_pstate->SetRelativeXY(
+                    m_pstate->CalculateDelta(data.lLastX),
+                    m_pstate->CalculateDelta(-data.lLastY)
+                );
             }
-            if (dwSize == 0) {
-                continue;
+        }
+        else {
+            m_pstate->SetXY(data.lLastX, data.lLastY);
+        }
+
+        if (data.usButtonFlags & RI_MOUSE_WHEEL) {
+            m_pstate->SetRelativeWheel((short)(unsigned short)data.usButtonData);
+        }
+
+        if (data.usButtonFlags != 0) {
+            int iButton = GetButtonIndexFromButtonFlags(data.usButtonFlags);
+
+            if (iButton >= 0 && iButton < GetButtonCount()) {
+                bool bDown = GetIsButtonDownFromButtonFlags(data.usButtonFlags);
+                m_pstate->ButtonChanged(iButton, bDown);
             }
-            LPBYTE lpb = new BYTE[dwSize];
+        }
 
-            if (GetRawInputData((HRAWINPUT)msg.lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize) {
-                //incorrect length
-                continue;
-            }
-
-            PRAWINPUT pri = (PRAWINPUT)lpb;
-
-            if (pri->header.dwType != RIM_TYPEMOUSE) {
-                // not the mouse
-                continue;
-            }
-
-            RAWMOUSE data = pri->data.mouse;
-
-            bool bMouseAbsolute;
-            bMouseAbsolute = data.usFlags & MOUSE_MOVE_ABSOLUTE;
-
-            if (bMouseAbsolute == false) {
-                if (data.lLastX != 0 || data.lLastY != 0) {
-                    m_pstate->SetRelativeXY(
-                        m_pstate->CalculateDelta(data.lLastX),
-                        m_pstate->CalculateDelta(-data.lLastY)
-                    );
-                }
-            }
-            else {
-                m_pstate->SetXY(data.lLastX, data.lLastY);
-            }
-
-            if (data.usButtonFlags & RI_MOUSE_WHEEL) {
-                m_pstate->SetRelativeWheel((short)(unsigned short)data.usButtonData);
-            }
-
-            if (data.usButtonFlags != 0) {
-                int iButton = GetButtonIndexFromButtonFlags(data.usButtonFlags);
-
-                if (iButton >= 0 && iButton < GetButtonCount()) {
-                    bool bDown = GetIsButtonDownFromButtonFlags(data.usButtonFlags);
-                    m_pstate->ButtonChanged(iButton, bDown);
-                }
-            }
-
-            delete[] lpb;
-        };
+        return true;
     }
 
     int GetButtonIndexFromButtonFlags(USHORT flag) {
@@ -1803,6 +1827,7 @@ private:
     CLogFile                                m_joylog; //Imago 8/12/09
 
     std::shared_ptr<MouseInputStreamState> m_pMouseState;
+    TRef<RawInputPump> m_pRawInputPump;
     TRef<Boolean> m_pUseMethodRaw;
     TRef<Value> m_pConfigurationUpdater;
 
@@ -1820,7 +1845,8 @@ public:
         m_bFocus(false),
         m_joylog("DirectInput.log"),
         m_pUseMethodRaw(pUseMethodRaw),
-        m_pMouseState(std::make_shared<MouseInputStreamState>())
+        m_pMouseState(std::make_shared<MouseInputStreamState>()),
+        m_pRawInputPump(new RawInputPump())
     {
         //
         // Create the direct input object
@@ -1886,7 +1912,7 @@ public:
             Window::SetUseRawInput(bUseRaw);
 
             if (bUseRaw) {
-                m_pmouseInputStream = new RawMouseInputStreamImpl(m_hwnd, m_pMouseState);
+                m_pmouseInputStream = new RawMouseInputStreamImpl(m_hwnd, m_pMouseState, m_pRawInputPump);
             }
             else {
                 m_pmouseInputStream = m_pmouseInputStreamDirectInput;
@@ -1946,9 +1972,12 @@ public:
 
     void Update()
     {
+
         if (m_bFocus) {
             m_pConfigurationUpdater->Update();
             m_pmouseInputStream->Update();
+
+            m_pRawInputPump->Pump();
 
             int count = m_vjoystickInputStream.GetCount();
 
