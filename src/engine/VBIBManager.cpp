@@ -978,6 +978,7 @@ bool CVBIBManager::LockDynamicVertexBuffer(	SVBIBHandle * pHandle,
 
         if (hr != D3D_OK) {
             debugf("Creating vertex buffer failed: 0x%x", hr);
+            return false;
         }
         ZAssert( hr == D3D_OK );
 		pVB->bResourceEvicted = false;
