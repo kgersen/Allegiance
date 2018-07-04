@@ -557,8 +557,14 @@ public:
         // get the artpath
         //
         if (m_pGameConfiguration->GetDataArtworkPath()->GetValue() == "") {
+            debugf("Artwork path in configuration was empty, setting to %s", (const char*)(GetExecutablePath().c_str() + ZString("\\Artwork")));
             m_pGameConfiguration->GetDataArtworkPath()->SetValue(GetExecutablePath().c_str() + ZString("\\Artwork"));
         }
+
+        //write configuration file early, so that if we crash because of a bad artpath, it can somewhat easily be edited
+        debugf("Writing configuration file");
+        m_pGameConfiguration->Update();
+
         PathString pathStr = m_pGameConfiguration->GetDataArtworkPath()->GetValue();
 
         bool bLogFrameData = GetConfiguration()->GetBoolValue(
