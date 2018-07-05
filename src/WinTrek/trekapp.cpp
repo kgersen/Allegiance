@@ -945,6 +945,10 @@ public:
 
                 //remove this evaluator
                 m_cleanableEvaluateFrame.Cleanup();
+
+                if (bStartTraining) {
+                    m_pwindow->screen(ScreenIDTrainScreen);
+                }
             }
             else if (movies->PeekIsRunning() == false) {
                 //movies are done but the init isn't yet. Start the loading screen
@@ -955,14 +959,6 @@ public:
             }
             return true;
         })));
-
-        //
-        // Handling command line options
-        //
-
-        //todo reimplement -training
-        //if (bStartTraining)
-        //    GetWindow ()->screen (ScreenIDTrainScreen);
 
         return hr;
     }
