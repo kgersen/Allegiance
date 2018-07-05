@@ -24,6 +24,8 @@
 #include "VideoSettingsDX9.h"
 // BUILD_DX9
 
+#include "LoadingScreen.h"
+
 extern bool g_bEnableSound = true;
 extern bool bStartTraining   = false;
 extern bool g_bCheckFiles;
@@ -236,11 +238,16 @@ private:
     HANDLE m_hThread;
 
 public:
+
     ThreadedWork(const std::function<void()>& callback) :
         m_hThread(NULL)
     {
         //the callback needs to stay alive, copy into pointer
         m_pCallback = new std::function<void()>(callback);
+    }
+
+    static std::shared_ptr<ThreadedWork> Create(const std::function<void()>& callback) {
+        return std::make_shared<ThreadedWork>(callback);
     }
 
     ~ThreadedWork() {
@@ -286,7 +293,16 @@ private:
     TRef<GameConfigurationWrapper> m_pGameConfiguration;
     std::shared_ptr<ModdingEngine> m_pModdingEngine;
 
+    TEvent<Time>::Cleanable m_cleanableEvaluateFrame = TEvent<Time>::Cleanable(nullptr, nullptr);
+    std::shared_ptr<LoadingScreen> m_pscreenLoading;
+    TRef<TrekWindow> m_pwindow;
+    TRef<UiEngine> m_pUiEngine;
+    TRef<ISoundEngine> m_pSoundEngine;
+
 public:
+    ~TrekAppImpl() {
+    }
+
     std::shared_ptr<CallsignHandler> GetCallsignHandler() override {
         return m_pCallsignHandler;
     }
@@ -297,6 +313,14 @@ public:
 
     std::shared_ptr<ModdingEngine> GetModdingEngine() override {
         return m_pModdingEngine;
+    }
+
+    TRef<UiEngine> GetUiEngine() override {
+        return m_pUiEngine;
+    }
+
+    TRef<ISoundEngine> GetSoundEngine() override {
+        return m_pSoundEngine;
     }
 
     TrekAppImpl()
@@ -832,10 +856,30 @@ public:
         ((EffectApp*)this)->Initialize(strCommandLine, pengineWindow->GetHWND());
         pengineWindow->SetEngine(this->GetEngine());
         this->SetInput(pengineWindow->GetInputEngine());
+        this->SetEngineWindow(pengineWindow);
+
+        hr = CreateSoundEngine(m_pSoundEngine, pengineWindow->GetHWND(), true);
+
+        if (FAILED(hr))
+        {
+            hr = CreateDummySoundEngine(m_pSoundEngine);
+            ZAssert(SUCCEEDED(hr));
+        }
+        ZSucceeded(m_pSoundEngine->SetQuality(ISoundEngine::midQuality));
+
+        ZSucceeded(m_pSoundEngine->EnableHardware(false));
+
+        m_pUiEngine = UiEngine::Create(pengineWindow, this->GetEngine(), m_pSoundEngine, [this](std::string strWebsite) {
+            ShellExecute(NULL, NULL, strWebsite.c_str(), NULL, NULL, SW_SHOWNORMAL);
+        });
+
+        if (!pengineWindow->IsValid()) {
+            return E_FAIL;
+        }
 
         //Imago 6/29/09 7/28/09 now plays video in thread while load continues // BT - 9/17 - Refactored a bit.
         //Rock: Refactored some more
-        ThreadedWork movies = ThreadedWork([this, pengineWindow, pathStr]() {
+        auto movies = ThreadedWork::Create([this, pengineWindow, pathStr]() {
             // BT - 9/17 - If you want to re-add an intro movie, you can uncomment this code, but it was causing some people to crash,
             // and most didn't like having any intro at all. :(
             // To make a movie that is compatible with the movie player, use this ffmpeg command line: 
@@ -860,12 +904,11 @@ public:
 
         debugf("Finished graphics initialization, starting main game initialization");
 
-        TRef<TrekWindow> pwindow;
-        ThreadedWork threadInitialization = ThreadedWork([this, pengineWindow, pathStr, strCommandLine, bMovies, &pwindow]() {
+        auto threadInitialization = ThreadedWork::Create([this, pengineWindow, pathStr, strCommandLine, bMovies]() {
             m_pModdingEngine = ModdingEngine::Create();
             m_pCallsignHandler = CreateCallsignHandlerFromSteam(m_pGameConfiguration);
 
-            pwindow =
+            m_pwindow =
                 TrekWindow::Create(
                     this,
                     pengineWindow,
@@ -876,52 +919,50 @@ public:
         });
 
         //create a thread that completes when both the initialization and the movies are complete
-        ThreadedWork threadAllWork = ThreadedWork([&threadInitialization, &movies]() {
+        auto threadAllWork = ThreadedWork::Create([threadInitialization, movies]() {
             HANDLE handles[] = {
-                threadInitialization.Start(),
-                movies.Start()
+                threadInitialization->Start(),
+                movies->Start()
             };
 
             // third argument is TRUE, so waits for all handles
             WaitForMultipleObjects(2, handles, TRUE, INFINITE);
         });
 
-        HANDLE handleThreadAllWork = threadAllWork.Start();
+        HANDLE handleThreadAllWork = threadAllWork->Start();
 
-        //MsgWaitForMultipleObjects returns when either the all work thread has finished, or a message is posted. third arg is FALSE, so waits until any handle.
-        DWORD ret;
-        while (WAIT_OBJECT_0 != (ret = MsgWaitForMultipleObjects(1, &handleThreadAllWork, FALSE, INFINITE, QS_ALLINPUT))) {
-            if (ret == WAIT_OBJECT_0 + 1) {
-                //message
-                MSG msg;
-                while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-                    TranslateMessage(&msg);
-                    DispatchMessage(&msg);
+        m_pscreenLoading = nullptr;
+        m_cleanableEvaluateFrame = std::move(pengineWindow->GetEvaluateFrameEventSource()->AddSinkManaged(new CallbackValueSink<Time>([this, threadAllWork, movies](Time time) {
+
+            if (threadAllWork->PeekIsRunning() == false) {
+                //both the movie and the init is done. Stop the loading screen.
+                if (m_pscreenLoading) {
+                    m_pscreenLoading = nullptr;
+                }
+
+                //start the main game
+                m_pwindow->Start();
+
+                //remove this evaluator
+                m_cleanableEvaluateFrame.Cleanup();
+            }
+            else if (movies->PeekIsRunning() == false) {
+                //movies are done but the init isn't yet. Start the loading screen
+                if (!m_pscreenLoading) {
+                    m_pscreenLoading = std::make_shared<LoadingScreen>(this);
+                    m_pscreenLoading->Start();
                 }
             }
-            else if (ret == WAIT_TIMEOUT) {
-                //timeout reached
-                debugf("MsgWaitForMultipleObjects timeout");
-            }
-            else {
-                //unexpected
-                debugf("Unexpected return from MsgWaitForMultipleObjects");
-                break;
-            }
-        }
-
-        if (!pwindow->GetEngineWindow()->IsValid()) {
-            return E_FAIL;
-        }
+            return true;
+        })));
 
         //
         // Handling command line options
         //
 
-        pwindow->Start();
-
-        if (bStartTraining)
-            GetWindow ()->screen (ScreenIDTrainScreen);
+        //todo reimplement -training
+        //if (bStartTraining)
+        //    GetWindow ()->screen (ScreenIDTrainScreen);
 
         return hr;
     }
@@ -930,5 +971,10 @@ public:
     {
       EffectApp::Terminate();
       CoUninitialize();
+
+      m_pwindow = nullptr;
+      m_pUiEngine = nullptr;
+
+      m_pSoundEngine = nullptr;
     }
 } g_trekImpl;

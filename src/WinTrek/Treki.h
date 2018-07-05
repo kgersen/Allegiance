@@ -157,6 +157,8 @@ public:
     virtual std::shared_ptr<CallsignHandler> GetCallsignHandler() = 0;
     virtual TRef<GameConfigurationWrapper> GetGameConfiguration() = 0;
     virtual std::shared_ptr<ModdingEngine> GetModdingEngine() = 0;
+    virtual TRef<UiEngine> GetUiEngine() = 0;
+    virtual TRef<ISoundEngine> GetSoundEngine() = 0;
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -210,6 +212,10 @@ protected:
 
     TRef<IPopupContainer>      m_ppopupContainer;
 
+    TEvent<Time>::Cleanable m_cleanableOnFrame;
+    TEvent<>::Cleanable m_cleanableOnClose;
+    TEvent<bool>::Cleanable m_cleanableOnActivate;
+
     TrekWindow(
         EngineWindow* pengineWindow
     ) :
@@ -218,7 +224,11 @@ protected:
 
     }
 
-    virtual void Terminate() = 0;
+    virtual void Terminate() {
+        m_cleanableOnFrame.Cleanup();
+        m_cleanableOnClose.Cleanup();
+        m_cleanableOnActivate.Cleanup();
+    }
 
     virtual void EvaluateFrame(Time time) = 0;
 
@@ -235,20 +245,20 @@ public:
     );
 
     virtual void Start() {
-        m_pEngineWindow->GetOnCloseEventSource()->AddSink(new CallbackSink([this]() {
+        m_cleanableOnClose = std::move(m_pEngineWindow->GetOnCloseEventSource()->AddSinkManaged(new CallbackSink([this]() {
             this->Terminate();
             return true;
-        }));
+        })));
 
-        m_pEngineWindow->GetEvaluateFrameEventSource()->AddSink(new CallbackValueSink<Time>([this](Time time) {
+        m_cleanableOnFrame = std::move(m_pEngineWindow->GetEvaluateFrameEventSource()->AddSinkManaged(new CallbackValueSink<Time>([this](Time time) {
             this->EvaluateFrame(time);
             return true;
-        }));
+        })));
 
-        m_pEngineWindow->GetActivateEventSource()->AddSink(new CallbackValueSink<bool>([this](bool bActive) {
+        m_cleanableOnActivate = std::move(m_pEngineWindow->GetActivateEventSource()->AddSinkManaged(new CallbackValueSink<bool>([this](bool bActive) {
             this->OnActivate(bActive);
             return true;
-        }));
+        })));
     }
 
     virtual void OnActivate(bool bActive) {

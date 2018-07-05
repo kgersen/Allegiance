@@ -2724,32 +2724,12 @@ public:
 
         DWORD dwSoundInitStartTime = timeGetTime();
 
-		m_bUseDSound8 = LoadPreference("UseDSound8", true);
-
-        if (g_bEnableSound) {
-            assert (m_pSoundEngine == NULL);
-            hr = CreateSoundEngine(m_pSoundEngine, m_pEngineWindow->GetHWND(), m_bUseDSound8);
-        }
-
-        if (FAILED(hr) || !g_bEnableSound)
-        {
-            hr = CreateDummySoundEngine(m_pSoundEngine);
-            ZAssert(SUCCEEDED(hr));
-        }
-        m_soundquality = (ISoundEngine::Quality)LoadPreference("SoundQuality",
-            ISoundEngine::midQuality);
-        ZSucceeded(m_pSoundEngine->SetQuality(m_soundquality));
-
-        m_bEnableSoundHardware = LoadPreference("SoundHardwareAcceleration", false) != FALSE;
-        ZSucceeded(m_pSoundEngine->EnableHardware(m_bEnableSoundHardware));
-
+        m_pSoundEngine = papp->GetSoundEngine();
         ZSucceeded(m_pSoundEngine->SetListener(new CameraListener(m_cameraControl)));
 
         InitializeSoundTemplates();
 
-        m_pUiEngine = UiEngine::Create(m_pEngineWindow, m_pengine, m_pSoundEngine, [this](std::string strWebsite) {
-            this->ShowWebPage(strWebsite.c_str());
-        });
+        m_pUiEngine = m_papp->GetUiEngine();
 
         //
         // Load the Quick Chat Info
@@ -3081,6 +3061,8 @@ public:
         m_pkeyboardInputFilter = new KeyboardInputFilter(this);
         m_pEngineWindow->AddKeyboardInputFilter(m_pkeyboardInputFilter);
 
+        m_pEngineWindow->SetImage(m_pgroupImage);
+
         TrekWindow::Start();
     }
 
@@ -3098,7 +3080,6 @@ public:
         m_pgroupImage->AddImage(m_pwrapImageHelp);
         m_pgroupImage->AddImage(m_pwrapImageConfiguration);
         m_pgroupImage->AddImage(m_pwrapImageTop);
-        m_pEngineWindow->SetImage(m_pgroupImage);
     }
 
     void SetCursor(const char* pszCursor)
@@ -3159,6 +3140,7 @@ public:
 
     void Terminate()
     {
+        TrekWindow::Terminate();
         // close all popups (a potential circular reference)
         if (!GetPopupContainer()->IsEmpty())
             GetPopupContainer()->ClosePopup(NULL);

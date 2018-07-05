@@ -46,7 +46,55 @@ template<class ...Types>
 class TEvent {
 public:
     class Sink;
+    class Source;
     class SourceImpl;
+
+    class Cleanable {
+    private:
+        TRef<Source> m_psource;
+        TRef<Sink> m_psink;
+
+    public:
+        Cleanable(const Cleanable&& a):
+            m_psource(a.m_psource),
+            m_psink(a.m_psink)
+        {
+        };
+
+        Cleanable() = default;
+        Cleanable(const Cleanable&) = delete;
+        Cleanable& operator=(const Cleanable&) = delete;
+
+        Cleanable& operator=(Cleanable&& a) {
+            m_psource = a.m_psource;
+            m_psink = a.m_psink;
+            a.m_psource = nullptr;
+            a.m_psink = nullptr;
+            return *this;
+        };
+
+        Cleanable(const TRef<Source>& psource, const TRef<Sink>& psink) :
+            m_psource(psource),
+            m_psink(psink)
+        {
+            if (m_psink) {
+                m_psource->AddSink(psink);
+            }
+        }
+
+        ~Cleanable() {
+            Cleanup();
+        }
+
+        void Cleanup() {
+            if (m_psink) {
+                m_psource->RemoveSink(m_psink);
+                m_psink = nullptr;
+                m_psource = nullptr;
+            }
+        }
+    };
+
     class Source : public IObject {
     public:
         static Source* GetNever();
@@ -58,6 +106,10 @@ public:
 
         virtual void    AddSink(Sink* psink) = 0;
         virtual void RemoveSink(Sink* psink) = 0;
+        virtual Cleanable AddSinkManaged(Sink* psink) {
+            TRef<Sink> psinkDelegate = Sink::CreateDelegate(psink);
+            return Cleanable(TRef<Source>(this), psinkDelegate);
+        };
     };
 
     class Sink : public IObject {

@@ -268,7 +268,7 @@ HRESULT CD3DDevice9::LastChanceCreateDevice(HWND hParentWindow, class CLogFile *
 	hr = m_sD3DDev9.pD3D9->CreateDevice(m_sDevSetupParams.iAdapterID,
 		D3DDEVTYPE_HAL, 
 		hParentWindow,
-		D3DCREATE_HARDWARE_VERTEXPROCESSING,
+		D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED,
 		&m_sD3DDev9.d3dPresParams,
 		&m_sD3DDev9.pD3DDevice);
 
@@ -283,7 +283,7 @@ HRESULT CD3DDevice9::LastChanceCreateDevice(HWND hParentWindow, class CLogFile *
 		hr = m_sD3DDev9.pD3D9->CreateDevice(m_sDevSetupParams.iAdapterID,
 			D3DDEVTYPE_HAL,
 			hParentWindow,
-			D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+			D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED,
 			&m_sD3DDev9.d3dPresParams,
 			&m_sD3DDev9.pD3DDevice);
 	}
@@ -378,20 +378,20 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	}
 // - end of NVidia PerfHUD specific
 
-	dwCreationFlags = D3DCREATE_PUREDEVICE | D3DCREATE_HARDWARE_VERTEXPROCESSING;
+	dwCreationFlags = D3DCREATE_PUREDEVICE | D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED;
 
 	// ATI Radeon 9600 (RV350) specific, find out why the TMeshGeo DrawTriangles are failing completley, 
 	// I gather this is (related to) the Intel 8xx issue.  --Imago 7/28/09
 	if (Identifier.VendorId == 0x1002 && Identifier.DeviceId == 0x4151 ) {
         debugf("Problematic device detected: Setting D3DCREATE_SOFTWARE_VERTEXPROCESSING");
-		dwCreationFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+		dwCreationFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED;
 		bForceSWVP = true;
 	}
 
     // SiS 661FX/M661FX/760/741/M760/M741 specific --Imago 11/30/09
 	if (Identifier.VendorId == 0x1039 && Identifier.DeviceId == 0x6330 ) {
         debugf("Problematic device detected: Setting D3DCREATE_SOFTWARE_VERTEXPROCESSING");
-		dwCreationFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+		dwCreationFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED;
 		bForceSWVP = true;
 	}
 
@@ -429,7 +429,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 		//if( hr == D3DERR_NOTAVAILABLE )
 		{
 			// No, try a non-pure device.
-			dwCreationFlags = D3DCREATE_HARDWARE_VERTEXPROCESSING;
+			dwCreationFlags = D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED;
 			hr = m_sD3DDev9.pD3D9->CreateDevice(	m_sDevSetupParams.iAdapterID,
 												DeviceType, //D3DDEVTYPE_HAL, changed for NVidia PerfHUD,
 												hParentWindow,
@@ -443,7 +443,7 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 				// Still no joy, try a software vp device.
 				//if( hr == D3DERR_NOTAVAILABLE )
 				{
-					dwCreationFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+					dwCreationFlags = D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED;
 					hr = m_sD3DDev9.pD3D9->CreateDevice(	m_sDevSetupParams.iAdapterID,
 														DeviceType, //D3DDEVTYPE_HAL, changed for NVidia PerfHUD,
 														hParentWindow,

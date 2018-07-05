@@ -1069,6 +1069,12 @@ private:
 		return m_sizeResolution;
 	}
 
+    TRef<PointValue> GetResolution() {
+        return (TRef<PointValue>)new TransformedValue<Point, WinPoint>([](WinPoint winpoint) {
+            return Point((float)winpoint.X(), (float)winpoint.Y());
+        }, GetResolutionSizeModifiable());
+    }
+
     const WinPoint GetFullscreenSize()
     {
         return m_sizeResolution->GetValue();

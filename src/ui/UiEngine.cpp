@@ -456,7 +456,7 @@ public:
         }
         catch (const std::runtime_error& e) {
             WriteLog(path + ": ERROR " + e.what());
-            return Image::GetEmpty();
+            return screenConfiguration->GetErrorImage();
         }
     }
 

@@ -187,6 +187,7 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
     <ClCompile Include="..\src\WinTrek\inventoryimage.cpp" />
     <ClCompile Include="..\src\WinTrek\leaderboardscreen.cpp" />
     <ClCompile Include="..\src\WinTrek\load.cpp" />
+    <ClCompile Include="..\src\WinTrek\LoadingScreen.cpp" />
     <ClCompile Include="..\src\WinTrek\loadout.cpp" />
     <ClCompile Include="..\src\WinTrek\logon.cpp" />
     <ClCompile Include="..\src\WinTrek\mappreview.cpp" />
@@ -238,6 +239,7 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
     <ClInclude Include="..\src\WinTrek\hudimage.h" />
     <ClInclude Include="..\src\WinTrek\indicator.h" />
     <ClInclude Include="..\src\WinTrek\load.h" />
+    <ClInclude Include="..\src\WinTrek\LoadingScreen.h" />
     <ClInclude Include="..\src\WinTrek\loadout.h" />
     <ClInclude Include="..\src\WinTrek\logon.h" />
     <ClInclude Include="..\src\WinTrek\mappreview.h" />

@@ -9,13 +9,23 @@
 #include "ui_types.h"
 
 class UiScreenConfiguration : public UiObjectContainer {
+private:
+    TRef<Image> m_pImageError;
 public:
     UiScreenConfiguration(std::map<std::string, std::shared_ptr<Exposer>> map) :
-        UiObjectContainer(map)
-    {}
+        UiObjectContainer(map),
+        m_pImageError(Image::GetEmpty())
+    {
+    }
 
     virtual std::string GetPath() = 0;
     virtual IEventSink& GetEventSink(std::string) = 0;
+    TRef<Image> GetErrorImage() {
+        return m_pImageError;
+    }
+    void SetErrorImage(TRef<Image> pimage) {
+        m_pImageError = pimage;
+    }
 
     static std::shared_ptr<UiScreenConfiguration> Create(std::string path, std::map<std::string, std::shared_ptr<Exposer>> map);
 
