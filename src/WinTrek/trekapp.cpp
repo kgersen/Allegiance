@@ -933,6 +933,9 @@ public:
 
         m_pscreenLoading = nullptr;
         m_cleanableEvaluateFrame = std::move(pengineWindow->GetEvaluateFrameEventSource()->AddSinkManaged(new CallbackValueSink<Time>([this, threadAllWork, movies](Time time) {
+            if (movies->PeekIsRunning() == false) {
+                this->GetEngineWindow()->SetRenderingEnabled(true);
+            }
 
             if (threadAllWork->PeekIsRunning() == false) {
                 //both the movie and the init is done. Stop the loading screen.

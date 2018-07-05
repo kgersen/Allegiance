@@ -154,7 +154,8 @@ EngineWindow::EngineWindow(	EngineConfigurationWrapper* pConfiguration,
 				m_bWindowStateRestored(false),
 				m_bClickBreak(true), //Imago 7/10 #37
                 m_pConfiguration(pConfiguration),
-                m_pConfigurationUpdater(new ValueList(nullptr))
+                m_pConfigurationUpdater(new ValueList(nullptr)),
+                m_bRenderingEnabled(false)
 {
     GlobalConfigureLoggers(
         m_pConfiguration->GetDebugLogToOutput()->GetValue(),
@@ -1112,6 +1113,10 @@ void EngineWindow::OnPaint(HDC hdc, const WinRect& rect)
 
 bool EngineWindow::ShouldDrawFrame()
 {
+    if (m_bRenderingEnabled == false) {
+        return false;
+    }
+
     if (m_pengine->IsFullscreen()) {
         return true;
     } else {

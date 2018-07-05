@@ -125,6 +125,7 @@ protected:
 	bool						m_bWindowStateMinimised;
 	bool						m_bWindowStateRestored;
 	bool						m_bClickBreak;
+    bool m_bRenderingEnabled;
 
     int                        m_modeIndex;
 
@@ -271,6 +272,10 @@ public:
 	Time&		   	 GetMouseActivity()  { return m_timeLastMouseMove;		 } //Imago: Added to adjust AFK status from mouse movment
     bool             GetActive()         { return m_bActive;                 }
     const TRef<IKeyboardInput>& GetKeyboardInput() { return m_pkeyboardInput; };
+
+    void SetRenderingEnabled(bool bEnabled) {
+        m_bRenderingEnabled = bEnabled;
+    }
 
     IEventSource* GetOnCloseEventSource() {
         return m_pcloseEventSource;
