@@ -303,11 +303,17 @@ void Window::SetHasSysMenu(bool bSysMenu)
 
 void Window::UpdateRect()
 {
+    if (IsIconic(m_hwnd) == TRUE) {
+        //minimized, ignore
+        return;
+    }
 	BOOL bRetVal;
     bRetVal = ::GetWindowRect(m_hwnd, &m_rect);
     ZAssert( bRetVal != FALSE );
 	bRetVal = ::GetClientRect(m_hwnd, &m_rectClient);
     ZAssert( bRetVal != FALSE );
+
+    debugf("Window::UpdateRect rect=%s rectClient=%s", (const char*)m_rect.GetString(), (const char*)m_rectClient.GetString());
 
     WinPoint pointOffset = ClientToScreen(WinPoint(0, 0));
 
