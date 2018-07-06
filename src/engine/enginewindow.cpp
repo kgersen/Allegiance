@@ -284,6 +284,8 @@ EngineWindow::EngineWindow(	EngineConfigurationWrapper* pConfiguration,
 	CVertexGenerator::Get()->Initialise( );
 
 	devLog.OutputString("CVertexGenerator::Get()->Initialise( );\n");
+
+    m_pnumberTime = new ModifiableNumber(Time::Now() - m_timeStart);
 }
 
 EngineWindow::~EngineWindow()
