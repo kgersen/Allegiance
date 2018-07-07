@@ -251,6 +251,7 @@ xcopy $(ProjectDir)..\src\Inc\steam_appid.txt $(OutDir) /s /d /y</Command>
     <ClInclude Include="..\src\WinTrek\screen.h" />
     <ClInclude Include="..\src\WinTrek\sectorvw.h" />
     <ClInclude Include="..\src\WinTrek\Slideshow.h" />
+    <ClInclude Include="..\src\WinTrek\steamhelpers.h" />
     <ClInclude Include="..\src\WinTrek\trekctrls.h" />
     <ClInclude Include="..\src\WinTrek\TrekDlgs.h" />
     <ClInclude Include="..\src\WinTrek\Treki.h" />

@@ -905,7 +905,7 @@ public:
         debugf("Finished graphics initialization, starting main game initialization");
 
         auto threadInitialization = ThreadedWork::Create([this, pengineWindow, pathStr, strCommandLine, bMovies]() {
-            m_pModdingEngine = ModdingEngine::Create();
+            m_pModdingEngine = ModdingEngine::Create(this);
             m_pCallsignHandler = CreateCallsignHandlerFromSteam(m_pGameConfiguration);
 
             m_pwindow =

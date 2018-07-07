@@ -2,7 +2,7 @@
 
 #include <inttypes.h> 
 
-// BT - STEAM
+#include "steamhelpers.h"
 
 #include "CallsignTagInfo.h"
 
@@ -148,47 +148,20 @@ ZString CallsignSquad::CleanupSquadTag(ZString tag)
     return ZString(s.c_str());
 }
 
-class OfficierCallbackClass {
-    CCallResult<OfficierCallbackClass, ClanOfficerListResponse_t> m_response;
-    bool m_bError;
-    bool m_bDone;
+class OfficierCallbackClass : public SteamCallback<ClanOfficerListResponse_t>{
     CSteamID m_idSteamClan;
 
 public:
     OfficierCallbackClass(CSteamID idSteamClan) :
         m_idSteamClan(idSteamClan),
-        m_bError(false),
-        m_bDone(false)
+        SteamCallback(SteamFriends()->RequestClanOfficerList(m_idSteamClan))
     {
     }
 
-    bool RunQuery() {
-        m_bError = false;
-        m_bDone = false;
-        SteamAPICall_t handle = SteamFriends()->RequestClanOfficerList(m_idSteamClan);
-        m_response.Set(handle, this, &OfficierCallbackClass::OnClanOfficerListResponse);
-
-        for (int i = 0; i < 30 && m_bDone == false; i++)
-        {
-            Sleep(100);
-            SteamAPI_RunCallbacks();
+    void OnSuccess(ClanOfficerListResponse_t* pResponse) {
+        if (pResponse->m_bSuccess == false) {
+            debugf("RequestClanOfficerList had an error");
         }
-
-        if (m_bDone == false) {
-            debugf("Steam officier query took too long, cancelling");
-            m_response.Cancel();
-        }
-
-        if (m_bError == true || m_bDone == false) {
-            debugf("Steam officier query had an error");
-            return false;
-        }
-        return true;
-    }
-
-    void OnClanOfficerListResponse(ClanOfficerListResponse_t *pCallback, bool bIOFailure) {
-        m_bDone = true;
-        m_bError = bIOFailure || !pCallback->m_bSuccess;
     }
 
     int GetClanOfficerCount() {
@@ -218,7 +191,7 @@ private:
     const std::shared_ptr<OfficierCallbackClass>& GetCallback() {
         if (!m_pcallback) {
             m_pcallback = std::make_shared<OfficierCallbackClass>(m_SteamClanId);
-            m_pcallback->RunQuery();
+            m_pcallback->Wait();
         }
         return m_pcallback;
     }

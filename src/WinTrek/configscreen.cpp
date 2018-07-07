@@ -119,9 +119,17 @@ public:
 
         //modding
         map["Configuration.Modding.Path"] = StringExposer::CreateStatic(m_pTrekApp->GetModdingEngine()->GetPath().c_str());
-        map["Installed mods"] = TypeExposer<TRef<ContainerList>>::Create(GetMods());
+        auto listMods = GetMods();
+        map["Installed mods"] = TypeExposer<TRef<ContainerList>>::Create(listMods);
+        
+        map["Create mod"] = TypeExposer<TRef<TEvent<ZString>::Sink>>::Create(new CallbackValueSink<ZString>([this, listMods](ZString value) {
+            auto mod = m_pTrekApp->GetModdingEngine()->CreateMod(std::string(value));
+            listMods->InsertAtEnd(GetModWrapper(mod));
+            return true;
+        }));
 
         m_pimage = pUiEngine->LoadImageFromLua(UiScreenConfiguration::Create("menuconfig/configscreen.lua", map));
+
     }
 
     std::vector<std::string> GetAvailableSquadTags() {
@@ -167,12 +175,38 @@ public:
         return new UiList<TRef<UiObjectContainer>>(list);
     }
 
+    TRef<UiObjectContainer> GetModWrapper(std::shared_ptr<Mod> mod) {
+        TRef<UiStateModifiableValue> pUploadingModState = new UiStateModifiableValue(std::make_shared<UiState>("Idle"));
+
+        bool isOwned = mod->GetModConfiguration()->GetAuthorSteamId()->GetValue() == std::to_string(SteamUser()->GetSteamID().ConvertToUint64()).c_str();
+
+        //Author id isn't known. Either it's new and we could upload. Or it's old and we just assume we have permission (steam should block it and throw an error otherwise)
+        if (mod->GetModConfiguration()->GetAuthorSteamId()->GetValue() == "") {
+            isOwned = true;
+        }
+
+        return new UiObjectContainer({
+            { "Name", StringExposer::CreateStatic(mod->GetModConfiguration()->GetName()->GetValue()) },
+            { "Identifier", StringExposer::CreateStatic(mod->GetModConfiguration()->GetSteamId()->GetValue()) },
+            { "IsOwned", BooleanExposer::CreateStatic(isOwned) },
+            { "Upload state", TypeExposer<TRef<UiStateModifiableValue>>::Create(pUploadingModState) },
+            { "Upload", TypeExposer<TRef<IEventSink>>::Create(new CallbackSink([mod, pUploadingModState]() {
+                auto statusUpload = mod->UploadToWorkshop();
+                pUploadingModState->SetValue(std::make_shared<UiState>("Uploading", UiState::InnerMapType({
+                    //add it to the object to keep the reference around
+                    { "Upload progress", TypeExposer<std::shared_ptr<ProgressState>>::Create(statusUpload) },
+
+                    { "Status", StringExposer::Create(statusUpload->GetStatusString()) },
+                    { "Done", BooleanExposer::Create(statusUpload->GetIsDone()) }
+                    })));
+            })) }
+        });
+    }
+
     TRef<ContainerList> GetMods() {
         std::vector<TRef<UiObjectContainer>> list = {};
         for (std::shared_ptr<Mod> mod : m_pTrekApp->GetModdingEngine()->GetMods()) {
-            list.push_back(new UiObjectContainer({
-                { "Name", StringExposer::CreateStatic(mod->GetName().c_str()) }
-            }));
+            list.push_back(GetModWrapper(mod));
         }
         return new ContainerList(list);
     }

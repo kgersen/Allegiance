@@ -55,6 +55,16 @@ public:
             return StringTransform::Concat(wrapString(a), wrapString(b));
         };
 
+        table["Join"] = [](const TRef<UiList<sol::object>> list) {
+            return (TRef<StringValue>)new TransformedValueNotStatic<ZString, UiList<sol::object>*>([](TRef<UiList<sol::object>> list) {
+                ZString result;
+                for (sol::object entry : list->GetList()) {
+                    result += entry.as<TRef<StringValue>>()->GetValue();
+                }
+                return result;
+            }, list);
+        };
+
         table["Slice"] = [](const TRef<StringValue>& string, const TRef<Number>& start, const TRef<Number>& length) {
             return StringTransform::Slice(string, start, length);
         };
