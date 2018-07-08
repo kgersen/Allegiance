@@ -361,7 +361,10 @@ void EngineWindow::OnClose()
     m_ptransformImageCursor = NULL;
     m_ptranslateTransform   = NULL;
 
-    m_pmodeler->Terminate();
+    //modeler is set late, so check if it exists first
+    if (m_pmodeler) {
+        m_pmodeler->Terminate();
+    }
     m_pmodeler = NULL;
 
     m_pengine->TerminateEngine();
