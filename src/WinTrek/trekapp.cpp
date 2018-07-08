@@ -869,6 +869,34 @@ public:
 
         ZSucceeded(m_pSoundEngine->EnableHardware(false));
 
+        m_pModdingEngine = ModdingEngine::Create(this);
+        {
+            std::vector<ZString> vArtPaths;
+            {
+                for (std::shared_ptr<Mod> mod : GetModdingEngine()->GetMods()) {
+                    vArtPaths.push_back(mod->GetArtPath().c_str());
+                }
+            }
+
+            //old and deprecated highres directory
+            vArtPaths.push_back(pathStr + "/Textures");
+
+            //main artwork directory
+            vArtPaths.push_back(pathStr);
+
+            // Now set the art path, performed after initialise, else Modeler isn't valid.
+            auto pFileLoader = CreateSecureFileLoader(
+                vArtPaths,
+                pathStr
+            );
+
+            debugf("Setting art path to: %s\n", (PCC)pathStr);
+            UiEngine::SetGlobalFileLoader(pFileLoader);
+            GetModeler()->SetFileLoader(pFileLoader);
+
+            GetModeler()->SetArtPath(pathStr); //some functionality relies on the artpath
+        }
+
         m_pUiEngine = UiEngine::Create(pengineWindow, this->GetEngine(), m_pSoundEngine, [this](std::string strWebsite) {
             ShellExecute(NULL, NULL, strWebsite.c_str(), NULL, NULL, SW_SHOWNORMAL);
         });
@@ -905,7 +933,6 @@ public:
         debugf("Finished graphics initialization, starting main game initialization");
 
         auto threadInitialization = ThreadedWork::Create([this, pengineWindow, pathStr, strCommandLine, bMovies]() {
-            m_pModdingEngine = ModdingEngine::Create(this);
             m_pCallsignHandler = CreateCallsignHandlerFromSteam(m_pGameConfiguration);
 
             m_pwindow =

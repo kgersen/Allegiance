@@ -2538,33 +2538,6 @@ public:
 		m_pmodeler = papp->GetModeler();
         m_pinputEngine = m_pEngineWindow->GetInputEngine();
 
-		debugf("Setting art path to: %s\n", (PCC) strArtPath);
-
-
-        std::vector<ZString> vArtPaths;
-        {
-            for (std::shared_ptr<Mod> mod : papp->GetModdingEngine()->GetMods()) {
-                vArtPaths.push_back(mod->GetArtPath().c_str());
-            }
-        }
-
-        //old and deprecated highres directory
-        vArtPaths.push_back(strArtPath + "/Textures");
-
-        //main artwork directory
-        vArtPaths.push_back(strArtPath);
-
-        // Now set the art path, performed after initialise, else Modeler isn't valid.
-        auto pFileLoader = CreateSecureFileLoader(
-            vArtPaths,
-            strArtPath
-        );
-        GetModeler()->SetFileLoader(pFileLoader);
-
-        GetModeler()->SetArtPath(strArtPath); //some functionality relies on the artpath
-
-        UiEngine::SetGlobalFileLoader(pFileLoader);
-
         if (g_bLuaDebug) {
             UiEngine::m_stringLogPath = (std::string)"lua.log";
         }
