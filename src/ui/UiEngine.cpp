@@ -337,27 +337,29 @@ public:
         TRef<IEventSource> m_pFocusChangedSource;
         bool m_bFocus;
         TRef<IKeyboardInput> m_pPreviousFocus;
+        TRef<IKeyboardInput> m_pKeyboardDelegate;
 
     public:
         ContextImage(std::unique_ptr<LuaScriptContext> pContext, Image* pImage) :
             WrapImage(pImage),
             m_pContext(std::move(pContext)),
             m_bFocus(false),
-            m_pPreviousFocus(nullptr)
+            m_pPreviousFocus(nullptr),
+            m_pKeyboardDelegate(IKeyboardInput::CreateDelegate(this))
         {
             m_pFocusChangedSource = new ValueChangeSource(m_pContext->HasKeyboardFocus());
             m_pFocusChangedSource->AddSink(new CallbackSink([this]() {
                 auto window = m_pContext->GetWindow();
                 if (m_pContext->HasKeyboardFocus()->GetValue()) {
-                    if (window->GetFocus() != this) {
+                    if (window->GetFocus() != m_pKeyboardDelegate) {
                         m_pPreviousFocus = window->GetFocus();
-                        window->SetFocus(this);
+                        window->SetFocus(m_pKeyboardDelegate);
                     }
                 }
                 else {
-                    if (window->GetFocus() == this) {
+                    if (window->GetFocus() == m_pKeyboardDelegate) {
                         if (!m_pPreviousFocus) {
-                            window->RemoveFocus(this);
+                            window->RemoveFocus(m_pKeyboardDelegate);
                         }
                         else {
                             window->SetFocus(m_pPreviousFocus);
@@ -372,6 +374,7 @@ public:
         ~ContextImage() {
             //control order of deallocations, first remove all references to sol before clearing the context
             SetImage(Image::GetEmpty());
+            SetFocusState(false);
             m_pContext = nullptr;
         }
 
