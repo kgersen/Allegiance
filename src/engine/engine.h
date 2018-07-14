@@ -67,7 +67,6 @@ public:
     virtual bool            IsFullscreen()                                 = 0;
     virtual ZString         GetDeviceName()                                = 0;
 	virtual const TRef<ModifiableWinPointValue> GetResolutionSizeModifiable()		   = 0;
-    virtual TRef<PointValue> GetResolution() = 0;
     virtual const WinPoint GetFullscreenSize()							   = 0;
     virtual float           GetGammaLevel()                                = 0;
 

@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "ui.h"
 #include "items.hpp"
 
 class FileNamespace {

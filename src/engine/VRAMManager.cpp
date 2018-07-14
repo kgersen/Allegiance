@@ -320,8 +320,6 @@ HRESULT CVRAMManager::CreateTexture(TEXHANDLE	texHandle,
 			&pTexture->pTexture,
 			NULL);  //Fix memory leak -Imago 8/2/09
 
-        HRESULT first_hr = hr;
-
 		// BT - 10/17 - Check all available texture formats to see if we can find a match. On some cards, the target texture format cannot be 
 		// created becuase it's not supported. Let's find one that is.
 		for (int i = D3DFMT_R8G8B8; i < D3DFMT_A16B16G16R16 && FAILED(hr); i++)
@@ -339,10 +337,6 @@ HRESULT CVRAMManager::CreateTexture(TEXHANDLE	texHandle,
 		// BT - 10/17 - Tracking down the CreateTexture crashes.
 		if (FAILED(hr))
 		{
-            debugf(
-                "Failed to create a texture. name=%s, size=(%d, %d), pool=%d, return=%d, last_try_return=%d", 
-                (const char*)szTextureName, (int)dwWidth, (int)dwHeight, (int)texPool, (int)first_hr, (int)hr
-            );
 			(*(int*)0) = 0; // Force exception here.
 		}
 
@@ -439,10 +433,6 @@ HRESULT CVRAMManager::CreateTextureD3DX(TEXHANDLE				texHandle,
 		NULL,
 		NULL,
 		&pTexture->pTexture);
-
-    if (hr != D3D_OK) {
-        debugf("Creating texture from file failed: 0x%x", hr);
-    }
     ZAssert(hr == D3D_OK);
 
 	D3DSURFACE_DESC surfDesc;

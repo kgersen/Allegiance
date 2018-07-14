@@ -25,17 +25,17 @@ public:
 
         if (g_bQuickstart || true) // REVIEW
 			// mdvalley: Needs a class name and pointer.
-			AddEventTarget(&SplashScreen::OnTimeout, GetEngineWindow(), 0.01f);
+			AddEventTarget(&SplashScreen::OnTimeout, GetWindow(), 0.01f);
         else
-			AddEventTarget(&SplashScreen::OnTimeout, GetEngineWindow(), 6.85f);
+			AddEventTarget(&SplashScreen::OnTimeout, GetWindow(), 6.85f);
 
         m_keyboardDelegate = IKeyboardInput::CreateDelegate(this);
-        GetEngineWindow()->AddKeyboardInputFilter(m_keyboardDelegate);
+        GetWindow()->AddKeyboardInputFilter(m_keyboardDelegate);
     }
 
     ~SplashScreen()
     {
-        GetEngineWindow()->RemoveKeyboardInputFilter(m_keyboardDelegate);
+        GetWindow()->RemoveKeyboardInputFilter(m_keyboardDelegate);
     }
 
     bool OnTimeout()

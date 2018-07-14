@@ -1,8 +1,6 @@
 #ifndef _message_H_
 #define _message_H_
 
-#include <functional>
-
 #include "tlist.h"
 #include "tref.h"
 #include "zstring.h"
@@ -12,6 +10,22 @@
 // Event
 //
 /////////////////////////////////////////////////////////////////////////////
+
+class IEventSink;
+class IEventSource : public IObject {
+public:
+    static IEventSource* GetNever();
+
+    virtual void AddSink(IEventSink* psink)    = 0;
+    virtual void RemoveSink(IEventSink* psink) = 0;
+};
+
+class IEventSink : public IObject {
+public:
+    static TRef<IEventSink> CreateDelegate(IEventSink* psink);
+
+    virtual bool OnEvent(IEventSource* pevent) = 0;
+};
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -46,59 +60,9 @@ template<class ...Types>
 class TEvent {
 public:
     class Sink;
-    class Source;
     class SourceImpl;
-
-    class Cleanable {
-    private:
-        TRef<Source> m_psource;
-        TRef<Sink> m_psink;
-
-    public:
-        Cleanable(const Cleanable&& a):
-            m_psource(a.m_psource),
-            m_psink(a.m_psink)
-        {
-        };
-
-        Cleanable() = default;
-        Cleanable(const Cleanable&) = delete;
-        Cleanable& operator=(const Cleanable&) = delete;
-
-        Cleanable& operator=(Cleanable&& a) {
-            m_psource = a.m_psource;
-            m_psink = a.m_psink;
-            a.m_psource = nullptr;
-            a.m_psink = nullptr;
-            return *this;
-        };
-
-        Cleanable(const TRef<Source>& psource, const TRef<Sink>& psink) :
-            m_psource(psource),
-            m_psink(psink)
-        {
-            if (m_psink) {
-                m_psource->AddSink(psink);
-            }
-        }
-
-        ~Cleanable() {
-            Cleanup();
-        }
-
-        void Cleanup() {
-            if (m_psink) {
-                m_psource->RemoveSink(m_psink);
-                m_psink = nullptr;
-                m_psource = nullptr;
-            }
-        }
-    };
-
     class Source : public IObject {
     public:
-        static Source* GetNever();
-
         static TRef<SourceImpl> Create()
         {
             return new SourceImpl();
@@ -106,10 +70,6 @@ public:
 
         virtual void    AddSink(Sink* psink) = 0;
         virtual void RemoveSink(Sink* psink) = 0;
-        virtual Cleanable AddSinkManaged(Sink* psink) {
-            TRef<Sink> psinkDelegate = Sink::CreateDelegate(psink);
-            return Cleanable(TRef<Source>(this), psinkDelegate);
-        };
     };
 
     class Sink : public IObject {
@@ -169,11 +129,6 @@ public:
     };
 };
 
-typedef TEvent<>::Source IEventSource;
-typedef TEvent<>::Sink IEventSink;
-
-//class IEventSource : public TEvent<>::Source {};
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // StringEvents
@@ -191,7 +146,7 @@ typedef StringEvent::SourceImpl StringEventSourceImpl;
 //
 /////////////////////////////////////////////////////////////////////////////
 
-class EventSourceImpl : public TEvent<>::Source {
+class EventSourceImpl : public IEventSource {
 private:
     TList<TRef<IEventSink> > m_listSinks;
 
@@ -214,7 +169,7 @@ typedef TEvent<int>::SourceImpl IntegerEventSourceImpl;
 */
 
 class IIntegerEventSink;
-class IIntegerEventSource : public TEvent<>::Source {
+class IIntegerEventSource : public IEventSource {
 public:
     virtual void AddSink(IIntegerEventSink* psink)    = 0;
     virtual void RemoveSink(IIntegerEventSink* psink) = 0;
@@ -253,7 +208,7 @@ public:
 //
 /////////////////////////////////////////////////////////////////////////////
 
-class ITimerEventSource : public TEvent<>::Source {
+class ITimerEventSource : public IEventSource {
 public:
     virtual void AddSink(IEventSink* psink, float when) = 0;
     virtual void RemoveSink(IEventSink* psink)          = 0;
@@ -385,36 +340,6 @@ public:
     void AddEventTarget(PFNOnEventVoidMember pfn, ITimerEventSource* psource, float when)
     {
         m_lstTargets.PushEnd(new EventTarget((DerivedClass*)this, pfn, psource, when));
-    }
-};
-
-class CallbackSink : public IEventSink {
-private:
-    std::function<void()> m_funcCallback;
-
-public:
-    CallbackSink(std::function<void()> funcCallback) :
-        m_funcCallback(funcCallback)
-    {}
-
-    bool OnEvent(IEventSource* pevent) {
-        m_funcCallback();
-        return true;
-    }
-};
-
-template <class ...Types>
-class CallbackValueSink : public TEvent<Types...>::Sink {
-private:
-    std::function<bool(Types...)> m_funcCallback;
-
-public:
-    CallbackValueSink(std::function<bool(Types...)> funcCallback) :
-        m_funcCallback(funcCallback)
-    {}
-
-    bool OnEvent(typename TEvent<Types...>::Source* pevent, Types ... values) override {
-        return m_funcCallback(values...);
     }
 };
 

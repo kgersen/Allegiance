@@ -8,7 +8,8 @@
 #include "engine.h"
 #include "inputengine.h"
 #include "menu.h"
-#include "VideoSettingsDX9.h"
+
+#include "Configuration.h"
 
 class Context;
 class EngineApp;
@@ -87,17 +88,19 @@ protected:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    TRef<EngineConfigurationWrapper> m_pConfiguration;
-    TRef<ValueList> m_pConfigurationUpdater;
+    TRef<UpdatingConfiguration> m_pConfiguration;
 
     TRef<Engine>               m_pengine;
     TRef<Modeler>              m_pmodeler;
     TRef<InputEngine>          m_pinputEngine;
     TRef<ButtonEvent::Sink>    m_pbuttonEventSink;
+    TRef<MouseInputStream>     m_pmouse;
     TRef<ModifiablePointValue> m_ppointMouse;
+	EngineApp *					m_pEngineApp;
 
     TRef<Surface>              m_psurface;
     TRef<ICaption>             m_pcaption;
+    WinRect                    m_rectWindowed;
 
     TRef<IKeyboardInput>       m_pkeyboardInput;
 
@@ -105,7 +108,8 @@ protected:
     TRef<WrapImage>            m_pwrapImage;
     TRef<TransformImage>       m_ptransformImageCursor;
     TRef<TranslateTransform2>  m_ptranslateTransform;
-    TRef<WrapImage>            m_pimageCursor;
+    TRef<Image>                m_pimageCursor;
+    TRef<IPopupContainer>      m_ppopupContainer;
 
     WinPoint                   m_offsetWindowed;
 
@@ -125,7 +129,6 @@ protected:
 	bool						m_bWindowStateMinimised;
 	bool						m_bWindowStateRestored;
 	bool						m_bClickBreak;
-    bool m_bRenderingEnabled;
 
     int                        m_modeIndex;
 
@@ -146,10 +149,6 @@ protected:
     //
 
     TRef<ButtonEvent::Sink>    m_peventSink;
-
-    TRef<EventSourceImpl> m_pcloseEventSource;
-    TRef<TEvent<Time>::SourceImpl> m_pevaluateFrameEventSource;
-    TRef<TEvent<bool>::SourceImpl> m_pactivateEventSource;
 
     //
     // menu
@@ -232,7 +231,8 @@ protected:
 
 public:
     EngineWindow(
-        EngineConfigurationWrapper* pConfiguration,
+              EngineApp*   papp,
+        UpdatingConfiguration* pConfiguration,
         const ZString&     strCommandLine,
         const ZString&     strTitle         = ZString(),
               bool         bStartFullscreen = false,
@@ -255,10 +255,7 @@ public:
 
 	// Added so that we could reorganise the device creation order.
 	void			InitialiseTime();
-
-    // These need to be set here before this object is fully functional
-    void SetEngine(Engine* pengine);
-    void SetModeler(Modeler* modeler);
+	void			PostWindowCreationInit();
 
     Number*          GetTime()           { return m_pnumberTime;             }
     Time             GetTimeStart()      { return m_timeStart;               }
@@ -266,28 +263,12 @@ public:
     Modeler*         GetModeler()        { return m_pmodeler;                }
     bool             GetFullscreen()     { return m_pengine->IsFullscreen(); }
     bool             GetShowFPS()        { return m_bFPS;                    }
+    IPopupContainer* GetPopupContainer() { return m_ppopupContainer;         }
     InputEngine*     GetInputEngine()    { return m_pinputEngine;            }
     const Point&     GetMousePosition()  { return m_ppointMouse->GetValue(); }
     ModifiablePointValue* GetMousePositionModifiable() { return m_ppointMouse; }
 	Time&		   	 GetMouseActivity()  { return m_timeLastMouseMove;		 } //Imago: Added to adjust AFK status from mouse movment
     bool             GetActive()         { return m_bActive;                 }
-    const TRef<IKeyboardInput>& GetKeyboardInput() { return m_pkeyboardInput; };
-
-    void SetRenderingEnabled(bool bEnabled) {
-        m_bRenderingEnabled = bEnabled;
-    }
-
-    IEventSource* GetOnCloseEventSource() {
-        return m_pcloseEventSource;
-    }
-
-    TEvent<Time>::Source* GetEvaluateFrameEventSource() {
-        return m_pevaluateFrameEventSource;
-    }
-
-    TEvent<bool>::Source* GetActivateEventSource() {
-        return m_pactivateEventSource;
-    }
 
     TRef<IPopup> GetEngineMenu(IEngineFont* pfont);
 
@@ -298,12 +279,11 @@ public:
     void SetSizeable(bool bSizeable);
     void SetFullscreenSize(const Vector& point);
     void ChangeFullscreenSize(bool bLarger);
+    void SetMouseEnabled(bool bEnable);
 
     WinPoint GetSize();
     WinPoint GetWindowedSize();
     WinPoint GetFullscreenSize();
-
-    TRef<PointValue> GetResolution();
 
     void OutputPerformanceCounters();
     void SetImage(Image* pimage);
@@ -328,11 +308,12 @@ public:
 
     virtual ZString GetFPSString(float dtime, float mspf, Context* pcontext);
 
+    virtual void EvaluateFrame(Time time) {}
     virtual void RenderSizeChanged(bool bSmaller) {
         int x = (int)m_pengine->GetResolutionSizeModifiable()->GetValue().X();
         int y = (int)m_pengine->GetResolutionSizeModifiable()->GetValue().Y();
-        m_pConfiguration->GetGraphicsResolutionX()->SetValue((float)x);
-        m_pConfiguration->GetGraphicsResolutionY()->SetValue((float)y);
+        m_pConfiguration->GetInt("Graphics.ResolutionX", x)->SetValue((float)x);
+        m_pConfiguration->GetInt("Graphics.ResolutionY", y)->SetValue((float)y);
     }
 
     //

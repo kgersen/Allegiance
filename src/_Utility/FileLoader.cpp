@@ -10,7 +10,7 @@
 void ExitWithError(const char* message) {
     PostMessageA(GetActiveWindow(), WM_SYSCOMMAND, SC_MINIMIZE, 0);
 
-    MessageBoxA(GetDesktopWindow(), message, "Allegiance: Fatal loader error", MB_ICONERROR);
+    MessageBoxA(GetDesktopWindow(), message, "Allegiance: Fatal modeler error", MB_ICONERROR);
 
     exit(0);
 }
@@ -18,14 +18,6 @@ void ExitWithError(const char* message) {
 class FileLoader : public IFileLoader {
 private:
     std::vector<ZString> m_vPaths;
-
-    ZString GetSearchedPathsDebugString(const ZString& path) {
-        ZString strJoinedPaths = "";
-        for (auto entry : m_vPaths) {
-            strJoinedPaths = strJoinedPaths + entry + "/" + path + "\n";
-        }
-        return strJoinedPaths;
-    }
 public:
 
     FileLoader(const std::vector<ZString>& vPaths) :
@@ -54,7 +46,7 @@ public:
             }
         }
 
-        ExitWithError("Artwork file could not be opened. Looked at locations:\n" + GetSearchedPathsDebugString(path));
+        ExitWithError("Artwork file could not be opened: " + path + ".");
         return "";
     }
 
@@ -68,7 +60,7 @@ public:
             }
         }
 
-        ExitWithError("Artwork file could not be opened. Looked at locations:\n" + GetSearchedPathsDebugString(path));
+        ExitWithError("Artwork file could not be opened: " + path + ".");
         return nullptr;
     }
 };

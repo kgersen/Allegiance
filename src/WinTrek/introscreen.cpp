@@ -5,7 +5,7 @@
 
 #include "CreateGameDialog.h"
 
-#include "UiEngine.h"
+#include "ui.h"
 #include "downloader.h"
 
 extern bool CheckNetworkDevices(ZString& strDriverURL);
@@ -78,37 +78,29 @@ public:
     LoggedInState(IEventSink* sinkLogout, IEventSink* sinkCreateGame) :
         UiState("Logged in", {
             { "Callsign", TypeExposer<std::string>::Create(std::string(trekClient.GetNameLogonZoneServer())) },
-            { "Join mission state", TypeExposer<TRef<UiStateModifiableValue>>::Create(new UiStateModifiableValue(std::make_shared<UiState>("Idle", UiState::InnerMapType({
-                { "Has error", TypeExposer<TRef<UiStateValue>>::Create(new UiStateValue(std::make_shared<UiState>("No"))) }
-            })))) },
             { "Mission list", TypeExposer<TRef<ContainerList>>::Create(new ContainerList({})) },
             { "Server list", TypeExposer<TRef<ContainerList>>::Create(new ContainerList({})) },
             { "Core list", TypeExposer<TRef<ContainerList>>::Create(new ContainerList({})) },
             { "Logout", TypeExposer<TRef<IEventSink>>::Create(sinkLogout) },
             { "Create mission dialog", TypeExposer<TRef<IEventSink>>::Create(sinkCreateGame) },
-            { "Create mission", TypeExposer<std::shared_ptr<SolEventSinkInitializer>>::Create(SolEventSinkInitializer::Create([this](std::vector<sol::object> obj) {
-                TRef<StringValue> pserver = obj.at(0).as<TRef<StringValue>>();
-                TRef<StringValue> pcore = obj.at(1).as<TRef<StringValue>>();
-                TRef<StringValue> pmission = obj.at(2).as<TRef<StringValue>>();
+            { "Create mission", TypeExposer<TRef<TEvent<ZString, ZString, ZString>::Sink>>::Create(new CallbackValueSink<ZString, ZString, ZString>([this](ZString serverName, ZString coreName, ZString missionName) {
+                auto server = this->GetServer(serverName);
+                auto core = this->GetCore(coreName);
 
-                return [this, pserver, pcore, pmission]() {
-                    auto server = this->GetServer(pserver->GetValue());
-                    auto core = this->GetCore(pcore->GetValue());
+                ServerCoreInfo serverinfo = server->Get<ServerCoreInfo>("ServerCoreInfo");
+                StaticCoreInfo coreinfo = core->Get<StaticCoreInfo>("StaticCoreInfo");
 
-                    ServerCoreInfo serverinfo = server->Get<ServerCoreInfo>("ServerCoreInfo");
-                    StaticCoreInfo coreinfo = core->Get<StaticCoreInfo>("StaticCoreInfo");
-
-                    trekClient.CreateMissionReq(
-                        serverinfo.szName,
-                        serverinfo.szRemoteAddress,
-                        coreinfo.cbIGCFile,
-                        pmission->GetValue()
-                    );
-                };
+                trekClient.CreateMissionReq(
+                    serverinfo.szName,
+                    serverinfo.szRemoteAddress,
+                    coreinfo.cbIGCFile,
+                    missionName
+                );
+                return true;
             })) },
             { "Server has core", TypeExposer<std::function<TRef<Boolean>(const TRef<StringValue>&, const TRef<StringValue>&)>>::Create([this](const TRef<StringValue>& server_name, const TRef<StringValue>& core_name) {
 
-                return new TransformedValue<bool, ZString, ZString>([this](ZString server_name, ZString core_name) {
+                return new TransformedValue2<bool, ZString, ZString>([this](ZString server_name, ZString core_name) {
                     auto server = this->FindServer(server_name);
                     auto core = this->FindCore(core_name);
 
@@ -124,10 +116,6 @@ public:
             }) }
         })
     {}
-
-    void SetJoinMissionState(std::string name, const UiState::InnerMapType& map = {}) {
-        Get<TRef<UiStateModifiableValue>>("Join mission state")->SetValue(std::make_shared<UiState>(name, map));
-    }
 
     TRef<UiObjectContainer> FindCore(ZString coreName) {
         auto listCores = Get<TRef<UiList<TRef<UiObjectContainer>>>>("Core list")->GetList();
@@ -213,8 +201,8 @@ public:
         while (pitem) {
             MissionInfo* game = (MissionInfo*)pitem;
 
-            Time timeApplicationStart = GetEngineWindow()->GetTimeStart();
-            TRef<Number> pTimeSinceApplicationStart = GetEngineWindow()->GetTime();
+            Time timeApplicationStart = GetWindow()->GetTimeStart();
+            TRef<Number> pTimeSinceApplicationStart = GetWindow()->GetTime();
 
             TRef<Number> pTimeMisisonInProgress;
             if (game->InProgress()) {
@@ -230,9 +218,8 @@ public:
             }
 
             current_modifiablelist->Insert(i, new UiObjectContainer({
-                { "Join", TypeExposer<TRef<TEvent<ZString>::Sink>>::Create(new CallbackValueSink<ZString>([this, game](ZString strPassword) {
-                    SetJoinMissionState("Joining");
-                    trekClient.JoinMission(game, strPassword);
+                { "Join", TypeExposer<TRef<IEventSink>>::Create(new CallbackSink([game]() {
+                    trekClient.JoinMission(game, "");
                     return false;
                 })) },
                 { "Name", StringExposer::CreateStatic(game->Name()) },
@@ -313,7 +300,6 @@ public:
 
 class LoginHelper : public IClientEventSink {
 private:
-    TRef<TrekApp> m_pTrekApp;
     TRef<UiStateModifiableValue> m_state;
     TRef<IClientEventSink>      m_pClientEventSink;
     TRef<IEventSink>            m_pServerlistChangedSink;
@@ -328,8 +314,7 @@ private:
     static const int STEP_LOBBY_MISSIONLIST = 4;
 
 public:
-    LoginHelper(TrekApp* pTrekApp) :
-        m_pTrekApp(pTrekApp),
+    LoginHelper() :
         m_state(new UiStateModifiableValue(std::make_shared<LoggedOutState>(new UiStateValue(std::make_shared<NoErrorState>()), GetLoginSink())))
     {
 
@@ -418,7 +403,22 @@ public:
         m_state->SetValue(std::make_shared<LoggingInState>());
         m_state->GetValue()->as<LoggingInState>()->SetStep(STEP_CONFIG_DOWNLOAD, "Downloading configuration file");
 
-        ZString characterName = m_pTrekApp->GetCallsignHandler()->GetCleanedFullCallsign()->GetValue();
+        ZString name = trekClient.GetSavedCharacterName();
+
+        // BT - Steam - User is logged into steam, and has a steam profile name
+        // The steam reviewer was somehow launching the game with steam authorization but no persona name. If 
+        // there is an player name, then the server rejects the user as a hacker with a DPlay error. 
+        bool isUserLoggedIntoSteamWithValidPlayerName = SteamUser() != nullptr && strlen(name) > 0;
+
+        if (isUserLoggedIntoSteamWithValidPlayerName == false)
+        {
+            SetLoginError("Invalid user supplied by Steam");
+            return;
+        }
+
+        // BT - STEAM - Add players callsign and token.
+        CallsignTagInfo callSignTagInfo;
+        ZString characterName = callSignTagInfo.Render(name);
 
         std::string configPath = GetConfiguration()->GetStringValue(
             "Online.ConfigFile", 
@@ -535,62 +535,6 @@ public:
         m_state->GetValue()->as<LoggedInState>()->SetServerList(cServers, pservers);
     };
 
-    ZString GetJoinFailureMessage(DelPositionReqReason reason) {
-        switch (reason) {
-        case DPR_BadPassword:
-            return "You supplied an incorrect password";
-        case DPR_NoMission:
-            return "The mission you were trying to join has ended.";
-        case DPR_LobbyLocked:
-            return "The lobby for this mission is locked.";
-        case DPR_InvalidRank:
-            return "You are the wrong rank for this mission.";
-        case DPR_OutOfLives:
-            return "You have run out of lives in this mission.";
-        case DPR_Banned:
-            return "You have been removed (i.e. booted) from this game by the commander(s).";
-        case DPR_GameFull:
-            return "This server has reached its maximum number of players.";
-        case DPR_PrivateGame:
-            return "The game you tried to join is private.  You do not have access to this game.";
-        case DPR_DuplicateLogin:
-            return "Someone else is already using that name in this game.";
-        case DPR_ServerPaused:
-            return "The server for this game is shutting down and is not accepting new users.";
-        default:
-            return "You have not been accepted into the game.";
-        }
-    }
-
-    void OnDelRequest(MissionInfo* pMissionInfo, SideID sideID, PlayerInfo* pPlayerInfo, DelPositionReqReason reason) override {
-        // We have a connection to the server, but we are not allowed to join or are removed.
-        debugf("OnDelRequest received");
-
-        if (pPlayerInfo != trekClient.MyPlayerInfo()) {
-            debugf("OnDelRequest received: Not for this user");
-            return;
-        }
-
-        if (m_state->GetValue()->GetName() != "Logged in") {
-            debugf("OnDelRequest received: Not logged in to the lobby");
-            return;
-        }
-
-        ZString messsage = GetJoinFailureMessage(reason);
-        m_state->GetValue()->as<LoggedInState>()->SetJoinMissionState("Failed", UiState::InnerMapType({
-            { "Has error", TypeExposer<TRef<UiStateValue>>::Create(new UiStateValue(std::make_shared<UiState>("Yes", UiState::InnerMapType({
-                { "Reason", TypeExposer<std::string>::Create(std::string(messsage)) },
-                { "Reason is incorrect password", BooleanExposer::CreateStatic(reason == DPR_BadPassword) },
-                { "Retry", TypeExposer<TRef<TEvent<ZString>::Sink>>::Create(new CallbackValueSink<ZString>([pMissionInfo](ZString strPassword) {
-                    trekClient.JoinMission(pMissionInfo, strPassword);
-                    return true;
-                }))}
-            })))) }
-        }));
-
-        trekClient.Disconnect();
-    }
-
     TRef<IEventSink> GetShowNewGamePopupSink() {
         return new CallbackSink([this]() {
             if (!GetWindow()->GetPopupContainer()->IsEmpty())
@@ -618,8 +562,6 @@ class IntroScreen :
     public PasswordDialogSink
 {
 private:
-    TRef<TrekApp> m_pTrekApp;
-
     bool                m_bUseOldUi;
 
     TRef<Modeler>       m_pmodeler;
@@ -718,7 +660,7 @@ private:
         virtual void OnClose()
         {
             if (m_pkeyboardInputOldFocus)
-                GetEngineWindow()->SetFocus(m_pkeyboardInputOldFocus);
+                GetWindow()->SetFocus(m_pkeyboardInputOldFocus);
 
             m_pkeyboardInputOldFocus = NULL;
 
@@ -729,7 +671,7 @@ private:
         {
             // initialize the check boxes
             
-            m_pkeyboardInputOldFocus = GetEngineWindow()->GetFocus();
+            m_pkeyboardInputOldFocus = GetWindow()->GetFocus();
             
             IPopup::SetContainer(pcontainer);
         }
@@ -877,7 +819,7 @@ private:
 
             m_pserverSearching = new LANServerInfo(GUID_NULL, "Searching...", 0, 0);
 
-            AddEventTarget(&IntroScreen::FindServerPopup::PollForServers, GetEngineWindow(), 1.0f);
+            AddEventTarget(&IntroScreen::FindServerPopup::PollForServers, GetWindow(), 1.0f);
         }
 
         ~FindServerPopup()
@@ -1160,8 +1102,7 @@ public:
         return m_pimage;
     }
 
-    IntroScreen(TrekApp* pTrekApp, Modeler* pmodeler, UiEngine& uiEngine, bool bUseOldUi) :
-        m_pTrekApp(pTrekApp),
+    IntroScreen(Modeler* pmodeler, UiEngine& uiEngine, bool bUseOldUi) :
         m_pmodeler(pmodeler),
         m_uiEngine(uiEngine),
         m_bUseOldUi(bUseOldUi)
@@ -1217,15 +1158,15 @@ public:
 
             std::map<std::string, std::shared_ptr<Exposer>> map;
 
-            map["time"] = NumberExposer::Create(GetEngineWindow()->GetTime());
-            map["callsign"] = StringExposer::Create(m_pTrekApp->GetCallsignHandler()->GetCleanedFullCallsign());
+            map["time"] = NumberExposer::Create(GetWindow()->GetTime());
+            map["callsign"] = StringExposer::CreateStatic(trekClient.GetSavedCharacterName());
 
             /*TRef<UiStateModifiableValue> login_state = new UiStateModifiableValue(UiState("Logged out", UiObjectContainer({
                 {"event.login", (TRef<IEventSink>)new CallbackSink([]() {
                     //auto screen = CreateZoneClubScreen();
                 })}
             })));*/
-            m_pLoginHelper = new LoginHelper(pTrekApp);
+            m_pLoginHelper = new LoginHelper();
             map["Login state"] = TypeExposer<TRef<UiStateValue>>::Create(m_pLoginHelper->GetState());
 
             m_pimage = m_uiEngine.LoadImageFromLua(UiScreenConfiguration::Create("menuintroscreen/introscreen.lua", listeners, map));
@@ -1343,7 +1284,7 @@ public:
         trekClient.Disconnect();
         trekClient.DisconnectLobby();
         if (g_bQuickstart || g_bReloaded)
-            AddEventTarget(&IntroScreen::OnQuickstart, GetEngineWindow(), 0.01f);
+            AddEventTarget(&IntroScreen::OnQuickstart, GetWindow(), 0.01f);
 
         // we only do this once per execution, and only if training is installed
         static  bool    bHaveVisited = false;
@@ -1464,7 +1405,7 @@ public:
 
         m_pwrapGeo  = new WrapGeo(Geo::GetEmpty());
 		m_pwrapImageGeo = new WrapImage(Image::GetEmpty());
-		m_ptime = GetEngineWindow()->GetTime();
+		m_ptime = GetWindow()->GetTime();
         GeoImage* pgeo =
 			new GeoImage(                
                     new TransformGeo(
@@ -1523,7 +1464,7 @@ public:
         //
 
         TRef<IPopup> plogonPopup = CreateLogonPopup(m_pmodeler, this, LogonLAN, 
-            "Enter a call sign to use for this game.", m_pTrekApp->GetCallsignHandler()->GetCleanedFullCallsign()->GetValue(), "", false);
+            "Enter a call sign to use for this game.", trekClient.GetSavedCharacterName(), "", false);
         GetWindow()->GetPopupContainer()->OpenPopup(plogonPopup, false);
 
         return true;
@@ -1625,6 +1566,8 @@ public:
 
     void OnLogon(const ZString& strName, const ZString& strPassword, BOOL fRememberPW)
     {
+        // remember the character name for next time
+        trekClient.SaveCharacterName(strName);
         m_strCharacterName = strName;
         m_strPassword = "";
 
@@ -1634,7 +1577,7 @@ public:
         GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
 
         // pause to let the "connecting..." box draw itself
-        AddEventTarget(&IntroScreen::OnTryLogon, GetEngineWindow(), 0.1f);
+        AddEventTarget(&IntroScreen::OnTryLogon, GetWindow(), 0.1f);
     }
 
     bool OnTryLogon()
@@ -1667,7 +1610,7 @@ public:
         {
             // pop up the call sign/login dialog
             TRef<IPopup> plogonPopup = CreateLogonPopup(m_pmodeler, this, LogonLAN, 
-                szReason, m_pTrekApp->GetCallsignHandler()->GetCleanedFullCallsign()->GetValue(), "", false);
+                szReason, trekClient.GetSavedCharacterName(), "", false);
             GetWindow()->GetPopupContainer()->OpenPopup(plogonPopup, false);
         }
         else
@@ -1776,7 +1719,7 @@ public:
         GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
 
         // pause to let the "connecting..." box draw itself
-        AddEventTarget(&IntroScreen::OnTryLogon, GetEngineWindow(), 0.1f);
+        AddEventTarget(&IntroScreen::OnTryLogon, GetWindow(), 0.1f);
     }
 
     void OnAbort()
@@ -1786,7 +1729,7 @@ public:
 
     bool OnButtonExit()
     {
-        GetEngineWindow()->StartClose();
+        GetWindow()->StartClose();
 
         return true;
     }
@@ -1845,7 +1788,7 @@ public:
 		// BUILD_DX9
 
         TRef<INameSpace> pnsCredits = GetModeler()->GetNameSpace("creditspane");
-        m_pcreditsPopup = new CreditsPopup(pnsCredits, this, GetEngineWindow()->GetTime());
+        m_pcreditsPopup = new CreditsPopup(pnsCredits, this, GetWindow()->GetTime());
         GetWindow()->GetPopupContainer()->OpenPopup(m_pcreditsPopup, false);
         return true;
     }
@@ -1955,9 +1898,9 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-TRef<Screen> CreateIntroScreen(TrekApp* pTrekApp, Modeler* pmodeler, UiEngine& uiEngine, bool bUseOldUi)
+TRef<Screen> CreateIntroScreen(Modeler* pmodeler, UiEngine& uiEngine, bool bUseOldUi)
 {
-    return new IntroScreen(pTrekApp, pmodeler, uiEngine, bUseOldUi);
+    return new IntroScreen(pmodeler, uiEngine, bUseOldUi);
 }
 
 

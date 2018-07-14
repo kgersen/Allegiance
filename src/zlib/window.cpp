@@ -303,17 +303,11 @@ void Window::SetHasSysMenu(bool bSysMenu)
 
 void Window::UpdateRect()
 {
-    if (IsIconic(m_hwnd) == TRUE) {
-        //minimized, ignore
-        return;
-    }
 	BOOL bRetVal;
     bRetVal = ::GetWindowRect(m_hwnd, &m_rect);
     ZAssert( bRetVal != FALSE );
 	bRetVal = ::GetClientRect(m_hwnd, &m_rectClient);
     ZAssert( bRetVal != FALSE );
-
-    debugf("Window::UpdateRect rect=%s rectClient=%s", (const char*)m_rect.GetString(), (const char*)m_rectClient.GetString());
 
     WinPoint pointOffset = ClientToScreen(WinPoint(0, 0));
 
@@ -338,13 +332,11 @@ void Window::RectChanged()
 
 void Window::SetRect(const WinRect& rect)
 {
-    debugf("Window::SetRect rect=%s", (const char*)rect.GetString());
     MoveWindow(m_hwnd, rect.XMin(), rect.YMin(), rect.XSize(), rect.YSize(), true);
 }
 
 void Window::SetClientRect(const WinRect& rectClient)
 {
-    debugf("Window::SetClientRect rect=%s", (const char*) rectClient.GetString());
     WinRect rect = rectClient;
     AdjustWindowRect(&rect, m_style.GetWord(), m_hmenu != nullptr);
     SetRect(rect);
@@ -352,19 +344,22 @@ void Window::SetClientRect(const WinRect& rectClient)
 
 void Window::SetPosition(const WinPoint& point)
 {
-    debugf("Window::SetPosition point=%s", (const char*)point.GetString());
-    SetWindowPos(m_hwnd, nullptr, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+// BUILD_DX9    
+//		SetWindowPos(m_hwnd, HWND_TOP, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+//		SetWindowPos(m_hwnd, HWND_NOTOPMOST, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED);
+//		SetWindowPos(m_hwnd, HWND_TOP, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+//#else  //Imago put this back 7/6/09
+		SetWindowPos(m_hwnd, nullptr, point.X(), point.Y(), 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+// BUILD_DX9
 }
 
 void Window::SetSize(const WinPoint& point)
 {
-    debugf("Window::SetSize point=%s", (const char*)point.GetString());
     SetWindowPos(m_hwnd, nullptr, 0, 0, point.X(), point.Y(), SWP_NOMOVE | SWP_NOZORDER);
 }
 
 void Window::SetClientSize(const WinPoint& point)
 {
-    debugf("Window::SetClientSize point=%s", (const char*)point.GetString());
     WinRect rect = GetClientRect();
     rect.SetSize(point);
     SetClientRect(rect);
@@ -1112,11 +1107,6 @@ void Window::SetContinuousIdle(bool b)
     }
 #endif
 
-bool RunPeekMessage(MSG& msg) {
-    //the message WM_INPUT is handled in dinput.cpp
-    return ::PeekMessage(&msg, nullptr, 0, WM_INPUT - 1, PM_REMOVE) != 0 || ::PeekMessage(&msg, nullptr, WM_INPUT + 1, UINT_MAX, PM_REMOVE) != 0;
-}
-
 HRESULT Window::MessageLoop()
 {
     MSG msg;
@@ -1159,7 +1149,7 @@ HRESULT Window::MessageLoop()
 
         bool bAnyMessage = true;
         if (g_bContinuousIdle) {
-            bAnyMessage = RunPeekMessage(msg);
+            bAnyMessage = ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != 0;
         } else {
             ::GetMessage(&msg, nullptr, 0, 0);
         }
@@ -1234,7 +1224,7 @@ HRESULT Window::MessageLoop()
                         ::DispatchMessage(&msg);
                         break;
                 } 
-            } while (RunPeekMessage(msg));
+            } while (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE));
         }
     }
 }

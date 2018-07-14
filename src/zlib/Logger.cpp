@@ -1,5 +1,4 @@
 
-#include "base.h"
 #include "Logger.h"
 #include <time.h>
 
@@ -32,10 +31,22 @@ std::shared_ptr<ILogger> CreateTimestampedFileLogger(std::string prefix) {
     return std::make_shared<FileLogger>(target, true);
 }
 
+void CreateDirectoryRecursivelyForFilepath(std::string filepath)
+{
+    int pos = 0;
+    do
+    {
+        pos = filepath.find_first_of("\\", pos + 1);
+        if (pos != std::string::npos) {
+            CreateDirectory(filepath.substr(0, pos).c_str(), NULL);
+        }
+    } while (pos != std::string::npos);
+}
+
 FileLogger::FileLogger(std::string path, bool bAppend) :
     m_path(path)
 {
-    ZFile::CreateDirectoryRecursivelyForFilepath(path.c_str());
+    CreateDirectoryRecursivelyForFilepath(path);
 
     m_hFile = CreateFile(
         path.c_str(),

@@ -1,12 +1,11 @@
+
 #pragma once
 
+#include "ui.h"
 #include "enginep.h"
 #include "font.h"
 #include "valuetransform.h"
 #include "imagetransform.h"
-#include "event.h"
-#include "image.h"
-#include "Exposer.h"
 
 typedef TEvent<Point> PointEvent;
 

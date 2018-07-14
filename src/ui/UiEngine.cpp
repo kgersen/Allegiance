@@ -1,12 +1,5 @@
 
-#include "UiEngine.h"
-
-#include "soundengine.h"
-#include "engine.h"
-#include "model.h"
-#include "image.h"
-
-#include "ui_sol.h"
+#include "ui.h"
 #include "items.hpp"
 
 #include "ns_math.hpp"
@@ -61,10 +54,6 @@ public:
 
 };
 
-std::shared_ptr<UiScreenConfiguration> UiScreenConfiguration::Create(std::string path, std::map<std::string, std::shared_ptr<Exposer>> map) {
-    return std::make_shared<UiScreenConfigurationImpl>(path, map);
-}
-
 std::shared_ptr<UiScreenConfiguration> UiScreenConfiguration::Create(std::string path, std::map<std::string, std::function<bool()>> event_listeners, std::map<std::string, std::shared_ptr<Exposer>> map) {
     
     std::for_each(event_listeners.begin(), event_listeners.end(),
@@ -73,7 +62,7 @@ std::shared_ptr<UiScreenConfiguration> UiScreenConfiguration::Create(std::string
         map[p.first] = tmp;
     });
 
-    return UiScreenConfiguration::Create(path, map);
+    return std::make_shared<UiScreenConfigurationImpl>(path, map);
 }
 
 Loader::Loader(sol::state& lua, Engine* pEngine, const std::shared_ptr<IFileLoader>& pFileLoader)
@@ -337,29 +326,27 @@ public:
         TRef<IEventSource> m_pFocusChangedSource;
         bool m_bFocus;
         TRef<IKeyboardInput> m_pPreviousFocus;
-        TRef<IKeyboardInput> m_pKeyboardDelegate;
 
     public:
         ContextImage(std::unique_ptr<LuaScriptContext> pContext, Image* pImage) :
             WrapImage(pImage),
             m_pContext(std::move(pContext)),
             m_bFocus(false),
-            m_pPreviousFocus(nullptr),
-            m_pKeyboardDelegate(IKeyboardInput::CreateDelegate(this))
+            m_pPreviousFocus(nullptr)
         {
             m_pFocusChangedSource = new ValueChangeSource(m_pContext->HasKeyboardFocus());
             m_pFocusChangedSource->AddSink(new CallbackSink([this]() {
                 auto window = m_pContext->GetWindow();
                 if (m_pContext->HasKeyboardFocus()->GetValue()) {
-                    if (window->GetFocus() != m_pKeyboardDelegate) {
+                    if (window->GetFocus() != this) {
                         m_pPreviousFocus = window->GetFocus();
-                        window->SetFocus(m_pKeyboardDelegate);
+                        window->SetFocus(this);
                     }
                 }
                 else {
-                    if (window->GetFocus() == m_pKeyboardDelegate) {
+                    if (window->GetFocus() == this) {
                         if (!m_pPreviousFocus) {
-                            window->RemoveFocus(m_pKeyboardDelegate);
+                            window->RemoveFocus(this);
                         }
                         else {
                             window->SetFocus(m_pPreviousFocus);
@@ -374,7 +361,6 @@ public:
         ~ContextImage() {
             //control order of deallocations, first remove all references to sol before clearing the context
             SetImage(Image::GetEmpty());
-            SetFocusState(false);
             m_pContext = nullptr;
         }
 
@@ -459,7 +445,7 @@ public:
         }
         catch (const std::runtime_error& e) {
             WriteLog(path + ": ERROR " + e.what());
-            return screenConfiguration->GetErrorImage();
+            return Image::GetEmpty();
         }
     }
 

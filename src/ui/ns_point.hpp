@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "ui.h"
 #include "items.hpp"
 
 using namespace std::literals;
@@ -21,14 +22,9 @@ public:
             );
         };
 
-        table["CreateEventSink"] = sol::overload(
-            [](float x, float y) {
-                return (TRef<SimpleModifiableValue<Point>>)new SimpleModifiableValue<Point>(Point(x, y));
-            },
-            [](TRef<Number> x, TRef<Number> y) {
-                return (TRef<SimpleModifiableValue<Point>>)new SimpleModifiableValue<Point>(Point(x->GetValue(), y->GetValue()));
-            }
-        );
+        table["CreateEventSink"] = [](float x, float y) {
+            return (TRef<SimpleModifiableValue<Point>>)new SimpleModifiableValue<Point>(Point(x, y));
+        };
         
         table["X"] = [](const TRef<PointValue>& pPoint) {
             return PointTransform::X(pPoint);

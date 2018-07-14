@@ -400,7 +400,7 @@ namespace Training
 
         // XXX hope ship faces empty space
 
-        if (GetEngineWindow()->GetInputEngine()->GetJoystickCount() > 0)
+        if (GetWindow()->GetInputEngine()->GetJoystickCount() > 0)
         {
             // tm_2_14
             // If your joystick has a throttle control, you can use that 
@@ -727,7 +727,7 @@ namespace Training
             pSetControlConstraintsAction->EnableInputAction(afterburnerButtonIGC);
             pGoal->AddStartAction(pSetControlConstraintsAction);
         
-            if (GetEngineWindow()->GetInputEngine()->GetJoystickCount() > 0)
+            if (GetWindow()->GetInputEngine()->GetJoystickCount() > 0)
             {
                 // tm_2_32
                 // Activate the booster with your joystick by pressing and 

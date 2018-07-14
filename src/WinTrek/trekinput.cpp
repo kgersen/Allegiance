@@ -787,11 +787,6 @@ public:
 
     void ClearButtonStates()
     {
-        for (int index = 0; index < keyMax; index++) {         
-            if (m_pboolKeyDown[index]) {
-                m_pboolKeyDown[index]->SetValue(false);
-            }
-        }
         for (int index = 0; index < TK_Max; index++) {
 			m_boolTrekKeyButtonDown[index] = false;
 			m_boolMouseTrekKeyDown[index] = false;	//8/10 #56
@@ -864,6 +859,12 @@ public:
             m_bFocus = bFocus;
 
             if (!m_bFocus) {
+                for (int index = 0; index < keyMax; index++) {
+                    if (m_pboolKeyDown[index] != NULL) {
+                        m_pboolKeyDown[index]->SetValue(false);
+                    }
+                }
+
                 ClearButtonStates();
             }
         }

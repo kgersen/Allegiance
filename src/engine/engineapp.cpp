@@ -101,24 +101,19 @@ void EngineApp::ParseCommandLine(
     }
 }
 
-void EngineApp::SetInput(InputEngine* pinput)
+void EngineApp::SetMouse(MouseInputStream* pmouse)
 {
-    m_pinput = pinput;
+    m_pmouse = pmouse;
 }
 
 int EngineApp::OnException(DWORD code, ExceptionData* pdata)
 {
     if (m_pengine && m_pengine->IsFullscreen()) {
         m_pengine->DebugSetWindowed();
-    }
-
-    if (m_pinput) {
-        MouseInputStream* pmouse = m_pinput->GetMouse();
-        if (pmouse) {
-            pmouse->SetEnabled(false);
+        if (m_pmouse) {
+            m_pmouse->SetEnabled(false);
         }
     }
-
     return EXCEPTION_CONTINUE_SEARCH;
 }
 

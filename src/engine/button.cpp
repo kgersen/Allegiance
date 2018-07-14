@@ -327,9 +327,7 @@ public:
 			UIVERTEX * pVerts;
 //			CVBIBManager::SVBIBHandle * pDynVB = CVertexGenerator::Get()->GetUITexVertsVB();
 			CVBIBManager::SVBIBHandle * pDynVB = CVertexGenerator::Get()->GetPredefinedDynamicBuffer( CVertexGenerator::ePDBT_UITexVB );
-			if (CVBIBManager::Get()->LockDynamicVertexBuffer( pDynVB, m_iNumVertsPerButton, (void**)&pVerts ) == false) {
-                return;
-            }
+			CVBIBManager::Get()->LockDynamicVertexBuffer( pDynVB, m_iNumVertsPerButton, (void**)&pVerts );
 												
 			// Overlay the focus bitmap on top of the button
 			if (m_bFocus && (m_dwFaces & ButtonFaceFocus)) 

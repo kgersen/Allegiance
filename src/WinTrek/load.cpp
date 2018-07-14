@@ -547,7 +547,7 @@ public:
 		
 		//AaronMoore 1/10
         m_keyboardDelegate = IKeyboardInput::CreateDelegate(this);
-        GetEngineWindow()->AddKeyboardInputFilter(m_keyboardDelegate);
+        GetWindow()->AddKeyboardInputFilter(m_keyboardDelegate);
     }
 
     ~LoadoutImpl()
@@ -565,7 +565,7 @@ public:
         m_pmodeler->UnloadNameSpace("loadoutinclude");
 		
 		//AaronMoore 1/10
-        GetEngineWindow()->RemoveKeyboardInputFilter(m_keyboardDelegate);
+        GetWindow()->RemoveKeyboardInputFilter(m_keyboardDelegate);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1745,7 +1745,7 @@ public:
         }
 
         if (bAnyItems) {
-            Point popupPosition = GetEngineWindow()->GetMousePosition();
+            Point popupPosition = GetWindow()->GetMousePosition();
             GetWindow()->GetPopupContainer()->OpenPopup(m_pmenu, Rect(popupPosition, popupPosition), true, false);
         }
     }
@@ -1842,7 +1842,7 @@ public:
 #endif
         }
 
-        Point popupPosition = GetEngineWindow()->GetMousePosition();
+        Point popupPosition = GetWindow()->GetMousePosition();
         GetWindow()->GetPopupContainer()->OpenPopup(m_phullMenu, Rect(popupPosition, popupPosition), true, false);
     }
             

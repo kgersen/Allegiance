@@ -58,7 +58,7 @@
 #include "Zone.h"
 //#include "zauth.h" KG removed
 #include "igc.h"
-#include "UiEngine.h"
+#include "ui.h"
 
 #include "trekinput.h"
 #include "resource.h"

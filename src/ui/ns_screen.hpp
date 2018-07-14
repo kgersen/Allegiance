@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "ui.h"
 #include "items.hpp"
 
 using namespace std::literals;
@@ -160,28 +161,28 @@ public:
             }
         );
 
-        context.GetLua().new_usertype<std::shared_ptr<UiState>>("UiState",
+        context.GetLua().new_usertype<UiState>("UiState", 
             "new", sol::no_constructor,
-            "Get", [](sol::this_state s, const std::shared_ptr<UiState>& state, std::string key) {
-                return state->GetExposer(key)->ExposeSolObject(s);
+            "Get", [](sol::this_state s, const UiState& state, std::string key) {
+                return state.GetExposer(key)->ExposeSolObject(s);
             },
-            "GetString", [](const std::shared_ptr<UiState>& state, std::string key) {
-                return state->GetString(key);
+            "GetString", [](const UiState& state, std::string key) {
+                return state.GetString(key);
             },
-            "GetNumber", [](const std::shared_ptr<UiState>& state, std::string key) {
-                return state->GetNumber(key);
+            "GetNumber", [](const UiState& state, std::string key) {
+                return state.GetNumber(key);
             },
-            "GetBool", [](const std::shared_ptr<UiState>& state, std::string key) {
-                return state->GetBoolean(key);
+            "GetBool", [](const UiState& state, std::string key) {
+                return state.GetBoolean(key);
             },
-            "GetState", [](const std::shared_ptr<UiState>& state, std::string key) {
-                return state->Get<TRef<UiStateValue>>(key);
+            "GetState", [](const UiState& state, std::string key) {
+                return state.Get<TRef<UiStateValue>>(key);
             },
-            "GetEventSink", [](const std::shared_ptr<UiState>& state, std::string key) {
-                return state->Get<TRef<IEventSink>>(key);
+            "GetEventSink", [](const UiState& state, std::string key) {
+                return state.Get<TRef<IEventSink>>(key);
             },
-            "GetList", [](const std::shared_ptr<UiState>& state, std::string key) {
-                return state->Get<TRef<ContainerList>>(key);
+            "GetList", [](const UiState& state, std::string key) {
+                return state.Get<TRef<ContainerList>>(key);
             }
         );
 

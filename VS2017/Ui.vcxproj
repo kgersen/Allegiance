@@ -27,9 +27,9 @@
     <ClInclude Include="..\src\ui\ns_point.hpp" />
     <ClInclude Include="..\src\ui\ns_screen.hpp" />
     <ClInclude Include="..\src\ui\ns_string.hpp" />
+    <ClInclude Include="..\src\ui\ui.h" />
     <ClInclude Include="..\src\ui\UiEngine.h" />
     <ClInclude Include="..\src\ui\UiState.h" />
-    <ClInclude Include="..\src\ui\ui_sol.h" />
     <ClInclude Include="..\src\ui\ui_types.h" />
   </ItemGroup>
   <ItemGroup>

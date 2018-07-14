@@ -171,8 +171,31 @@ public:
 			width = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iWidth;
 			height = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iHeight;
 			rate = CD3DDevice9::Get()->GetDeviceSetupParams()->pFullScreenResArray[i].iFreq;
-			debugf("Found valid full screen rez: "+ZString(width)+"x"+ZString(height)+" @ "+ZString(rate));
-            m_modes.PushEnd((Vector(width, height, rate)));
+			//OutputDebugString("Found valid full screen rez: "+ZString(width)+"x"+ZString(height)+" @ "+ZString(rate));
+			if (width == 640 && height == 480)
+				m_modes.PushEnd((Vector(width,height,rate))); //VGA				
+			if (width == 800 && height == 600)
+				m_modes.PushEnd((Vector(width,height,rate))); //SVGA (default)	
+			if (width == 1024 && height == 768)
+				m_modes.PushEnd((Vector(width,height,rate))); //XGA
+			if (width == 1280 && height == 1024)
+				m_modes.PushEnd((Vector(width,height,rate))); //SXGA			
+			if (width == 1366 && height == 768)
+				m_modes.PushEnd((Vector(width,height,rate))); //WXGA (720p widescreen mode)
+			if (width == 1400 && height == 1050)
+				m_modes.PushEnd((Vector(width,height,rate))); //SXGA+
+			if (width == 1440 && height == 900)
+				m_modes.PushEnd((Vector(width,height,rate))); //WSXGA+ (widescreen)
+			if (width == 1600 && height == 1200)
+				m_modes.PushEnd((Vector(width,height,rate))); //UXGA
+			if (width == 1680 && height == 1050)
+				m_modes.PushEnd((Vector(width,height,rate))); //WSXGA+ (widescreen)
+			if (width == 1920 && height == 1080)
+				m_modes.PushEnd((Vector(width,height,rate))); //WUXGA (1080p widescreen mode)
+            if (width == 1920 && height == 1200)
+                m_modes.PushEnd((Vector(width, height, rate)));
+            if (width == 2560 && height == 1440)
+                m_modes.PushEnd((Vector(width, height, rate)));
 		}
 #pragma warning(default:4244)
     }
@@ -1069,12 +1092,6 @@ private:
 		return m_sizeResolution;
 	}
 
-    TRef<PointValue> GetResolution() {
-        return (TRef<PointValue>)new TransformedValue<Point, WinPoint>([](WinPoint winpoint) {
-            return Point((float)winpoint.X(), (float)winpoint.Y());
-        }, GetResolutionSizeModifiable());
-    }
-
     const WinPoint GetFullscreenSize()
     {
         return m_sizeResolution->GetValue();
@@ -1188,20 +1205,14 @@ private:
 				// Device lost - for example, full screen window lost focus.
 				// Sleep but carry on running. At some point we should hit a D3DERR_DEVICENOTRESET
 				// return value in TestCooperativeLevel().
-                if (m_bValid == true) {
-                    //only log once
-                    debugf("Device: D3DERR_DEVICELOST");
-                }
 				m_bValidDevice = false;
 				m_bValid       = false;
 				break;
 
 			case D3DERR_DEVICENOTRESET:
-                debugf("Device: D3DERR_DEVICENOTRESET");
 				hr = pDev->ResetDevice( pDev->IsWindowed() );
 				if( hr == D3D_OK )
 				{
-                    debugf("Device: Reset happened and succeeded");
 					m_bValid = true;
 					return DeviceOK(bChanges);
 				}

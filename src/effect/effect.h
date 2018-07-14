@@ -36,5 +36,6 @@
 #include "starimage.h"
 
 #include "efapp.h"
+#include "efwindow.h"
 
 #endif

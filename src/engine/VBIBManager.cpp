@@ -970,16 +970,13 @@ bool CVBIBManager::LockDynamicVertexBuffer(	SVBIBHandle * pHandle,
 		// Recreate the resource. 
 		hr = CD3DDevice9::Get()->Device()->CreateVertexBuffer(
 					pVB->dwBufferSize,
-                    0, //Rock: from the docs: If CreateDevice uses D3DCREATE_HARDWARE_VERTEXPROCESSING, CreateVertexBuffer must use 0
+					(CD3DDevice9::Get()->IsHardwareVP()) ? // Imago 6/26/09
+						D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC :
+						D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC | D3DUSAGE_SOFTWAREPROCESSING,
 					pVB->dwBufferFormat,
 					m_iDynamicBufferPool,
 					&pVB->pVertexBuffer,
 					NULL );
-
-        if (hr != D3D_OK) {
-            debugf("Creating vertex buffer failed: 0x%x", hr);
-            return false;
-        }
         ZAssert( hr == D3D_OK );
 		pVB->bResourceEvicted = false;
 	}
@@ -997,11 +994,6 @@ bool CVBIBManager::LockDynamicVertexBuffer(	SVBIBHandle * pHandle,
 									dwSizeToLock,
 									ppbData,
 									dwLockFlags );
-
-    if (hr != D3D_OK) {
-        debugf("Locking vertex buffer failed: 0x%x", hr);
-    }
-
     ZAssert( hr == D3D_OK );
 	if( hr != D3D_OK )
 	{

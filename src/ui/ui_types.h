@@ -1,10 +1,8 @@
-#pragma once
-
 #include <type_traits>
 #include "event.h"
-#include "valuetransform.h"
-#include "UiState.h"
-#include "image.h"
+
+template <typename EntryType>
+class UiList;
 
 namespace sol {
 
@@ -63,65 +61,6 @@ namespace sol {
         };
 
         // Sinks
-
-        template <>
-        struct getter<std::shared_ptr<SolEventSinkInitializer>> {
-            typedef std::shared_ptr<SolEventSinkInitializer> ReturnType;
-            static ReturnType get(lua_State* L, int index, record& tracking) {
-                if (sol::stack::check_usertype<ReturnType>(L, index)) {
-                    return getter<detail::as_value_tag<ReturnType>>{}.get(L, index, tracking);
-                }
-                if (sol::stack::check_usertype<TRef<SimpleModifiableValue<bool>>>(L, index)) {
-                    return SolEventSinkInitializer::CreateFromModifiable<bool>(getter<detail::as_value_tag<TRef<SimpleModifiableValue<bool>>>>{}.get(L, index, tracking));
-                }
-                if (sol::stack::check_usertype<TRef<SimpleModifiableValue<float>>>(L, index)) {
-                    return SolEventSinkInitializer::CreateFromModifiable<float>(getter<detail::as_value_tag<TRef<SimpleModifiableValue<float>>>>{}.get(L, index, tracking));
-                }
-                if (sol::stack::check_usertype<TRef<SimpleModifiableValue<ZString>>>(L, index)) {
-                    return SolEventSinkInitializer::CreateFromModifiable<ZString>(getter<detail::as_value_tag<TRef<SimpleModifiableValue<ZString>>>>{}.get(L, index, tracking));
-                }
-                if (sol::stack::check_usertype<TRef<SimpleModifiableValue<Point>>>(L, index)) {
-                    return SolEventSinkInitializer::CreateFromModifiable<Point>(getter<detail::as_value_tag<TRef<SimpleModifiableValue<Point>>>>{}.get(L, index, tracking));
-                }
-                if (sol::stack::check_usertype<TRef<IEventSink>>(L, index)) {
-                    TRef<IEventSink> sink = getter<detail::as_value_tag<TRef<IEventSink>>>{}.get(L, index, tracking);
-                    return SolEventSinkInitializer::CreateFromCallback([sink]() {
-                        return sink->OnEvent(nullptr);
-                    });
-                }
-                if (sol::stack::check_usertype<TRef<TEvent<float>::Sink>>(L, index)) {
-                    TRef<TEvent<float>::Sink> sink = getter<detail::as_value_tag<TRef<TEvent<float>::Sink>>>{}.get(L, index, tracking);
-                    return SolEventSinkInitializer::CreateFromSink<float>(sink);
-                }
-                if (sol::stack::check_usertype<TRef<TEvent<bool>::Sink>>(L, index)) {
-                    TRef<TEvent<bool>::Sink> sink = getter<detail::as_value_tag<TRef<TEvent<bool>::Sink>>>{}.get(L, index, tracking);
-                    return SolEventSinkInitializer::CreateFromSink<bool>(sink);
-                }
-                if (sol::stack::check_usertype<TRef<TEvent<ZString>::Sink>>(L, index)) {
-                    TRef<TEvent<ZString>::Sink> sink = getter<detail::as_value_tag<TRef<TEvent<ZString>::Sink>>>{}.get(L, index, tracking);
-                    return SolEventSinkInitializer::CreateFromSink<ZString>(sink);
-                }
-                if (sol::stack::check_usertype<TRef<TEvent<Point>::Sink>>(L, index)) {
-                    TRef<TEvent<Point>::Sink> sink = getter<detail::as_value_tag<TRef<TEvent<Point>::Sink>>>{}.get(L, index, tracking);
-                    return SolEventSinkInitializer::CreateFromSink<Point>(sink);
-                }
-                return nullptr;
-            }
-        };
-
-        template <>
-        struct checker<std::shared_ptr<SolEventSinkInitializer>, type::userdata> {
-            typedef std::shared_ptr<SolEventSinkInitializer> ReturnType;
-            template <typename Handler>
-            static bool check(lua_State* L, int index, Handler&& handler, record& tracking) {
-                if (getter<ReturnType>::get(L, index, tracking)) {
-                    return true;
-                }
-
-                handler(L, index, type::userdata, type_of(L, index), "value at this index does not properly reflect the desired type");
-                return false;
-            }
-        };
 
         template <>
         struct checker<TRef<TEvent<bool>::Sink>, type::userdata> {
@@ -303,10 +242,6 @@ namespace sol {
                     tracking.use(1);
                     return true;
                 }
-                if (stack::check<table>(L, absolute_index, sol::no_panic) && sol::type_of(L, absolute_index) == sol::type::table) {
-                    tracking.use(1);
-                    return true;
-                }
                 handler(L, index, type::userdata, type::userdata, "Expected a list");
                 return false;
             }
@@ -336,21 +271,6 @@ namespace sol {
                 }
                 if (stack::check_usertype<TRef<UiList<TRef<UiObjectContainer>>>>(L, absolute_index)) {
                     return ConvertListTypeToGenericList<TRef<UiObjectContainer>>(L, stack::get_usertype<TRef<UiList<TRef<UiObjectContainer>>>>(L, absolute_index, tracking));
-                }
-                //table. Makes a copy.
-                if (stack::check<table>(L, absolute_index) && sol::type_of(L, absolute_index) == sol::type::table) {
-                    sol::table table_list = stack::get<sol::table>(L, absolute_index, tracking);
-                        
-                    int count = table_list.size();
-
-                    std::vector<sol::object> result_list = {};
-
-                    for (int i = 1; i <= count; ++i) {
-                        result_list.push_back(table_list.get<sol::object>(i));
-                    }
-
-                    return_type result = new UiList<sol::object>(result_list);
-                    return result;
                 }
 
                 throw std::runtime_error("Unknown type to cast");
@@ -425,9 +345,6 @@ namespace sol {
                     TRef<UiList<sol::object>> list = stack::get_usertype<TRef<UiList<sol::object>>>(L, absolute_index, tracking);
 
                     return new MappedList<TRef<T>, sol::object>(list, [L](sol::object entry, TRef<Number> index) {
-                        if (entry.is<TRef<T>>() == false) {
-                            throw std::runtime_error("Entry is not the correct type."); //we can't recover from this :(
-                        }
                         return entry.as<TRef<T>>();
                     });
                 }
