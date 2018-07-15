@@ -57,10 +57,10 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
-    <IncludePath>$(DXSDK_DIR)\Include;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);$(DXSDK_DIR)\Include;</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
-    <IncludePath>$(DXSDK_DIR)\Include;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);$(DXSDK_DIR)\Include;</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <ClCompile>

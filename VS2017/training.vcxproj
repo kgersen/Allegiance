@@ -65,7 +65,7 @@
     <TargetName Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">training</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">.lib</TargetExt>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\src\Lib\lua\include;..\src\Lib\sol\include;$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\src\Lib\lua\include;..\src\Lib\sol\include;$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\src\Lib\lua\include;..\src\Lib\sol\include;$(IncludePath);$(DXSDK_DIR)\Include;</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);</LibraryPath>
