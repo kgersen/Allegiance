@@ -34,7 +34,7 @@ enum TrainingOverlay
     EyeballTrainingOverlay,
     KillBonusTrainingOverlay,
     RollTrainingOverlay,
-    ShiftTabTrainingOverlay,
+    BoosterTrainingOverlay,
     TargetCenterTrainingOverlay,
     FireGunsTrainingOverlay,
     TargetEnemyTrainingOverlay,
