@@ -263,7 +263,7 @@ namespace Training
 		// tm_4_04r
 		// Press the SPACEBAR when you are ready to proceed.
         {
-            Goal*   pGoal = new Goal (new GetKeyCondition (TK_ThrustForward));
+            Goal*   pGoal = new Goal (new GetKeyCondition (TK_FireBooster));
             pGoal->AddStartAction (new MessageAction ("Press the SPACEBAR when you are ready to proceed."));
             pGoal->AddStartAction (new PlaySoundAction (tm_4_04rSound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_04rSound));
@@ -297,7 +297,7 @@ namespace Training
 		// Press the SPACEBAR when you are comfortable with quick 
 		// comms.
         {
-            Goal*   pGoal = new Goal (new GetKeyCondition (TK_ThrustForward));
+            Goal*   pGoal = new Goal (new GetKeyCondition (TK_FireBooster));
             pGoal->AddStartAction (new MessageAction ("Press the SPACEBAR when you are ready to proceed."));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_06rSound));
             pGoalList->AddGoal (pGoal);
@@ -346,7 +346,7 @@ namespace Training
 		// Press the INSERT key to accept this objective. 
         {
             Goal*   pGoal = new Goal (new GetCommandCondition (trekClient.GetShip (), c_cidGoto));
-            pGoal->AddStartAction (new MessageAction ("Press the INSERT key to accept the command."));
+            pGoal->AddStartAction (new MessageAction ("Press the INSERT or '[' key to accept the command."));
             pGoal->AddStartAction (new PlaySoundAction (tm_4_08rSound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_08rSound));
             pGoalList->AddGoal (pGoal);
@@ -447,7 +447,7 @@ namespace Training
         {
             Goal*   pGoal = new Goal (new GetCommandCondition (trekClient.GetShip (), c_cidGoto));
             pGoal->AddStartAction (new SetCommandAction (trekClient.GetShip (), c_cmdQueued, OT_warp, 1030, c_cidGoto));
-            pGoal->AddStartAction (new MessageAction ("Press the INSERT key to accept the command."));
+            pGoal->AddStartAction (new MessageAction ("Press the INSERT or '[' key to accept the command."));
             pGoal->AddStartAction (new PlaySoundAction (tm_4_15Sound));
             pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_4_15Sound));
             pGoalList->AddGoal (pGoal);
@@ -797,7 +797,7 @@ namespace Training
             //Goal*                           pGoal = new Goal (new AndCondition (new GetKeyCondition (TK_TargetEnemy), new SoundFinishedCondition (pPlaySoundAction)));
             Goal*                           pGoal = new Goal (new GetKeyCondition (TK_TargetEnemy)); // pkk - Let's start  before sound is finished
             pGoal->AddStartAction (pPlaySoundAction);
-            pGoal->AddStartAction (new MessageAction ("Target an enemy miner with the T key, and destroy it if you can."));
+            pGoal->AddStartAction (new MessageAction ("Target an enemy miner with the F key, and destroy it if you can."));
             pGoal->AddConstraintCondition (CreateTooLongCondition (20.0f, tm_4_29Sound));
             pGoalList->AddGoal (pGoal);
         }
@@ -928,7 +928,7 @@ namespace Training
             Goal* pGoal = new Goal (new GetCommandCondition (trekClient.GetShip (), c_cidAttack)); 
             pGoal->AddStartAction (new SetCommandAction(m_builderID, c_cmdCurrent, NA, NA, c_cidDoNothing));
             pGoal->AddStartAction (new SetCommandAction(m_builderID, c_cmdAccepted, NA, NA, c_cidDoNothing));
-            pGoal->AddStartAction (new SetCommandAction (trekClient.GetShip (), c_cmdQueued, OT_ship, m_enemyScoutID, c_cidAttack));// - Error here?
+            pGoal->AddStartAction (new SetCommandAction (trekClient.GetShip (), c_cmdQueued, OT_ship, m_enemyScoutID, c_cidAttack));
             pGoal->AddStartAction (new MessageAction ("Press the INSERT key to accept the command."));
             pGoal->AddStartAction (new PlaySoundAction (tm_4_33Sound));
             pGoal->AddConstraintCondition(CreateTooLongCondition(30.0f, tm_4_33Sound));

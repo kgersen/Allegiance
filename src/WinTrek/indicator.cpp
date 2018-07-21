@@ -637,16 +637,16 @@ public:
             pointA = pointCenter + Point(-110.0f, -170.0f);
             pointB = pointA + Point(5.0f, 0.0f);
             description = "PUSH Q AND E TO ROLL LEFT AND RIGHT";
-            description2 = "PUSH TAB TO TOGGLE MOUSE CONTROL";
+            description2 = "PUSH V TO TOGGLE MOUSE CONTROL";
             break;
         }
 
-        case ShiftTabTrainingOverlay:
+        case BoosterTrainingOverlay:
         {
             pointDelta = Point(1.0f, 1.0f);
             pointA = pointCenter + Point(-70.0f, -170.0f);
             pointB = pointA + Point(5.0f, 0.0f);
-            description = "SHIFT+SPACE TO BOOST";
+            description = "SPACE TO BOOST";
             description2 = "";
             break;
         }
@@ -656,7 +656,7 @@ public:
             pointDelta = Point(1.0f, 1.0f);
             pointA = pointCenter + Point(-144.0f, -170.0f);
             pointB = pointA + Point(5.0f, 0.0f);
-            description = "CLICK MIDDLE MOUSE BUTTON TO TARGET CENTER";
+            description = "CLICK RIGHT MOUSE BUTTON TO TARGET CENTER";
             description2 = "";
             break;
         }
@@ -676,7 +676,7 @@ public:
             pointDelta = Point(1.0f, 1.0f);
             pointA = pointCenter + Point(-72.0, -170.0f);
             pointB = pointA + Point(5.0f, 0.0f);
-            description = "PUSH T TO TARGET ENEMY";
+            description = "PUSH F TO TARGET ENEMY";
             description2 = "";
             break;
         }
@@ -686,7 +686,7 @@ public:
             pointDelta = Point(1.0f, 1.0f);
             pointA = pointCenter + Point(-80.0, -170.0f);
             pointB = pointA + Point(5.0f, 0.0f);
-            description = "RIGHT CLICK TO FIRE MISSILE";
+            description = "MIDDLE CLICK TO FIRE MISSILE";
             description2 = "";
             break;
         }
