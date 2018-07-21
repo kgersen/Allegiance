@@ -447,7 +447,7 @@ namespace Training
         // your display.
         {
             Goal    *pGoal = new Goal(CreateGotTargetCondition());
-            pGoal->AddStartAction(new MessageAction("Press the middle mouse button to target the objects in the center of your display."));
+            pGoal->AddStartAction(new MessageAction("Press the right mouse button to target the objects in the center of your display."));
             //pGoal->AddStartAction (new PlaySoundAction (tm_3_11rSound)); - removed as it doesn't match the keymap
             pGoal->AddStartAction(new SetHUDOverlayAction(TargetCenterTrainingOverlay));
             pGoal->AddConstraintCondition(CreateTooLongCondition(30.0f, tm_3_11Sound));
@@ -477,7 +477,7 @@ namespace Training
         // When you are comfortable with targeting, press the SPACEBAR 
         // to proceed.
         {
-            Goal*   pGoal = new Goal(new GetKeyCondition(TK_ThrustForward));
+            Goal*   pGoal = new Goal(new GetKeyCondition(TK_FireBooster));
             pGoal->AddStartAction(new MessageAction("Press the SPACEBAR when you are ready to proceed."));
             pGoal->AddStartAction(new PlaySoundAction(tm_3_12rSound));
             pGoal->AddStartAction(new SetHUDOverlayAction(NoTrainingOverlay));
@@ -530,7 +530,7 @@ namespace Training
         // tm_3_15
         // Press the SPACEBAR when you are ready to proceed.
         {
-            Goal*   pGoal = new Goal(new GetKeyCondition(TK_ThrustForward));
+            Goal*   pGoal = new Goal(new GetKeyCondition(TK_FireBooster));
             pGoal->AddStartAction(new MessageAction("Press the SPACEBAR when you are ready to proceed."));
             pGoal->AddStartAction(new PlaySoundAction(tm_3_15Sound));
             pGoal->AddConstraintCondition(CreateTooLongCondition(30.0f, tm_3_15Sound));
@@ -770,7 +770,7 @@ namespace Training
         // Select a new target now using the E key.
         {
             Goal*   pGoal = new Goal(new GetKeyCondition(TK_TargetEnemy));
-            pGoal->AddStartAction(new MessageAction("Target an enemy using the T key."));
+            pGoal->AddStartAction(new MessageAction("Target an enemy using the F key. Target a friendly using the T key."));
             pGoal->AddStartAction(new SetHUDOverlayAction(TargetEnemyTrainingOverlay));
             //pGoal->AddStartAction (new PlaySoundAction (tm_3_27Sound)); - does not match keymap
             //pGoal->AddConstraintCondition (CreateTooLongCondition (30.0f, tm_3_27Sound));
@@ -940,7 +940,7 @@ namespace Training
                 // Fire your missiles by pressing CONTROL plus SPACEBAR on the 
                 // keyboard.
                 //pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_38Sound)); - does not match keymap
-                pGoal->AddStartAction(new MessageAction("Right click to fire your secondary weapon."));
+                pGoal->AddStartAction(new MessageAction("Middle click to fire your secondary weapon."));
                 pGoal->AddStartAction(new SetHUDOverlayAction(MissileTrainingOverlay));
                 pGoal->AddConstraintCondition(CreateTooLongCondition(30.0f, tm_3_38Sound));
             }
@@ -1024,10 +1024,10 @@ namespace Training
         // tm_3_42r
         // Press the END key when you are ready to proceed.
         {
-            Goal*   pGoal = new Goal(new GetKeyCondition(TK_CommandFinishTM));
-            pGoal->AddStartAction(new MessageAction("Press the END key when you are comfortable with the Inventory Display."));
-            pGoal->AddStartAction(new PlaySoundAction(tm_3_42rSound));
-            pGoal->AddConstraintCondition(CreateTooLongCondition(30.0f, tm_3_42rSound));
+            Goal*   pGoal = new Goal(new GetKeyCondition(TK_FireBooster));
+            pGoal->AddStartAction(new MessageAction("Press the SPACE key when you are comfortable with the Inventory Display."));
+            pGoal->AddStartAction(new PlaySoundAction(tm_3_15Sound));
+            pGoal->AddConstraintCondition(CreateTooLongCondition(30.0f, tm_3_15Sound));
             pGoalList->AddGoal(pGoal);
         }
 
@@ -1088,8 +1088,8 @@ namespace Training
         // tm_3_46
         // When you are ready to go home, press the END key.
         {
-            Goal*   pGoal = new Goal(new GetKeyCondition(TK_CommandFinishTM));
-            pGoal->AddStartAction(new MessageAction("Press the END key when you are ready to go home."));
+            Goal*   pGoal = new Goal(new GetKeyCondition(TK_FireBooster));
+            pGoal->AddStartAction(new MessageAction("Press the SPACE key when you are ready to go home."));
             pGoal->AddStartAction(new PlaySoundAction(tm_3_46Sound));
             pGoal->AddConstraintCondition(CreateTooLongCondition(120.0f, tm_3_46Sound));
             pGoalList->AddGoal(pGoal);

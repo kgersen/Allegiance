@@ -81,9 +81,9 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs$(PlatformToolset)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs$(PlatformToolset)\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs$(PlatformToolset)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\src\Lib\lua\include;$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\src\Lib\lua\include;$(IncludePath);$(DXSDK_DIR)\Include</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\src\Lib\lua;$(LibraryPath)</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\src\Lib\lua\include;$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\src\Lib\lua\include;$(IncludePath);$(DXSDK_DIR)\Include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
     <LibraryPath>..\src\Lib\lua;$(LibraryPath)</LibraryPath>

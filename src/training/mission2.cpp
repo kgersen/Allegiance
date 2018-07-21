@@ -348,7 +348,7 @@ namespace Training
         // When you are comfortable with the operation of your craft, 
         // press the SPACEBAR to proceed.
         {
-            Goal*   pGoal = new Goal(new GetKeyCondition(TK_ThrustForward));
+            Goal*   pGoal = new Goal(new GetKeyCondition(TK_FireBooster));
             pGoal->AddStartAction(new MessageAction("Press the SPACEBAR when you are ready to proceed."));
             pGoal->AddStartAction(new PlaySoundAction(tm_2_11rSound));
             pGoal->AddConstraintCondition(CreateTooLongCondition(30.0f, tm_2_11rSound));
@@ -411,7 +411,9 @@ namespace Training
         {
             // tm_2_15
             // You can use the keyboard to set the throttle. The BACKSLASH 
-            // key is full throttle, and BACKSPACE is stop. You can use 
+            // key is full throttle, and BACKSPACE is stop. - STOPS HERE - LANS
+            
+            // You can use 
             // the RIGHT BRACKET key for 66% throttle and the LEFT BRACKET 
             // key for 33% throttle. 
             pGoalList->AddGoal(CreatePlaySoundGoal(tm_2_15Sound));
@@ -625,7 +627,7 @@ namespace Training
         // When you are comfortable with the operation of your ship, 
         // press the SPACEBAR to proceed.
         {
-            Goal*   pGoal = new Goal(new GetKeyCondition(TK_ThrustForward));
+            Goal*   pGoal = new Goal(new GetKeyCondition(TK_FireBooster));
             pGoal->AddStartAction(new MessageAction("Press the SPACEBAR when you are ready to proceed."));
             pGoal->AddStartAction(new PlaySoundAction(tm_2_24rSound));
             pGoal->AddConstraintCondition(CreateTooLongCondition(30.0f, tm_2_24rSound));
@@ -711,7 +713,7 @@ namespace Training
         // Now I want you to give it a try.
         {
             Goal*   pGoal = CreatePlaySoundGoal(tm_2_31Sound);
-            pGoal->AddStartAction(new SetHUDOverlayAction(ShiftTabTrainingOverlay));
+            pGoal->AddStartAction(new SetHUDOverlayAction(BoosterTrainingOverlay));
             pGoalList->AddGoal(pGoal);
         }
 
@@ -743,7 +745,7 @@ namespace Training
                 // boosters.
                 //pGoal->AddStartAction (new PlaySoundAction (tm_2_33Sound));
                 pGoal->AddConstraintCondition(CreateTooLongCondition(30.0f, tm_2_33Sound));
-                pGoal->AddStartAction(new MessageAction("Press and hold the SHIFT+SPACE key to fire the booster."));
+                pGoal->AddStartAction(new MessageAction("Press and hold the SPACE key to fire the booster."));
             }
 
             pGoalList->AddGoal(pGoal);
