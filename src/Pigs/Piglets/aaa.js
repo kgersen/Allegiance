@@ -191,7 +191,7 @@ function CheckRunAway(targetDistance) {
     if (goHome) {
         var stationlist = Ship.Sector.Stations;
         var mystationIdx = FindNearestFriendlyStation(stationlist);
-        Delay("Ship.GotoStationID(" + stationlist(mystationIdx).ObjectID + ")");
+        Delay("Ship." + stationlist(mystationIdx).ObjectID + ")");
         Delay("Ship.Boost(true)");
         KillTimers();
     }

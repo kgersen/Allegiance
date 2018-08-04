@@ -1480,6 +1480,31 @@ void    CFSMission::SetLeaderID(SideID sideID, ShipID shipID)
     }
 }
 
+// BT - WOPR - Moved this out of the header to keep things consitent
+CFSPlayer * CFSMission::GetOwner()
+{
+	if (m_misdef.iSideMissionOwner == NA)
+		return NULL;
+	else
+		return GetLeader(m_misdef.iSideMissionOwner);
+}
+
+// BT - WOPR - Let bots change the mission owner.
+void CFSMission::SetOwner(short iSide)
+{
+	m_misdef.iSideMissionOwner = iSide;
+
+	CFSPlayer * currentMissionOwner = GetLeader(iSide);
+
+	BEGIN_PFM_CREATE(g.fm, pfmSetMissionOwner, CS, SET_MISSION_OWNER)
+		END_PFM_CREATE
+
+	pfmSetMissionOwner->shipID = currentMissionOwner->GetShipID();
+	pfmSetMissionOwner->sideID = iSide;
+
+	g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_FLUSH);
+}
+
 void CFSMission::SetLeader(CFSPlayer * pfsPlayer)
 {
   assert(pfsPlayer);
@@ -5347,6 +5372,11 @@ void CFSMission::PlayerReadyChange(CFSPlayer * pfsPlayer)
 void CFSMission::CheckForSideAllReady(IsideIGC * pside)
 {
   SideID sideid = pside->GetObjectID();
+
+  // If a player is moved to NOAT at the same time another player is joining, an assert will fire.
+  if (sideid <= NA)
+	  return;
+
   if (GetCountOfPlayers(pside, false) < m_misdef.misparms.nMinPlayersPerTeam)
     SetReady(sideid, false);
   else if (GetForceReady(pside->GetObjectID()))

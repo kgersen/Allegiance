@@ -3137,14 +3137,15 @@ ShipUpdateStatus    CshipIGC::ProcessShipUpdate(const ClientShipUpdate& shipupda
     {
         /*
         {
-                debugf("(%8.3f %8.3f %8.3f) (%8.3f %8.3f %8.3f) %d\n",
+                debugf("%s - (%8.3f %8.3f %8.3f) (%8.3f %8.3f %8.3f) %d\n",
                         GetPosition().x,
                         GetPosition().y,
                         GetPosition().z,
                         GetVelocity().x,
                         GetVelocity().y,
                         GetVelocity().z,
-                        GetLastUpdate().clock());
+                        GetLastUpdate().clock(),
+					GetName());
         }
         */
 

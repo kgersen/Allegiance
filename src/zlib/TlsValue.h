@@ -3,7 +3,9 @@
 #ifndef __TlsValue_h__
 #define __TlsValue_h__
 
-#include <mutex>
+#ifndef _M_CEE // BT - WOPR - AllegianceInterop Compatibility
+	#include <mutex>
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // TlsValue.h : Declaration of the TlsValue template class.
@@ -151,6 +153,8 @@ public:
 
 // Implementation
 protected:
+
+#ifndef _M_CEE // BT - WOPR - AllegianceInterop Compatibility
   static std::mutex &GetSyncObject()
   {
     // Shared by all instances, which is not a big deal since this is only
@@ -158,12 +162,17 @@ protected:
     static std::mutex s_cs;
     return s_cs;
   }
+#endif 
+
   uint32_t GetSlot()
   {
     if (m_dwSlot)                // Check for initialized slot
       return m_dwSlot;
 
+#ifndef _M_CEE // BT - WOPR - AllegianceInterop Compatibility
 	std::lock_guard<std::mutex> lock(GetSyncObject());
+#endif
+
     if (!m_dwSlot)               // Check (again) for uninitialized slot
     {
       m_dwSlot = TlsAlloc();     // Allocate a TLS slot

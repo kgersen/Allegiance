@@ -1309,7 +1309,7 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
             FM_VAR_PARM(ci.pZoneTicket, ci.cbZoneTicket)
             FM_VAR_PARM(szCdKey, CB_ZTS) // BT - 9/11/2010 - Sending the token to the server so that the server will also enforce authentication. 
             FM_VAR_PARM(szPassword, CB_ZTS)
-			FM_VAR_PARM(szDrmHash, CB_ZTS) // BT - STEAM
+			FM_VAR_PARM(szDrmHash, CB_ZTS) // BT - STEAM // TODO: I believe this is a bug and should be removed, review later. This shouldn't be here anymore.
         END_PFM_CREATE
         pfmLogon->fedsrvVer = MSGVER;
         pfmLogon->dwCookie = dwCookie;
@@ -1430,6 +1430,13 @@ void BaseClient::UpdateLobbyLoginRequestWithSteamAuthTokenInformation(FMD_C_LOGO
 		m_hAuthTicketLobby = SteamUser()->GetAuthSessionTicket(pfmLogon->steamAuthTicket, sizeof(pfmLogon->steamAuthTicket), &pfmLogon->steamAuthTicketLength);
 
 		pfmLogon->steamID = SteamUser()->GetSteamID().ConvertToUint64();
+	}
+	else
+	{
+		// BT - WOPR
+		strcpy((char *)pfmLogon->steamAuthTicket, "");
+		pfmLogon->steamAuthTicketLength = 0;
+		pfmLogon->steamID = 0;
 	}
 }
 
@@ -1770,6 +1777,9 @@ void    BaseClient::SetMoney(Money m)
     }
 }
 
+// BT - WOPR (Just for debugging).
+//Vector m_lastPosition;
+
 bool    BaseClient::SendUpdate(Time now)
 {
     bool fSent = false;
@@ -1790,6 +1800,21 @@ bool    BaseClient::SendUpdate(Time now)
             if ((now >= m_lastSend + c_dsecUpdateClient) /* || ((m_oldStateM ^ stateM) & smSendUpdateNow) */)
             {
                 ZAssert(m_ship->GetPosition().LengthSquared());
+
+				// BT - WOPR (Just for debugging).
+				//Vector velocity = BaseClient::GetShip()->GetVelocity();
+				//Vector currentPosition = BaseClient::GetShip()->GetPosition();
+				//float distanceBetweenCurrentAndLastPosition = (currentPosition - m_lastPosition).LengthSquared();
+				//
+				////debugf("new position squared = %f, velocity: %f\n", distanceBetweenCurrentAndLastPosition, velocity.Length());
+
+				//char filename[200];
+				//sprintf(filename, "c:\\1\\%s_positions.txt", BaseClient::GetShip()->GetName());
+				//FILE * file = fopen(filename, "a+");
+				//fprintf(file, "%s - time: %ul, new position squared = %f, velocity.Length: %f\n", now.getTimeString(), now.clock(), distanceBetweenCurrentAndLastPosition, velocity.Length());
+				//fclose(file);
+
+				//m_lastPosition = currentPosition;
 
                 m_lastSend = now;
 

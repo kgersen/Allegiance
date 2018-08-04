@@ -181,6 +181,14 @@ public:
     {
         m_dwTime = c;
     }
+
+	// BT - WOPR - Diagnosing timing issues for bot commands. 
+	// https://stackoverflow.com/questions/20370920/convert-current-time-from-windows-to-unix-timestamp-in-c-or-c
+	INT64 getUnixTime();
+	
+	// Does not include Milliseconds. :(
+	const char * getTimeString();
+
 };
 
 #endif

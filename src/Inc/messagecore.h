@@ -93,8 +93,9 @@ protected:
   CFMRecipient(const char * szName, DPID dpid) :
     m_dpid(dpid)
   {
-    m_szName = new char[lstrlen(szName) + 1];
-    lstrcpy(m_szName, szName);
+	  // BT - Fixing compiler warning.
+    m_szName = new char[strlen(szName) + 1];
+    strcpy(m_szName, szName);
   }
   ~CFMRecipient()
   {
@@ -629,17 +630,30 @@ private:
     FM_VAR.cbmsg = sizeof(FMD_##TYPE##_##SHORTNAME);
 
 // main macro use to create a message and queue it. 
+#ifdef _M_CEE  // BT - WOPR - PFM objects will be created in a global namespace for AllegianceInterop to use.
+#define BEGIN_PFM_CREATE(OBJ, FM_VAR, TYPE, SHORTNAME) \
+  ::FMD_##TYPE##_##SHORTNAME * FM_VAR = (::FMD_##TYPE##_##SHORTNAME *) \
+      (OBJ).PFedMsgCreate(true, NULL, FM_##TYPE##_##SHORTNAME, sizeof(::FMD_##TYPE##_##SHORTNAME),
+#else
 #define BEGIN_PFM_CREATE(OBJ, FM_VAR, TYPE, SHORTNAME) \
   FMD_##TYPE##_##SHORTNAME * FM_VAR = (FMD_##TYPE##_##SHORTNAME *) \
       (OBJ).PFedMsgCreate(true, NULL, FM_##TYPE##_##SHORTNAME, sizeof(FMD_##TYPE##_##SHORTNAME),
+#endif
 
 // Use these to create message without queing them to be sent, and to delete the message
 // The OBJ for doesn't reference any class data, so you can use any handy obj
+#ifdef _M_CEE // BT - WOPR - PFM objects will be created in a global namespace for AllegianceInterop to use.
+#define BEGIN_PFM_CREATE_ALLOC(OBJ, FM_VAR, TYPE, SHORTNAME) \
+  ::FMD_##TYPE##_##SHORTNAME * FM_VAR = (::FMD_##TYPE##_##SHORTNAME *) \
+      (OBJ).PFedMsgCreate(false, NULL, FM_##TYPE##_##SHORTNAME, sizeof(::FMD_##TYPE##_##SHORTNAME),
+
+#else
 #define BEGIN_PFM_CREATE_ALLOC(OBJ, FM_VAR, TYPE, SHORTNAME) \
   FMD_##TYPE##_##SHORTNAME * FM_VAR = (FMD_##TYPE##_##SHORTNAME *) \
       (OBJ).PFedMsgCreate(false, NULL, FM_##TYPE##_##SHORTNAME, sizeof(FMD_##TYPE##_##SHORTNAME),
-#define PFM_DEALLOC(PFM) (GlobalFreePtr(PFM))
+#endif
 
+#define PFM_DEALLOC(PFM) (GlobalFreePtr(PFM))
 
 // Use this to create message into prealloc'd memory without queing it to be sent
 #define BEGIN_PFM_CREATE_PREALLOC(OBJ, PBFM, TYPE, SHORTNAME) \
@@ -656,11 +670,22 @@ private:
 // TYPE is one of C (only client sends this message), S (only server creates),
 //   or CS (both client and server send it--usually originated by client, rebroadcast by server)
 // NUMBER is unique message number. Just use the next available number
+
+#ifdef _M_CEE // BT - WOPR - PFM objects will be created in a global namespace for AllegianceInterop to use. // If messagecore is used in an managed interop assembly, then make the generated structs public.
+
+#define DEFINE_FEDMSG(TYPE, SHORTNAME, NUMBER) \
+  CFEDMSGID FM_##TYPE##_##SHORTNAME = NUMBER; \
+  static AddMsg AM_##TYPE##_##SHORTNAME(NUMBER, "FM_" #TYPE "_" #SHORTNAME); \
+  public struct FMD_##TYPE##_##SHORTNAME : public FEDMESSAGE \
+  { \
+  public:
+#else
 #define DEFINE_FEDMSG(TYPE, SHORTNAME, NUMBER) \
   CFEDMSGID FM_##TYPE##_##SHORTNAME = NUMBER; \
   static AddMsg AM_##TYPE##_##SHORTNAME(NUMBER, "FM_" #TYPE "_" #SHORTNAME); \
   struct FMD_##TYPE##_##SHORTNAME : public FEDMESSAGE \
   { 
+#endif
 
 #define END_FEDMSG };
 

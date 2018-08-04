@@ -15,7 +15,11 @@
 #include <sqloledb.h>
 #include <atldbcli.h>
 #include <../test/TCLib/TCThread.h>
-#include <mutex>
+
+ // BT - WOPR - Compatibility with AllegianceInterop
+#ifndef _M_CEE
+	#include <mutex>
+#endif
 
 #include "Utility.h"
 

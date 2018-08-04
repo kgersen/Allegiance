@@ -5,7 +5,11 @@
 // basic utilility functions used by the DirectSound3D wrappers.
 //
 #include <dsound.h>
-#include <mutex>
+
+#ifndef _M_CEE // BT - WOPR - AllegianceInterop Compatibility
+	#include <mutex>
+#endif
+
 #include <set>
 #include <vector.h>
 

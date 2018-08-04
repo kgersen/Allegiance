@@ -6820,7 +6820,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         break;
 
 	  // BT - STEAM - Enable moderators to ban players by context menu.
-	  bool isModerator = CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) || CSteamUserGroupStatus::IsMemberOfDevelopersGroup(pfsPlayer->GetCDKey());
+	  bool isModerator = CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) 
+		  || CSteamUserGroupStatus::IsMemberOfDevelopersGroup(pfsPlayer->GetCDKey()) 
+		  || strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) == 0; // BT - WOPR
 
       IsideIGC* pside = pfsPlayer->GetSide(); // player's side
       assert (pside);
@@ -7601,8 +7603,13 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		  // If all sides are ready, or if the game starter is a bot, then start the game. 
         if (pfsMission->FAllReady() || strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) == 0) 
         {
+			// BT - WOPR - Bots don't need any countdown. 
+			int missionCountdown = c_fMissionBriefingCountdown;
+			if(strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) == 0)
+				missionCountdown = 0;
+
             // start the countdown
-            pfsMission->StartCountdown(c_fMissionBriefingCountdown);
+            pfsMission->StartCountdown(missionCountdown);
         }
       }
     }
@@ -7615,14 +7622,17 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
       CASTPFM(pfmSetTeamLeader, CS, SET_TEAM_LEADER, pfm);
 
+	  // BT - WOPR - Bots are allowed to take command, even if no one specifically gives them the right to.
+	  bool isBot = strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) == 0;
+
       // the sender better be the current team leader
       IsideIGC* psidePlayer = pfsPlayer->GetSide();
       SideID sid = psidePlayer->GetObjectID();
       TrapHackBoot(sid >= 0 && sid < c_cSidesMax);
 
-      if (pfsPlayer == pfsMission->GetLeader(sid))
+	  if (pfsPlayer == pfsMission->GetLeader(sid) || isBot == true)
       {
-          TrapHackBoot(sid == pfmSetTeamLeader->sideID);
+          TrapHackBoot(sid == pfmSetTeamLeader->sideID || isBot == true);
 
           CFSShip*    pfssNewLeader = CFSShip::GetShipFromID(pfmSetTeamLeader->shipID);
           if (pfssNewLeader && pfssNewLeader->IsPlayer()
@@ -7638,6 +7648,32 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       }
     }
     break;
+
+	// BT - WOPR - Let bots take mission owner away from who ever is currently camping with it.
+	case FM_CS_SET_MISSION_OWNER:
+	{
+		if (!pfsMission)
+			break;
+
+		CASTPFM(pfmSetMissionOwner, CS, SET_MISSION_OWNER, pfm);
+
+		// Only bots are allowed to steal game control.
+		bool isBot = strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) == 0;
+
+		TrapHackBoot(isBot == true);
+
+		IsideIGC* psidePlayer = pfsPlayer->GetSide();
+		SideID sid = psidePlayer->GetObjectID();
+		TrapHackBoot(sid >= 0 && sid < c_cSidesMax);
+
+		if (pfsPlayer == pfsMission->GetLeader(sid) || isBot == true)
+		{
+			TrapHackBoot(sid == pfmSetMissionOwner->sideID || isBot == true);
+
+			pfsMission->SetOwner(pfmSetMissionOwner->sideID);
+		}
+	}
+	break;
 
     case FM_C_RIPCORD_REQUEST:
     {

@@ -1,0 +1,6404 @@
+
+#pragma once
+
+#include "igc.h"
+
+using namespace System;
+
+
+namespace AllegianceInterop
+{
+	/*ref class IIgcSiteWrapper;
+	ref class ImodelIGC;
+	ref class DamageTrack;
+	ref class IsideIGC;
+	ref class IclusterIGC;
+	ref class IshipIGC;
+	ref class IstationIGC;
+	ref class IasteroidIGC;
+	ref class IwarpIGC;
+	ref class IbuoyIGC;
+	ref class ItreasureIGC;
+	ref class ImineIGC;
+	ref class IprobeIGC;
+	ref class IIgcSiteWrapper;
+	ref class ImissionIGC;
+	ref class IbaseIGC;*/
+
+	ref class MissionParams;
+	ref class ThingSite;
+	ref class ClusterSite;
+	ref class CstaticIGC;
+	ref class   IIgcSite;
+
+	ref class   ImissionIGC;
+
+	ref class   IbaseIGC;
+
+	ref class   ImodelIGC;
+	ref class   IbuoyIGC;
+
+	ref class   IdamageIGC;
+	ref class   IscannerIGC;
+	ref class   IshipIGC;
+	ref class   IprojectileIGC;
+	ref class   IstationIGC;
+ 
+	ref class   IbuyableIGC;
+ 
+	ref class   IprojectileTypeIGC;
+	ref class   ItypeIGC;
+	ref class   IexpendableTypeIGC;
+	ref class   ImissileTypeIGC;
+	ref class   ImineTypeIGC;
+	ref class   IprobeTypeIGC;
+	ref class   IchaffTypeIGC;
+
+	ref class   IhullTypeIGC;
+	ref class   IpartTypeIGC;
+	ref class   IlauncherTypeIGC;
+
+	ref class   IpartIGC;
+	ref class   IweaponIGC;
+	ref class   IshieldIGC;
+	ref class   IcloakIGC;
+	ref class   IafterburnerIGC;
+	ref class   IpackIGC;
+	ref class   IlauncherIGC;
+	ref class   ImagazineIGC;
+	ref class   IdispenserIGC;
+	ref class   ImissileIGC;
+	ref class   ImineIGC;
+	ref class   IprobeIGC;
+	ref class   ImunitionIGC;
+	ref class   IbuildingEffectIGC;
+
+	ref class   IclusterIGC;
+
+	ref class   IasteroidIGC;
+	ref class   IwarpIGC;
+	ref class   ItreasureIGC;
+
+	ref class   IsideIGC;
+	ref class   IcivilizationIGC;
+
+	ref class   IstationTypeIGC;
+	ref class   IdroneTypeIGC;
+	ref class   IdevelopmentIGC;
+	ref class   IbucketIGC;
+	
+	ref class   ItreasureSetIGC;
+
+	public ref class Geo
+	{
+	public:
+		::Geo * m_instance;
+
+	public:
+
+		Geo(::Geo * instance)
+
+		{
+			m_instance = instance;
+		}
+
+	};
+
+	public ref class MissionParams
+	{
+	public:
+		::MissionParams * m_instance;
+
+	public:
+
+		MissionParams(::MissionParams * instance)
+
+		{
+			m_instance = instance;
+		}
+
+	};
+
+	public ref class ImapMakerIGC
+	{
+	public:
+		::ImapMakerIGC * m_instance;
+
+	public:
+
+		ImapMakerIGC(::ImapMakerIGC * instance)
+
+		{
+			m_instance = instance;
+		}
+		/*
+		String ^ IsValid(MissionParams ^ pmp)
+		{
+		return gcnew String(m_instance->IsValid(pmp->m_instance));
+		}
+		*/
+		MapMakerID  GetMapMakerID()
+		{
+			return m_instance->GetMapMakerID();
+		}
+
+		VOID        SetMapMakerID(MapMakerID mbID)
+		{
+			return m_instance->SetMapMakerID(mbID);
+		}
+
+		String ^ GetName()
+		{
+			return gcnew String(m_instance->GetName());
+		}
+
+		void        SetName(const char* newVal)
+		{
+			return m_instance->SetName(newVal);
+		}
+
+	};
+
+	public ref class MissionParamsWrapper
+	{
+	public:
+		::MissionParams * m_instance;
+
+	public:
+
+		MissionParamsWrapper(::MissionParams * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		void    Reset()
+		{
+			return m_instance->Reset();
+		}
+
+		String ^ Invalid(bool bFromClient)
+		{
+			return gcnew String(m_instance->Invalid(bFromClient));
+		}
+
+		bool IsConquestGame()
+		{
+			return m_instance->IsConquestGame();
+		}
+
+		bool IsTerritoryGame()
+		{
+			return m_instance->IsTerritoryGame();
+		}
+
+		bool IsDeathMatchGame()
+		{
+			return m_instance->IsDeathMatchGame();
+		}
+
+		bool IsCountdownGame()
+		{
+			return m_instance->IsCountdownGame();
+		}
+
+		bool IsProsperityGame()
+		{
+			return m_instance->IsProsperityGame();
+		}
+
+		bool IsArtifactsGame()
+		{
+			return m_instance->IsArtifactsGame();
+		}
+
+		bool IsFlagsGame()
+		{
+			return m_instance->IsFlagsGame();
+		}
+
+		bool IsNoWinningConditionsGame()
+		{
+			return m_instance->IsNoWinningConditionsGame();
+		}
+
+		float GetCountDownTime()
+		{
+			return m_instance->GetCountDownTime();
+		}
+
+		int GetConquestPercentage()
+		{
+			return m_instance->GetConquestPercentage();
+		}
+
+		int GetTerritoryPercentage()
+		{
+			return m_instance->GetTerritoryPercentage();
+		}
+
+		short GetDeathMatchKillLimit()
+		{
+			return m_instance->GetDeathMatchKillLimit();
+		}
+
+		int GetArtifactsPercentage()
+		{
+			return m_instance->GetArtifactsPercentage();
+		}
+
+	};
+
+	public ref class ShipLoadout
+	{
+	public:
+		::ShipLoadout * m_instance;
+
+	public:
+
+		ShipLoadout(::ShipLoadout * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		ExpandedPartData*   PartData0()
+		{
+			return m_instance->PartData0();
+		}
+
+		ExpandedPartData*   PartDataN(short cb)
+		{
+			return m_instance->PartDataN(cb);
+		}
+
+	};
+
+	public ref class CompactOrientation
+	{
+	public:
+		::CompactOrientation * m_instance;
+
+	public:
+
+		CompactOrientation(::CompactOrientation * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		void    Set(const Orientation& orientation)
+		{
+			return m_instance->Set(orientation);
+		}
+
+		void    Export(Orientation* pOrientation)
+		{
+			return m_instance->Export(pOrientation);
+		}
+
+		void    Validate()
+		{
+			return m_instance->Validate();
+		}
+
+	};
+
+	public ref class CompactTime
+	{
+	public:
+		::CompactTime * m_instance;
+
+	public:
+
+		CompactTime(::CompactTime * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		void        Set(Time timeBase, Time timeNow)
+		{
+			return m_instance->Set(timeBase, timeNow);
+		}
+
+		void        Export(Time timeBase, Time* timeNow)
+		{
+			return m_instance->Export(timeBase, timeNow);
+		}
+
+	};
+
+	public ref class CompactPosition
+	{
+	public:
+		::CompactPosition * m_instance;
+
+	public:
+
+		CompactPosition(::CompactPosition * instance)
+
+		{
+			m_instance = instance;
+		}
+		/*
+		static  float   Displacement(short delta)
+		{
+		return m_instance->Displacement(delta);
+		}
+		*//*
+		static short    Delta(float displacement)
+		{
+		return m_instance->Delta(displacement);
+		}
+		*/
+		void        Set(const Vector& pReference, const Vector& p)
+		{
+			return m_instance->Set(pReference, p);
+		}
+
+		void        Export(const Vector& pReference, Vector* p)
+		{
+			return m_instance->Export(pReference, p);
+		}
+
+	};
+
+	public ref class CompactState
+	{
+	public:
+		::CompactState * m_instance;
+
+	public:
+
+		CompactState(::CompactState * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		void        Set(int stateM)
+		{
+			return m_instance->Set(stateM);
+		}
+
+		void        Export(int* pStateM)
+		{
+			return m_instance->Export(pStateM);
+		}
+
+	};
+
+	public ref class CompactVelocity
+	{
+	public:
+		::CompactVelocity * m_instance;
+
+	public:
+
+		CompactVelocity(::CompactVelocity * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		void            Set(const Vector& v)
+		{
+			return m_instance->Set(v);
+		}
+
+		void            Export(Vector* pVelocity)
+		{
+			return m_instance->Export(pVelocity);
+		}
+
+	};
+
+	public ref class CompactTurnRates
+	{
+	public:
+		::CompactTurnRates * m_instance;
+
+	public:
+
+		CompactTurnRates(::CompactTurnRates * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		void        Set(const float turnRates[3])
+		{
+			return m_instance->Set(turnRates);
+		}
+
+		void            Export(float turnRates[3])
+		{
+			return m_instance->Export(turnRates);
+		}
+
+	};
+
+	public ref class CompactControlData
+	{
+	public:
+		::CompactControlData * m_instance;
+
+	public:
+
+		CompactControlData(::CompactControlData * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		void        Set(const ControlData& cd)
+		{
+			return m_instance->Set(cd);
+		}
+
+		void            Export(ControlData* cd)
+		{
+			return m_instance->Export(cd);
+		}
+
+	};
+
+	public ref class CompactShipFractions
+	{
+	public:
+		::CompactShipFractions * m_instance;
+
+	public:
+
+		CompactShipFractions(::CompactShipFractions * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		void        SetHullFraction(float hf)
+		{
+			return m_instance->SetHullFraction(hf);
+		}
+
+		float        GetHullFraction()
+		{
+			return m_instance->GetHullFraction();
+		}
+
+		void        SetShieldFraction(float sf)
+		{
+			return m_instance->SetShieldFraction(sf);
+		}
+
+		float        GetShieldFraction()
+		{
+			return m_instance->GetShieldFraction();
+		}
+
+		void        SetFuel(float maxFuel, float fuel)
+		{
+			return m_instance->SetFuel(maxFuel, fuel);
+		}
+
+		float       GetFuel(float maxFuel)
+		{
+			return m_instance->GetFuel(maxFuel);
+		}
+
+		void        SetAmmo(short maxAmmo, short ammo)
+		{
+			return m_instance->SetAmmo(maxAmmo, ammo);
+		}
+
+		short       GetAmmo(short maxAmmo)
+		{
+			return m_instance->GetAmmo(maxAmmo);
+		}
+
+		void        SetEnergy(float maxEnergy, float energy)
+		{
+			return m_instance->SetEnergy(maxEnergy, energy);
+		}
+
+		float        GetEnergy(float maxEnergy)
+		{
+			return m_instance->GetEnergy(maxEnergy);
+		}
+
+		float        GetOre(float maxOre)
+		{
+			return m_instance->GetOre(maxOre);
+		}
+
+		void        SetOre(float maxOre, float ore)
+		{
+			return m_instance->SetOre(maxOre, ore);
+		}
+
+	};
+
+	public ref class ServerLightShipUpdate
+	{
+	public:
+		::ServerLightShipUpdate * m_instance;
+
+	public:
+
+		ServerLightShipUpdate(::ServerLightShipUpdate * instance)
+
+		{
+			m_instance = instance;
+		}
+
+	};
+
+	public ref class ServerHeavyShipUpdate : ServerLightShipUpdate
+	{
+	public:
+		::ServerHeavyShipUpdate * m_instance;
+
+	public:
+
+		ServerHeavyShipUpdate(::ServerHeavyShipUpdate * instance)
+			: ServerLightShipUpdate(instance)
+		{
+			m_instance = instance;
+		}
+
+	};
+
+	public ref class ServerSingleShipUpdate : ServerLightShipUpdate
+	{
+	public:
+		::ServerSingleShipUpdate * m_instance;
+
+	public:
+
+		ServerSingleShipUpdate(::ServerSingleShipUpdate * instance)
+			: ServerLightShipUpdate(instance)
+		{
+			m_instance = instance;
+		}
+
+	};
+
+	public ref class ClientShipUpdate
+	{
+	public:
+		::ClientShipUpdate * m_instance;
+
+	public:
+
+		ClientShipUpdate(::ClientShipUpdate * instance)
+
+		{
+			m_instance = instance;
+		}
+
+	};
+
+	public ref class ClientActiveTurretUpdate
+	{
+	public:
+		::ClientActiveTurretUpdate * m_instance;
+
+	public:
+
+		ClientActiveTurretUpdate(::ClientActiveTurretUpdate * instance)
+
+		{
+			m_instance = instance;
+		}
+
+	};
+
+	public ref class ServerActiveTurretUpdate
+	{
+	public:
+		::ServerActiveTurretUpdate * m_instance;
+
+	public:
+
+		ServerActiveTurretUpdate(::ServerActiveTurretUpdate * instance)
+
+		{
+			m_instance = instance;
+		}
+
+	};
+
+	public ref class IstaticIGC
+	{
+	public:
+		::IstaticIGC * m_instance;
+
+	public:
+
+		IstaticIGC(::IstaticIGC * instance)
+
+		{
+			m_instance = instance;
+		}
+
+	};
+
+	public ref class ItypeIGC : IbaseIGC
+	{
+	public:
+		::ItypeIGC * m_instance;
+
+	public:
+
+		ItypeIGC(::ItypeIGC * instance)
+			: IbaseIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		const void*     GetData()
+		{
+			return m_instance->GetData();
+		}
+
+	};
+
+	public ref class IbuyableIGC : ItypeIGC
+	{
+	public:
+		::IbuyableIGC * m_instance;
+
+	public:
+
+		IbuyableIGC(::IbuyableIGC * instance)
+			: ItypeIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		String ^ GetName()
+		{
+			return gcnew String(m_instance->GetName());
+		}
+
+		String ^ GetIconName()
+		{
+			return gcnew String(m_instance->GetIconName());
+		}
+
+		String ^ GetDescription()
+		{
+			return gcnew String(m_instance->GetDescription());
+		}
+
+		String ^ GetModelName()
+		{
+			return gcnew String(m_instance->GetModelName());
+		}
+
+		Money                   GetPrice()
+		{
+			return m_instance->GetPrice();
+		}
+
+		DWORD                   GetTimeToBuild()
+		{
+			return m_instance->GetTimeToBuild();
+		}
+
+		BuyableGroupID          GetGroupID()
+		{
+			return m_instance->GetGroupID();
+		}
+
+	};
+
+	public ref class IbucketIGC : IbuyableIGC
+	{
+	public:
+		::IbucketIGC * m_instance;
+
+	public:
+
+		IbucketIGC(::IbucketIGC * instance)
+			: IbuyableIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		IbuyableIGC ^ GetBuyable()
+		{
+			return gcnew IbuyableIGC((::IbuyableIGC  *) m_instance->GetBuyable());
+		}
+
+		IsideIGC ^ GetSide()
+		{
+			return gcnew IsideIGC((::IsideIGC  *) m_instance->GetSide());
+		}
+
+		void                    SetPrice(Money m)
+		{
+			return m_instance->SetPrice(m);
+		}
+
+		int                     GetPercentBought()
+		{
+			return m_instance->GetPercentBought();
+		}
+
+		int                     GetPercentComplete()
+		{
+			return m_instance->GetPercentComplete();
+		}
+
+		bool                    GetCompleteF()
+		{
+			return m_instance->GetCompleteF();
+		}
+
+		void                    ForceComplete(Time now)
+		{
+			return m_instance->ForceComplete(now);
+		}
+
+		DWORD                   GetTime()
+		{
+			return m_instance->GetTime();
+		}
+
+		Money                   GetMoney()
+		{
+			return m_instance->GetMoney();
+		}
+
+		void                    SetTimeAndMoney(DWORD dwTime, Money money)
+		{
+			return m_instance->SetTimeAndMoney(dwTime, money);
+		}
+
+		Money                   AddMoney(Money m)
+		{
+			return m_instance->AddMoney(m);
+		}
+
+		void                    SetEmpty()
+		{
+			return m_instance->SetEmpty();
+		}
+
+		ObjectType              GetBucketType()
+		{
+			return m_instance->GetBucketType();
+		}
+
+		IbucketIGC ^ GetPredecessor()
+		{
+			return gcnew IbucketIGC((::IbucketIGC  *) m_instance->GetPredecessor());
+		}
+
+	};
+
+	public ref class IstationIGC : IscannerIGC
+	{
+	public:
+		::IstationIGC * m_instance;
+
+	public:
+
+		IstationIGC(::IstationIGC * instance)
+			: IscannerIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		void                    AddShip(IshipIGC^ s)
+		{
+			return m_instance->AddShip(s->m_instance);
+		}
+
+		void                    DeleteShip(IshipIGC^ s)
+		{
+			return m_instance->DeleteShip(s->m_instance);
+		}
+
+		IshipIGC ^ GetShip(ShipID shipID)
+		{
+			return gcnew IshipIGC((::IshipIGC  *) m_instance->GetShip(shipID));
+		}
+
+		const ShipListIGC*      GetShips()
+		{
+			return m_instance->GetShips();
+		}
+
+		void                    RepairAndRefuel(IshipIGC^ pship)
+		{
+			return m_instance->RepairAndRefuel(pship->m_instance);
+		}
+
+		void                    Launch(IshipIGC^ pship)
+		{
+			return m_instance->Launch(pship->m_instance);
+		}
+
+		bool                    InGarage(IshipIGC^ pship, const Vector& position)
+		{
+			return m_instance->InGarage(pship->m_instance, position);
+		}
+
+		ObjectID			 GetRoidID()
+		{
+			return m_instance->GetRoidID();
+		}
+
+		void SetRoidID(ObjectID id)
+		{
+			return m_instance->SetRoidID(id);
+		}
+
+		Vector				 GetRoidPos()
+		{
+			return m_instance->GetRoidPos();
+		}
+
+		void SetRoidPos(Vector pos)
+		{
+			return m_instance->SetRoidPos(pos);
+		}
+
+		float				 GetRoidSig()
+		{
+			return m_instance->GetRoidSig();
+		}
+
+		void SetRoidSig(float Sig)
+		{
+			return m_instance->SetRoidSig(Sig);
+		}
+
+		float				 GetRoidRadius()
+		{
+			return m_instance->GetRoidRadius();
+		}
+
+		void SetRoidRadius(float Radius)
+		{
+			return m_instance->SetRoidRadius(Radius);
+		}
+
+		AsteroidAbilityBitMask GetRoidCaps()
+		{
+			return m_instance->GetRoidCaps();
+		}
+
+		void SetRoidCaps(AsteroidAbilityBitMask aabm)
+		{
+			return m_instance->SetRoidCaps(aabm);
+		}
+
+		void SetRoidSide(SideID sid, bool bset)
+		{
+			return m_instance->SetRoidSide(sid, bset);
+		}
+
+		bool GetRoidSide(SideID sid)
+		{
+			return m_instance->GetRoidSide(sid);
+		}
+
+		float                   GetShieldFraction()
+		{
+			return m_instance->GetShieldFraction();
+		}
+
+		void                    SetShieldFraction(float sf)
+		{
+			return m_instance->SetShieldFraction(sf);
+		}
+
+		IstationTypeIGC ^ GetStationType()
+		{
+			return gcnew IstationTypeIGC((::IstationTypeIGC  *) m_instance->GetStationType());
+		}
+
+		IstationTypeIGC ^ GetBaseStationType()
+		{
+			return gcnew IstationTypeIGC((::IstationTypeIGC  *) m_instance->GetBaseStationType());
+		}
+
+		void                    SetBaseStationType(IstationTypeIGC^ pst)
+		{
+			return m_instance->SetBaseStationType(pst->m_instance);
+		}
+
+		bool                    CanBuy(IbuyableIGC^ b)
+		{
+			return m_instance->CanBuy(b->m_instance);
+		}
+
+		bool                    IsObsolete(IbuyableIGC^ b)
+		{
+			return m_instance->IsObsolete(b->m_instance);
+		}
+
+		IbuyableIGC ^ GetSuccessor(IbuyableIGC^ b)
+		{
+			return gcnew IbuyableIGC((::IbuyableIGC  *) m_instance->GetSuccessor(b->m_instance));
+		}
+
+		IpartTypeIGC ^ GetSimilarPart(IpartTypeIGC^ ppt)
+		{
+			return gcnew IpartTypeIGC((::IpartTypeIGC  *) m_instance->GetSimilarPart(ppt->m_instance));
+		}
+
+		void                    SetLastDamageReport(Time timeLastDamage)
+		{
+			return m_instance->SetLastDamageReport(timeLastDamage);
+		}
+
+		Time                    GetLastDamageReport()
+		{
+			return m_instance->GetLastDamageReport();
+		}
+
+		SoundID                 GetInteriorSound()
+		{
+			return m_instance->GetInteriorSound();
+		}
+
+		SoundID                 GetExteriorSound()
+		{
+			return m_instance->GetExteriorSound();
+		}
+
+	};
+
+	public ref class IdevelopmentIGC : IbuyableIGC
+	{
+	public:
+		::IdevelopmentIGC * m_instance;
+
+	public:
+
+		IdevelopmentIGC(::IdevelopmentIGC * instance)
+			: IbuyableIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		bool                        GetTechOnly()
+		{
+			return m_instance->GetTechOnly();
+		}
+
+		bool                        IsObsolete(const TechTreeBitMask& ttbm)
+		{
+			return m_instance->IsObsolete(ttbm);
+		}
+
+		SoundID                     GetCompletionSound()
+		{
+			return m_instance->GetCompletionSound();
+		}
+
+	};
+
+	public ref class IIgcSiteWrapper
+	{
+	public:
+		::IIgcSite * m_instance;
+
+	public:
+
+		IIgcSiteWrapper(::IIgcSite * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		Time ServerTimeFromClientTime(Time timeClient)
+		{
+			return m_instance->ServerTimeFromClientTime(timeClient);
+		}
+
+		Time ClientTimeFromServerTime(Time timeServer)
+		{
+			return m_instance->ClientTimeFromServerTime(timeServer);
+		}
+
+		void    DevelopmentCompleted(IbucketIGC^ b, IdevelopmentIGC^ d, Time now)
+		{
+			return m_instance->DevelopmentCompleted(b->m_instance, d->m_instance, now);
+		}
+
+		void    StationTypeCompleted(IbucketIGC^ b, IstationIGC^ pstation, IstationTypeIGC^ st, Time now)
+		{
+			return m_instance->StationTypeCompleted(b->m_instance, pstation->m_instance, st->m_instance, now);
+		}
+
+		void    HullTypeCompleted(IsideIGC^ pside, IhullTypeIGC^ pht)
+		{
+			return m_instance->HullTypeCompleted(pside->m_instance, pht->m_instance);
+		}
+
+		void    PartTypeCompleted(IsideIGC^ pside, IpartTypeIGC^ ppt)
+		{
+			return m_instance->PartTypeCompleted(pside->m_instance, ppt->m_instance);
+		}
+
+		void    DroneTypeCompleted(IbucketIGC^ b, IstationIGC^ pstation, IdroneTypeIGC^ dt, Time now)
+		{
+			return m_instance->DroneTypeCompleted(b->m_instance, pstation->m_instance, dt->m_instance, now);
+		}
+
+		void    BucketChangeEvent(BucketChange bc, IbucketIGC^ b)
+		{
+			return m_instance->BucketChangeEvent(bc, b->m_instance);
+		}
+
+		void    SideBuildingTechChange(IsideIGC^ s)
+		{
+			return m_instance->SideBuildingTechChange(s->m_instance);
+		}
+
+		void    SideDevelopmentTechChange(IsideIGC^ s)
+		{
+			return m_instance->SideDevelopmentTechChange(s->m_instance);
+		}
+
+		void    SideGlobalAttributeChange(IsideIGC^ s)
+		{
+			return m_instance->SideGlobalAttributeChange(s->m_instance);
+		}
+
+		void    StationTypeChange(IstationIGC^ s)
+		{
+			return m_instance->StationTypeChange(s->m_instance);
+		}
+
+		void    ClusterUpdateEvent(IclusterIGC^ c)
+		{
+			return m_instance->ClusterUpdateEvent(c->m_instance);
+		}
+
+		void GetMoneyRequest(IshipIGC^ pshipSender, Money amount, HullID hidFor)
+		{
+			return m_instance->GetMoneyRequest(pshipSender->m_instance, amount, hidFor);
+		}
+
+		void PlaySoundEffect(SoundID soundID, ImodelIGC^ model)
+		{
+			return m_instance->PlaySoundEffect(soundID, model->m_instance);
+		}
+
+		void PlaySoundEffect(SoundID soundID, ImodelIGC^ model, const Vector& vectOffset)
+		{
+			return m_instance->PlaySoundEffect(soundID, model->m_instance, vectOffset);
+		}
+
+		void PlayNotificationSound(SoundID soundID, ImodelIGC^ model)
+		{
+			return m_instance->PlayNotificationSound(soundID, model->m_instance);
+		}
+
+		void PlayFFEffect(ForceEffectID effectID, ImodelIGC^ model, LONG lDirection)
+		{
+			return m_instance->PlayFFEffect(effectID, model->m_instance, lDirection);
+		}
+
+		void PlayVisualEffect(VisualEffectID effectID, ImodelIGC^ model, float fIntensity)
+		{
+			return m_instance->PlayVisualEffect(effectID, model->m_instance, fIntensity);
+		}
+
+	};
+
+	public ref class ImissionIGC : IstaticIGC
+	{
+	public:
+		::ImissionIGC * m_instance;
+
+	public:
+
+		ImissionIGC(::ImissionIGC * instance)
+			: IstaticIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		ZString				 BitsToTechsList(TechTreeBitMask & ttbm)
+		{
+			return m_instance->BitsToTechsList(ttbm);
+		}
+
+		void				 TechsListToBits(const char * szTechs, TechTreeBitMask & ttbm)
+		{
+			return m_instance->TechsListToBits(szTechs, ttbm);
+		}
+
+		ZString				 BitsToPartsList(PartMask & pm, EquipmentType et)
+		{
+			return m_instance->BitsToPartsList(pm, et);
+		}
+
+		PartMask			 PartMaskFromToken(const char * szToken, EquipmentType et)
+		{
+			return m_instance->PartMaskFromToken(szToken, et);
+		}
+
+		PartMask			 PartsListToMask(const char * szParts, EquipmentType et)
+		{
+			return m_instance->PartsListToMask(szParts, et);
+		}
+
+		bool				 LoadTechBitsList()
+		{
+			return m_instance->LoadTechBitsList();
+		}
+
+		bool				 LoadPartsBitsList()
+		{
+			return m_instance->LoadPartsBitsList();
+		}
+
+		void				 ExportStaticIGCObjs()
+		{
+			return m_instance->ExportStaticIGCObjs();
+		}
+
+		void				 ImportStaticIGCObjs()
+		{
+			return m_instance->ImportStaticIGCObjs();
+		}
+
+		MissionID               GetMissionID()
+		{
+			return m_instance->GetMissionID();
+		}
+
+		void                    SetMissionID(MissionID mid)
+		{
+			return m_instance->SetMissionID(mid);
+		}
+
+		void                    Initialize(Time now, IIgcSiteWrapper ^ pIgcSite)
+		{
+			return m_instance->Initialize(now, pIgcSite->m_instance);
+		}
+
+		void                    Terminate()
+		{
+			return m_instance->Terminate();
+		}
+
+		void                    Update(Time now)
+		{
+			return m_instance->Update(now);
+		}
+
+		IIgcSiteWrapper ^ GetIgcSite()
+		{
+			return gcnew IIgcSiteWrapper((::IIgcSite  *) m_instance->GetIgcSite());
+		}
+
+		ImodelIGC ^ GetModel(ObjectType type, ObjectID id)
+		{
+			return gcnew ImodelIGC((::ImodelIGC  *) m_instance->GetModel(type, id));
+		}
+
+		IbaseIGC ^ GetBase(ObjectType type, ObjectID id)
+		{
+			return gcnew IbaseIGC((::IbaseIGC  *) m_instance->GetBase(type, id));
+		}
+
+		DamageTrack ^ CreateDamageTrack()
+		{
+			return gcnew DamageTrack((::DamageTrack  *) m_instance->CreateDamageTrack());
+		}
+
+		void                    AddSide(IsideIGC^ s)
+		{
+			return m_instance->AddSide(s->m_instance);
+		}
+
+		void                    DeleteSide(IsideIGC^ s)
+		{
+			return m_instance->DeleteSide(s->m_instance);
+		}
+
+		IsideIGC ^ GetSide(SideID sideID)
+		{
+			return gcnew IsideIGC((::IsideIGC  *) m_instance->GetSide(sideID));
+		}
+
+		const SideListIGC*      GetSides()
+		{
+			return m_instance->GetSides();
+		}
+		/*
+		void                    GetSeenSides(ImodelIGC ^ pmodel, bool (& bseensides)
+		{
+		return m_instance->GetSeenSides(pmodel->m_instance, bseensides);
+		}
+		*/
+		void                    AddCluster(IclusterIGC^ c)
+		{
+			return m_instance->AddCluster(c->m_instance);
+		}
+
+		void                    DeleteCluster(IclusterIGC^ c)
+		{
+			return m_instance->DeleteCluster(c->m_instance);
+		}
+
+		IclusterIGC ^ GetCluster(SectorID clusterID)
+		{
+			return gcnew IclusterIGC((::IclusterIGC  *) m_instance->GetCluster(clusterID));
+		}
+
+		const ClusterListIGC*   GetClusters()
+		{
+			return m_instance->GetClusters();
+		}
+
+		void                    AddShip(IshipIGC^ s)
+		{
+			return m_instance->AddShip(s->m_instance);
+		}
+
+		void                    DeleteShip(IshipIGC^ s)
+		{
+			return m_instance->DeleteShip(s->m_instance);
+		}
+
+		IshipIGC ^ GetShip(ShipID shipID)
+		{
+			return gcnew IshipIGC((::IshipIGC  *) m_instance->GetShip(shipID));
+		}
+
+		const ShipListIGC*      GetShips()
+		{
+			return m_instance->GetShips();
+		}
+
+		void                    AddStation(IstationIGC^ s)
+		{
+			return m_instance->AddStation(s->m_instance);
+		}
+
+		void                    DeleteStation(IstationIGC^ s)
+		{
+			return m_instance->DeleteStation(s->m_instance);
+		}
+
+		IstationIGC ^ GetStation(StationID stationID)
+		{
+			return gcnew IstationIGC((::IstationIGC  *) m_instance->GetStation(stationID));
+		}
+
+		const StationListIGC*   GetStations()
+		{
+			return m_instance->GetStations();
+		}
+
+		void                    AddAsteroid(IasteroidIGC^ p)
+		{
+			return m_instance->AddAsteroid(p->m_instance);
+		}
+
+		void                    DeleteAsteroid(IasteroidIGC^ p)
+		{
+			return m_instance->DeleteAsteroid(p->m_instance);
+		}
+
+		IasteroidIGC ^ GetAsteroid(AsteroidID asteroidID)
+		{
+			return gcnew IasteroidIGC((::IasteroidIGC  *) m_instance->GetAsteroid(asteroidID));
+		}
+
+		const AsteroidListIGC*  GetAsteroids()
+		{
+			return m_instance->GetAsteroids();
+		}
+
+		void                    AddWarp(IwarpIGC^ w)
+		{
+			return m_instance->AddWarp(w->m_instance);
+		}
+
+		void                    DeleteWarp(IwarpIGC^ w)
+		{
+			return m_instance->DeleteWarp(w->m_instance);
+		}
+
+		IwarpIGC ^ GetWarp(WarpID warpID)
+		{
+			return gcnew IwarpIGC((::IwarpIGC  *) m_instance->GetWarp(warpID));
+		}
+
+		const WarpListIGC*      GetWarps()
+		{
+			return m_instance->GetWarps();
+		}
+
+		void                    AddBuoy(IbuoyIGC^ t)
+		{
+			return m_instance->AddBuoy(t->m_instance);
+		}
+
+		void                    DeleteBuoy(IbuoyIGC^ t)
+		{
+			return m_instance->DeleteBuoy(t->m_instance);
+		}
+
+		IbuoyIGC ^ GetBuoy(BuoyID buoyID)
+		{
+			return gcnew IbuoyIGC((::IbuoyIGC  *) m_instance->GetBuoy(buoyID));
+		}
+
+		const BuoyListIGC*      GetBuoys()
+		{
+			return m_instance->GetBuoys();
+		}
+
+		void                    AddTreasure(ItreasureIGC^ t)
+		{
+			return m_instance->AddTreasure(t->m_instance);
+		}
+
+		void                    DeleteTreasure(ItreasureIGC^ t)
+		{
+			return m_instance->DeleteTreasure(t->m_instance);
+		}
+
+		ItreasureIGC ^ GetTreasure(TreasureID treasureID)
+		{
+			return gcnew ItreasureIGC((::ItreasureIGC  *) m_instance->GetTreasure(treasureID));
+		}
+
+		const TreasureListIGC*  GetTreasures()
+		{
+			return m_instance->GetTreasures();
+		}
+
+		void                    AddMine(ImineIGC^ ms)
+		{
+			return m_instance->AddMine(ms->m_instance);
+		}
+
+		void                    DeleteMine(ImineIGC^ m)
+		{
+			return m_instance->DeleteMine(m->m_instance);
+		}
+
+		ImineIGC ^ GetMine(MineID mineID)
+		{
+			return gcnew ImineIGC((::ImineIGC  *) m_instance->GetMine(mineID));
+		}
+
+		const MineListIGC*      GetMines()
+		{
+			return m_instance->GetMines();
+		}
+
+		void                    AddProbe(IprobeIGC^ ms)
+		{
+			return m_instance->AddProbe(ms->m_instance);
+		}
+
+		void                    DeleteProbe(IprobeIGC^ m)
+		{
+			return m_instance->DeleteProbe(m->m_instance);
+		}
+
+		IprobeIGC ^ GetProbe(ProbeID probeID)
+		{
+			return gcnew IprobeIGC((::IprobeIGC  *) m_instance->GetProbe(probeID));
+		}
+
+		const ProbeListIGC*     GetProbes()
+		{
+			return m_instance->GetProbes();
+		}
+
+		BuoyID                  GenerateNewBuoyID()
+		{
+			return m_instance->GenerateNewBuoyID();
+		}
+
+		ShipID                  GenerateNewShipID()
+		{
+			return m_instance->GenerateNewShipID();
+		}
+
+		AsteroidID              GenerateNewAsteroidID()
+		{
+			return m_instance->GenerateNewAsteroidID();
+		}
+
+		StationID               GenerateNewStationID()
+		{
+			return m_instance->GenerateNewStationID();
+		}
+
+		TreasureID              GenerateNewTreasureID()
+		{
+			return m_instance->GenerateNewTreasureID();
+		}
+
+		MineID                  GenerateNewMineID()
+		{
+			return m_instance->GenerateNewMineID();
+		}
+
+		ProbeID                 GenerateNewProbeID()
+		{
+			return m_instance->GenerateNewProbeID();
+		}
+
+		MissileID               GenerateNewMissileID()
+		{
+			return m_instance->GenerateNewMissileID();
+		}
+
+		void                    SetMissionStage(STAGE st)
+		{
+			return m_instance->SetMissionStage(st);
+		}
+
+		STAGE                   GetMissionStage()
+		{
+			return m_instance->GetMissionStage();
+		}
+
+		void                    EnterGame()
+		{
+			return m_instance->EnterGame();
+		}
+
+		void                    ResetMission()
+		{
+			return m_instance->ResetMission();
+		}
+
+		void                    SetPrivateData(DWORD dwPrivate)
+		{
+			return m_instance->SetPrivateData(dwPrivate);
+		}
+
+		DWORD                   GetPrivateData()
+		{
+			return m_instance->GetPrivateData();
+		}
+
+		Time                    GetLastUpdate()
+		{
+			return m_instance->GetLastUpdate();
+		}
+
+		MissionParams ^ GetMissionParams()
+		{
+			return gcnew MissionParams((::MissionParams  *) m_instance->GetMissionParams());
+		}
+
+		void                    SetMissionParams(MissionParams^ pmp)
+		{
+			return m_instance->SetMissionParams(pmp->m_instance);
+		}
+
+		void                    SetStartTime(Time timeStart)
+		{
+			return m_instance->SetStartTime(timeStart);
+		}
+
+		/*CstaticIGC ^             GetStaticCore()
+		{
+		return gcnew CstaticIGC(m_instance->GetStaticCore());
+		}
+
+		void                    SetStaticCore(CstaticIGC ^ pStatic)
+		{
+		return m_instance->SetStaticCore(pStatic->m_instance);
+		}*/
+
+		short                   GetReplayCount()
+		{
+			return m_instance->GetReplayCount();
+		}
+
+		String ^ GetContextName()
+		{
+			return gcnew String(m_instance->GetContextName());
+		}
+
+		void                    UpdateAllies(const char Allies[c_cSidesMax])
+		{
+			return m_instance->UpdateAllies(Allies);
+		}
+
+	};
+
+	public ref class IbaseIGC
+	{
+	public:
+		::IbaseIGC * m_instance;
+
+	public:
+
+		IbaseIGC(::IbaseIGC * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		HRESULT         Initialize(ImissionIGC^ pMission, Time now, const void* data, int length)
+		{
+			return m_instance->Initialize(pMission->m_instance, now, data, length);
+		}
+
+		void            Terminate()
+		{
+			return m_instance->Terminate();
+		}
+
+		void            Update(Time now)
+		{
+			return m_instance->Update(now);
+		}
+
+		int             Export(void* data)
+		{
+			return m_instance->Export(data);
+		}
+
+		int             GetUniqueID()
+		{
+			return m_instance->GetUniqueID();
+		}
+
+		ObjectType      GetObjectType()
+		{
+			return m_instance->GetObjectType();
+		}
+
+		ObjectID        GetObjectID()
+		{
+			return m_instance->GetObjectID();
+		}
+
+		ImissionIGC ^ GetMission()
+		{
+			return gcnew ImissionIGC((::ImissionIGC  *) m_instance->GetMission());
+		}
+
+	};
+
+	
+
+	public ref class IbuyableIGC : ItypeIGC
+	{
+	public:
+		::IbuyableIGC * m_instance;
+
+	public:
+
+		IbuyableIGC(::IbuyableIGC * instance)
+			: ItypeIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		String ^ GetName()
+		{
+			return gcnew String(m_instance->GetName());
+		}
+
+		String ^ GetIconName()
+		{
+			return gcnew String(m_instance->GetIconName());
+		}
+
+		String ^ GetDescription()
+		{
+			return gcnew String(m_instance->GetDescription());
+		}
+
+		String ^ GetModelName()
+		{
+			return gcnew String(m_instance->GetModelName());
+		}
+
+		Money                   GetPrice()
+		{
+			return m_instance->GetPrice();
+		}
+
+		DWORD                   GetTimeToBuild()
+		{
+			return m_instance->GetTimeToBuild();
+		}
+
+		BuyableGroupID          GetGroupID()
+		{
+			return m_instance->GetGroupID();
+		}
+
+	};
+
+	public ref class IbucketIGC : IbuyableIGC
+	{
+	public:
+		::IbucketIGC * m_instance;
+
+	public:
+
+		IbucketIGC(::IbucketIGC * instance)
+			: IbuyableIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		IbuyableIGC ^ GetBuyable()
+		{
+			return gcnew IbuyableIGC((::IbuyableIGC  *) m_instance->GetBuyable());
+		}
+
+		IsideIGC ^ GetSide()
+		{
+			return gcnew IsideIGC((::IsideIGC  *) m_instance->GetSide());
+		}
+
+		void                    SetPrice(Money m)
+		{
+			return m_instance->SetPrice(m);
+		}
+
+		int                     GetPercentBought()
+		{
+			return m_instance->GetPercentBought();
+		}
+
+		int                     GetPercentComplete()
+		{
+			return m_instance->GetPercentComplete();
+		}
+
+		bool                    GetCompleteF()
+		{
+			return m_instance->GetCompleteF();
+		}
+
+		void                    ForceComplete(Time now)
+		{
+			return m_instance->ForceComplete(now);
+		}
+
+		DWORD                   GetTime()
+		{
+			return m_instance->GetTime();
+		}
+
+		Money                   GetMoney()
+		{
+			return m_instance->GetMoney();
+		}
+
+		void                    SetTimeAndMoney(DWORD dwTime, Money money)
+		{
+			return m_instance->SetTimeAndMoney(dwTime, money);
+		}
+
+		Money                   AddMoney(Money m)
+		{
+			return m_instance->AddMoney(m);
+		}
+
+		void                    SetEmpty()
+		{
+			return m_instance->SetEmpty();
+		}
+
+		ObjectType              GetBucketType()
+		{
+			return m_instance->GetBucketType();
+		}
+
+		IbucketIGC ^ GetPredecessor()
+		{
+			return gcnew IbucketIGC((::IbucketIGC  *) m_instance->GetPredecessor());
+		}
+
+	};
+
+	public ref class IpartTypeIGC : IbuyableIGC
+	{
+	public:
+		::IpartTypeIGC * m_instance;
+
+	public:
+
+		IpartTypeIGC(::IpartTypeIGC * instance)
+			: IbuyableIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		EquipmentType   GetEquipmentType()
+		{
+			return m_instance->GetEquipmentType();
+		}
+
+		PartMask        GetPartMask()
+		{
+			return m_instance->GetPartMask();
+		}
+
+		float           GetMass()
+		{
+			return m_instance->GetMass();
+		}
+
+		float           GetSignature()
+		{
+			return m_instance->GetSignature();
+		}
+
+		IpartTypeIGC ^ GetSuccessorPartType()
+		{
+			return gcnew IpartTypeIGC((::IpartTypeIGC  *) m_instance->GetSuccessorPartType());
+		}
+
+		String ^ GetInventoryLineMDLName()
+		{
+			return gcnew String(m_instance->GetInventoryLineMDLName());
+		}
+		/*
+		String ^ GetEquipmentTypeName(EquipmentType et)
+		{
+		return gcnew String(m_instance->GetEquipmentTypeName(et));
+		}
+		*/
+		short           GetAmount(IshipIGC^ pship)
+		{
+			return m_instance->GetAmount(pship->m_instance);
+		}
+
+	};
+
+	public ref class IsideIGC : IbaseIGC
+	{
+	public:
+		::IsideIGC * m_instance;
+
+	public:
+
+		IsideIGC(::IsideIGC * instance)
+			: IbaseIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		IcivilizationIGC ^ GetCivilization()
+		{
+			return gcnew IcivilizationIGC((::IcivilizationIGC  *) m_instance->GetCivilization());
+		}
+
+		void                        SetCivilization(IcivilizationIGC^ pciv)
+		{
+			return m_instance->SetCivilization(pciv->m_instance);
+		}
+
+		void                        DestroyBuckets()
+		{
+			return m_instance->DestroyBuckets();
+		}
+
+		void                        CreateBuckets()
+		{
+			return m_instance->CreateBuckets();
+		}
+
+		void                        SetName(const char* newVal)
+		{
+			return m_instance->SetName(newVal);
+		}
+
+		String ^ GetName()
+		{
+			return gcnew String(m_instance->GetName());
+		}
+
+		SquadID                     GetSquadID()
+		{
+			return m_instance->GetSquadID();
+		}
+
+		void                        SetSquadID(SquadID squadID)
+		{
+			return m_instance->SetSquadID(squadID);
+		}
+
+		const TechTreeBitMask       GetTechs()
+		{
+			return m_instance->GetTechs();
+		}
+
+		void                        ResetBuildingTechs()
+		{
+			return m_instance->ResetBuildingTechs();
+		}
+
+		void                        SetBuildingTechs(const TechTreeBitMask& ttbm)
+		{
+			return m_instance->SetBuildingTechs(ttbm);
+		}
+
+		void                        SetDevelopmentTechs(const TechTreeBitMask& ttbm)
+		{
+			return m_instance->SetDevelopmentTechs(ttbm);
+		}
+
+		bool					 IsNewDevelopmentTechs(const TechTreeBitMask& ttbm)
+		{
+			return m_instance->IsNewDevelopmentTechs(ttbm);
+		}
+
+		bool                        ApplyDevelopmentTechs(const TechTreeBitMask& ttbm)
+		{
+			return m_instance->ApplyDevelopmentTechs(ttbm);
+		}
+
+		void                        SetInitialTechs(const TechTreeBitMask& ttbm)
+		{
+			return m_instance->SetInitialTechs(ttbm);
+		}
+
+		void                        UpdateInitialTechs()
+		{
+			return m_instance->UpdateInitialTechs();
+		}
+
+		void                        AddStation(IstationIGC^ s)
+		{
+			return m_instance->AddStation(s->m_instance);
+		}
+
+		void                        DeleteStation(IstationIGC^ s)
+		{
+			return m_instance->DeleteStation(s->m_instance);
+		}
+
+		IstationIGC ^ GetStation(StationID id)
+		{
+			return gcnew IstationIGC((::IstationIGC  *) m_instance->GetStation(id));
+		}
+
+		const StationListIGC*       GetStations()
+		{
+			return m_instance->GetStations();
+		}
+
+		void                        AddShip(IshipIGC^ s)
+		{
+			return m_instance->AddShip(s->m_instance);
+		}
+
+		void                        DeleteShip(IshipIGC^ s)
+		{
+			return m_instance->DeleteShip(s->m_instance);
+		}
+
+		IshipIGC ^ GetShip(ShipID id)
+		{
+			return gcnew IshipIGC((::IshipIGC  *) m_instance->GetShip(id));
+		}
+
+		const ShipListIGC*          GetShips()
+		{
+			return m_instance->GetShips();
+		}
+
+		void                        AddBucket(IbucketIGC^ s)
+		{
+			return m_instance->AddBucket(s->m_instance);
+		}
+
+		void                        DeleteBucket(IbucketIGC^ s)
+		{
+			return m_instance->DeleteBucket(s->m_instance);
+		}
+
+		IbucketIGC ^ GetBucket(BucketID bucketID)
+		{
+			return gcnew IbucketIGC((::IbucketIGC  *) m_instance->GetBucket(bucketID));
+		}
+
+		const BucketListIGC*        GetBuckets()
+		{
+			return m_instance->GetBuckets();
+		}
+
+		bool                        CanBuy(IbuyableIGC^ b)
+		{
+			return m_instance->CanBuy(b->m_instance);
+		}
+
+		void                        SetGlobalAttributeSet(const GlobalAttributeSet& gas)
+		{
+			return m_instance->SetGlobalAttributeSet(gas);
+		}
+
+		void                        ApplyGlobalAttributeSet(const GlobalAttributeSet& gas)
+		{
+			return m_instance->ApplyGlobalAttributeSet(gas);
+		}
+
+		void                        ResetGlobalAttributeSet()
+		{
+			return m_instance->ResetGlobalAttributeSet();
+		}
+
+		bool                        GetActiveF()
+		{
+			return m_instance->GetActiveF();
+		}
+
+		void                        SetActiveF(bool activeF)
+		{
+			return m_instance->SetActiveF(activeF);
+		}
+
+		void                        SetPrivateData(DWORD dwPrivate)
+		{
+			return m_instance->SetPrivateData(dwPrivate);
+		}
+
+		DWORD                       GetPrivateData()
+		{
+			return m_instance->GetPrivateData();
+		}
+
+		short                       GetKills()
+		{
+			return m_instance->GetKills();
+		}
+
+		void                        AddKill()
+		{
+			return m_instance->AddKill();
+		}
+
+		short                       GetDeaths()
+		{
+			return m_instance->GetDeaths();
+		}
+
+		void                        AddDeath()
+		{
+			return m_instance->AddDeath();
+		}
+
+		short                       GetEjections()
+		{
+			return m_instance->GetEjections();
+		}
+
+		void                        AddEjection()
+		{
+			return m_instance->AddEjection();
+		}
+
+		short                       GetBaseKills()
+		{
+			return m_instance->GetBaseKills();
+		}
+
+		void                        AddBaseKill()
+		{
+			return m_instance->AddBaseKill();
+		}
+
+		short                       GetBaseCaptures()
+		{
+			return m_instance->GetBaseCaptures();
+		}
+
+		void                        AddBaseCapture()
+		{
+			return m_instance->AddBaseCapture();
+		}
+
+		void                        Reset()
+		{
+			return m_instance->Reset();
+		}
+
+		void                        AddToStockpile(IbuyableIGC^ b, short count)
+		{
+			return m_instance->AddToStockpile(b->m_instance, count);
+		}
+
+		short                       RemoveFromStockpile(IbuyableIGC^ b, short count)
+		{
+			return m_instance->RemoveFromStockpile(b->m_instance, count);
+		}
+
+		short                       GetStockpile(IbuyableIGC^ b)
+		{
+			return m_instance->GetStockpile(b->m_instance);
+		}
+
+		const StockpileList*        GetStockpile()
+		{
+			return m_instance->GetStockpile();
+		}
+
+		unsigned char GetConquestPercent()
+		{
+			return m_instance->GetConquestPercent();
+		}
+
+		void          SetConquestPercent(unsigned char newVal)
+		{
+			return m_instance->SetConquestPercent(newVal);
+		}
+
+		unsigned char GetTerritoryCount()
+		{
+			return m_instance->GetTerritoryCount();
+		}
+
+		void          SetTerritoryCount(unsigned char newVal)
+		{
+			return m_instance->SetTerritoryCount(newVal);
+		}
+
+		short         GetFlags()
+		{
+			return m_instance->GetFlags();
+		}
+
+		void          SetFlags(short newVal)
+		{
+			return m_instance->SetFlags(newVal);
+		}
+
+		short         GetArtifacts()
+		{
+			return m_instance->GetArtifacts();
+		}
+
+		void          SetArtifacts(short newVal)
+		{
+			return m_instance->SetArtifacts(newVal);
+		}
+
+		float         GetTimeEndured()
+		{
+			return m_instance->GetTimeEndured();
+		}
+
+		void          SetTimeEndured(float fSeconds)
+		{
+			return m_instance->SetTimeEndured(fSeconds);
+		}
+
+		long          GetProsperityPercentBought()
+		{
+			return m_instance->GetProsperityPercentBought();
+		}
+
+		long          GetProsperityPercentComplete()
+		{
+			return m_instance->GetProsperityPercentComplete();
+		}
+
+		void		  SetAllies(char allies)
+		{
+			return m_instance->SetAllies(allies);
+		}
+
+		char          GetAllies()
+		{
+			return m_instance->GetAllies();
+		}
+		/*
+		static bool           AlliedSides(IsideIGC ^ side1, IsideIGC ^ side2)
+		{
+		return m_instance->AlliedSides(side1->m_instance, side2->m_instance);
+		}
+		*/
+		bool GetRandomCivilization()
+		{
+			return m_instance->GetRandomCivilization();
+		}
+
+		void SetRandomCivilization(bool rand)
+		{
+			return m_instance->SetRandomCivilization(rand);
+		}
+
+		int GetNumPlayersOnSide()
+		{
+			return m_instance->GetNumPlayersOnSide();
+		}
+
+		void HandleNewEnemyCluster(IclusterIGC^ pcluster)
+		{
+			return m_instance->HandleNewEnemyCluster(pcluster->m_instance);
+		}
+
+		void UpdateTerritory()
+		{
+			return m_instance->UpdateTerritory();
+		}
+
+		ClusterListIGC GetTerritory()
+		{
+			return m_instance->GetTerritory();
+		}
+
+		bool IsTerritory(IclusterIGC^ pcluster)
+		{
+			return m_instance->IsTerritory(pcluster->m_instance);
+		}
+
+	};
+
+	public ref class IshipIGC : IscannerIGC
+	{
+	public:
+		::IshipIGC * m_instance;
+
+	public:
+
+		IshipIGC(::IshipIGC * instance)
+			: IscannerIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		void                 SetObjectID(ObjectID id)
+		{
+			return m_instance->SetObjectID(id);
+		}
+
+		Money                GetValue()
+		{
+			return m_instance->GetValue();
+		}
+
+		IstationIGC ^ GetStation()
+		{
+			return gcnew IstationIGC((::IstationIGC  *) m_instance->GetStation());
+		}
+
+		void                 SetStation(IstationIGC^ s)
+		{
+			return m_instance->SetStation(s->m_instance);
+		}
+
+		void                 Reset(bool bFull)
+		{
+			return m_instance->Reset(bFull);
+		}
+
+		float                GetTorqueMultiplier()
+		{
+			return m_instance->GetTorqueMultiplier();
+		}
+
+		float                GetCurrentTurnRate(Axis axis)
+		{
+			return m_instance->GetCurrentTurnRate(axis);
+		}
+
+		void                 SetCurrentTurnRate(Axis axis, float newVal)
+		{
+			return m_instance->SetCurrentTurnRate(axis, newVal);
+		}
+
+		IhullTypeIGC ^ GetHullType()
+		{
+			return gcnew IhullTypeIGC((::IhullTypeIGC  *) m_instance->GetHullType());
+		}
+
+		IhullTypeIGC ^ GetBaseHullType()
+		{
+			return gcnew IhullTypeIGC((::IhullTypeIGC  *) m_instance->GetBaseHullType());
+		}
+
+		void                 SetBaseHullType(IhullTypeIGC^ newVal)
+		{
+			return m_instance->SetBaseHullType(newVal->m_instance);
+		}
+
+		void                 SetMission(ImissionIGC^ pMission)
+		{
+			return m_instance->SetMission(pMission->m_instance);
+		}
+
+		void                 AddPart(IpartIGC^ part)
+		{
+			return m_instance->AddPart(part->m_instance);
+		}
+
+		void                 DeletePart(IpartIGC^ part)
+		{
+			return m_instance->DeletePart(part->m_instance);
+		}
+
+		const PartListIGC*   GetParts()
+		{
+			return m_instance->GetParts();
+		}
+
+		IpartIGC ^ GetMountedPart(EquipmentType type, Mount mountID)
+		{
+			return gcnew IpartIGC((::IpartIGC  *) m_instance->GetMountedPart(type, mountID));
+		}
+
+		void                 MountPart(IpartIGC^ p, Mount mountNew, Mount* pmountOld)
+		{
+			return m_instance->MountPart(p->m_instance, mountNew, pmountOld);
+		}
+
+		short                GetAmmo()
+		{
+			return m_instance->GetAmmo();
+		}
+
+		void                 SetAmmo(short amount)
+		{
+			return m_instance->SetAmmo(amount);
+		}
+
+		float                GetFuel()
+		{
+			return m_instance->GetFuel();
+		}
+
+		void                 SetFuel(float newVal)
+		{
+			return m_instance->SetFuel(newVal);
+		}
+
+		float                GetEnergy()
+		{
+			return m_instance->GetEnergy();
+		}
+
+		void                 SetEnergy(float newVal)
+		{
+			return m_instance->SetEnergy(newVal);
+		}
+
+		float                GetCloaking()
+		{
+			return m_instance->GetCloaking();
+		}
+
+		void                 SetCloaking(float newVal)
+		{
+			return m_instance->SetCloaking(newVal);
+		}
+
+		bool                 GetVectorLock()
+		{
+			return m_instance->GetVectorLock();
+		}
+
+		void                 SetVectorLock(bool bVectorLock)
+		{
+			return m_instance->SetVectorLock(bVectorLock);
+		}
+
+		void                 SetControls(const ControlData& newVal)
+		{
+			return m_instance->SetControls(newVal);
+		}
+
+		bool                 fRipcordActive()
+		{
+			return m_instance->fRipcordActive();
+		}
+
+		float                GetRipcordTimeLeft()
+		{
+			return m_instance->GetRipcordTimeLeft();
+		}
+
+		void                 ResetRipcordTimeLeft()
+		{
+			return m_instance->ResetRipcordTimeLeft();
+		}
+
+		int                  GetStateM()
+		{
+			return m_instance->GetStateM();
+		}
+
+		void                 SetStateM(int newVal)
+		{
+			return m_instance->SetStateM(newVal);
+		}
+
+		void                 SetStateBits(int mask, int newBits)
+		{
+			return m_instance->SetStateBits(mask, newBits);
+		}
+
+		ImodelIGC ^ GetCommandTarget(Command i)
+		{
+			return gcnew ImodelIGC((::ImodelIGC  *) m_instance->GetCommandTarget(i));
+		}
+
+		CommandID            GetCommandID(Command i)
+		{
+			return m_instance->GetCommandID(i);
+		}
+
+		void                 SetCommand(Command i, ImodelIGC^ target, CommandID cid)
+		{
+			return m_instance->SetCommand(i, target->m_instance, cid);
+		}
+
+		void                 PreplotShipMove(Time timeStop)
+		{
+			return m_instance->PreplotShipMove(timeStop);
+		}
+
+		void                 PlotShipMove(Time timeStop)
+		{
+			return m_instance->PlotShipMove(timeStop);
+		}
+
+		void                 ExecuteShipMove(Time timeStop)
+		{
+			return m_instance->ExecuteShipMove(timeStop);
+		}
+
+		bool                EquivalentShip(IshipIGC^ pship)
+		{
+			return m_instance->EquivalentShip(pship->m_instance);
+		}
+
+		short               ExportShipLoadout(ShipLoadout^ ploadout)
+		{
+			return m_instance->ExportShipLoadout(ploadout->m_instance);
+		}
+
+		void                ExportFractions(CompactShipFractions^ pfractions)
+		{
+			return m_instance->ExportFractions(pfractions->m_instance);
+		}
+
+		void                ExportShipUpdate(ServerLightShipUpdate^ pshipupdate)
+		{
+			return m_instance->ExportShipUpdate(pshipupdate->m_instance);
+		}
+
+		void                ExportShipUpdate(ServerSingleShipUpdate^ pshipupdate)
+		{
+			return m_instance->ExportShipUpdate(pshipupdate->m_instance);
+		}
+
+		void                ExportShipUpdate(ClientShipUpdate^ pshipupdate)
+		{
+			return m_instance->ExportShipUpdate(pshipupdate->m_instance);
+		}
+
+		void                ExportShipUpdate(ClientActiveTurretUpdate^ patu)
+		{
+			return m_instance->ExportShipUpdate(patu->m_instance);
+		}
+
+		void                ProcessFractions(const CompactShipFractions ^ fractions)
+		{
+			return m_instance->ProcessFractions((::CompactShipFractions &) fractions->m_instance);
+		}
+
+		ShipUpdateStatus    ProcessShipUpdate(const ServerLightShipUpdate ^ shipupdate)
+		{
+			return m_instance->ProcessShipUpdate((::ServerLightShipUpdate &) shipupdate->m_instance);
+		}
+
+		ShipUpdateStatus    ProcessShipUpdate(const ClientShipUpdate^ shipupdate)
+		{
+			return m_instance->ProcessShipUpdate((::ClientShipUpdate &) shipupdate->m_instance);
+		}
+
+		ShipUpdateStatus    ProcessShipUpdate(const ClientActiveTurretUpdate ^ shipupdate)
+		{
+			return m_instance->ProcessShipUpdate((::ClientActiveTurretUpdate &) shipupdate->m_instance);
+		}
+
+		void                SetPrivateData(DWORD dwPrivate)
+		{
+			return m_instance->SetPrivateData(dwPrivate);
+		}
+
+		DWORD               GetPrivateData()
+		{
+			return m_instance->GetPrivateData();
+		}
+
+		void                ReInitialize(DataShipIGC * dataShip, Time now)
+		{
+			return m_instance->ReInitialize(dataShip, now);
+		}
+
+		Mount               HitTreasure(TreasureCode treasureCode, ObjectID objectID, short amount)
+		{
+			return m_instance->HitTreasure(treasureCode, objectID, amount);
+		}
+
+		ImissileIGC ^ GetLastMissileFired()
+		{
+			return gcnew ImissileIGC((::ImissileIGC  *) m_instance->GetLastMissileFired());
+		}
+
+		void                SetLastMissileFired(ImissileIGC^ pmissile)
+		{
+			return m_instance->SetLastMissileFired(pmissile->m_instance);
+		}
+
+		Time                GetLastTimeLaunched()
+		{
+			return m_instance->GetLastTimeLaunched();
+		}
+
+		void                SetLastTimeLaunched(Time timeLastLaunch)
+		{
+			return m_instance->SetLastTimeLaunched(timeLastLaunch);
+		}
+
+		void                SetLastTimeDocked(Time timeLastDock)
+		{
+			return m_instance->SetLastTimeDocked(timeLastDock);
+		}
+
+		Time                GetLastTimeDocked()
+		{
+			return m_instance->GetLastTimeDocked();
+		}
+
+		void                Promote()
+		{
+			return m_instance->Promote();
+		}
+
+		void                SetParentShip(IshipIGC^ pship)
+		{
+			return m_instance->SetParentShip(pship->m_instance);
+		}
+
+		IshipIGC ^ GetParentShip()
+		{
+			return gcnew IshipIGC((::IshipIGC  *) m_instance->GetParentShip());
+		}
+
+		Mount               GetTurretID()
+		{
+			return m_instance->GetTurretID();
+		}
+
+		void                SetTurretID(Mount turretID)
+		{
+			return m_instance->SetTurretID(turretID);
+		}
+
+		IshipIGC ^ GetGunner(Mount turretID)
+		{
+			return gcnew IshipIGC((::IshipIGC  *) m_instance->GetGunner(turretID));
+		}
+
+		const ShipListIGC*  GetChildShips()
+		{
+			return m_instance->GetChildShips();
+		}
+
+		void    Complain(SoundID sid, const char* pszMsg)
+		{
+			return m_instance->Complain(sid, pszMsg);
+		}
+
+		short               GetKills()
+		{
+			return m_instance->GetKills();
+		}
+
+		void                SetKills(short n)
+		{
+			return m_instance->SetKills(n);
+		}
+
+		void                AddKill()
+		{
+			return m_instance->AddKill();
+		}
+
+		short               GetDeaths()
+		{
+			return m_instance->GetDeaths();
+		}
+
+		void                SetDeaths(short n)
+		{
+			return m_instance->SetDeaths(n);
+		}
+
+		void                AddDeath()
+		{
+			return m_instance->AddDeath();
+		}
+
+		short               GetEjections()
+		{
+			return m_instance->GetEjections();
+		}
+
+		void                SetEjections(short n)
+		{
+			return m_instance->SetEjections(n);
+		}
+
+		void                AddEjection()
+		{
+			return m_instance->AddEjection();
+		}
+
+		float               GetExperienceMultiplier()
+		{
+			return m_instance->GetExperienceMultiplier();
+		}
+
+		float               GetExperience()
+		{
+			return m_instance->GetExperience();
+		}
+
+		void                SetExperience(float experiance)
+		{
+			return m_instance->SetExperience(experiance);
+		}
+
+		void                AddExperience()
+		{
+			return m_instance->AddExperience();
+		}
+
+		void                AddChildShip(IshipIGC^ pship)
+		{
+			return m_instance->AddChildShip(pship->m_instance);
+		}
+
+		void                DeleteChildShip(IshipIGC^ pship)
+		{
+			return m_instance->DeleteChildShip(pship->m_instance);
+		}
+
+		IshipIGC ^ GetSourceShip()
+		{
+			return gcnew IshipIGC((::IshipIGC  *) m_instance->GetSourceShip());
+		}
+
+		IpartIGC ^ CreateAndAddPart(const PartData* ppd)
+		{
+			return gcnew IpartIGC((::IpartIGC  *) m_instance->CreateAndAddPart(ppd));
+		}
+
+		IpartIGC ^ CreateAndAddPart(IpartTypeIGC^ ppt, Mount mount, short amount)
+		{
+			return gcnew IpartIGC((::IpartIGC  *) m_instance->CreateAndAddPart(ppt->m_instance, mount, amount));
+		}
+
+		WingID              GetWingID()
+		{
+			return m_instance->GetWingID();
+		}
+
+		void                SetWingID(WingID wid)
+		{
+			return m_instance->SetWingID(wid);
+		}
+
+		PilotType           GetPilotType()
+		{
+			return m_instance->GetPilotType();
+		}
+
+		AbilityBitMask      GetOrdersABM()
+		{
+			return m_instance->GetOrdersABM();
+		}
+
+		bool                GetAutopilot()
+		{
+			return m_instance->GetAutopilot();
+		}
+
+		void                SetAutopilot(bool bAutopilot)
+		{
+			return m_instance->SetAutopilot(bAutopilot);
+		}
+
+		bool                LegalCommand(CommandID cid)
+		{
+			return m_instance->LegalCommand(cid);
+		}
+
+		void                SetRunawayCheckCooldown(float dtRunAway)
+		{
+			return m_instance->SetRunawayCheckCooldown(dtRunAway);
+		}
+
+		IshipIGC ^ GetAutoDonate()
+		{
+			return gcnew IshipIGC((::IshipIGC  *) m_instance->GetAutoDonate());
+		}
+
+		void                SetAutoDonate(IshipIGC^ pship)
+		{
+			return m_instance->SetAutoDonate(pship->m_instance);
+		}
+
+		ImodelIGC ^ GetRipcordModel()
+		{
+			return gcnew ImodelIGC((::ImodelIGC  *) m_instance->GetRipcordModel());
+		}
+
+		void                SetRipcordModel(ImodelIGC^ pmodel)
+		{
+			return m_instance->SetRipcordModel(pmodel->m_instance);
+		}
+
+		ImodelIGC ^ FindRipcordModel(IclusterIGC^ pcluster)
+		{
+			return gcnew ImodelIGC((::ImodelIGC  *) m_instance->FindRipcordModel(pcluster->m_instance));
+		}
+
+		float               GetRipcordDebt()
+		{
+			return m_instance->GetRipcordDebt();
+		}
+
+		void                AdjustRipcordDebt(float delta)
+		{
+			return m_instance->AdjustRipcordDebt(delta);
+		}
+
+		void			 SetStayDocked(bool stayDock)
+		{
+			return m_instance->SetStayDocked(stayDock);
+		}
+
+		bool			 GetStayDocked()
+		{
+			return m_instance->GetStayDocked();
+		}
+
+		void                SetGettingAmmo(bool gettingAmmo)
+		{
+			return m_instance->SetGettingAmmo(gettingAmmo);
+		}
+
+		void                SetWingmanBehaviour(WingmanBehaviourBitMask wingmanBehaviour)
+		{
+			return m_instance->SetWingmanBehaviour(wingmanBehaviour);
+		}
+
+		WingmanBehaviourBitMask GetWingmanBehaviour()
+		{
+			return m_instance->GetWingmanBehaviour();
+		}
+
+		void			 AddRepair(float repair)
+		{
+			return m_instance->AddRepair(repair);
+		}
+
+		float			 GetRepair()
+		{
+			return m_instance->GetRepair();
+		}
+
+		void			 SetAchievementMask(AchievementMask am)
+		{
+			return m_instance->SetAchievementMask(am);
+		}
+
+		void			 ClearAchievementMask()
+		{
+			return m_instance->ClearAchievementMask();
+		}
+
+		AchievementMask	 GetAchievementMask()
+		{
+			return m_instance->GetAchievementMask();
+		}
+
+		void			 MarkPreviouslySpotted()
+		{
+			return m_instance->MarkPreviouslySpotted();
+		}
+
+		bool			 RecentlySpotted()
+		{
+			return m_instance->RecentlySpotted();
+		}
+
+		DamageTrack ^ GetDamageTrack()
+		{
+			return gcnew DamageTrack((::DamageTrack  *) m_instance->GetDamageTrack());
+		}
+
+		void                CreateDamageTrack()
+		{
+			return m_instance->CreateDamageTrack();
+		}
+
+		void                DeleteDamageTrack()
+		{
+			return m_instance->DeleteDamageTrack();
+		}
+
+		void                ResetDamageTrack()
+		{
+			return m_instance->ResetDamageTrack();
+		}
+
+		void                ApplyMineDamage()
+		{
+			return m_instance->ApplyMineDamage();
+		}
+
+		CommandID           GetDefaultOrder(ImodelIGC^ pmodel)
+		{
+			return m_instance->GetDefaultOrder(pmodel->m_instance);
+		}
+
+		bool                OkToLaunch(Time now)
+		{
+			return m_instance->OkToLaunch(now);
+		}
+
+		bool                PickDefaultOrder(IclusterIGC^ pcluster, const Vector& position, bool bDocked)
+		{
+			return m_instance->PickDefaultOrder(pcluster->m_instance, position, bDocked);
+		}
+
+		bool                IsGhost()
+		{
+			return m_instance->IsGhost();
+		}
+
+		float               GetEndurance()
+		{
+			return m_instance->GetEndurance();
+		}
+
+		bool                InGarage(IshipIGC^ pship, float tCollision)
+		{
+			return m_instance->InGarage(pship->m_instance, tCollision);
+		}
+
+		bool                IsUsingAreaOfEffectWeapon()
+		{
+			return m_instance->IsUsingAreaOfEffectWeapon();
+		}
+
+		short               GetLaunchSlot()
+		{
+			return m_instance->GetLaunchSlot();
+		}
+
+		WarningMask         GetWarningMask()
+		{
+			return m_instance->GetWarningMask();
+		}
+
+		void                SetWarningMaskBit(WarningMask wm)
+		{
+			return m_instance->SetWarningMaskBit(wm);
+		}
+
+		void                ClearWarningMaskBit(WarningMask wm)
+		{
+			return m_instance->ClearWarningMaskBit(wm);
+		}
+
+		void                SetBaseData(IbaseIGC^ pbase)
+		{
+			return m_instance->SetBaseData(pbase->m_instance);
+		}
+
+		IbaseIGC ^ GetBaseData()
+		{
+			return gcnew IbaseIGC((::IbaseIGC  *) m_instance->GetBaseData());
+		}
+
+		float               GetOre()
+		{
+			return m_instance->GetOre();
+		}
+
+		void                SetSkills(float fShoot, float fTurn, float fGoto)
+		{
+			return m_instance->SetSkills(fShoot, fTurn, fGoto);
+		}
+
+		void			 SetWantBoost(bool bOn)
+		{
+			return m_instance->SetWantBoost(bOn);
+		}
+
+		bool 			 GetWantBoost()
+		{
+			return m_instance->GetWantBoost();
+		}
+
+	};
+
+	
+
+	
+
+	
+
+	
+
+	public ref class AttachSite
+	{
+	public:
+		::AttachSite * m_instance;
+
+	public:
+
+		AttachSite(::AttachSite * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		void Terminate()
+		{
+			return m_instance->Terminate();
+		}
+
+		void AddExplosion(ImodelIGC^ pmodel, int type)
+		{
+			return m_instance->AddExplosion(pmodel->m_instance, type);
+		}
+
+		void AddExplosion(const Vector& vecPosition, float scale, int type)
+		{
+			return m_instance->AddExplosion(vecPosition, scale, type);
+		}
+
+		/*void AddThingSite(ThingSite^ thing)
+		{
+			return m_instance->AddThingSite(thing->m_instance);
+		}
+
+		void DeleteThingSite(ThingSite^ thing)
+		{
+			return m_instance->DeleteThingSite(thing->m_instance);
+		}*/
+
+	};
+
+	public ref class ThingSite : AttachSite
+	{
+	public:
+		::ThingSite * m_instance;
+
+	public:
+
+		ThingSite(::ThingSite * instance)
+			: AttachSite(instance)
+		{
+			m_instance = instance;
+		}
+
+		void        Purge()
+		{
+			return m_instance->Purge();
+		}
+
+		Vector      GetChildModelOffset(const ZString& strFrame)
+		{
+			return m_instance->GetChildModelOffset(strFrame);
+		}
+
+		Vector      GetChildOffset(const ZString& strFrame)
+		{
+			return m_instance->GetChildOffset(strFrame);
+		}
+
+		void        AddHullHit(const Vector& vecPosition, const Vector& vecNormal)
+		{
+			return m_instance->AddHullHit(vecPosition, vecNormal);
+		}
+
+		void        AddFlare(Time ptime, const Vector& vecPosition, int id, const Vector* ellipseEquation)
+		{
+			return m_instance->AddFlare(ptime, vecPosition, id, ellipseEquation);
+		}
+
+		void        AddMuzzleFlare(const Vector& vecEmissionPoint, float duration)
+		{
+			return m_instance->AddMuzzleFlare(vecEmissionPoint, duration);
+		}
+
+		void        SetVisible(unsigned char render)
+		{
+			return m_instance->SetVisible(render);
+		}
+
+		float           GetDistanceToEdge()
+		{
+			return m_instance->GetDistanceToEdge();
+		}
+
+		float           GetScreenRadius()
+		{
+			return m_instance->GetScreenRadius();
+		}
+
+		unsigned char   GetRadarState()
+		{
+			return m_instance->GetRadarState();
+		}
+
+		ThingGeo*   GetThingGeo()
+		{
+			return m_instance->GetThingGeo();
+		}
+
+		Geo ^ GetGeo()
+		{
+			return gcnew Geo((::Geo  *) m_instance->GetGeo());
+		}
+
+		void        SetPosition(const Vector& position)
+		{
+			return m_instance->SetPosition(position);
+		}
+
+		float       GetRadius()
+		{
+			return m_instance->GetRadius();
+		}
+
+		void        SetRadius(float r)
+		{
+			return m_instance->SetRadius(r);
+		}
+
+		void        SetOrientation(const Orientation& orientation)
+		{
+			return m_instance->SetOrientation(orientation);
+		}
+
+		void        Spin(float r)
+		{
+			return m_instance->Spin(r);
+		}
+
+		void        SetTexture(const char* pszTextureName)
+		{
+			return m_instance->SetTexture(pszTextureName);
+		}
+
+		void        SetTrailColor(const Color& c)
+		{
+			return m_instance->SetTrailColor(c);
+		}
+
+		HRESULT     LoadDecal(const char* textureName, bool bDirectional, float width)
+		{
+			return m_instance->LoadDecal(textureName, bDirectional, width);
+		}
+
+		HRESULT     LoadModel(int options, const char* modelName, const char* textureName)
+		{
+			return m_instance->LoadModel(options, modelName, textureName);
+		}
+
+		HRESULT     LoadAleph(const char* textureName)
+		{
+			return m_instance->LoadAleph(textureName);
+		}
+
+		HRESULT     LoadEffect(const Color& color)
+		{
+			return m_instance->LoadEffect(color);
+		}
+
+		void        SetColors(float aInner, float fInner, float fOuter)
+		{
+			return m_instance->SetColors(aInner, fInner, fOuter);
+		}
+
+		HRESULT     LoadMine(const char* textureName, float strength, float radius)
+		{
+			return m_instance->LoadMine(textureName, strength, radius);
+		}
+
+		void        SetMineStrength(float strength)
+		{
+			return m_instance->SetMineStrength(strength);
+		}
+
+	};
+
+	public ref class ImodelIGC : IbaseIGC
+	{
+	public:
+		::ImodelIGC * m_instance;
+
+	public:
+
+		ImodelIGC(::ImodelIGC * instance)
+			: IbaseIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		Time                 GetLastUpdate()
+		{
+			return m_instance->GetLastUpdate();
+		}
+
+		void                 SetLastUpdate(Time now)
+		{
+			return m_instance->SetLastUpdate(now);
+		}
+
+		void                 SetMission(ImissionIGC^ pmission)
+		{
+			return m_instance->SetMission(pmission->m_instance);
+		}
+
+		bool                 GetVisibleF()
+		{
+			return m_instance->GetVisibleF();
+		}
+
+		void                 SetVisibleF(bool visibleF)
+		{
+			return m_instance->SetVisibleF(visibleF);
+		}
+
+		void                 SetRender(unsigned char render)
+		{
+			return m_instance->SetRender(render);
+		}
+
+		bool                 SeenBySide(IsideIGC^ side)
+		{
+			return m_instance->SeenBySide(side->m_instance);
+		}
+
+		bool                 GetCurrentEye(IsideIGC^ side)
+		{
+			return m_instance->GetCurrentEye(side->m_instance);
+		}
+
+		void                 UpdateSeenBySide()
+		{
+			return m_instance->UpdateSeenBySide();
+		}
+
+		void                 SetSideVisibility(IsideIGC^ side, bool fVisible)
+		{
+			return m_instance->SetSideVisibility(side->m_instance, fVisible);
+		}
+
+		ThingSite ^ GetThingSite()
+		{
+			return gcnew ThingSite((::ThingSite  *) m_instance->GetThingSite());
+		}
+
+		void                 FreeThingSite()
+		{
+			return m_instance->FreeThingSite();
+		}
+
+		void                 SetPosition(const Vector& newVal)
+		{
+			return m_instance->SetPosition(newVal);
+		}
+
+		void                 SetVelocity(const Vector& newVal)
+		{
+			return m_instance->SetVelocity(newVal);
+		}
+
+		void                 SetOrientation(const Orientation& newVal)
+		{
+			return m_instance->SetOrientation(newVal);
+		}
+
+		void                 SetRotation(const Rotation& newVal)
+		{
+			return m_instance->SetRotation(newVal);
+		}
+
+		float                GetRadius()
+		{
+			return m_instance->GetRadius();
+		}
+
+		void                 SetRadius(float newVal)
+		{
+			return m_instance->SetRadius(newVal);
+		}
+
+		ModelAttributes      GetAttributes()
+		{
+			return m_instance->GetAttributes();
+		}
+
+		IsideIGC ^ GetSide()
+		{
+			return gcnew IsideIGC((::IsideIGC  *) m_instance->GetSide());
+		}
+
+		void                 SetSide(IsideIGC^ newVal)
+		{
+			return m_instance->SetSide(newVal->m_instance);
+		}
+
+		float                GetMass()
+		{
+			return m_instance->GetMass();
+		}
+
+		void                 SetMass(float newVal)
+		{
+			return m_instance->SetMass(newVal);
+		}
+
+		IclusterIGC ^ GetCluster()
+		{
+			return gcnew IclusterIGC((::IclusterIGC  *) m_instance->GetCluster());
+		}
+
+		void                 SetCluster(IclusterIGC^ pVal)
+		{
+			return m_instance->SetCluster(pVal->m_instance);
+		}
+
+		String ^ GetName()
+		{
+			return gcnew String(m_instance->GetName());
+		}
+
+		void                 SetName(const char* newVal)
+		{
+			return m_instance->SetName(newVal);
+		}
+
+		void                 SetSecondaryName(const char* newVal)
+		{
+			return m_instance->SetSecondaryName(newVal);
+		}
+
+		float                GetSignature()
+		{
+			return m_instance->GetSignature();
+		}
+
+		void                 SetSignature(float newVal)
+		{
+			return m_instance->SetSignature(newVal);
+		}
+
+		void                 ChangeSignature(float delta)
+		{
+			return m_instance->ChangeSignature(delta);
+		}
+
+		void                 SetTexture(const char* pszTextureName)
+		{
+			return m_instance->SetTexture(pszTextureName);
+		}
+
+		void                 Move(float t)
+		{
+			return m_instance->Move(t);
+		}
+
+		void                 Move()
+		{
+			return m_instance->Move();
+		}
+
+		void                 SetBB(Time tStart, Time tStop, float dt)
+		{
+			return m_instance->SetBB(tStart, tStop, dt);
+		}
+
+		HitTest*             GetHitTest()
+		{
+			return m_instance->GetHitTest();
+		}
+
+		IObject*             GetIcon()
+		{
+			return m_instance->GetIcon();
+		}
+
+		void                 SetIcon(IObject* picon)
+		{
+			return m_instance->SetIcon(picon);
+		}
+
+		SideID               GetFlag()
+		{
+			return m_instance->GetFlag();
+		}
+
+	};
+
+	public ref class IdamageIGC : ImodelIGC
+	{
+	public:
+		::IdamageIGC * m_instance;
+
+	public:
+
+		IdamageIGC(::IdamageIGC * instance)
+			: ImodelIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		float           GetFraction()
+		{
+			return m_instance->GetFraction();
+		}
+
+		void            SetFraction(float newVal)
+		{
+			return m_instance->SetFraction(newVal);
+		}
+
+		float           GetHitPoints()
+		{
+			return m_instance->GetHitPoints();
+		}
+
+	};
+
+	public ref class IscannerIGC : IdamageIGC
+	{
+	public:
+		::IscannerIGC * m_instance;
+
+	public:
+
+		IscannerIGC(::IscannerIGC * instance)
+			: IdamageIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		bool                 InScannerRange(ImodelIGC^ pModel)
+		{
+			return m_instance->InScannerRange(pModel->m_instance);
+		}
+
+		bool                 CanSee(ImodelIGC^ pModel)
+		{
+			return m_instance->CanSee(pModel->m_instance);
+		}
+
+	};
+
+	
+
+	public ref class IbuoyIGC : ImodelIGC
+	{
+	public:
+		::IbuoyIGC * m_instance;
+
+	public:
+
+		IbuoyIGC(::IbuoyIGC * instance)
+			: ImodelIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		void                 AddConsumer()
+		{
+			return m_instance->AddConsumer();
+		}
+
+		void                 ReleaseConsumer()
+		{
+			return m_instance->ReleaseConsumer();
+		}
+
+		BuoyType             GetBuoyType()
+		{
+			return m_instance->GetBuoyType();
+		}
+
+	};
+
+	public ref class IchaffIGC : ImodelIGC
+	{
+	public:
+		::IchaffIGC * m_instance;
+
+	public:
+
+		IchaffIGC(::IchaffIGC * instance)
+			: ImodelIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+	};
+
+	public ref class IprojectileIGC : ImodelIGC
+	{
+	public:
+		::IprojectileIGC * m_instance;
+
+	public:
+
+		IprojectileIGC(::IprojectileIGC * instance)
+			: ImodelIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		IprojectileTypeIGC ^ GetProjectileType()
+		{
+			return gcnew IprojectileTypeIGC((::IprojectileTypeIGC  *) m_instance->GetProjectileType());
+		}
+
+		ImodelIGC ^ GetLauncher()
+		{
+			return gcnew ImodelIGC((::ImodelIGC  *) m_instance->GetLauncher());
+		}
+
+		void                 SetLauncher(ImodelIGC^ newVal)
+		{
+			return m_instance->SetLauncher(newVal->m_instance);
+		}
+
+		void                 SetGunner(IshipIGC^ pship)
+		{
+			return m_instance->SetGunner(pship->m_instance);
+		}
+
+	};
+
+	public ref class ImissileIGC : IdamageIGC
+	{
+	public:
+		::ImissileIGC * m_instance;
+
+	public:
+
+		ImissileIGC(::ImissileIGC * instance)
+			: IdamageIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		ImissileTypeIGC ^ GetMissileType()
+		{
+			return gcnew ImissileTypeIGC((::ImissileTypeIGC  *) m_instance->GetMissileType());
+		}
+
+		IshipIGC ^ GetLauncher()
+		{
+			return gcnew IshipIGC((::IshipIGC  *) m_instance->GetLauncher());
+		}
+
+		ImodelIGC ^ GetTarget()
+		{
+			return gcnew ImodelIGC((::ImodelIGC  *) m_instance->GetTarget());
+		}
+
+		void                SetTarget(ImodelIGC^ newVal)
+		{
+			return m_instance->SetTarget(newVal->m_instance);
+		}
+
+		float               GetLock()
+		{
+			return m_instance->GetLock();
+		}
+
+		void                Explode(const Vector& position)
+		{
+			return m_instance->Explode(position);
+		}
+
+		void                Disarm()
+		{
+			return m_instance->Disarm();
+		}
+
+	};
+
+	public ref class ImineIGC : ImodelIGC
+	{
+	public:
+		::ImineIGC * m_instance;
+
+	public:
+
+		ImineIGC(::ImineIGC * instance)
+			: ImodelIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		ImineTypeIGC ^ GetMineType()
+		{
+			return gcnew ImineTypeIGC((::ImineTypeIGC  *) m_instance->GetMineType());
+		}
+
+		IshipIGC ^ GetLauncher()
+		{
+			return gcnew IshipIGC((::IshipIGC  *) m_instance->GetLauncher());
+		}
+
+		float                GetStrength()
+		{
+			return m_instance->GetStrength();
+		}
+
+		void                 ReduceStrength(float amount)
+		{
+			return m_instance->ReduceStrength(amount);
+		}
+
+		float                GetTimeFraction()
+		{
+			return m_instance->GetTimeFraction();
+		}
+
+	};
+
+	public ref class IbuildingEffectIGC : IdamageIGC
+	{
+	public:
+		::IbuildingEffectIGC * m_instance;
+
+	public:
+
+		IbuildingEffectIGC(::IbuildingEffectIGC * instance)
+			: IdamageIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		void                BuilderTerminated()
+		{
+			return m_instance->BuilderTerminated();
+		}
+
+		IasteroidIGC ^ GetAsteroid()
+		{
+			return gcnew IasteroidIGC((::IasteroidIGC  *) m_instance->GetAsteroid());
+		}
+
+		void                MakeUnhitable()
+		{
+			return m_instance->MakeUnhitable();
+		}
+
+		void                AsteroidUpdate(Time now)
+		{
+			return m_instance->AsteroidUpdate(now);
+		}
+
+	};
+
+	public ref class IprobeIGC : IscannerIGC
+	{
+	public:
+		::IprobeIGC * m_instance;
+
+	public:
+
+		IprobeIGC(::IprobeIGC * instance)
+			: IscannerIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		IprobeTypeIGC ^ GetProbeType()
+		{
+			return gcnew IprobeTypeIGC((::IprobeTypeIGC  *) m_instance->GetProbeType());
+		}
+
+		IprojectileTypeIGC ^ GetProjectileType()
+		{
+			return gcnew IprojectileTypeIGC((::IprojectileTypeIGC  *) m_instance->GetProjectileType());
+		}
+
+		float                GetProjectileLifespan()
+		{
+			return m_instance->GetProjectileLifespan();
+		}
+
+		float                GetLifespan()
+		{
+			return m_instance->GetLifespan();
+		}
+
+		float                GetDtBurst()
+		{
+			return m_instance->GetDtBurst();
+		}
+
+		float                GetAccuracy()
+		{
+			return m_instance->GetAccuracy();
+		}
+
+		bool                 GetCanRipcord(float ripcordspeed)
+		{
+			return m_instance->GetCanRipcord(ripcordspeed);
+		}
+
+		float                GetRipcordDelay()
+		{
+			return m_instance->GetRipcordDelay();
+		}
+
+		SoundID              GetAmbientSound()
+		{
+			return m_instance->GetAmbientSound();
+		}
+
+		float                GetTimeFraction()
+		{
+			return m_instance->GetTimeFraction();
+		}
+
+		void			 SetExpiration(Time time)
+		{
+			return m_instance->SetExpiration(time);
+		}
+
+		IshipIGC ^ GetProbeLauncherShip()
+		{
+			return gcnew IshipIGC((::IshipIGC  *) m_instance->GetProbeLauncherShip());
+		}
+
+	};
+
+	
+
+	
+
+	
+
+	public ref class IdroneTypeIGC : IbuyableIGC
+	{
+	public:
+		::IdroneTypeIGC * m_instance;
+
+	public:
+
+		IdroneTypeIGC(::IdroneTypeIGC * instance)
+			: IbuyableIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		HullID                  GetHullTypeID()
+		{
+			return m_instance->GetHullTypeID();
+		}
+
+		PilotType               GetPilotType()
+		{
+			return m_instance->GetPilotType();
+		}
+
+		float                   GetShootSkill()
+		{
+			return m_instance->GetShootSkill();
+		}
+
+		float                   GetMoveSkill()
+		{
+			return m_instance->GetMoveSkill();
+		}
+
+		float                   GetBravery()
+		{
+			return m_instance->GetBravery();
+		}
+
+		IexpendableTypeIGC ^ GetLaidExpendable()
+		{
+			return gcnew IexpendableTypeIGC((::IexpendableTypeIGC  *) m_instance->GetLaidExpendable());
+		}
+
+	};
+
+	public ref class IstationTypeIGC : IbuyableIGC
+	{
+	public:
+		::IstationTypeIGC * m_instance;
+
+	public:
+
+		IstationTypeIGC(::IstationTypeIGC * instance)
+			: IbuyableIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		HitPoints               GetMaxArmorHitPoints()
+		{
+			return m_instance->GetMaxArmorHitPoints();
+		}
+
+		DefenseTypeID           GetArmorDefenseType()
+		{
+			return m_instance->GetArmorDefenseType();
+		}
+
+		HitPoints               GetMaxShieldHitPoints()
+		{
+			return m_instance->GetMaxShieldHitPoints();
+		}
+
+		DefenseTypeID           GetShieldDefenseType()
+		{
+			return m_instance->GetShieldDefenseType();
+		}
+
+		float                   GetArmorRegeneration()
+		{
+			return m_instance->GetArmorRegeneration();
+		}
+
+		float                   GetShieldRegeneration()
+		{
+			return m_instance->GetShieldRegeneration();
+		}
+
+		float                   GetSignature()
+		{
+			return m_instance->GetSignature();
+		}
+
+		float                   GetRadius()
+		{
+			return m_instance->GetRadius();
+		}
+
+		float                   GetScannerRange()
+		{
+			return m_instance->GetScannerRange();
+		}
+
+		Money                   GetIncome()
+		{
+			return m_instance->GetIncome();
+		}
+
+		StationAbilityBitMask   GetCapabilities()
+		{
+			return m_instance->GetCapabilities();
+		}
+
+		bool                    HasCapability(StationAbilityBitMask habm)
+		{
+			return m_instance->HasCapability(habm);
+		}
+
+		String ^ GetTextureName()
+		{
+			return gcnew String(m_instance->GetTextureName());
+		}
+
+		String ^ GetBuilderName()
+		{
+			return gcnew String(m_instance->GetBuilderName());
+		}
+
+		IstationTypeIGC ^ GetSuccessorStationType(IsideIGC^ pside)
+		{
+			return gcnew IstationTypeIGC((::IstationTypeIGC  *) m_instance->GetSuccessorStationType(pside->m_instance));
+		}
+
+		IstationTypeIGC ^ GetDirectSuccessorStationType()
+		{
+			return gcnew IstationTypeIGC((::IstationTypeIGC  *) m_instance->GetDirectSuccessorStationType());
+		}
+
+		AsteroidAbilityBitMask  GetBuildAABM()
+		{
+			return m_instance->GetBuildAABM();
+		}
+
+		int                     GetLaunchSlots()
+		{
+			return m_instance->GetLaunchSlots();
+		}
+
+		int                     GetLandSlots()
+		{
+			return m_instance->GetLandSlots();
+		}
+
+		int                     GetCapLandSlots()
+		{
+			return m_instance->GetCapLandSlots();
+		}
+
+		int                     GetLandPlanes(int slotID)
+		{
+			return m_instance->GetLandPlanes(slotID);
+		}
+
+		SoundID                 GetInteriorSound()
+		{
+			return m_instance->GetInteriorSound();
+		}
+
+		SoundID                 GetInteriorAlertSound()
+		{
+			return m_instance->GetInteriorAlertSound();
+		}
+
+		SoundID                 GetExteriorSound()
+		{
+			return m_instance->GetExteriorSound();
+		}
+
+		SoundID                 GetConstructorNeedRockSound()
+		{
+			return m_instance->GetConstructorNeedRockSound();
+		}
+
+		SoundID                 GetConstructorUnderAttackSound()
+		{
+			return m_instance->GetConstructorUnderAttackSound();
+		}
+
+		SoundID                 GetConstructorDestroyedSound()
+		{
+			return m_instance->GetConstructorDestroyedSound();
+		}
+
+		SoundID                 GetCompletionSound()
+		{
+			return m_instance->GetCompletionSound();
+		}
+
+		SoundID                 GetUnderAttackSound()
+		{
+			return m_instance->GetUnderAttackSound();
+		}
+
+		SoundID                 GetCriticalSound()
+		{
+			return m_instance->GetCriticalSound();
+		}
+
+		SoundID                 GetDestroyedSound()
+		{
+			return m_instance->GetDestroyedSound();
+		}
+
+		SoundID                 GetCapturedSound()
+		{
+			return m_instance->GetCapturedSound();
+		}
+
+		SoundID                 GetEnemyCapturedSound()
+		{
+			return m_instance->GetEnemyCapturedSound();
+		}
+
+		SoundID                 GetEnemyDestroyedSound()
+		{
+			return m_instance->GetEnemyDestroyedSound();
+		}
+
+		StationClassID          GetClassID()
+		{
+			return m_instance->GetClassID();
+		}
+
+		IdroneTypeIGC ^ GetConstructionDroneType()
+		{
+			return gcnew IdroneTypeIGC((::IdroneTypeIGC  *) m_instance->GetConstructionDroneType());
+		}
+
+	};
+
+	
+
+	public ref class IprojectileTypeIGC : ItypeIGC
+	{
+	public:
+		::IprojectileTypeIGC * m_instance;
+
+	public:
+
+		IprojectileTypeIGC(::IprojectileTypeIGC * instance)
+			: ItypeIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		float            GetPower()
+		{
+			return m_instance->GetPower();
+		}
+
+		float            GetBlastPower()
+		{
+			return m_instance->GetBlastPower();
+		}
+
+		float            GetBlastRadius()
+		{
+			return m_instance->GetBlastRadius();
+		}
+
+		float            GetSpeed()
+		{
+			return m_instance->GetSpeed();
+		}
+
+		bool             GetAbsoluteF()
+		{
+			return m_instance->GetAbsoluteF();
+		}
+
+		String ^ GetModelName()
+		{
+			return gcnew String(m_instance->GetModelName());
+		}
+
+		String ^ GetModelTexture()
+		{
+			return gcnew String(m_instance->GetModelTexture());
+		}
+
+		float            GetLifespan()
+		{
+			return m_instance->GetLifespan();
+		}
+
+		float            GetRadius()
+		{
+			return m_instance->GetRadius();
+		}
+
+		float            GetRotation()
+		{
+			return m_instance->GetRotation();
+		}
+
+		COLORVALUE       GetColor()
+		{
+			return m_instance->GetColor();
+		}
+
+		DamageTypeID     GetDamageType()
+		{
+			return m_instance->GetDamageType();
+		}
+
+		SoundID          GetAmbientSound()
+		{
+			return m_instance->GetAmbientSound();
+		}
+
+	};
+
+	public ref class IexpendableTypeIGC : ItypeIGC
+	{
+	public:
+		::IexpendableTypeIGC * m_instance;
+
+	public:
+
+		IexpendableTypeIGC(::IexpendableTypeIGC * instance)
+			: ItypeIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		const LauncherDef*          GetLauncherDef()
+		{
+			return m_instance->GetLauncherDef();
+		}
+
+		EquipmentType               GetEquipmentType()
+		{
+			return m_instance->GetEquipmentType();
+		}
+
+		float                       GetLoadTime()
+		{
+			return m_instance->GetLoadTime();
+		}
+
+		float                       GetMass()
+		{
+			return m_instance->GetMass();
+		}
+
+		float                       GetSignature()
+		{
+			return m_instance->GetSignature();
+		}
+
+		HitPoints                   GetHitPoints()
+		{
+			return m_instance->GetHitPoints();
+		}
+
+		DefenseTypeID               GetDefenseType()
+		{
+			return m_instance->GetDefenseType();
+		}
+
+		float                       GetLifespan()
+		{
+			return m_instance->GetLifespan();
+		}
+
+		String ^ GetName()
+		{
+			return gcnew String(m_instance->GetName());
+		}
+
+		String ^ GetModelName()
+		{
+			return gcnew String(m_instance->GetModelName());
+		}
+
+		String ^ GetModelTexture()
+		{
+			return gcnew String(m_instance->GetModelTexture());
+		}
+
+		float                       GetRadius()
+		{
+			return m_instance->GetRadius();
+		}
+
+		ExpendableAbilityBitMask    GetCapabilities()
+		{
+			return m_instance->GetCapabilities();
+		}
+
+		bool                        HasCapability(ExpendableAbilityBitMask habm)
+		{
+			return m_instance->HasCapability(habm);
+		}
+
+	};
+
+	public ref class ImissileTypeIGC : IexpendableTypeIGC
+	{
+	public:
+		::ImissileTypeIGC * m_instance;
+
+	public:
+
+		ImissileTypeIGC(::ImissileTypeIGC * instance)
+			: IexpendableTypeIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		float           GetAcceleration()
+		{
+			return m_instance->GetAcceleration();
+		}
+
+		float           GetTurnRate()
+		{
+			return m_instance->GetTurnRate();
+		}
+
+		float           GetInitialSpeed()
+		{
+			return m_instance->GetInitialSpeed();
+		}
+
+		float           GetMaxLock()
+		{
+			return m_instance->GetMaxLock();
+		}
+
+		float           GetChaffResistance()
+		{
+			return m_instance->GetChaffResistance();
+		}
+
+		float           GetLockTime()
+		{
+			return m_instance->GetLockTime();
+		}
+
+		float           GetReadyTime()
+		{
+			return m_instance->GetReadyTime();
+		}
+
+		float           GetDispersion()
+		{
+			return m_instance->GetDispersion();
+		}
+
+		float           GetLockAngle()
+		{
+			return m_instance->GetLockAngle();
+		}
+
+		float           GetPower()
+		{
+			return m_instance->GetPower();
+		}
+
+		float           GetBlastPower()
+		{
+			return m_instance->GetBlastPower();
+		}
+
+		float           GetBlastRadius()
+		{
+			return m_instance->GetBlastRadius();
+		}
+
+		DamageTypeID    GetDamageType()
+		{
+			return m_instance->GetDamageType();
+		}
+
+		SoundID         GetLaunchSound()
+		{
+			return m_instance->GetLaunchSound();
+		}
+
+		SoundID         GetAmbientSound()
+		{
+			return m_instance->GetAmbientSound();
+		}
+
+	};
+
+	public ref class ImineTypeIGC : IexpendableTypeIGC
+	{
+	public:
+		::ImineTypeIGC * m_instance;
+
+	public:
+
+		ImineTypeIGC(::ImineTypeIGC * instance)
+			: IexpendableTypeIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		float           GetPower()
+		{
+			return m_instance->GetPower();
+		}
+
+		float           GetEndurance()
+		{
+			return m_instance->GetEndurance();
+		}
+
+		DamageTypeID    GetDamageType()
+		{
+			return m_instance->GetDamageType();
+		}
+
+	};
+
+	public ref class IchaffTypeIGC : IexpendableTypeIGC
+	{
+	public:
+		::IchaffTypeIGC * m_instance;
+
+	public:
+
+		IchaffTypeIGC(::IchaffTypeIGC * instance)
+			: IexpendableTypeIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		float               GetChaffStrength()
+		{
+			return m_instance->GetChaffStrength();
+		}
+
+	};
+
+	public ref class IprobeTypeIGC : IexpendableTypeIGC
+	{
+	public:
+		::IprobeTypeIGC * m_instance;
+
+	public:
+
+		IprobeTypeIGC(::IprobeTypeIGC * instance)
+			: IexpendableTypeIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		float               GetScannerRange()
+		{
+			return m_instance->GetScannerRange();
+		}
+
+		float               GetDtBurst()
+		{
+			return m_instance->GetDtBurst();
+		}
+
+		float               GetDispersion()
+		{
+			return m_instance->GetDispersion();
+		}
+
+		float               GetAccuracy()
+		{
+			return m_instance->GetAccuracy();
+		}
+
+		short               GetAmmo()
+		{
+			return m_instance->GetAmmo();
+		}
+
+		IprojectileTypeIGC ^ GetProjectileType()
+		{
+			return gcnew IprojectileTypeIGC((::IprojectileTypeIGC  *) m_instance->GetProjectileType());
+		}
+
+		float               GetRipcordDelay()
+		{
+			return m_instance->GetRipcordDelay();
+		}
+
+		SoundID             GetAmbientSound()
+		{
+			return m_instance->GetAmbientSound();
+		}
+
+	};
+
+	public ref class IhullTypeIGC : IbuyableIGC
+	{
+	public:
+		::IhullTypeIGC * m_instance;
+
+	public:
+
+		IhullTypeIGC(::IhullTypeIGC * instance)
+			: IbuyableIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		float                GetLength()
+		{
+			return m_instance->GetLength();
+		}
+
+		float                GetMaxSpeed()
+		{
+			return m_instance->GetMaxSpeed();
+		}
+
+		float                GetMaxTurnRate(Axis axis)
+		{
+			return m_instance->GetMaxTurnRate(axis);
+		}
+
+		float                GetTurnTorque(Axis axis)
+		{
+			return m_instance->GetTurnTorque(axis);
+		}
+
+		float                GetThrust()
+		{
+			return m_instance->GetThrust();
+		}
+
+		float                GetSideMultiplier()
+		{
+			return m_instance->GetSideMultiplier();
+		}
+
+		float                GetBackMultiplier()
+		{
+			return m_instance->GetBackMultiplier();
+		}
+
+		float                GetScannerRange()
+		{
+			return m_instance->GetScannerRange();
+		}
+
+		float                GetMaxEnergy()
+		{
+			return m_instance->GetMaxEnergy();
+		}
+
+		float                GetRechargeRate()
+		{
+			return m_instance->GetRechargeRate();
+		}
+
+		HitPoints            GetHitPoints()
+		{
+			return m_instance->GetHitPoints();
+		}
+
+		DefenseTypeID        GetDefenseType()
+		{
+			return m_instance->GetDefenseType();
+		}
+
+		PartMask             GetPartMask(EquipmentType et, Mount mountID)
+		{
+			return m_instance->GetPartMask(et, mountID);
+		}
+
+		short                GetCapacity(EquipmentType et)
+		{
+			return m_instance->GetCapacity(et);
+		}
+
+		Mount                GetMaxWeapons()
+		{
+			return m_instance->GetMaxWeapons();
+		}
+
+		Mount                GetMaxFixedWeapons()
+		{
+			return m_instance->GetMaxFixedWeapons();
+		}
+
+		bool                 CanMount(IpartTypeIGC^ ppt, Mount mountID)
+		{
+			return m_instance->CanMount(ppt->m_instance, mountID);
+		}
+
+		String ^ GetTextureName()
+		{
+			return gcnew String(m_instance->GetTextureName());
+		}
+
+		float                GetMass()
+		{
+			return m_instance->GetMass();
+		}
+
+		float                GetSignature()
+		{
+			return m_instance->GetSignature();
+		}
+
+		HullAbilityBitMask   GetCapabilities()
+		{
+			return m_instance->GetCapabilities();
+		}
+
+		bool                 HasCapability(HullAbilityBitMask habm)
+		{
+			return m_instance->HasCapability(habm);
+		}
+
+		float                GetScale()
+		{
+			return m_instance->GetScale();
+		}
+
+		short                GetMaxAmmo()
+		{
+			return m_instance->GetMaxAmmo();
+		}
+
+		float                GetMaxFuel()
+		{
+			return m_instance->GetMaxFuel();
+		}
+
+		float                GetECM()
+		{
+			return m_instance->GetECM();
+		}
+
+		float                GetRipcordSpeed()
+		{
+			return m_instance->GetRipcordSpeed();
+		}
+
+		float                GetRipcordCost()
+		{
+			return m_instance->GetRipcordCost();
+		}
+
+		IhullTypeIGC ^ GetSuccessorHullType()
+		{
+			return gcnew IhullTypeIGC((::IhullTypeIGC  *) m_instance->GetSuccessorHullType());
+		}
+
+		SoundID              GetInteriorSound()
+		{
+			return m_instance->GetInteriorSound();
+		}
+
+		SoundID              GetExteriorSound()
+		{
+			return m_instance->GetExteriorSound();
+		}
+
+		SoundID              GetMainThrusterInteriorSound()
+		{
+			return m_instance->GetMainThrusterInteriorSound();
+		}
+
+		SoundID              GetMainThrusterExteriorSound()
+		{
+			return m_instance->GetMainThrusterExteriorSound();
+		}
+
+		SoundID              GetManuveringThrusterInteriorSound()
+		{
+			return m_instance->GetManuveringThrusterInteriorSound();
+		}
+
+		SoundID              GetManuveringThrusterExteriorSound()
+		{
+			return m_instance->GetManuveringThrusterExteriorSound();
+		}
+
+		const PartTypeListIGC*      GetPreferredPartTypes()
+		{
+			return m_instance->GetPreferredPartTypes();
+		}
+
+		IObject*             GetIcon()
+		{
+			return m_instance->GetIcon();
+		}
+
+		int                     GetLaunchSlots()
+		{
+			return m_instance->GetLaunchSlots();
+		}
+
+		int                     GetLandSlots()
+		{
+			return m_instance->GetLandSlots();
+		}
+
+		int                     GetLandPlanes(int slotID)
+		{
+			return m_instance->GetLandPlanes(slotID);
+		}
+
+	};
+
+	
+
+	public ref class IlauncherTypeIGC : IpartTypeIGC
+	{
+	public:
+		::IlauncherTypeIGC * m_instance;
+
+	public:
+
+		IlauncherTypeIGC(::IlauncherTypeIGC * instance)
+			: IpartTypeIGC(instance)
+		{
+			m_instance = instance;
+		}
+		/*
+		static  bool                IsLauncherType(EquipmentType et)
+		{
+		return m_instance->IsLauncherType(et);
+		}
+		*/
+		IexpendableTypeIGC ^ GetExpendableType()
+		{
+			return gcnew IexpendableTypeIGC((::IexpendableTypeIGC  *) m_instance->GetExpendableType());
+		}
+
+	};
+
+	public ref class IpartIGC : IbaseIGC
+	{
+	public:
+		::IpartIGC * m_instance;
+
+	public:
+
+		IpartIGC(::IpartIGC * instance)
+			: IbaseIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		EquipmentType    GetEquipmentType()
+		{
+			return m_instance->GetEquipmentType();
+		}
+
+		IpartTypeIGC ^ GetPartType()
+		{
+			return gcnew IpartTypeIGC((::IpartTypeIGC  *) m_instance->GetPartType());
+		}
+
+		IshipIGC ^ GetShip()
+		{
+			return gcnew IshipIGC((::IshipIGC  *) m_instance->GetShip());
+		}
+
+		void             SetShip(IshipIGC^ newVal, Mount mount)
+		{
+			return m_instance->SetShip(newVal->m_instance, mount);
+		}
+
+		Mount            GetMountID()
+		{
+			return m_instance->GetMountID();
+		}
+
+		void             SetMountID(Mount newVal)
+		{
+			return m_instance->SetMountID(newVal);
+		}
+
+		bool             fActive()
+		{
+			return m_instance->fActive();
+		}
+
+		void             Activate()
+		{
+			return m_instance->Activate();
+		}
+
+		void             Deactivate()
+		{
+			return m_instance->Deactivate();
+		}
+
+		float            GetMass()
+		{
+			return m_instance->GetMass();
+		}
+
+		Money            GetPrice()
+		{
+			return m_instance->GetPrice();
+		}
+
+		float            GetMountedFraction()
+		{
+			return m_instance->GetMountedFraction();
+		}
+
+		void             SetMountedFraction(float f)
+		{
+			return m_instance->SetMountedFraction(f);
+		}
+
+		void             Arm()
+		{
+			return m_instance->Arm();
+		}
+
+		short            GetAmount()
+		{
+			return m_instance->GetAmount();
+		}
+
+		void             SetAmount(short a)
+		{
+			return m_instance->SetAmount(a);
+		}
+
+	};
+
+	public ref class IweaponIGC : IpartIGC
+	{
+	public:
+		::IweaponIGC * m_instance;
+
+	public:
+
+		IweaponIGC(::IweaponIGC * instance)
+			: IpartIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		IprojectileTypeIGC ^ GetProjectileType()
+		{
+			return gcnew IprojectileTypeIGC((::IprojectileTypeIGC  *) m_instance->GetProjectileType());
+		}
+
+		short                GetAmmoPerShot()
+		{
+			return m_instance->GetAmmoPerShot();
+		}
+
+		float                GetLifespan()
+		{
+			return m_instance->GetLifespan();
+		}
+
+		float                GetDtBurst()
+		{
+			return m_instance->GetDtBurst();
+		}
+
+		IshipIGC ^ GetGunner()
+		{
+			return gcnew IshipIGC((::IshipIGC  *) m_instance->GetGunner());
+		}
+
+		void                 SetGunner(IshipIGC^ newVal)
+		{
+			return m_instance->SetGunner(newVal->m_instance);
+		}
+
+		bool                 fFiringShot()
+		{
+			return m_instance->fFiringShot();
+		}
+
+		bool                 fFiringBurst()
+		{
+			return m_instance->fFiringBurst();
+		}
+
+		SoundID              GetActivateSound()
+		{
+			return m_instance->GetActivateSound();
+		}
+
+		SoundID              GetSingleShotSound()
+		{
+			return m_instance->GetSingleShotSound();
+		}
+
+		SoundID              GetBurstSound()
+		{
+			return m_instance->GetBurstSound();
+		}
+
+	};
+
+	public ref class IshieldIGC : IpartIGC
+	{
+	public:
+		::IshieldIGC * m_instance;
+
+	public:
+
+		IshieldIGC(::IshieldIGC * instance)
+			: IpartIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		float           GetRegeneration()
+		{
+			return m_instance->GetRegeneration();
+		}
+
+		float           GetMaxStrength()
+		{
+			return m_instance->GetMaxStrength();
+		}
+
+		DefenseTypeID   GetDefenseType()
+		{
+			return m_instance->GetDefenseType();
+		}
+
+		float           GetFraction()
+		{
+			return m_instance->GetFraction();
+		}
+
+		void            SetFraction(float newVal)
+		{
+			return m_instance->SetFraction(newVal);
+		}
+
+	};
+
+	public ref class IcloakIGC : IpartIGC
+	{
+	public:
+		::IcloakIGC * m_instance;
+
+	public:
+
+		IcloakIGC(::IcloakIGC * instance)
+			: IpartIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		float    GetEnergyConsumption()
+		{
+			return m_instance->GetEnergyConsumption();
+		}
+
+		float    GetMaxCloaking()
+		{
+			return m_instance->GetMaxCloaking();
+		}
+
+		float    GetOnRate()
+		{
+			return m_instance->GetOnRate();
+		}
+
+		float    GetOffRate()
+		{
+			return m_instance->GetOffRate();
+		}
+
+		SoundID  GetEngageSound()
+		{
+			return m_instance->GetEngageSound();
+		}
+
+		SoundID  GetDisengageSound()
+		{
+			return m_instance->GetDisengageSound();
+		}
+
+	};
+
+	public ref class IafterburnerIGC : IpartIGC
+	{
+	public:
+		::IafterburnerIGC * m_instance;
+
+	public:
+
+		IafterburnerIGC(::IafterburnerIGC * instance)
+			: IpartIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		float    GetFuelConsumption()
+		{
+			return m_instance->GetFuelConsumption();
+		}
+
+		float    GetMaxThrustWithGA()
+		{
+			return m_instance->GetMaxThrustWithGA();
+		}
+
+		float    GetMaxThrust()
+		{
+			return m_instance->GetMaxThrust();
+		}
+
+		float    GetOnRate()
+		{
+			return m_instance->GetOnRate();
+		}
+
+		float    GetOffRate()
+		{
+			return m_instance->GetOffRate();
+		}
+
+		void     IncrementalUpdate(Time lastUpdate, Time now, bool bUseFuel)
+		{
+			return m_instance->IncrementalUpdate(lastUpdate, now, bUseFuel);
+		}
+
+		float    GetPower()
+		{
+			return m_instance->GetPower();
+		}
+
+		void     SetPower(float p)
+		{
+			return m_instance->SetPower(p);
+		}
+
+		SoundID  GetInteriorSound()
+		{
+			return m_instance->GetInteriorSound();
+		}
+
+		SoundID  GetExteriorSound()
+		{
+			return m_instance->GetExteriorSound();
+		}
+
+	};
+
+	public ref class IpackIGC : IpartIGC
+	{
+	public:
+		::IpackIGC * m_instance;
+
+	public:
+
+		IpackIGC(::IpackIGC * instance)
+			: IpartIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		PackType GetPackType()
+		{
+			return m_instance->GetPackType();
+		}
+
+	};
+
+	public ref class IlauncherIGC : IpartIGC
+	{
+	public:
+		::IlauncherIGC * m_instance;
+
+	public:
+
+		IlauncherIGC(::IlauncherIGC * instance)
+			: IpartIGC(instance)
+		{
+			m_instance = instance;
+		}
+		/*
+		static bool                 IsLauncher(ObjectType type)
+		{
+		return m_instance->IsLauncher(type);
+		}
+		*/
+		void                SetTimeFired(Time now)
+		{
+			return m_instance->SetTimeFired(now);
+		}
+
+		Time                GetTimeLoaded()
+		{
+			return m_instance->GetTimeLoaded();
+		}
+
+		void                SetTimeLoaded(Time tl)
+		{
+			return m_instance->SetTimeLoaded(tl);
+		}
+
+		void                ResetTimeLoaded()
+		{
+			return m_instance->ResetTimeLoaded();
+		}
+
+		float               GetArmedFraction()
+		{
+			return m_instance->GetArmedFraction();
+		}
+
+	};
+
+	public ref class ImagazineIGC : IlauncherIGC
+	{
+	public:
+		::ImagazineIGC * m_instance;
+
+	public:
+
+		ImagazineIGC(::ImagazineIGC * instance)
+			: IlauncherIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		ImissileTypeIGC ^ GetMissileType()
+		{
+			return gcnew ImissileTypeIGC((::ImissileTypeIGC  *) m_instance->GetMissileType());
+		}
+
+		float               GetLock()
+		{
+			return m_instance->GetLock();
+		}
+
+		void                SetLock(float l)
+		{
+			return m_instance->SetLock(l);
+		}
+
+	};
+
+	public ref class IdispenserIGC : IlauncherIGC
+	{
+	public:
+		::IdispenserIGC * m_instance;
+
+	public:
+
+		IdispenserIGC(::IdispenserIGC * instance)
+			: IlauncherIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		IexpendableTypeIGC ^ GetExpendableType()
+		{
+			return gcnew IexpendableTypeIGC((::IexpendableTypeIGC  *) m_instance->GetExpendableType());
+		}
+
+	};
+
+	public ref class IclusterIGC : IbaseIGC
+	{
+	public:
+		::IclusterIGC * m_instance;
+
+	public:
+
+		IclusterIGC(::IclusterIGC * instance)
+			: IbaseIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		String ^ GetName()
+		{
+			return gcnew String(m_instance->GetName());
+		}
+
+		Time                    GetLastUpdate()
+		{
+			return m_instance->GetLastUpdate();
+		}
+
+		void                    SetLastUpdate(Time now)
+		{
+			return m_instance->SetLastUpdate(now);
+		}
+
+		void                    AddModel(ImodelIGC^ modelNew)
+		{
+			return m_instance->AddModel(modelNew->m_instance);
+		}
+
+		void                    DeleteModel(ImodelIGC^ modelOld)
+		{
+			return m_instance->DeleteModel(modelOld->m_instance);
+		}
+
+		ImodelIGC ^ GetModel(const char* name)
+		{
+			return gcnew ImodelIGC((::ImodelIGC  *) m_instance->GetModel(name));
+		}
+
+		const ModelListIGC*     GetModels()
+		{
+			return m_instance->GetModels();
+		}
+
+		const ModelListIGC*     GetPickableModels()
+		{
+			return m_instance->GetPickableModels();
+		}
+
+		void                    AddWarp(IwarpIGC^ warpNew)
+		{
+			return m_instance->AddWarp(warpNew->m_instance);
+		}
+
+		void                    DeleteWarp(IwarpIGC^ warpOld)
+		{
+			return m_instance->DeleteWarp(warpOld->m_instance);
+		}
+
+		const WarpListIGC*      GetWarps()
+		{
+			return m_instance->GetWarps();
+		}
+
+		void                    AddMine(ImineIGC^ ms)
+		{
+			return m_instance->AddMine(ms->m_instance);
+		}
+
+		void                    DeleteMine(ImineIGC^ m)
+		{
+			return m_instance->DeleteMine(m->m_instance);
+		}
+
+		ImineIGC ^ GetMine(MineID mineID)
+		{
+			return gcnew ImineIGC((::ImineIGC  *) m_instance->GetMine(mineID));
+		}
+
+		const MineListIGC*      GetMines()
+		{
+			return m_instance->GetMines();
+		}
+
+		void                    AddMissile(ImissileIGC^ ms)
+		{
+			return m_instance->AddMissile(ms->m_instance);
+		}
+
+		void                    DeleteMissile(ImissileIGC^ m)
+		{
+			return m_instance->DeleteMissile(m->m_instance);
+		}
+
+		ImissileIGC ^ GetMissile(MissileID missileID)
+		{
+			return gcnew ImissileIGC((::ImissileIGC  *) m_instance->GetMissile(missileID));
+		}
+
+		const MissileListIGC*   GetMissiles()
+		{
+			return m_instance->GetMissiles();
+		}
+
+		void                    AddProbe(IprobeIGC^ ms)
+		{
+			return m_instance->AddProbe(ms->m_instance);
+		}
+
+		void                    DeleteProbe(IprobeIGC^ m)
+		{
+			return m_instance->DeleteProbe(m->m_instance);
+		}
+
+		IprobeIGC ^ GetProbe(ProbeID probeID)
+		{
+			return gcnew IprobeIGC((::IprobeIGC  *) m_instance->GetProbe(probeID));
+		}
+
+		const ProbeListIGC*     GetProbes()
+		{
+			return m_instance->GetProbes();
+		}
+
+		float                   GetScreenX()
+		{
+			return m_instance->GetScreenX();
+		}
+
+		float                   GetScreenY()
+		{
+			return m_instance->GetScreenY();
+		}
+
+		void                    SetActive(bool bActive)
+		{
+			return m_instance->SetActive(bActive);
+		}
+
+		void                    AddStation(IstationIGC^ stationNew)
+		{
+			return m_instance->AddStation(stationNew->m_instance);
+		}
+
+		void                    DeleteStation(IstationIGC^ stationOld)
+		{
+			return m_instance->DeleteStation(stationOld->m_instance);
+		}
+
+		IstationIGC ^ GetStation(StationID stationID)
+		{
+			return gcnew IstationIGC((::IstationIGC  *) m_instance->GetStation(stationID));
+		}
+
+		const StationListIGC*   GetStations()
+		{
+			return m_instance->GetStations();
+		}
+
+		void                    AddShip(IshipIGC^ shipNew)
+		{
+			return m_instance->AddShip(shipNew->m_instance);
+		}
+
+		void                    DeleteShip(IshipIGC^ shipOld)
+		{
+			return m_instance->DeleteShip(shipOld->m_instance);
+		}
+
+		IshipIGC ^ GetShip(ShipID shipID)
+		{
+			return gcnew IshipIGC((::IshipIGC  *) m_instance->GetShip(shipID));
+		}
+
+		const ShipListIGC*      GetShips()
+		{
+			return m_instance->GetShips();
+		}
+
+		void                    AddAsteroid(IasteroidIGC^ asteroidNew)
+		{
+			return m_instance->AddAsteroid(asteroidNew->m_instance);
+		}
+
+		void                    DeleteAsteroid(IasteroidIGC^ asteroidOld)
+		{
+			return m_instance->DeleteAsteroid(asteroidOld->m_instance);
+		}
+
+		IasteroidIGC ^ GetAsteroid(AsteroidID asteroidID)
+		{
+			return gcnew IasteroidIGC((::IasteroidIGC  *) m_instance->GetAsteroid(asteroidID));
+		}
+
+		const AsteroidListIGC*  GetAsteroids()
+		{
+			return m_instance->GetAsteroids();
+		}
+
+		void                    AddTreasure(ItreasureIGC^ treasureNew)
+		{
+			return m_instance->AddTreasure(treasureNew->m_instance);
+		}
+
+		void                    DeleteTreasure(ItreasureIGC^ treasureOld)
+		{
+			return m_instance->DeleteTreasure(treasureOld->m_instance);
+		}
+
+		ItreasureIGC ^ GetTreasure(TreasureID treasureID)
+		{
+			return gcnew ItreasureIGC((::ItreasureIGC  *) m_instance->GetTreasure(treasureID));
+		}
+
+		const TreasureListIGC*  GetTreasures()
+		{
+			return m_instance->GetTreasures();
+		}
+
+		ClusterSite ^ GetClusterSite()
+		{
+			return gcnew ClusterSite((::ClusterSite  *) m_instance->GetClusterSite());
+		}
+
+		short                   GetNstars()
+		{
+			return m_instance->GetNstars();
+		}
+
+		short                   GetNdebris()
+		{
+			return m_instance->GetNdebris();
+		}
+
+		unsigned int            GetStarSeed()
+		{
+			return m_instance->GetStarSeed();
+		}
+
+		Color                   GetLightColor()
+		{
+			return m_instance->GetLightColor();
+		}
+
+		Color                   GetLightColorAlt()
+		{
+			return m_instance->GetLightColorAlt();
+		}
+
+		float                   GetBidirectionalAmbientLevel()
+		{
+			return m_instance->GetBidirectionalAmbientLevel();
+		}
+
+		float                   GetAmbientLevel()
+		{
+			return m_instance->GetAmbientLevel();
+		}
+
+		String ^ GetPosterName()
+		{
+			return gcnew String(m_instance->GetPosterName());
+		}
+
+		void             SetPrivateData(DWORD dwPrivate)
+		{
+			return m_instance->SetPrivateData(dwPrivate);
+		}
+
+		DWORD            GetPrivateData()
+		{
+			return m_instance->GetPrivateData();
+		}
+
+		void             FlushCollisionQueue()
+		{
+			return m_instance->FlushCollisionQueue();
+		}
+
+		void             MakeModelStatic(ImodelIGC^ pmodel)
+		{
+			return m_instance->MakeModelStatic(pmodel->m_instance);
+		}
+
+		void             MakeModelUnhitable(ImodelIGC^ pmodel)
+		{
+			return m_instance->MakeModelUnhitable(pmodel->m_instance);
+		}
+
+		void             FreeThingSite(ModelAttributes mt, ImodelIGC^ pmodel, HitTest* pht)
+		{
+			return m_instance->FreeThingSite(mt, pmodel->m_instance, pht);
+		}
+
+		bool             GetHomeSector()
+		{
+			return m_instance->GetHomeSector();
+		}
+
+		float            GetPendingTreasures()
+		{
+			return m_instance->GetPendingTreasures();
+		}
+
+		void             SetPendingTreasures(float fpt)
+		{
+			return m_instance->SetPendingTreasures(fpt);
+		}
+
+		float            GetCost()
+		{
+			return m_instance->GetCost();
+		}
+
+		void			 SetHighlight(bool hl)
+		{
+			return m_instance->SetHighlight(hl);
+		}
+
+		bool			 GetHighlight()
+		{
+			return m_instance->GetHighlight();
+		}
+
+	};
+
+	public ref class IasteroidIGC : IdamageIGC
+	{
+	public:
+		::IasteroidIGC * m_instance;
+
+	public:
+
+		IasteroidIGC(::IasteroidIGC * instance)
+			: IdamageIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		float                   GetOre()
+		{
+			return m_instance->GetOre();
+		}
+
+		void                    SetOre(float newVal)
+		{
+			return m_instance->SetOre(newVal);
+		}
+
+		float                   MineOre(float dt)
+		{
+			return m_instance->MineOre(dt);
+		}
+
+		AsteroidAbilityBitMask  GetCapabilities()
+		{
+			return m_instance->GetCapabilities();
+		}
+
+		bool                    HasCapability(AsteroidAbilityBitMask aabm)
+		{
+			return m_instance->HasCapability(aabm);
+		}
+
+		IbuildingEffectIGC ^ GetBuildingEffect()
+		{
+			return gcnew IbuildingEffectIGC((::IbuildingEffectIGC  *) m_instance->GetBuildingEffect());
+		}
+
+		void                    SetBuildingEffect(IbuildingEffectIGC^ pbe)
+		{
+			return m_instance->SetBuildingEffect(pbe->m_instance);
+		}
+		/*
+		String ^ GetTypeName(AsteroidAbilityBitMask aabm)
+		{
+		return gcnew String(m_instance->GetTypeName(aabm));
+		}
+		*//*
+		String ^ GetTypePrefix(int index)
+		{
+		return gcnew String(m_instance->GetTypePrefix(index));
+		}
+		*//*
+		static int                      NumberSpecialAsteroids(MissionParams^ pmp)
+		{
+		return m_instance->NumberSpecialAsteroids(pmp->m_instance);
+		}
+		*//*
+		static int                      GetSpecialAsterioid(MissionParams^ pmp, int index)
+		{
+		return m_instance->GetSpecialAsterioid(pmp->m_instance, index);
+		}
+		*//*
+		static int                      GetRandomType(AsteroidAbilityBitMask aabm)
+		{
+		return m_instance->GetRandomType(aabm);
+		}
+		*/
+		float GetOreSeenBySide(IsideIGC ^ side1)
+		{
+			return m_instance->GetOreSeenBySide(side1->m_instance);
+		}
+
+		bool GetAsteroidCurrentEye(IsideIGC ^ side1)
+		{
+			return m_instance->GetAsteroidCurrentEye(side1->m_instance);
+		}
+
+		void SetOreWithFraction(float oreFraction, bool clientUpdate)
+		{
+			return m_instance->SetOreWithFraction(oreFraction, clientUpdate);
+		}
+
+		float GetOreFraction()
+		{
+			return m_instance->GetOreFraction();
+		}
+
+		void SetBuilderSeenSide(ObjectID oid)
+		{
+			return m_instance->SetBuilderSeenSide(oid);
+		}
+
+		bool GetBuilderSeenSide(ObjectID oid)
+		{
+			return m_instance->GetBuilderSeenSide(oid);
+		}
+
+		void SetInhibitUpdate(bool inhib)
+		{
+			return m_instance->SetInhibitUpdate(inhib);
+		}
+
+	};
+
+	public ref class IwarpIGC : ImodelIGC
+	{
+	public:
+		::IwarpIGC * m_instance;
+
+	public:
+
+		IwarpIGC(::IwarpIGC * instance)
+			: ImodelIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		IwarpIGC ^ GetDestination()
+		{
+			return gcnew IwarpIGC((::IwarpIGC  *) m_instance->GetDestination());
+		}
+
+		const WarpBombList* GetBombs()
+		{
+			return m_instance->GetBombs();
+		}
+
+		bool                IsFixedPosition()
+		{
+			return m_instance->IsFixedPosition();
+		}
+
+		double			 MassLimit()
+		{
+			return m_instance->MassLimit();
+		}
+
+	};
+
+	public ref class ItreasureIGC : ImodelIGC
+	{
+	public:
+		::ItreasureIGC * m_instance;
+
+	public:
+
+		ItreasureIGC(::ItreasureIGC * instance)
+			: ImodelIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		TreasureCode        GetTreasureCode()
+		{
+			return m_instance->GetTreasureCode();
+		}
+
+		IbuyableIGC ^ GetBuyable()
+		{
+			return gcnew IbuyableIGC((::IbuyableIGC  *) m_instance->GetBuyable());
+		}
+
+		ObjectID            GetTreasureID()
+		{
+			return m_instance->GetTreasureID();
+		}
+
+		void                SetTreasureID(ObjectID newVal)
+		{
+			return m_instance->SetTreasureID(newVal);
+		}
+
+		short               GetAmount()
+		{
+			return m_instance->GetAmount();
+		}
+
+		void                SetAmount(short a)
+		{
+			return m_instance->SetAmount(a);
+		}
+
+		void                ResetExpiration(Time now)
+		{
+			return m_instance->ResetExpiration(now);
+		}
+
+	};
+
+	
+
+	public ref class IcivilizationIGC : IbaseIGC
+	{
+	public:
+		::IcivilizationIGC * m_instance;
+
+	public:
+
+		IcivilizationIGC(::IcivilizationIGC * instance)
+			: IbaseIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		String ^ GetName()
+		{
+			return gcnew String(m_instance->GetName());
+		}
+
+		String ^ GetIconName()
+		{
+			return gcnew String(m_instance->GetIconName());
+		}
+
+		String ^ GetHUDName()
+		{
+			return gcnew String(m_instance->GetHUDName());
+		}
+
+		IhullTypeIGC ^ GetLifepod()
+		{
+			return gcnew IhullTypeIGC((::IhullTypeIGC  *) m_instance->GetLifepod());
+		}
+
+		IstationTypeIGC ^ GetInitialStationType()
+		{
+			return gcnew IstationTypeIGC((::IstationTypeIGC  *) m_instance->GetInitialStationType());
+		}
+
+		float                       GetBonusMoney()
+		{
+			return m_instance->GetBonusMoney();
+		}
+
+		float                       GetIncomeMoney()
+		{
+			return m_instance->GetIncomeMoney();
+		}
+
+	};
+
+	public ref class ItreasureSetIGC : IbaseIGC
+	{
+	public:
+		::ItreasureSetIGC * m_instance;
+
+	public:
+
+		ItreasureSetIGC(::ItreasureSetIGC * instance)
+			: IbaseIGC(instance)
+		{
+			m_instance = instance;
+		}
+
+		String ^ GetName()
+		{
+			return gcnew String(m_instance->GetName());
+		}
+
+		bool                        GetZoneOnly()
+		{
+			return m_instance->GetZoneOnly();
+		}
+
+		short					 GetSize()
+		{
+			return m_instance->GetSize();
+		}
+
+		void                        AddTreasureData(TreasureCode tc, ObjectID oid, unsigned char chance)
+		{
+			return m_instance->AddTreasureData(tc, oid, chance);
+		}
+
+	};
+
+	public ref class ShipStatus
+	{
+	public:
+		::ShipStatus * m_instance;
+
+	public:
+
+		ShipStatus(::ShipStatus * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		void    Reset()
+		{
+			return m_instance->Reset();
+		}
+
+		HullID      GetHullID()
+		{
+			return m_instance->GetHullID();
+		}
+
+		void        SetHullID(HullID newVal)
+		{
+			return m_instance->SetHullID(newVal);
+		}
+
+		SectorID    GetSectorID()
+		{
+			return m_instance->GetSectorID();
+		}
+
+		void        SetSectorID(SectorID newVal)
+		{
+			return m_instance->SetSectorID(newVal);
+		}
+
+		StationID   GetStationID()
+		{
+			return m_instance->GetStationID();
+		}
+
+		void        SetStationID(StationID stationID)
+		{
+			return m_instance->SetStationID(stationID);
+		}
+
+		StationID   GetParentID()
+		{
+			return m_instance->GetParentID();
+		}
+
+		void        SetParentID(ShipID shipID)
+		{
+			return m_instance->SetParentID(shipID);
+		}
+
+		ShipState   GetState()
+		{
+			return m_instance->GetState();
+		}
+
+		void        SetState(ShipState newVal)
+		{
+			return m_instance->SetState(newVal);
+		}
+
+		bool        GetUnknown()
+		{
+			return m_instance->GetUnknown();
+		}
+
+		void        SetUnknown()
+		{
+			return m_instance->SetUnknown();
+		}
+
+		bool        GetDetected()
+		{
+			return m_instance->GetDetected();
+		}
+
+		void        SetDetected(bool bDetected)
+		{
+			return m_instance->SetDetected(bDetected);
+		}
+
+		DWORD        GetStateTime()
+		{
+			return m_instance->GetStateTime();
+		}
+
+		void        SetStateTime(DWORD dTime)
+		{
+			return m_instance->SetStateTime(dTime);
+		}
+
+	};
+
+	public ref class ClusterSite : AttachSite
+	{
+	public:
+		::ClusterSite * m_instance;
+
+	public:
+
+		ClusterSite(::ClusterSite * instance)
+			: AttachSite(instance)
+		{
+			m_instance = instance;
+		}
+
+		HRESULT         GetEnvironmentGeo(const char* pszName)
+		{
+			return m_instance->GetEnvironmentGeo(pszName);
+		}
+
+		Geo ^ GetEnvironmentGeo()
+		{
+			return gcnew Geo((::Geo  *) m_instance->GetEnvironmentGeo());
+		}
+
+		GroupGeo*       GetGroupScene()
+		{
+			return m_instance->GetGroupScene();
+		}
+
+		PosterImage*    GetPosterImage()
+		{
+			return m_instance->GetPosterImage();
+		}
+
+		void            SetEnvironmentGeo(const char* pszName)
+		{
+			return m_instance->SetEnvironmentGeo(pszName);
+		}
+
+		float           GetRotation()
+		{
+			return m_instance->GetRotation();
+		}
+
+		void            AddRotation(float da)
+		{
+			return m_instance->AddRotation(da);
+		}
+
+		void                    AddScanner(SideID sid, IscannerIGC^ scannerNew)
+		{
+			return m_instance->AddScanner(sid, scannerNew->m_instance);
+		}
+
+		void                    DeleteScanner(SideID sid, IscannerIGC^ scannerOld)
+		{
+			return m_instance->DeleteScanner(sid, scannerOld->m_instance);
+		}
+
+		const ScannerListIGC*   GetScanners(SideID sid)
+		{
+			return m_instance->GetScanners(sid);
+		}
+
+		AssetMask               GetClusterAssetMask()
+		{
+			return m_instance->GetClusterAssetMask();
+		}
+
+		void                    SetClusterAssetMask(AssetMask am)
+		{
+			return m_instance->SetClusterAssetMask(am);
+		}
+
+		void                    MoveShip()
+		{
+			return m_instance->MoveShip();
+		}
+
+	};
+
+	public ref class SideVisibility
+	{
+	public:
+		::SideVisibility * m_instance;
+
+	public:
+
+		SideVisibility(::SideVisibility * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		bool    fVisible()
+		{
+			return m_instance->fVisible();
+		}
+
+		IscannerIGC ^ pLastSpotter()
+		{
+			return gcnew IscannerIGC((::IscannerIGC  *) m_instance->pLastSpotter());
+		}
+
+		void        fVisible(bool v)
+		{
+			return m_instance->fVisible(v);
+		}
+
+		void        pLastSpotter(IscannerIGC^ s)
+		{
+			return m_instance->pLastSpotter(s->m_instance);
+		}
+
+		void CurrentEyed(bool v)
+		{
+			return m_instance->CurrentEyed(v);
+		}
+
+		bool CurrentEyed()
+		{
+			return m_instance->CurrentEyed();
+		}
+
+	};
+
+	public ref class GameSite
+	{
+	public:
+		::GameSite * m_instance;
+
+	public:
+
+		GameSite(::GameSite * instance)
+
+		{
+			m_instance = instance;
+		}
+		/*
+		static int MessageBox(const ZString& strText, const ZString& strCaption, UINT nType)
+		{
+		return m_instance->MessageBox(strText, strCaption, nType);
+		}
+		*/
+	};
+
+	
+
+
+	public ref class DamageTrack
+	{
+	public:
+		::DamageTrack * m_instance;
+
+	public:
+
+		DamageTrack(::DamageTrack * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		void    SwitchSlots()
+		{
+			return m_instance->SwitchSlots();
+		}
+
+		void    Reset()
+		{
+			return m_instance->Reset();
+		}
+
+		void    AddDamageBucket(DamageBucket^ pdb)
+		{
+			return m_instance->AddDamageBucket(pdb->m_instance);
+		}
+
+		void    DeleteDamageBucket(DamageBucket^ pdb)
+		{
+			return m_instance->DeleteDamageBucket(pdb->m_instance);
+		}
+
+		DamageBucketList*    GetDamageBuckets()
+		{
+			return m_instance->GetDamageBuckets();
+		}
+		/*
+		static void sort(DamageBucketList* pListBuckets)
+		{
+		return m_instance->sort(pListBuckets);
+		}
+		*/
+	};
+
+	public ref class DamageBucket
+	{
+	public:
+		::DamageBucket * m_instance;
+
+	public:
+
+		DamageBucket(::DamageBucket * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		void    Initialize(Time timeNow, ImodelIGC^ pmodel)
+		{
+			return m_instance->Initialize(timeNow, pmodel->m_instance);
+		}
+
+		ImodelIGC ^ model()
+		{
+			return gcnew ImodelIGC((::ImodelIGC  *) m_instance->model());
+		}
+
+		float       totalDamage()
+		{
+			return m_instance->totalDamage();
+		}
+
+		bool        flash(Time timeNow)
+		{
+			return m_instance->flash(timeNow);
+		}
+
+		void        SwitchSlots(int idSlot)
+		{
+			return m_instance->SwitchSlots(idSlot);
+		}
+
+	};
+
+	public ref class DamageTrackSet
+	{
+	public:
+		::DamageTrackSet * m_instance;
+
+	public:
+
+		DamageTrackSet(::DamageTrackSet * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		void Initialize(Time now)
+		{
+			return m_instance->Initialize(now);
+		}
+
+		void Update(Time now)
+		{
+			return m_instance->Update(now);
+		}
+
+		DamageTrack ^ Create()
+		{
+			return gcnew DamageTrack((::DamageTrack  *) m_instance->Create());
+		}
+
+		/*void            AddTrack(DamageTrack^ pdt)
+		{
+			return m_instance->AddTrack(pdt->m_instance);
+		}
+
+		void            DeleteTrack(DamageTrack^ pdt)
+		{
+			return m_instance->DeleteTrack(pdt->m_instance);
+		}*/
+
+	};
+
+	public ref class Waypoint
+	{
+	public:
+		::Waypoint * m_instance;
+
+	public:
+
+		Waypoint(::Waypoint * instance)
+
+		{
+			m_instance = instance;
+		}
+
+	};
+
+	public ref class GotoPlan
+	{
+	public:
+		::GotoPlan * m_instance;
+
+	public:
+
+		GotoPlan(::GotoPlan * instance)
+
+		{
+			m_instance = instance;
+		}
+
+	};
+
+	public ref class PersistPlayerScoreObject
+	{
+	public:
+		::PersistPlayerScoreObject * m_instance;
+
+	public:
+
+		PersistPlayerScoreObject(::PersistPlayerScoreObject * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		void    Reset()
+		{
+			return m_instance->Reset();
+		}
+
+		short   GetRank()
+		{
+			return m_instance->GetRank();
+		}
+
+		float   GetScore()
+		{
+			return m_instance->GetScore();
+		}
+
+		void  SetCivID(CivID civID)
+		{
+			return m_instance->SetCivID(civID);
+		}
+
+		CivID GetCivID()
+		{
+			return m_instance->GetCivID();
+		}
+
+		float   GetCombatRating()
+		{
+			return m_instance->GetCombatRating();
+		}
+
+		void    SetCombatRating(float cr)
+		{
+			return m_instance->SetCombatRating(cr);
+		}
+
+	};
+
+	public ref class PlayerScoreObject
+	{
+	public:
+		::PlayerScoreObject * m_instance;
+
+	public:
+
+		PlayerScoreObject(::PlayerScoreObject * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		void    CalculateScore(ImissionIGC^ pmission)
+		{
+			return m_instance->CalculateScore(pmission->m_instance);
+		}
+
+		void    SetScore(float fNewScore)
+		{
+			return m_instance->SetScore(fNewScore);
+		}
+
+		void    SetCommanderScore(float fCommanderScore)
+		{
+			return m_instance->SetCommanderScore(fCommanderScore);
+		}
+
+		float   GetScore()
+		{
+			return m_instance->GetScore();
+		}
+
+		void    Reset(bool bFull)
+		{
+			return m_instance->Reset(bFull);
+		}
+
+		void SetRankRatio(float rankRatio)
+		{
+			return m_instance->SetRankRatio(rankRatio);
+		}
+
+		bool    Connected()
+		{
+			return m_instance->Connected();
+		}
+
+		bool    Commanding()
+		{
+			return m_instance->Commanding();
+		}
+
+		void    Connect(Time t)
+		{
+			return m_instance->Connect(t);
+		}
+
+		void    Disconnect(Time t)
+		{
+			return m_instance->Disconnect(t);
+		}
+
+		void    StartCommand(Time t)
+		{
+			return m_instance->StartCommand(t);
+		}
+
+		void    StopCommand(Time t)
+		{
+			return m_instance->StopCommand(t);
+		}
+
+		void    SpotWarp()
+		{
+			return m_instance->SpotWarp();
+		}
+
+		void    SpotSpecialAsteroid()
+		{
+			return m_instance->SpotSpecialAsteroid();
+		}
+
+		void AddTargetSpot()
+		{
+			return m_instance->AddTargetSpot();
+		}
+
+		short   GetTargetsSpotted()
+		{
+			return m_instance->GetTargetsSpotted();
+		}
+
+		void SetRepair(float repair)
+		{
+			return m_instance->SetRepair(repair);
+		}
+
+		float GetRepair()
+		{
+			return m_instance->GetRepair();
+		}
+
+		void    KillBase(bool bPilot)
+		{
+			return m_instance->KillBase(bPilot);
+		}
+
+		void    CaptureBase(bool bPilot)
+		{
+			return m_instance->CaptureBase(bPilot);
+		}
+
+		short   GetPilotBaseKills()
+		{
+			return m_instance->GetPilotBaseKills();
+		}
+
+		short   GetPilotBaseCaptures()
+		{
+			return m_instance->GetPilotBaseCaptures();
+		}
+
+		float   GetWarpsSpotted()
+		{
+			return m_instance->GetWarpsSpotted();
+		}
+
+		float   GetAsteroidsSpotted()
+		{
+			return m_instance->GetAsteroidsSpotted();
+		}
+
+		float   GetMinerKills()
+		{
+			return m_instance->GetMinerKills();
+		}
+
+		float   GetBuilderKills()
+		{
+			return m_instance->GetBuilderKills();
+		}
+
+		float   GetLayerKills()
+		{
+			return m_instance->GetLayerKills();
+		}
+
+		float   GetCarrierKills()
+		{
+			return m_instance->GetCarrierKills();
+		}
+
+		float   GetPlayerKills()
+		{
+			return m_instance->GetPlayerKills();
+		}
+
+		float   GetBaseKills()
+		{
+			return m_instance->GetBaseKills();
+		}
+
+		float   GetBaseCaptures()
+		{
+			return m_instance->GetBaseCaptures();
+		}
+
+		short   GetTechsRecovered()
+		{
+			return m_instance->GetTechsRecovered();
+		}
+
+		void    AddTechsRecovered()
+		{
+			return m_instance->AddTechsRecovered();
+		}
+
+		short   GetFlags()
+		{
+			return m_instance->GetFlags();
+		}
+
+		void    AddFlag()
+		{
+			return m_instance->AddFlag();
+		}
+
+		short   GetArtifacts()
+		{
+			return m_instance->GetArtifacts();
+		}
+
+		void    AddArtifact()
+		{
+			return m_instance->AddArtifact();
+		}
+
+		void    AddRescue()
+		{
+			return m_instance->AddRescue();
+		}
+
+		short   GetRescues()
+		{
+			return m_instance->GetRescues();
+		}
+
+		short   GetKills()
+		{
+			return m_instance->GetKills();
+		}
+
+		void    AddKill()
+		{
+			return m_instance->AddKill();
+		}
+
+		short   GetAssists()
+		{
+			return m_instance->GetAssists();
+		}
+
+		void    AddAssist()
+		{
+			return m_instance->AddAssist();
+		}
+
+		short   GetDeaths()
+		{
+			return m_instance->GetDeaths();
+		}
+
+		void    AddDeath()
+		{
+			return m_instance->AddDeath();
+		}
+
+		void    SetDeaths(short d)
+		{
+			return m_instance->SetDeaths(d);
+		}
+
+		short   GetEjections()
+		{
+			return m_instance->GetEjections();
+		}
+
+		void    AddEjection()
+		{
+			return m_instance->AddEjection();
+		}
+
+		void    SetEjections(short e)
+		{
+			return m_instance->SetEjections(e);
+		}
+
+		float   GetCombatRating()
+		{
+			return m_instance->GetCombatRating();
+		}
+
+		void    SetCombatRating(float cr)
+		{
+			return m_instance->SetCombatRating(cr);
+		}
+
+		void                       SetPersist(PersistPlayerScoreObject ^ p)
+		{
+			return m_instance->SetPersist(p->m_instance);
+		}
+
+		bool                        GetWinner()
+		{
+			return m_instance->GetWinner();
+		}
+
+		bool                        GetLoser()
+		{
+			return m_instance->GetLoser();
+		}
+
+		bool                        GetCommandWinner()
+		{
+			return m_instance->GetCommandWinner();
+		}
+
+		bool                        GetCommandLoser()
+		{
+			return m_instance->GetCommandLoser();
+		}
+
+		float GetTimePlayed()
+		{
+			return m_instance->GetTimePlayed();
+		}
+
+		float GetTimeCommanded()
+		{
+			return m_instance->GetTimeCommanded();
+		}
+
+		bool    GetCommandCredit()
+		{
+			return m_instance->GetCommandCredit();
+		}
+
+	};
+
+	public ref class GameOverScoreObject
+	{
+	public:
+		::GameOverScoreObject * m_instance;
+
+	public:
+
+		GameOverScoreObject(::GameOverScoreObject * instance)
+
+		{
+			m_instance = instance;
+		}
+
+		void    Set(PlayerScoreObject^ ppso)
+		{
+			return m_instance->Set(ppso->m_instance);
+		}
+
+		short   GetRank()
+		{
+			return m_instance->GetRank();
+		}
+
+		/*float   GetScore()
+		{
+			return m_instance->GetScore();
+		}*/
+
+		float   GetRecentTimePlayed()
+		{
+			return m_instance->GetRecentTimePlayed();
+		}
+
+		short   GetRecentBaseKills()
+		{
+			return m_instance->GetRecentBaseKills();
+		}
+
+		short   GetRecentBaseCaptures()
+		{
+			return m_instance->GetRecentBaseCaptures();
+		}
+
+		short   GetRecentKills()
+		{
+			return m_instance->GetRecentKills();
+		}
+
+		short   GetRecentDeaths()
+		{
+			return m_instance->GetRecentDeaths();
+		}
+
+		short   GetRecentEjections()
+		{
+			return m_instance->GetRecentEjections();
+		}
+
+		/*short   GetTotalBaseKills()
+		{
+			return m_instance->GetTotalBaseKills();
+		}
+
+		short   GetTotalBaseCaptures()
+		{
+			return m_instance->GetTotalBaseCaptures();
+		}
+
+		short   GetFlags()
+		{
+			return m_instance->GetFlags();
+		}
+
+		short   GetArtifacts()
+		{
+			return m_instance->GetArtifacts();
+		}
+
+		short   GetRescues()
+		{
+			return m_instance->GetRescues();
+		}
+
+		short   GetTotalKills()
+		{
+			return m_instance->GetTotalKills();
+		}
+
+		short   GetTotalDeaths()
+		{
+			return m_instance->GetTotalDeaths();
+		}
+
+		short   GetTotalEjections()
+		{
+			return m_instance->GetTotalEjections();
+		}
+
+		short   GetWins()
+		{
+			return m_instance->GetWins();
+		}
+
+		short   GetLosses()
+		{
+			return m_instance->GetLosses();
+		}*/
+
+		float   GetRecentScore()
+		{
+			return m_instance->GetRecentScore();
+		}
+
+		unsigned short   GetRecentAssists()
+		{
+			return m_instance->GetRecentAssists();
+		}
+
+		/*float   GetCombatRating()
+		{
+			return m_instance->GetCombatRating();
+		}
+
+		bool    GetWinner()
+		{
+			return m_instance->GetWinner();
+		}
+
+		bool    GetLoser()
+		{
+			return m_instance->GetLoser();
+		}*/
+
+		bool        GetCommander()
+		{
+			return m_instance->GetCommander();
+		}
+
+		bool        GetGameCounted()
+		{
+			return m_instance->GetGameCounted();
+		}
+
+	};
+
+}

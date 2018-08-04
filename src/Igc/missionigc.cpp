@@ -3073,6 +3073,10 @@ void CmissionIGC::Initialize(Time now, IIgcSite* pIgcSite)
 
 void    CmissionIGC::Terminate(void)
 {
+	// BT - Fixing crash on server exit.
+	if (GetIgcSite() == nullptr)
+		return;
+
     debugf("Terminating mission id=%d, this=%x igccount=%x\n", GetMissionID(), this, GetIgcSite()->GetCount());
   
     m_pIgcSite->TerminateMissionEvent(this);

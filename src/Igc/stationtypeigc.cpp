@@ -118,7 +118,9 @@ HRESULT         CstationTypeIGC::Initialize(ImissionIGC* pMission,
                     assert (m_nLandSlots < c_maxLandSlots);
 
                     int i = 0;
-                    do
+
+					// BT - Fixing occosional crash on WinTrek startup.
+                    for(i = 0; i < c_maxLandPlanes && pfd; )
                     {
                         assert (i < c_maxLandPlanes);
                         m_positionLandPlanes[m_nLandSlots][i] = pfd->position * scale;
@@ -129,7 +131,6 @@ HRESULT         CstationTypeIGC::Initialize(ImissionIGC* pMission,
                         bfrLand[7] = 'A' + ++i;
                         pfd = pmhb->GetFrame(bfrLand);
                     }
-                    while (pfd);
 
                     m_nLandPlanes[m_nLandSlots++] = i;
                 }
