@@ -1,6 +1,7 @@
 
 #pragma once
 #include "ManagedObject.h"
+#include "igcWrapper.h"
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -4242,6 +4243,87 @@ namespace AllegianceInterop
 
 	};
 
+	/*public ref class ShipStatusWrapper
+	{
+	public:
+		ShipStatus * m_instance;
+
+		ShipStatusWrapper(ShipStatus * shipStatus)
+		{
+			m_instance = shipStatus;
+		}
+
+		HullID      GetHullID(void) 
+		{
+			return m_instance->GetHullID();
+		}
+		void        SetHullID(HullID    newVal)
+		{
+			m_instance->SetHullID(newVal);
+		}
+
+		SectorID    GetSectorID(void) 
+		{
+			return m_instance->GetSectorID();
+		}
+		void        SetSectorID(SectorID    newVal)
+		{
+			m_instance->SetSectorID(newVal);
+		}
+
+		StationID   GetStationID(void) 
+		{
+			return m_instance->GetStationID();
+		}
+		void        SetStationID(StationID stationID)
+		{
+			m_instance->SetStationID(stationID);
+		}
+
+		StationID   GetParentID(void)
+		{
+			return m_instance->GetParentID();
+		}
+		void        SetParentID(ShipID shipID)
+		{
+			m_instance->SetParentID(shipID);
+		}
+
+		ShipState   GetState(void) 
+		{
+			return m_instance->GetState();
+		}
+		void        SetState(ShipState    newVal)
+		{
+			m_instance->SetState(newVal);
+		}
+
+		bool        GetUnknown(void) 
+		{
+			return m_instance->GetUnknown();
+		}
+		void        SetUnknown(void)
+		{
+			m_instance->SetUnknown();
+		}
+
+		bool        GetDetected(void)
+		{
+			return m_instance->GetDetected();
+		}
+		void        SetDetected(bool    bDetected)
+		{
+			m_instance->SetDetected(bDetected);
+		}
+		DWORD        GetStateTime(void) 
+		{
+			return m_instance->GetStateTime();
+		}
+		void        SetStateTime(DWORD    dTime)
+		{
+			m_instance->SetStateTime(dTime);
+		}
+	};*/
 
     [Serializable] public ref class FMD_S_SHIP_STATUS : public ManagedObject<::FMD_S_SHIP_STATUS>
 	{
@@ -4279,12 +4361,15 @@ namespace AllegianceInterop
 			}
 		}
 
-        property ShipStatus status
+        property ShipStatusWrapper ^ status
 		{
 		public:
-			ShipStatus get()
+			ShipStatusWrapper ^ get()
 			{
-				return m_Instance->status; 
+				if (m_Instance == nullptr)
+					return nullptr;
+
+				return gcnew ShipStatusWrapper(&m_Instance->status);
 			}
 		}
 

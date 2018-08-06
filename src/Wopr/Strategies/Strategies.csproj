@@ -96,7 +96,10 @@
   <ItemGroup>
     <Compile Include="CommanderResearchAndExpand.cs" />
     <Compile Include="ConnectToGame.cs" />
+    <Compile Include="Loadouts\LoadoutBase.cs" />
+    <Compile Include="Loadouts\ScoutProbeLoadout.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScoutExploreMap.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AllegianceInterop\AllegianceInterop.vcxproj">
@@ -107,6 +110,9 @@
       <Project>{18446cbb-243c-43c4-8134-2008690699f3}</Project>
       <Name>Wopr</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Entities\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

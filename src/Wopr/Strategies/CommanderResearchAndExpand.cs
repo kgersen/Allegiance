@@ -9,11 +9,16 @@ namespace Strategies
 {
     public class CommanderResearchAndExpand : Wopr.StrategyBase
     {
-        public CommanderResearchAndExpand() : base(Wopr.Constants.StrategyID.CommanderResearchAndExpand)
+        public CommanderResearchAndExpand() : base(Wopr.Constants.StrategyID.CommanderResearchAndExpand, TimeSpan.MaxValue)
         {
         }
 
         public override void AttachMessages(MessageReceiver messageReceiver, string botAuthenticationGuid, string playerName, int sideIndex, bool isGameController, bool isCommander)
+        {
+            
+        }
+
+        public override void Start()
         {
             InvestInTech(".Miner");
             InvestInTech("Outpost");

@@ -30,7 +30,7 @@ namespace Strategies
 
         private Random _random = new Random();
 
-        public ConnectToGame() : base(StrategyID.ConnectToGame)
+        public ConnectToGame() : base(StrategyID.ConnectToGame, TimeSpan.FromMinutes(1))
         {
         }
 
@@ -52,6 +52,20 @@ namespace Strategies
             messageReceiver.FMD_CS_FORCE_TEAM_READY += MessageReceiver_FMD_CS_FORCE_TEAM_READY;
 
             messageReceiver.FMD_S_MISSION_STAGE += MessageReceiver_FMD_S_MISSION_STAGE;
+
+            messageReceiver.FMD_S_SHIP_STATUS += MessageReceiver_FMD_S_SHIP_STATUS;
+        }
+
+        // Handles a client rejoining a game already in progress.
+        private void MessageReceiver_FMD_S_SHIP_STATUS(ClientConnection client, AllegianceInterop.FMD_S_SHIP_STATUS message)
+        {
+            if(client.GetCore().GetMissionStage() == MissionStage.STAGE_STARTED)
+                FinishStrategy();
+        }
+
+        public override void Start()
+        {
+            
         }
 
         //public override void DetachMessages(MessageReceiver messageReceiver)

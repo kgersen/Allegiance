@@ -79,7 +79,7 @@ namespace AllegianceInterop
 			delete m_nativeClient;
 	}
 
-	void ClientConnection::ConnectToLobby(CancellationTokenSource ^ cancellationTokenSource, String ^ lobbyAddress, String ^ characterName, String ^ cdKey)
+	bool ClientConnection::ConnectToLobby(CancellationTokenSource ^ cancellationTokenSource, String ^ lobbyAddress, String ^ characterName, String ^ cdKey)
 	{
 		BaseClient::ConnectInfo connectInfo;
 		
@@ -108,7 +108,9 @@ namespace AllegianceInterop
 		GetSystemTime(&st);
 		SystemTimeToFileTime(&st, &connectInfo.ftLastArtUpdate);
 
-		m_nativeClient->ConnectToLobby(&connectInfo);
+		HRESULT hr = m_nativeClient->ConnectToLobby(&connectInfo);
+
+		return SUCCEEDED(hr);
 
 		/*while (cancellationTokenSource->IsCancellationRequested == false)
 		{
@@ -254,5 +256,31 @@ namespace AllegianceInterop
 	void ClientConnection::OnLogonAckEvent(bool fValidated, bool bRetry, LPCSTR szFailureReason)
 	{
 		printf("ClientConnection::OnLogonAckEvent\n");
+	}
+
+	ImodelIGCWrapper ^  ClientConnection::FindTarget(
+		IshipIGCWrapper ^       pship,
+		int						ttMask,
+		AbilityBitMask			abmAbilities)
+	{
+		Vector position;
+
+		if (pship->GetStation() != nullptr)
+			position = pship->m_instance->GetStation()->GetPosition();
+		else
+			position = pship->m_instance->GetPosition();
+
+		IclusterIGC * pcluster = pship->m_instance->GetCluster();
+
+		ImodelIGC * target = ::FindTarget(pship->m_instance, ttMask, pship->m_instance->GetCommandTarget(c_cmdCurrent), pcluster, &position, nullptr, abmAbilities);
+
+		if (target != nullptr)
+		{
+			return gcnew ImodelIGCWrapper(
+				target
+			);
+		}
+
+		return nullptr;
 	}
 }

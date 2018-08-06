@@ -34,6 +34,13 @@ namespace Wopr
                 return;
             }
 
+            if (Directory.Exists(@"c:\1\Logs\") == false)
+                Directory.CreateDirectory(@"c:\1\Logs");
+
+            foreach (var file in Directory.GetFiles(@"c:\1\Logs\", "*.txt"))
+                File.Delete(file);
+            
+
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
 
@@ -44,9 +51,31 @@ namespace Wopr
             // Yellow Team
             teamDirectorYellow.CreatePlayer("yellowcom@BOT", 0, true, true);
 
+            //teamDirectorYellow.CreatePlayer("yellow_1@BOT", 0, false, false);
+
+            for (int i = 0; i < 2; i++)
+                teamDirectorYellow.CreatePlayer("yellow_" + i + "@BOT", 0, false, false);
+
+            //{
+            //    Task.Run(() =>
+            //    {
+            //        teamDirectorYellow.CreatePlayer("yellow_" + i + "@BOT", 0, false, false);
+            //    });
+            //}
+            
 
             // Blue Team
             teamDirectorBlue.CreatePlayer("bluecom@BOT", 1, false, true);
+
+            for (int i = 0; i < 2; i++)
+                teamDirectorBlue.CreatePlayer("blue_" + i + "@BOT", 1, false, false);
+
+            //{
+            //    Task.Run(() =>
+            //    {
+            //        teamDirectorBlue.CreatePlayer("blue_" + i + "@BOT", 0, false, false);
+            //    });
+            //}
 
             do
             {

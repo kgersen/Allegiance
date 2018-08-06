@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Wopr.Constants;
+using Wopr.Entities;
 
 namespace Wopr
 {
@@ -35,6 +36,10 @@ namespace Wopr
         private Dictionary<String, StrategyBase> _currentStrategyByPlayerName { get; set; } = new Dictionary<string, StrategyBase>();
         private Dictionary<String, AllegianceInterop.ClientConnection.OnAppMessageDelegate> _currentStrategyAppMessageDelegateByPlayerName { get; set; } = new Dictionary<string, AllegianceInterop.ClientConnection.OnAppMessageDelegate>();
 
+        private Dictionary<string, TeamDirectorPlayerInfo> _teamDirectorPlayerInfoByPlayerName = new Dictionary<string, TeamDirectorPlayerInfo>();
+
+        private List<GameInfo> _gameInfos;
+
         [NonSerialized]
         Task _messagePump;
 
@@ -42,6 +47,16 @@ namespace Wopr
         {
             _cancellationTokenSource = cancellationTokenSource;
             _lobbyAddress = lobbyAddress;
+
+            _gameInfos = new List<GameInfo>();
+            for (int i = 0; i < 6; i++)
+            {
+                var gameInfo = new GameInfo();
+                gameInfo.UnexploredClustersByObjectID = new Dictionary<int, string>();
+
+                _gameInfos.Add(gameInfo);
+            }
+
 
             using (var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine,
                                                 RegistryView.Registry32))
@@ -80,11 +95,22 @@ namespace Wopr
         {
             lock (_connectedClientsByPlayerName)
             {
-                _connectedClientsByPlayerName.Values.AsParallel().ForAll((AllegianceInterop.ClientConnection connection) =>
+                //_connectedClientsByPlayerName.Values.AsParallel().ForAll((AllegianceInterop.ClientConnection connection) =>
+                //{
+                //    connection.DisconnectLobby();
+                //    connection.DisconnectServer();
+                //});
+
+                foreach (var runningStrategy in _currentStrategyByPlayerName.Values)
+                {
+                    runningStrategy.Cancel();
+                }
+
+                foreach (var connection in _connectedClientsByPlayerName.Values)
                 {
                     connection.DisconnectLobby();
                     connection.DisconnectServer();
-                });
+                }
             }
         }
 
@@ -94,24 +120,62 @@ namespace Wopr
             {
                 lock (_connectedClientsByPlayerName)
                 {
-                    _connectedClientsByPlayerName.Values.AsParallel().ForAll((AllegianceInterop.ClientConnection connection) =>
-                    {
+                    //_connectedClientsByPlayerName.Values.AsParallel().ForAll((AllegianceInterop.ClientConnection connection) =>
+                    //{
+                    //    connection.SendAndReceiveUpdate();
+                    //});
+
+                    foreach(var connection in _connectedClientsByPlayerName.Values)
                         connection.SendAndReceiveUpdate();
-                    });
+                    
                 }
 
                 foreach (var strategy in _currentStrategyByPlayerName.Values.ToArray())
                 {
                     if (strategy.IsStrategyComplete == true)
                         StrategyComplete(strategy);
+
+                    if (DateTime.Now - strategy.StartTime > strategy.Timeout)
+                        ResetClient(strategy.PlayerName);
+                    
                 }
 
                 Thread.Sleep(10);
             }
         }
 
+        private void ResetClient(string playerName)
+        {
+            AllegianceInterop.ClientConnection client;
+            if (_connectedClientsByPlayerName.TryGetValue(playerName, out client) == true)
+            {
+                client.DisconnectServer();
+                client.DisconnectLobby();
+
+                client.OnAppMessage -= _currentStrategyAppMessageDelegateByPlayerName[playerName];
+
+                _connectedClientsByPlayerName.Remove(playerName);
+                _currentStrategyAppMessageDelegateByPlayerName.Remove(playerName);
+                _currentStrategyByPlayerName.Remove(playerName);
+
+            }
+
+            Log(playerName, "Resetting player after strategy timeout.");
+
+            CreatePlayer(playerName, _teamDirectorPlayerInfoByPlayerName[playerName].SideIndex, _teamDirectorPlayerInfoByPlayerName[playerName].IsGameController, _teamDirectorPlayerInfoByPlayerName[playerName].IsCommander);
+        }
+
         public void LoadStrategies()
         {
+            // To load strategies into the current app domain without using transparent proxy, you can uncomment this, but it
+            // will break dynamic strategy updates. 
+            //
+            //_currentAppDomain = AppDomain.CurrentDomain;
+            //string target = Path.Combine(_currentAppDomain.BaseDirectory, "Strategies.dll");
+            //_assemblyLoader = new AssemblyLoader(target);
+            //return;
+
+            // Load strategies into a separate app domain so that they can be hot-swapped while a game is running. 
             var an = Assembly.GetExecutingAssembly().GetName();
 
             var appDomainSetup = new AppDomainSetup
@@ -122,7 +186,8 @@ namespace Wopr
             };
 
             _currentAppDomain = AppDomain.CreateDomain("V1", (Evidence)null, appDomainSetup);
-            Console.WriteLine(_currentAppDomain.BaseDirectory);
+
+            //Console.WriteLine(_currentAppDomain.BaseDirectory);
 
             _currentAppDomain.Load(typeof(AssemblyLoader).Assembly.FullName);
 
@@ -138,13 +203,6 @@ namespace Wopr
                 new object[] { target },
                 null,
                 null).Unwrap();
-
-            //string target = @"C:\Source\git\Allegiance\src\Wopr\Strategies\bin\Debug\Strategies_V1.dll";
-            
-
-            //_strategiesByStrategyID = loader.LoadPlugins(target);
-
-            //_strategiesByStrategyID = loadedStrategies.ToDictionary(p => p.StrategyID, r => r);
         }
 
         //public StrategyBase GetStrategyInstance(StrategyID strategyID)
@@ -194,16 +252,17 @@ namespace Wopr
             StrategyBase strategy = _assemblyLoader.CreateInstance(strategyID);
             //if (_strategiesByStrategyID.TryGetValue(strategyID, out strategy) == true)
             //{
-                strategy.Attach(clientConnection, _botAuthenticationGuid, playerName, sideIndex, isGameController, isCommander);
+                strategy.Attach(clientConnection, _gameInfos[sideIndex], _botAuthenticationGuid, playerName, sideIndex, isGameController, isCommander);
 
-                // can't use an event handler across app domain boundaries, the handler class will not serialize correctly (dictionaries remain empty.)
-                //strategy.OnStrategyComplete += Strategy_OnStrategyComplete;
+            
+            // can't use an event handler across app domain boundaries, the handler class will not serialize correctly (dictionaries remain empty.)
+            //strategy.OnStrategyComplete += Strategy_OnStrategyComplete;
 
-                // Can't hook the transparent object directly to the client, the events raised by c++/cli won't trigger on the managed end
-                // becuase they are attached to a copy of the object in the far application domain, so we will attach to the event on the 
-                // near application domain, then directly call the MessageReceiver handler in the far domain passing the byte array 
-                // through instead of the tranparent proxied object.
-                AllegianceInterop.ClientConnection.OnAppMessageDelegate onAppMessageDelegate = new AllegianceInterop.ClientConnection.OnAppMessageDelegate((AllegianceInterop.ClientConnection messageClientConnection, byte[] bytes) =>
+            // Can't hook the transparent object directly to the client, the events raised by c++/cli won't trigger on the managed end
+            // becuase they are attached to a copy of the object in the far application domain, so we will attach to the event on the 
+            // near application domain, then directly call the MessageReceiver handler in the far domain passing the byte array 
+            // through instead of the tranparent proxied object.
+            AllegianceInterop.ClientConnection.OnAppMessageDelegate onAppMessageDelegate = new AllegianceInterop.ClientConnection.OnAppMessageDelegate((AllegianceInterop.ClientConnection messageClientConnection, byte[] bytes) =>
                 {
                     strategy.OnAppMessage(bytes);
                 });
@@ -224,6 +283,20 @@ namespace Wopr
 
         public void CreatePlayer(string playerName, short sideIndex, bool isGameController, bool isCommander)
         {
+            if (File.Exists(@"c:\1\Logs\" + playerName + "_teamdirector.txt") == true)
+                File.Delete(@"c:\1\Logs\" + playerName + "_teamdirector.txt");
+
+            if (_teamDirectorPlayerInfoByPlayerName.ContainsKey(playerName) == true)
+                _teamDirectorPlayerInfoByPlayerName.Remove(playerName);
+
+            _teamDirectorPlayerInfoByPlayerName.Add(playerName, new TeamDirectorPlayerInfo()
+            {
+                IsCommander = isCommander,
+                IsGameController = isGameController,
+                PlayerName = playerName, 
+                SideIndex = sideIndex
+            });
+
             AllegianceInterop.ClientConnection clientConnection = new AllegianceInterop.ClientConnection();
 
             lock (_connectedClientsByPlayerName)
@@ -253,45 +326,64 @@ namespace Wopr
             //}
 
             ChangeStrategy(StrategyID.ConnectToGame, playerName, sideIndex, isGameController, isCommander);
-            
 
-            clientConnection.ConnectToLobby(_cancellationTokenSource, _lobbyAddress, playerName, _botAuthenticationGuid);
+            bool connected = false;
+            for (int i = 0; i < 30; i++)
+            {
+                if (clientConnection.ConnectToLobby(_cancellationTokenSource, _lobbyAddress, playerName, _botAuthenticationGuid) == true)
+                {
+                    connected = true;
+                    break;
+                }
+
+                Log(playerName, "Couldn't connect, retrying.");
+
+                Thread.Sleep(100);
+            }
+
+            if (connected == false)
+                Log(playerName, "Couldn't connect. Giving up!");
         }
 
         private void StrategyComplete(StrategyBase strategy)
         {
-            //StrategyBase currentStrategy;
-            //if (CurrentStrategyByPlayerName.TryGetValue(strategy.PlayerName, out currentStrategy) == true)
-            //{
-                Console.WriteLine($"TeamDirector {strategy.PlayerName}: {strategy.StrategyID} has completed.");
+            Console.WriteLine($"TeamDirector {strategy.PlayerName}: {strategy.StrategyID} has completed.");
 
-                if (strategy.IsCommander == true)
+            if (strategy.IsCommander == true)
+            {
+                switch (strategy.StrategyID)
                 {
-                    switch (strategy.StrategyID)
-                    {
-                        case StrategyID.ConnectToGame:
-                            ChangeStrategy(StrategyID.CommanderResearchAndExpand, strategy.PlayerName, strategy.SideIndex, strategy.IsGameController, strategy.IsCommander);
-                            break;
+                    case StrategyID.ConnectToGame:
+                        ChangeStrategy(StrategyID.CommanderResearchAndExpand, strategy.PlayerName, strategy.SideIndex, strategy.IsGameController, strategy.IsCommander);
+                        break;
 
-                        default:
-                            Console.WriteLine($"TeamDirector {strategy.PlayerName}: couldn't determine next strategy from the current strategy. (Should probably set a default here?)");
-                            break;
+                    default:
+                        Console.WriteLine($"TeamDirector {strategy.PlayerName}: couldn't determine next strategy from the current strategy. (Should probably set a default here?)");
+                        break;
 
-                    }
                 }
-                else
+            }
+            else // Pilot Strategies.
+            {
+                switch (strategy.StrategyID)
                 {
-                    Console.WriteLine($"TeamDirector {strategy.PlayerName}: need to setup pilot strategies.");
+                    case StrategyID.ConnectToGame:
+                        ChangeStrategy(StrategyID.ScoutExploreMap, strategy.PlayerName, strategy.SideIndex, strategy.IsGameController, strategy.IsCommander);
+                        break;
+
+                    default:
+                        Console.WriteLine($"TeamDirector {strategy.PlayerName}: couldn't determine next strategy from the current strategy. (Should probably set a default here?)");
+                        break;
+
                 }
-            //}
-            //else
-            //{
-            //    Console.WriteLine($"TeamDirector {strategy.PlayerName}: no current strategy could be found for this player, this player is probably stuck.");
-            //}
+            }
 
         }
-            
 
+        private void Log(string playerName, string message)
+        {
+            File.AppendAllText(@"c:\1\Logs\" + playerName + "_teamdirector.txt", message + "\n");
+        }
         
 
         //private void clientConnection_OnAppMessage(AllegianceInterop.ClientConnection clientConnection, byte[] bytes)

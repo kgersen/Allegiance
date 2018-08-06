@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "igcWrapper.h"
+#include "Enums.h"
 
 using namespace System;
 
@@ -154,13 +155,13 @@ namespace AllegianceInterop
 	 {
 	 return m_instance->Delta(displacement);
 	 }*/
-	void        CompactPositionWrapper::Set(const Vector& pReference, const Vector& p)
+	void        CompactPositionWrapper::Set(const VectorWrapper ^ pReference, const VectorWrapper ^ p)
 	{
-		return m_instance->Set(pReference, p);
+		return m_instance->Set(*pReference->m_instance, *p->m_instance);
 	}
-	void        CompactPositionWrapper::Export(const Vector& pReference, Vector* p)
+	void        CompactPositionWrapper::Export(const VectorWrapper ^ pReference, Vector* p)
 	{
-		return m_instance->Export(pReference, p);
+		return m_instance->Export(*pReference->m_instance, p);
 	}
 	CompactStateWrapper::CompactStateWrapper(::CompactState * instance)
 	{
@@ -178,9 +179,9 @@ namespace AllegianceInterop
 	{
 		m_instance = instance;
 	}
-	void            CompactVelocityWrapper::Set(const Vector& v)
+	void            CompactVelocityWrapper::Set(const VectorWrapper ^ v)
 	{
-		return m_instance->Set(v);
+		return m_instance->Set(*v->m_instance);
 	}
 	void            CompactVelocityWrapper::Export(Vector* pVelocity)
 	{
@@ -636,10 +637,21 @@ namespace AllegianceInterop
 		else
 			return gcnew IclusterIGCWrapper(unmanagedValue);
 	}
-	const ClusterListIGC*   ImissionIGCWrapper::GetClusters()
+
+	System::Collections::Generic::List<IclusterIGCWrapper ^> ^   ImissionIGCWrapper::GetClusters()
 	{
-		return m_instance->GetClusters();
+		ConvertSList(IclusterIGC, ClusterLinkIGC, m_instance->GetClusters())
+
+		/*System::Collections::Generic::List<IclusterIGCWrapper ^> ^ returnValue = gcnew System::Collections::Generic::List<IclusterIGCWrapper ^>();
+
+		for (ClusterLinkIGC* pbl = m_instance->GetClusters()->last(); (pbl != NULL); pbl = pbl->txen())
+		{
+			IclusterIGC*     item = pbl->data();
+			returnValue->Add(gcnew IclusterIGCWrapper(item));
+		}
+		return returnValue;*/
 	}
+
 	void                    ImissionIGCWrapper::AddShip(IshipIGCWrapper^ s)
 	{
 		return m_instance->AddShip(s->m_instance);
@@ -720,9 +732,10 @@ namespace AllegianceInterop
 		else
 			return gcnew IwarpIGCWrapper(unmanagedValue);
 	}
-	const WarpListIGC*      ImissionIGCWrapper::GetWarps()
+	System::Collections::Generic::List<IwarpIGCWrapper ^> ^      ImissionIGCWrapper::GetWarps()
 	{
-		return m_instance->GetWarps();
+		ConvertSList(IwarpIGC, WarpLinkIGC, m_instance->GetWarps())
+		
 	}
 	void                    ImissionIGCWrapper::AddBuoy(IbuoyIGCWrapper^ t)
 	{
@@ -844,9 +857,9 @@ namespace AllegianceInterop
 	{
 		return m_instance->SetMissionStage(st);
 	}
-	STAGE                   ImissionIGCWrapper::GetMissionStage()
+	AllegianceInterop::MissionStage ImissionIGCWrapper::GetMissionStage()
 	{
-		return m_instance->GetMissionStage();
+		return (AllegianceInterop::MissionStage) m_instance->GetMissionStage();
 	}
 	void                    ImissionIGCWrapper::EnterGame()
 	{
@@ -966,9 +979,9 @@ namespace AllegianceInterop
 	{
 		return m_instance->AddExplosion(pmodel->m_instance, type);
 	}
-	void AttachSiteWrapper::AddExplosion(const Vector& vecPosition, float scale, int type)
+	void AttachSiteWrapper::AddExplosion(const VectorWrapper ^ vecPosition, float scale, int type)
 	{
-		return m_instance->AddExplosion(vecPosition, scale, type);
+		return m_instance->AddExplosion(*vecPosition->m_instance, scale, type);
 	}
 	void AttachSiteWrapper::AddThingSite(ThingSiteWrapper^ thing)
 	{
@@ -994,17 +1007,17 @@ namespace AllegianceInterop
 	{
 		return m_instance->GetChildOffset(strFrame);
 	}
-	void        ThingSiteWrapper::AddHullHit(const Vector& vecPosition, const Vector& vecNormal)
+	void        ThingSiteWrapper::AddHullHit(const VectorWrapper ^ vecPosition, const VectorWrapper ^ vecNormal)
 	{
-		return m_instance->AddHullHit(vecPosition, vecNormal);
+		return m_instance->AddHullHit(*vecPosition->m_instance, *vecNormal->m_instance);
 	}
-	void        ThingSiteWrapper::AddFlare(Time ptime, const Vector& vecPosition, int id, const Vector* ellipseEquation)
+	void        ThingSiteWrapper::AddFlare(Time ptime, const VectorWrapper ^ vecPosition, int id, const Vector* ellipseEquation)
 	{
-		return m_instance->AddFlare(ptime, vecPosition, id, ellipseEquation);
+		return m_instance->AddFlare(ptime, *vecPosition->m_instance, id, ellipseEquation);
 	}
-	void        ThingSiteWrapper::AddMuzzleFlare(const Vector& vecEmissionPoint, float duration)
+	void        ThingSiteWrapper::AddMuzzleFlare(const VectorWrapper ^ vecEmissionPoint, float duration)
 	{
-		return m_instance->AddMuzzleFlare(vecEmissionPoint, duration);
+		return m_instance->AddMuzzleFlare(*vecEmissionPoint->m_instance, duration);
 	}
 	void        ThingSiteWrapper::SetVisible(unsigned char render)
 	{
@@ -1035,9 +1048,9 @@ namespace AllegianceInterop
 		else
 			return gcnew GeoWrapper(unmanagedValue);
 	}
-	void        ThingSiteWrapper::SetPosition(const Vector& position)
+	void        ThingSiteWrapper::SetPosition(const VectorWrapper ^ position)
 	{
-		return m_instance->SetPosition(position);
+		return m_instance->SetPosition(*position->m_instance);
 	}
 	float       ThingSiteWrapper::GetRadius()
 	{
@@ -1148,13 +1161,13 @@ namespace AllegianceInterop
 	{
 		return m_instance->FreeThingSite();
 	}
-	void                 ImodelIGCWrapper::SetPosition(const Vector& newVal)
+	void                 ImodelIGCWrapper::SetPosition(const VectorWrapper ^ newVal)
 	{
-		return m_instance->SetPosition(newVal);
+		return m_instance->SetPosition(*newVal->m_instance);
 	}
-	void                 ImodelIGCWrapper::SetVelocity(const Vector& newVal)
+	void                 ImodelIGCWrapper::SetVelocity(const VectorWrapper ^ newVal)
 	{
-		return m_instance->SetVelocity(newVal);
+		return m_instance->SetVelocity(*newVal->m_instance);
 	}
 	void                 ImodelIGCWrapper::SetOrientation(const Orientation& newVal)
 	{
@@ -1860,9 +1873,9 @@ namespace AllegianceInterop
 	{
 		return m_instance->OkToLaunch(now);
 	}
-	bool                IshipIGCWrapper::PickDefaultOrder(IclusterIGCWrapper^ pcluster, const Vector& position, bool bDocked)
+	bool                IshipIGCWrapper::PickDefaultOrder(IclusterIGCWrapper^ pcluster, const VectorWrapper ^ position, bool bDocked)
 	{
-		return m_instance->PickDefaultOrder(pcluster->m_instance, position, bDocked);
+		return m_instance->PickDefaultOrder(pcluster->m_instance, *position->m_instance, bDocked);
 	}
 	bool                IshipIGCWrapper::IsGhost()
 	{
@@ -2014,9 +2027,9 @@ namespace AllegianceInterop
 	{
 		return m_instance->GetLock();
 	}
-	void                ImissileIGCWrapper::Explode(const Vector& position)
+	void                ImissileIGCWrapper::Explode(const VectorWrapper ^ position)
 	{
-		return m_instance->Explode(position);
+		return m_instance->Explode(*position->m_instance);
 	}
 	void                ImissileIGCWrapper::Disarm()
 	{
@@ -2181,9 +2194,9 @@ namespace AllegianceInterop
 	{
 		return m_instance->Launch(pship->m_instance);
 	}
-	bool                    IstationIGCWrapper::InGarage(IshipIGCWrapper^ pship, const Vector& position)
+	bool                    IstationIGCWrapper::InGarage(IshipIGCWrapper^ pship, const VectorWrapper ^ position)
 	{
-		return m_instance->InGarage(pship->m_instance, position);
+		return m_instance->InGarage(pship->m_instance, *position->m_instance);
 	}
 	ObjectID			 IstationIGCWrapper::GetRoidID()
 	{
@@ -3571,9 +3584,9 @@ namespace AllegianceInterop
 		else
 			return gcnew IshipIGCWrapper(unmanagedValue);
 	}
-	const ShipListIGC*      IclusterIGCWrapper::GetShips()
+	GenericList(IshipIGCWrapper)      IclusterIGCWrapper::GetShips()
 	{
-		return m_instance->GetShips();
+		ConvertSList(IshipIGC, ShipLinkIGC, m_instance->GetShips())
 	}
 	void                    IclusterIGCWrapper::AddAsteroid(IasteroidIGCWrapper^ asteroidNew)
 	{
@@ -3592,9 +3605,9 @@ namespace AllegianceInterop
 		else
 			return gcnew IasteroidIGCWrapper(unmanagedValue);
 	}
-	const AsteroidListIGC*  IclusterIGCWrapper::GetAsteroids()
+	GenericList(IasteroidIGCWrapper)  IclusterIGCWrapper::GetAsteroids()
 	{
-		return m_instance->GetAsteroids();
+		ConvertSList(IasteroidIGC, AsteroidLinkIGC, m_instance->GetAsteroids());
 	}
 	void                    IclusterIGCWrapper::AddTreasure(ItreasureIGCWrapper^ treasureNew)
 	{
@@ -4476,9 +4489,9 @@ namespace AllegianceInterop
 	{
 		return m_instance->PlaySoundEffect(soundID, model->m_instance);
 	}
-	void IIgcSiteWrapper::PlaySoundEffect(SoundID soundID, ImodelIGCWrapper^ model, const Vector& vectOffset)
+	void IIgcSiteWrapper::PlaySoundEffect(SoundID soundID, ImodelIGCWrapper^ model, const VectorWrapper ^ vectOffset)
 	{
-		return m_instance->PlaySoundEffect(soundID, model->m_instance, vectOffset);
+		return m_instance->PlaySoundEffect(soundID, model->m_instance, *vectOffset->m_instance);
 	}
 	void IIgcSiteWrapper::PlayNotificationSound(SoundID soundID, ImodelIGCWrapper^ model)
 	{

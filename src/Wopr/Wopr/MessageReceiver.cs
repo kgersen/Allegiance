@@ -19,6 +19,11 @@ namespace Wopr
         public MessageReceiver(string playerName)
         {
             _playerName = playerName;
+
+            
+
+            if (File.Exists(@"c:\1\Logs\" + playerName + "_messages.txt") == true)
+                File.Delete(@"c:\1\Logs\" + playerName + "_messages.txt");
         }
         
 
@@ -30,9 +35,18 @@ namespace Wopr
             uint cbmsg = br.ReadUInt16();
             uint fmid = br.ReadUInt16();
 
-            if (fmid != 35 
-                && fmid != (int) MessageType.FM_S_HEAVY_SHIPS_UPDATE) // skip ping messages.
-                Console.WriteLine($"{_playerName}: Received mesage id: {fmid} = {((MessageType)fmid).ToString()}");
+            if (fmid != (int)MessageType.FM_CS_PING
+                && fmid != (int)MessageType.FM_S_HEAVY_SHIPS_UPDATE
+                && fmid != (int)MessageType.FM_S_EXPORT
+                && fmid != (int)MessageType.FM_S_LIGHT_SHIPS_UPDATE
+                && fmid != (int)MessageType.FM_S_BUCKET_STATUS
+                && fmid != (int)MessageType.FM_S_CREATE_BUCKETS
+                ) // skip spammy messages, these are all handled by base client, so we are not really interested in these.
+            {
+                //Console.WriteLine($"{DateTime.Now.ToString()} {_playerName}: Received mesage id: {fmid} = {((MessageType)fmid).ToString()}");
+                File.AppendAllText(@"c:\1\Logs\" + _playerName + "_messages.txt", $"{DateTime.Now.ToString()} {_playerName}: Received mesage id: {fmid} = {((MessageType)fmid).ToString()}\n");
+            }
+
 
             switch ((MessageType)fmid)
             {

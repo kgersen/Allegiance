@@ -59,7 +59,7 @@ namespace AllegianceInterop
 		void OnLogonLobbyAckEvent(bool fValidated, bool bRetry, LPCSTR szFailureReason);
 		void OnLogonAckEvent(bool fValidated, bool bRetry, LPCSTR szFailureReason);
 		 
-		void ConnectToLobby(CancellationTokenSource ^ cancellationTokenSource, String ^ lobbyAddress, String ^ characterName, String ^ cdKey);
+		bool ConnectToLobby(CancellationTokenSource ^ cancellationTokenSource, String ^ lobbyAddress, String ^ characterName, String ^ cdKey);
 		void ConnectToServer(/*CancellationTokenSource ^ cancellationTokenSource, */String ^ serverAddress, int port, String ^ characterName, String ^ cdKey, int cookie);
 
 		void DisconnectLobby()
@@ -139,6 +139,13 @@ namespace AllegianceInterop
 			IbuoyIGCWrapper ^ buoyWrapper = gcnew IbuoyIGCWrapper((IbuoyIGC *) mission->CreateObject(Time::Now(), OT_buoy, &buoy, sizeof(buoy)));
 			return buoyWrapper;
 		}
+
+		ImodelIGCWrapper ^  FindTarget(
+			IshipIGCWrapper ^       pship,
+			int						ttMask,
+			AbilityBitMask			abmAbilities);
+
+		float GetDistanceSquared(ImodelIGCWrapper ^ model1, ImodelIGCWrapper ^ model2) { return (model1->m_instance->GetPosition() - model2->m_instance->GetPosition()).LengthSquared(); }
 
 	};
 

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Wopr.Constants
 {
+    // From igc.h
     public enum MissionStage
     {
         STAGE_NOTSTARTED,

@@ -2,11 +2,24 @@
 #pragma once
 
 #include "igc.h"
+#include "Enums.h"
 
 // Use this to convert the unmanaged pointer into a wrapped object. In the unmanaged pointer is nullptr, then 
 // a null object will be returned instead of a wrapper on a null object.
 #define ConvertTo(ManagedType, UnmanagedObject) \
 	ManagedType ^ value = gcnew ManagedType(UnmanagedObject); if(value->m_instance == nullptr) return nullptr; else return value;
+
+#define ConvertSList(IGC_OBJECT, IGC_LINK, NATIVE_CALL) \
+	System::Collections::Generic::List<##IGC_OBJECT##Wrapper ^> ^ returnValue = gcnew System::Collections::Generic::List<##IGC_OBJECT##Wrapper ^>(); \
+\
+	for (IGC_LINK* pbl = NATIVE_CALL->last(); (pbl != NULL); pbl = pbl->txen())  \
+	{  \
+		IGC_OBJECT*     item = pbl->data();  \
+		returnValue->Add(gcnew IGC_OBJECT##Wrapper(item));  \
+	}  \
+	return returnValue;\
+
+#define GenericList(ManagedType) System::Collections::Generic::List<ManagedType ^> ^ 
 
 using namespace System;
 
@@ -95,6 +108,184 @@ namespace AllegianceInterop
     ref class PlayerScoreObjectWrapper;
     ref class GameOverScoreObjectWrapper;
 
+	public ref class VectorWrapper
+	{
+	public:
+		::Vector * m_instance = nullptr;
+
+		VectorWrapper(::Vector instance)
+		{
+			m_instance = new Vector();
+			*m_instance = instance;
+		}
+
+		~VectorWrapper()
+		{
+			if (m_instance != nullptr)
+			{
+				delete m_instance;
+				m_instance = nullptr;
+			}
+		}
+
+		!VectorWrapper()
+		{
+			if (m_instance != nullptr)
+			{
+				delete m_instance;
+				m_instance = nullptr;
+			}
+		}
+
+		VectorWrapper(float x, float y, float z) : VectorWrapper(Vector(x, y, z))
+		{
+		}
+
+		static const VectorWrapper ^ GetZero() { return gcnew VectorWrapper(::Vector::GetZero()); }
+
+		float X() { return m_instance->X(); }
+		float Y() { return m_instance->Y(); }
+		float Z() { return m_instance->Z(); }
+
+		VectorWrapper ^ SetX(float xArg) { return gcnew VectorWrapper(m_instance->SetX(xArg)); }
+		VectorWrapper ^ SetY(float yArg) { return gcnew VectorWrapper(m_instance->SetY(yArg)); }
+		VectorWrapper ^ SetZ(float zArg) { return gcnew VectorWrapper(m_instance->SetZ(zArg));  }
+
+		bool IsZero() 
+		{
+			return m_instance->IsZero();
+		}
+
+		float LengthSquared() 
+		{
+			return m_instance->LengthSquared();
+		}
+
+		float Length()
+		{
+			return m_instance->Length();
+		}
+
+		double AngleInRadians(VectorWrapper ^ otherPoint)
+		{
+			if (X() == 0 && Y() == 0)
+				return 0;
+
+			return atan2(Y(), X());
+
+			//return atan((double) (otherPoint->X() - X()), (double) (otherPoint->Y() - Y()));
+
+			//return acos(DotProduct(otherPoint) / (this->Length() * otherPoint->Length()));
+		}
+
+		float DotProduct(VectorWrapper ^ otherPoint)
+		{
+			return (this->X() * otherPoint->X()) + (this->X() * otherPoint->Y()) + (this->X() * otherPoint->Z());
+		}
+
+		String ^ GetString()
+		{
+			return gcnew String((PCC) m_instance->GetString());
+		}
+
+		VectorWrapper ^ operator+=(VectorWrapper ^ v)
+		{
+			return gcnew VectorWrapper(*m_instance += *v->m_instance);
+		}
+
+		VectorWrapper ^ operator-=(VectorWrapper ^ v)
+		{
+			return gcnew VectorWrapper(*m_instance -= *v->m_instance);
+		}
+
+		VectorWrapper ^ operator*=(float s)
+		{
+			return gcnew VectorWrapper(*m_instance *= s);
+		}
+
+		VectorWrapper ^ operator/=(float s)
+		{
+			return gcnew VectorWrapper(*m_instance /= s);
+		}
+
+		float   operator [](int i)
+		{
+			return (*m_instance)[i];
+		}
+
+		VectorWrapper ^ Normalize() 
+		{
+			return gcnew VectorWrapper(m_instance->Normalize());
+		}
+
+		void SetNormalize()
+		{
+			m_instance->SetNormalize();
+		}
+
+		//
+		// friend functions
+		//
+
+		static bool operator ==(VectorWrapper ^ v1, VectorWrapper ^ v2)
+		{
+			return v1->m_instance == v2->m_instance;
+		}
+
+		static bool operator!=(const VectorWrapper ^ v1, const VectorWrapper ^ v2)
+		{
+			return !(v1 == v2);
+		}
+
+		static VectorWrapper ^ operator-(const VectorWrapper ^ v)
+		{
+			return gcnew VectorWrapper(-(*v->m_instance));		}
+
+		static VectorWrapper ^ operator+(const VectorWrapper ^ v1, const VectorWrapper ^ v2)
+		{
+			return gcnew VectorWrapper(*v1->m_instance + *v2->m_instance);
+		}
+
+		static VectorWrapper ^ operator-(const VectorWrapper ^ v1, const VectorWrapper ^ v2)
+		{
+			return gcnew VectorWrapper(*v1->m_instance - *v2->m_instance);
+		}
+
+		static VectorWrapper ^ operator*(const VectorWrapper ^ v1, float s)
+		{
+			return gcnew VectorWrapper(*v1->m_instance * s);
+		}
+
+		static VectorWrapper ^ operator*(float s, const VectorWrapper ^ v1)
+		{
+			return v1 * s;
+		}
+
+		static VectorWrapper ^ operator/(const VectorWrapper ^ v1, float s)
+		{
+			return gcnew VectorWrapper(*v1->m_instance / s);
+		}
+
+		static float operator*(const VectorWrapper ^ v1, const VectorWrapper ^ v2)
+		{
+			return *v1->m_instance * *v2->m_instance;
+		}
+
+		static VectorWrapper ^ CrossProduct(const VectorWrapper ^ v1, const VectorWrapper ^ v2)
+		{
+			return
+				gcnew VectorWrapper(Vector(
+				(v1->m_instance->Y() * v2->m_instance->Z()) - (v2->m_instance->Y() * v1->m_instance->Z()),
+					(v1->m_instance->Z() * v2->m_instance->X()) - (v2->m_instance->Z() * v1->m_instance->X()),
+					(v1->m_instance->X() * v2->m_instance->Y()) - (v2->m_instance->X() * v1->m_instance->Y())
+				));
+		}
+
+		/*static GetOrthogonalVector() const;
+
+		static static RandomDirection(void);
+		static static RandomPosition(float radius);*/
+	};
 
 
     public ref class GeoWrapper
@@ -212,8 +403,8 @@ namespace AllegianceInterop
 /*
         static  float   Displacement(short delta);*//*
         static short    Delta(float displacement);*/
-        void        Set(const Vector& pReference, const Vector& p);
-        void        Export(const Vector& pReference, Vector* p);
+        void        Set(const VectorWrapper ^ pReference, const VectorWrapper ^ p);
+        void        Export(const VectorWrapper ^ pReference, Vector* p);
     };
 
     public ref class CompactStateWrapper
@@ -238,7 +429,7 @@ namespace AllegianceInterop
 		
 		CompactVelocityWrapper(::CompactVelocity * instance);
 
-        void            Set(const Vector& v);
+        void            Set(const VectorWrapper ^ v);
         void            Export(Vector* pVelocity);
     };
 
@@ -451,7 +642,7 @@ namespace AllegianceInterop
         void                    AddCluster(IclusterIGCWrapper^ c);
         void                    DeleteCluster(IclusterIGCWrapper^ c);
         IclusterIGCWrapper ^ GetCluster(SectorID clusterID);
-        const ClusterListIGC*   GetClusters();
+        System::Collections::Generic::List<IclusterIGCWrapper ^> ^   GetClusters();
         void                    AddShip(IshipIGCWrapper^ s);
         void                    DeleteShip(IshipIGCWrapper^ s);
         IshipIGCWrapper ^ GetShip(ShipID shipID);
@@ -467,7 +658,7 @@ namespace AllegianceInterop
         void                    AddWarp(IwarpIGCWrapper^ w);
         void                    DeleteWarp(IwarpIGCWrapper^ w);
         IwarpIGCWrapper ^ GetWarp(WarpID warpID);
-        const WarpListIGC*      GetWarps();
+		System::Collections::Generic::List<IwarpIGCWrapper ^> ^      GetWarps();
         void                    AddBuoy(IbuoyIGCWrapper^ t);
         void                    DeleteBuoy(IbuoyIGCWrapper^ t);
         IbuoyIGCWrapper ^ GetBuoy(BuoyID buoyID);
@@ -493,7 +684,7 @@ namespace AllegianceInterop
         ProbeID                 GenerateNewProbeID();
         MissileID               GenerateNewMissileID();
         void                    SetMissionStage(STAGE st);
-        STAGE                   GetMissionStage();
+		AllegianceInterop::MissionStage GetMissionStage();
         void                    EnterGame();
         void                    ResetMission();
         void                    SetPrivateData(DWORD dwPrivate);
@@ -551,7 +742,7 @@ namespace AllegianceInterop
 
         void Terminate();
         void AddExplosion(ImodelIGCWrapper^ pmodel, int type);
-        void AddExplosion(const Vector& vecPosition, float scale, int type);
+        void AddExplosion(const VectorWrapper ^ vecPosition, float scale, int type);
         void AddThingSite(ThingSiteWrapper^ thing);
         void DeleteThingSite(ThingSiteWrapper^ thing);
     };
@@ -568,16 +759,16 @@ namespace AllegianceInterop
         void        Purge();
         Vector      GetChildModelOffset(const ZString& strFrame);
         Vector      GetChildOffset(const ZString& strFrame);
-        void        AddHullHit(const Vector& vecPosition, const Vector& vecNormal);
-        void        AddFlare(Time ptime, const Vector& vecPosition, int id, const Vector* ellipseEquation);
-        void        AddMuzzleFlare(const Vector& vecEmissionPoint, float duration);
+        void        AddHullHit(const VectorWrapper ^ vecPosition, const VectorWrapper ^ vecNormal);
+        void        AddFlare(Time ptime, const VectorWrapper ^ vecPosition, int id, const Vector* ellipseEquation);
+        void        AddMuzzleFlare(const VectorWrapper ^ vecEmissionPoint, float duration);
         void        SetVisible(unsigned char render);
         float           GetDistanceToEdge();
         float           GetScreenRadius();
         unsigned char   GetRadarState();
         ThingGeo*   GetThingGeo();
         GeoWrapper ^ GetGeo();
-        void        SetPosition(const Vector& position);
+        void        SetPosition(const VectorWrapper ^ position);
         float       GetRadius();
         void        SetRadius(float r);
         void        SetOrientation(const Orientation& orientation);
@@ -614,8 +805,10 @@ namespace AllegianceInterop
         void                 SetSideVisibility(IsideIGCWrapper^ side, bool fVisible);
         ThingSiteWrapper ^ GetThingSite();
         void                 FreeThingSite();
-        void                 SetPosition(const Vector& newVal);
-        void                 SetVelocity(const Vector& newVal);
+        void                 SetPosition(const VectorWrapper ^ newVal);
+		VectorWrapper ^      GetPosition() { return gcnew VectorWrapper(m_instance->GetPosition()); }
+        void                 SetVelocity(const VectorWrapper ^ newVal);
+		VectorWrapper ^		 GetVelocity() { return gcnew VectorWrapper(m_instance->GetVelocity()); }
         void                 SetOrientation(const Orientation& newVal);
         void                 SetRotation(const Rotation& newVal);
         float                GetRadius();
@@ -800,7 +993,7 @@ namespace AllegianceInterop
         void                ApplyMineDamage();
         CommandID           GetDefaultOrder(ImodelIGCWrapper^ pmodel);
         bool                OkToLaunch(Time now);
-        bool                PickDefaultOrder(IclusterIGCWrapper^ pcluster, const Vector& position, bool bDocked);
+        bool                PickDefaultOrder(IclusterIGCWrapper^ pcluster, const VectorWrapper ^ position, bool bDocked);
         bool                IsGhost();
         float               GetEndurance();
         bool                InGarage(IshipIGCWrapper^ pship, float tCollision);
@@ -874,7 +1067,7 @@ namespace AllegianceInterop
         ImodelIGCWrapper ^ GetTarget();
         void                SetTarget(ImodelIGCWrapper^ newVal);
         float               GetLock();
-        void                Explode(const Vector& position);
+        void                Explode(const VectorWrapper ^ position);
         void                Disarm();
     };
 
@@ -947,7 +1140,7 @@ namespace AllegianceInterop
         const ShipListIGC*      GetShips();
         void                    RepairAndRefuel(IshipIGCWrapper^ pship);
         void                    Launch(IshipIGCWrapper^ pship);
-        bool                    InGarage(IshipIGCWrapper^ pship, const Vector& position);
+        bool                    InGarage(IshipIGCWrapper^ pship, const VectorWrapper ^ position);
         ObjectID			 GetRoidID();
         void SetRoidID(ObjectID id);
         Vector				 GetRoidPos();
@@ -1503,11 +1696,11 @@ namespace AllegianceInterop
         void                    AddShip(IshipIGCWrapper^ shipNew);
         void                    DeleteShip(IshipIGCWrapper^ shipOld);
         IshipIGCWrapper ^ GetShip(ShipID shipID);
-        const ShipListIGC*      GetShips();
+		GenericList(IshipIGCWrapper) GetShips();
         void                    AddAsteroid(IasteroidIGCWrapper^ asteroidNew);
         void                    DeleteAsteroid(IasteroidIGCWrapper^ asteroidOld);
         IasteroidIGCWrapper ^ GetAsteroid(AsteroidID asteroidID);
-        const AsteroidListIGC*  GetAsteroids();
+		GenericList(IasteroidIGCWrapper)  GetAsteroids();
         void                    AddTreasure(ItreasureIGCWrapper^ treasureNew);
         void                    DeleteTreasure(ItreasureIGCWrapper^ treasureOld);
         ItreasureIGCWrapper ^ GetTreasure(TreasureID treasureID);
@@ -1820,7 +2013,7 @@ namespace AllegianceInterop
         void    ClusterUpdateEvent(IclusterIGCWrapper^ c);
         void GetMoneyRequest(IshipIGCWrapper^ pshipSender, Money amount, HullID hidFor);
         void PlaySoundEffect(SoundID soundID, ImodelIGCWrapper^ model);
-        void PlaySoundEffect(SoundID soundID, ImodelIGCWrapper^ model, const Vector& vectOffset);
+        void PlaySoundEffect(SoundID soundID, ImodelIGCWrapper^ model, const VectorWrapper ^ vectOffset);
         void PlayNotificationSound(SoundID soundID, ImodelIGCWrapper^ model);
         void PlayFFEffect(ForceEffectID effectID, ImodelIGCWrapper^ model, LONG lDirection);
         void PlayVisualEffect(VisualEffectID effectID, ImodelIGCWrapper^ model, float fIntensity);

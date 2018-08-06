@@ -120,9 +120,15 @@
     <Compile Include="Constants\Civilization.cs" />
     <Compile Include="Constants\CommandID.cs" />
     <Compile Include="Constants\CommandType.cs" />
-    <Compile Include="Constants\MissionStage.cs" />
+    <Compile Include="Constants\ItemType.cs" />
+    <Compile Include="Constants\ObjectType.cs" />
+    <Compile Include="Constants\ShipType.cs" />
+    <Compile Include="Constants\StationAbilityBitMask.cs" />
     <Compile Include="Constants\StrategyID.cs" />
+    <Compile Include="Constants\TargetType.cs" />
+    <Compile Include="DijkstraPathFinder.cs" />
     <Compile Include="Entities\CoreInfo.cs" />
+    <Compile Include="Entities\GameInfo.cs" />
     <Compile Include="Entities\ISupportReadingFromStreams.cs" />
     <Compile Include="Entities\MessageElement.cs" />
     <Compile Include="Entities\PersistPlayerScoreObject.cs" />
@@ -130,6 +136,7 @@
     <Compile Include="Entities\ServerInfo.cs" />
     <Compile Include="Entities\StaticCoreInfo.cs" />
     <Compile Include="Constants\EquipmentType.cs" />
+    <Compile Include="Entities\TeamDirectorPlayerInfo.cs" />
     <Compile Include="MessageReceiver.cs" />
     <Compile Include="Constants\MessageType.cs" />
     <Compile Include="Program.cs" />
@@ -155,6 +162,7 @@
     <PostBuildEvent>xcopy $(ProjectDir)\..\..\lib\steam\steam_api.dll . /s /d /y
 xcopy $(ProjectDir)..\..\Inc\steam_appid.txt . /s /d /y
 xcopy $(ProjectDir)..\..\..\objsv141_xp\$(ConfigurationName)\AllegianceInterop\AllegianceInterop.dll . /s /d /y
+xcopy $(ProjectDir)..\Strategies\bin\$(ConfigurationName)\Strategies.* . /s /d /y
 </PostBuildEvent>
   </PropertyGroup>
 </Project>

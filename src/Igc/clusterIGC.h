@@ -147,6 +147,8 @@ class       CclusterIGC : public IclusterIGC
             if (shipNew->GetParentShip() == NULL)
                 m_pClusterSite->AddScanner(shipNew->GetSide()->GetObjectID(), shipNew);
             AddModel(shipNew);
+
+			//debugf("ShipCount cluster: %s, adding ship %s, new ship count: %ld\n", this->GetName(), shipNew->GetName(), m_ships.n());
         }
         virtual void                    DeleteShip(IshipIGC* shipOld)
         {
@@ -155,6 +157,8 @@ class       CclusterIGC : public IclusterIGC
             if (shipOld->GetParentShip() == NULL)
                 m_pClusterSite->DeleteScanner(shipOld->GetSide()->GetObjectID(), shipOld);
             DeleteIbaseIGC((BaseListIGC*)&m_ships, shipOld);
+
+			//debugf("cluster: %s, deleting ship %s, updated ship count: \n", this->GetName(), shipOld->GetName(), m_ships.n());
         }
         virtual IshipIGC*               GetShip(ShipID   id) const
         {
@@ -162,6 +166,8 @@ class       CclusterIGC : public IclusterIGC
         }
         virtual const ShipListIGC*      GetShips(void) const
         {
+			//debugf("cluster: %s, GetShips Count: %ld\n", this->GetName(), m_ships.n());
+
             return &m_ships;
         }
 

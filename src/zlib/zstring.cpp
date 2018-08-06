@@ -55,6 +55,7 @@ ZString::ZStringData::~ZStringData()
 {
     if (m_pch) {
         delete[] m_pch;
+		m_pch = nullptr;
     }
 }
 

@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 
 namespace Wopr.Constants
 {
-    public enum StrategyID
+    public enum ShipType
     {
-        ConnectToGame,
-        CommanderResearchAndExpand,
-        ScoutExploreMap
+        Scout,
+        Fighter,
+        Interceptor,
+        StealthFighter,
+        Bomber,
+        Gunship
     }
 }

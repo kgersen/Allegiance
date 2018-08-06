@@ -1,7 +1,20 @@
 #pragma once
 
-public enum ConnectionType
+namespace AllegianceInterop
 {
-	Lobby,
-	Server
-};
+	public enum ConnectionType
+	{
+		Lobby,
+		Server
+	};
+
+	//// From igc.h
+	public enum class MissionStage
+	{
+		STAGE_NOTSTARTED,
+		STAGE_STARTING,
+		STAGE_STARTED,
+		STAGE_OVER,
+		STAGE_TERMINATE
+	};
+}
