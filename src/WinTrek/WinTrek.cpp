@@ -3024,6 +3024,9 @@ public:
 		m_iWheelDelay			 = LoadPreference("WheelDelay",            2) % 5; //Spunky #282
 
         m_pUseOldUi = m_pConfiguration->GetBool("Ui.UseOldUi", true);
+        if (m_pUseOldUi->GetValue() == false) {
+            m_pUseOldUi->SetValue(true);
+        }
 
         m_bShowJoystickIndicator = (LoadPreference("ShowJoystickIndicator", 1) != 0);
 
@@ -5101,13 +5104,13 @@ public:
 
     void ToggleOldUi()
     {
-        m_pUseOldUi->SetValue(!m_pUseOldUi->GetValue());
+        m_pUseOldUi->SetValue(true);
 
         if (m_pitemToggleUseOldUi != NULL) {
             m_pitemToggleUseOldUi->SetString(GetOldUiMenuString());
         }
 
-        m_pmessageBox = CreateMessageBox("Enabling or Disabling the old UI will require you to restart Allegiance.", NULL, true, false);
+        m_pmessageBox = CreateMessageBox("This has been disabled.", NULL, true, false);
         m_pmessageBox->GetEventSource()->AddSink(new CloseNotificationSink(this));
         GetWindow()->GetPopupContainer()->OpenPopup(m_pmessageBox, false);
 
