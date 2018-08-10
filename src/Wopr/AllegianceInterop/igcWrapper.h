@@ -21,6 +21,20 @@
 
 #define GenericList(ManagedType) System::Collections::Generic::List<ManagedType ^> ^ 
 
+#define ConvertToGenericList(IGC_OBJECT, METHOD_NAME, IGC_LINK) \
+	System::Collections::Generic::List<IGC_OBJECT##Wrapper ^> ^ METHOD_NAME##() \
+	{ \
+		System::Collections::Generic::List<##IGC_OBJECT##Wrapper ^> ^ returnValue = gcnew System::Collections::Generic::List<AllegianceInterop::##IGC_OBJECT##Wrapper ^>(); \
+	\
+		for (IGC_LINK* pbl = m_instance->##METHOD_NAME##()->last(); (pbl != NULL); pbl = pbl->txen())  \
+		{  \
+			IGC_OBJECT*     item = pbl->data();  \
+			returnValue->Add(gcnew IGC_OBJECT##Wrapper(item));  \
+		}  \
+		return returnValue;\
+	}\
+
+
 using namespace System;
 
 namespace AllegianceInterop
@@ -350,6 +364,7 @@ namespace AllegianceInterop
         int GetTerritoryPercentage();
         short GetDeathMatchKillLimit();
         int GetArtifactsPercentage();
+		int GetMaxDrones() { return m_instance->nMaxDronesPerTeam; }
     };
 
     public ref class ShipLoadoutWrapper
@@ -646,11 +661,14 @@ namespace AllegianceInterop
         void                    AddShip(IshipIGCWrapper^ s);
         void                    DeleteShip(IshipIGCWrapper^ s);
         IshipIGCWrapper ^ GetShip(ShipID shipID);
-        const ShipListIGC*      GetShips();
+		GenericList(IshipIGCWrapper) GetShips();
         void                    AddStation(IstationIGCWrapper^ s);
         void                    DeleteStation(IstationIGCWrapper^ s);
         IstationIGCWrapper ^ GetStation(StationID stationID);
-        const StationListIGC*   GetStations();
+        
+
+		GenericList(IstationIGCWrapper) GetStations();
+
         void                    AddAsteroid(IasteroidIGCWrapper^ p);
         void                    DeleteAsteroid(IasteroidIGCWrapper^ p);
         IasteroidIGCWrapper ^ GetAsteroid(AsteroidID asteroidID);
@@ -821,8 +839,10 @@ namespace AllegianceInterop
         IclusterIGCWrapper ^ GetCluster();
         void                 SetCluster(IclusterIGCWrapper^ pVal);
         String ^ GetName();
+		String ^ GetSecondaryName();
         void                 SetName(const char* newVal);
         void                 SetSecondaryName(const char* newVal);
+		
         float                GetSignature();
         void                 SetSignature(float newVal);
         void                 ChangeSignature(float delta);
@@ -886,7 +906,7 @@ namespace AllegianceInterop
         void                 SetMission(ImissionIGCWrapper^ pMission);
         void                 AddPart(IpartIGCWrapper^ part);
         void                 DeletePart(IpartIGCWrapper^ part);
-        const PartListIGC*   GetParts();
+        GenericList(IpartIGCWrapper) GetParts();
         IpartIGCWrapper ^ GetMountedPart(EquipmentType type, Mount mountID);
         void                 MountPart(IpartIGCWrapper^ p, Mount mountNew, Mount* pmountOld);
         short                GetAmmo();
@@ -1137,7 +1157,7 @@ namespace AllegianceInterop
         void                    AddShip(IshipIGCWrapper^ s);
         void                    DeleteShip(IshipIGCWrapper^ s);
         IshipIGCWrapper ^ GetShip(ShipID shipID);
-        const ShipListIGC*      GetShips();
+		GenericList(IshipIGCWrapper) GetShips();
         void                    RepairAndRefuel(IshipIGCWrapper^ pship);
         void                    Launch(IshipIGCWrapper^ pship);
         bool                    InGarage(IshipIGCWrapper^ pship, const VectorWrapper ^ position);
@@ -1692,7 +1712,7 @@ namespace AllegianceInterop
         void                    AddStation(IstationIGCWrapper^ stationNew);
         void                    DeleteStation(IstationIGCWrapper^ stationOld);
         IstationIGCWrapper ^ GetStation(StationID stationID);
-        const StationListIGC*   GetStations();
+		GenericList(IstationIGCWrapper)   GetStations();
         void                    AddShip(IshipIGCWrapper^ shipNew);
         void                    DeleteShip(IshipIGCWrapper^ shipOld);
         IshipIGCWrapper ^ GetShip(ShipID shipID);
@@ -1819,11 +1839,11 @@ namespace AllegianceInterop
         void                        AddStation(IstationIGCWrapper^ s);
         void                        DeleteStation(IstationIGCWrapper^ s);
         IstationIGCWrapper ^ GetStation(StationID id);
-        const StationListIGC*       GetStations();
+		GenericList(IstationIGCWrapper) GetStations();
         void                        AddShip(IshipIGCWrapper^ s);
         void                        DeleteShip(IshipIGCWrapper^ s);
         IshipIGCWrapper ^ GetShip(ShipID id);
-        const ShipListIGC*          GetShips();
+		GenericList(IshipIGCWrapper) GetShips();
         void                        AddBucket(IbucketIGCWrapper^ s);
         void                        DeleteBucket(IbucketIGCWrapper^ s);
         IbucketIGCWrapper ^ GetBucket(BucketID bucketID);

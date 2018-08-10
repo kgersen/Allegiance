@@ -143,6 +143,7 @@ namespace Wopr.Constants
         FM_S_CHANGE_ALLIANCES = 197,
         FM_S_ASTEROID_MINED = 198,
         FM_CS_HIGHLIGHT_CLUSTER = 199,
+        FM_S_CLUSTERINFO = 200,
 
         // From messagesls.h (Probably not going to use these, they are just for messages between the lobby and the server...
         FM_S_LOGON_LOBBY = 201,

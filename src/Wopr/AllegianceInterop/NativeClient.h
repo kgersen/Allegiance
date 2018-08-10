@@ -3,6 +3,7 @@
 
 #include "messagecore.h"
 #include "clintlib.h"
+#include "CriticalSectionManager.h"
 
 
 // Enable IntPtr to cast to delegate signatures.
@@ -13,11 +14,16 @@ typedef void(__stdcall *OnLogonAckEventFunction)(bool fValidated, bool bRetry, L
 
 namespace AllegianceInterop 
 {
+
+
 	
 	[event_source(native)]
 	public class NativeClient : public BaseClient
 	{
+
 	private:
+		static CriticalSectionManager m_criticalSection;
+
 		int m_counter = 0;
 
 		Vector m_lastPosition = Vector(0, 0, 0);
@@ -76,3 +82,5 @@ namespace AllegianceInterop
 
 	};
 }
+
+

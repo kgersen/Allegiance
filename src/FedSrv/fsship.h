@@ -327,6 +327,12 @@ public:
   { 
     return m_strCDKey; 
   }
+
+  const bool IsBot()
+  {
+	  return strcmp(GetCDKey(), g.szBotAuthenticationGuid) == 0;
+  }
+
   virtual void    SetSide(CFSMission * pmission, IsideIGC * pside);
   bool            CanCheat()            
   {

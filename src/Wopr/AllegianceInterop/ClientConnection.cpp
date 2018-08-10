@@ -149,7 +149,7 @@ namespace AllegianceInterop
 		Marshal::FreeHGlobal(cstrPassword);
 	}
 
-	void ClientConnection::ConnectToServer(/*CancellationTokenSource ^ cancellationTokenSource, */ String ^ serverAddress, int port, String ^ characterName, String ^ cdKey, int cookie)
+	bool ClientConnection::ConnectToServer(/*CancellationTokenSource ^ cancellationTokenSource, */ String ^ serverAddress, int port, String ^ characterName, String ^ cdKey, int cookie)
 	{
 		BaseClient::ConnectInfo connectInfo;
 
@@ -169,11 +169,13 @@ namespace AllegianceInterop
 		m_nativeClient->m_lastUpdate = Time::Now();
 		m_nativeClient->m_now = Time::Now();
 
-		m_nativeClient->ConnectToServer(connectInfo, cookie, m_nativeClient->m_now, "", false);
+		HRESULT hr = m_nativeClient->ConnectToServer(connectInfo, cookie, m_nativeClient->m_now, "", false);
 
 		Marshal::FreeHGlobal(cstrCharacterName);
 		Marshal::FreeHGlobal(cstrServerAddress);
 		Marshal::FreeHGlobal(cstrCdKey);
+
+		return SUCCEEDED(hr);
 
 		/*while (cancellationTokenSource->IsCancellationRequested == false)
 		{

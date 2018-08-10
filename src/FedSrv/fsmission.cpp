@@ -4037,10 +4037,57 @@ void CFSMission::SendMissionInfo(CFSPlayer * pfsPlayer, IsideIGC*   pside)
 
     SideID  sideID = pside->GetObjectID();
 
+	// Send all clusters, and what that side sees in them
+	const ClusterListIGC * pclstlist = pMission->GetClusters();
+	ClusterLinkIGC * pclstlink;
 
-    // Send all clusters, and what that side sees in them
-    const ClusterListIGC * pclstlist = pMission->GetClusters();
-    ClusterLinkIGC * pclstlink;
+	// BT - WOPR - Bots can't see tha map preview, so give them a cluster over view, but without position. 
+	BEGIN_PFM_CREATE(g.fm, pfmClusterInfo, S, CLUSTERINFO)
+	END_PFM_CREATE
+
+	ZeroMemory(pfmClusterInfo->clusterIDs, sizeof(pfmClusterInfo->clusterIDs));
+	ZeroMemory(pfmClusterInfo->homeSectors, sizeof(pfmClusterInfo->homeSectors));
+	ZeroMemory(pfmClusterInfo->warpFromClusterIDs, sizeof(pfmClusterInfo->warpFromClusterIDs));
+	ZeroMemory(pfmClusterInfo->warpToClusterIDs, sizeof(pfmClusterInfo->warpToClusterIDs));
+
+	// The last element in these lists should always be -1;
+	pfmClusterInfo->clusterIDs[0] = -1;
+	pfmClusterInfo->warpFromClusterIDs[0] = -1;
+	pfmClusterInfo->warpToClusterIDs[0] = -1;
+
+	int clusterIndex = 0;
+	int warpIndex = 0;
+
+	for (pclstlink = pclstlist->first(); pclstlink; pclstlink = pclstlink->next())
+	{
+		IclusterIGC * pcluster = pclstlink->data();
+
+		pfmClusterInfo->clusterIDs[clusterIndex] = pcluster->GetObjectID();
+		pfmClusterInfo->homeSectors[clusterIndex] = pcluster->GetHomeSector();
+		clusterIndex++;
+
+		pfmClusterInfo->clusterIDs[clusterIndex] = -1;
+
+		const WarpListIGC * pwarplist = pcluster->GetWarps();
+		WarpLinkIGC * pwarplink;
+		for (pwarplink = pwarplist->first(); pwarplink; pwarplink = pwarplink->next())
+		{
+			IwarpIGC * warp = pwarplink->data();
+
+			pfmClusterInfo->warpFromClusterIDs[warpIndex] = warp->GetCluster()->GetObjectID();
+			pfmClusterInfo->warpToClusterIDs[warpIndex] = warp->GetDestination()->GetCluster()->GetObjectID();
+					
+			warpIndex++;
+
+			pfmClusterInfo->warpFromClusterIDs[warpIndex] = -1;
+			pfmClusterInfo->warpToClusterIDs[warpIndex] = -1;
+		}
+	}
+
+	// BT - WOPR - End.
+
+
+    
     for (pclstlink = pclstlist->first(); pclstlink; pclstlink = pclstlink->next())
     {
         IclusterIGC * pcluster = pclstlink->data();

@@ -68,7 +68,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141_xp</PlatformToolset>
-    <CLRSupport>true</CLRSupport>
+    <CLRSupport>Pure</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -289,6 +289,7 @@
     <ClInclude Include="AllMessages.h" />
     <ClInclude Include="ClientConnection.h" />
     <ClInclude Include="clintlibWrapper.h" />
+    <ClInclude Include="CriticalSectionManager.h" />
     <ClInclude Include="Enums.h" />
     <ClInclude Include="IbaseIGC.h.Old" />
     <ClInclude Include="igcWrapper.h" />
@@ -297,6 +298,7 @@
     <ClInclude Include="IstaticIGC.h.Old" />
     <ClInclude Include="ISupportManagedByteArrays.h" />
     <ClInclude Include="ManagedObject.h" />
+    <ClInclude Include="MessageTypeNative.h" />
     <ClInclude Include="NativeClientClusterSite.h" />
     <ClInclude Include="NativeClientThingSite.h" />
     <ClInclude Include="Resource.h" />
@@ -309,6 +311,7 @@
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="ClientConnection.cpp" />
     <ClCompile Include="clintlibWrapper.cpp" />
+    <ClCompile Include="CriticalSectionManager.cpp" />
     <ClCompile Include="igcWrapper.cpp" />
     <ClCompile Include="ManagedObject.cpp" />
     <ClCompile Include="NativeClient.cpp" />

@@ -76,12 +76,16 @@ HRESULT         CstationTypeIGC::Initialize(ImissionIGC* pMission,
                 bfrLand[9] = '1' + m_nLandSlots;
                 bfrLand[10] = 'A';
                 const FrameDataUTL* pfd = pmhb->GetFrame(bfrLand);
-                if (pfd)
+
+				// BT - Fixing occosional crash on WinTrek startup.
+				if (pfd && m_nLandSlots < c_maxLandSlots)
                 {
                     assert (m_nLandSlots < c_maxLandSlots);
 
                     int i = 0;
-                    do
+
+					// BT - Fixing occosional crash on WinTrek startup.
+                    while(pfd && i < c_maxLandPlanes)
                     {
                         assert (i < c_maxLandPlanes);
                         m_positionLandPlanes[m_nLandSlots][i] = pfd->position * scale;
@@ -92,7 +96,7 @@ HRESULT         CstationTypeIGC::Initialize(ImissionIGC* pMission,
                         bfrLand[10] = 'A' + ++i;
                         pfd = pmhb->GetFrame(bfrLand);
                     }
-                    while (pfd);
+                    //while (pfd);
 
                     m_nLandPlanes[m_nLandSlots++] = i;
                 }
@@ -113,14 +117,16 @@ HRESULT         CstationTypeIGC::Initialize(ImissionIGC* pMission,
                 bfrLand[6] = '1' + m_nLandSlots;
                 bfrLand[7] = 'A';
                 const FrameDataUTL* pfd = pmhb->GetFrame(bfrLand);
-                if (pfd)
+
+				// BT - Fixing occosional crash on WinTrek startup.
+                if (pfd && m_nLandSlots < c_maxLandSlots)
                 {
                     assert (m_nLandSlots < c_maxLandSlots);
 
                     int i = 0;
 
 					// BT - Fixing occosional crash on WinTrek startup.
-                    for(i = 0; i < c_maxLandPlanes && pfd; )
+					while (pfd && i < c_maxLandPlanes)
                     {
                         assert (i < c_maxLandPlanes);
                         m_positionLandPlanes[m_nLandSlots][i] = pfd->position * scale;

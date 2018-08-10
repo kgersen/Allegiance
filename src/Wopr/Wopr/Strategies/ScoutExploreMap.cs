@@ -1,5 +1,4 @@
 ﻿using AllegianceInterop;
-using Strategies.Loadouts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,16 +7,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Wopr;
 using Wopr.Constants;
+using Wopr.Loadouts;
 
-namespace Strategies
+namespace Wopr.Strategies
 {
-    public class ScoutExploreMap : Wopr.StrategyBase
+    public class ScoutExploreMap : StrategyBase
     {
-        private const int SweepHopCount = 16; // The number of waypoint hops a scout will make when doing an orbit of a sector scanning for stuff. 
+        private const int SweepHopCount = 10;    // The number of waypoint hops a scout will make when doing an orbit of a sector scanning for stuff.
+                                                // Increasing this value makes the circle smoother, but it also slows down the ship!
 
         private int _currentSectorID = -1;
         private bool _isSweeping = false;
         private IclusterIGCWrapper _navigatingToCluster = null;
+
+        private bool _waitingForLaunchToComplete = false;
 
         //private bool _sweepLeft = false;
         //private bool _sweepRight = false;
@@ -38,23 +41,95 @@ namespace Strategies
             messageReceiver.FMD_S_SET_CLUSTER += MessageReceiver_FMD_S_SET_CLUSTER;
             messageReceiver.FMD_S_SINGLE_SHIP_UPDATE += MessageReceiver_FMD_S_SINGLE_SHIP_UPDATE;
             messageReceiver.FMD_S_SHIP_STATUS += MessageReceiver_FMD_S_SHIP_STATUS;
+            messageReceiver.FMD_S_DOCKED += MessageReceiver_FMD_S_DOCKED;
+            messageReceiver.FMD_CS_CHATMESSAGE += MessageReceiver_FMD_CS_CHATMESSAGE;
         }
+
+        private void MessageReceiver_FMD_CS_CHATMESSAGE(ClientConnection client, AllegianceInterop.FMD_CS_CHATMESSAGE message)
+        {
+            var ship = ClientConnection.GetShip();
+            
+            if (message.Message.Equals("die") == true)
+            {
+                AllegianceInterop.FMD_C_SUICIDE suicide = new AllegianceInterop.FMD_C_SUICIDE();
+                client.SendMessageServer(suicide);
+            }
+        }
+
+        private void MessageReceiver_FMD_S_DOCKED(ClientConnection client, AllegianceInterop.FMD_S_DOCKED message)
+        {
+            Log("MessageReceiver_FMD_S_DOCKED");
+
+            if (_waitingForLaunchToComplete == true)
+            {
+                Log("\tA launch is already in progress, skipping message.");
+                return;
+            }
+
+            var ship = ClientConnection.GetShip();
+            var station = ship.GetStation();
+
+            // If we are in a station, then get into a scout and get out there.
+            if (station != null)
+            {
+                // Mark the current sector as invalid so that we will aquire a new destination on launch.
+                _currentSectorID = -1;
+
+                Log("\tDocked at station, changing ship to scout and relaunching.");
+                ChangeShip(ShipType.Scout, new ScoutProbeLoadout());
+                return;
+            }
+        }
+
 
         private void MessageReceiver_FMD_S_SHIP_STATUS(ClientConnection client, AllegianceInterop.FMD_S_SHIP_STATUS message)
         {
-            Log("MessageReceiver_FMD_S_SHIP_STATUS");
+            
+            var ship = ClientConnection.GetShip();
+            var station = ship.GetStation();
 
-            var ship = _client.GetShip();
+            // Ignore messages that are not for us.
+            if (message.shipID != ship.GetObjectID())
+                return;
+
+            // Ignore messages until we actually get into a sector
+            if (ship.GetCluster() == null)
+                return;
+
+            Log($"MessageReceiver_FMD_S_SHIP_STATUS: my ship id = {ship.GetObjectID()},  message.shipID = {message.shipID}, message.status.GetSectorID(): {message.status.GetSectorID()}");
+
+           
+
             string shipName = ship.GetName();
 
             UpdateUnexploredWarpsList();
 
-            //if (_sweepLeft == true || _sweepRight == true)
-            //    NavigateToNextSweepPoint();
-
-            if (ship.GetCluster() == null || message.status.GetSectorID() == _currentSectorID || _isSweeping == true)
+            // If we are in a station, then get into a scout and get out there.
+            if (station != null)
             {
-                Log($"Skipping message: ship.GetCluster() = {ship.GetCluster().GetName()}, message.status.GetSectorID() = {message.status.GetSectorID()}, _currentSectorID = {_currentSectorID}, _isSweeping = {_isSweeping}");
+                if (_waitingForLaunchToComplete == false)
+                {
+                    Log("\tI'm sitting in base? Time to launch a scout!");
+                    ChangeShip(ShipType.Scout, new ScoutProbeLoadout());
+                    return;
+                }
+            }
+            else
+            {
+                _waitingForLaunchToComplete = false;
+            }
+
+            if (IsCurrentShipAScout() == false)
+            {
+                Log("\tI'm not in a scout... returning to base.");
+                ReturnToBase();
+                return;
+            }
+            
+            // If we are already moving, and this status message is for our current sector, or we are already sweeping, then ignore it.
+            if (ship.GetVelocity().Length() > 0  && (message.status.GetSectorID() == _currentSectorID || _isSweeping == true))
+            {
+                Log($"\tSkipping message: ship.GetVelocity(): {ship.GetVelocity().Length()},  ship.GetCluster() = {ship.GetCluster()?.GetName()}, message.status.GetSectorID() = {message.status.GetSectorID()}, _currentSectorID = {_currentSectorID}, _isSweeping = {_isSweeping}");
                 return;
             }
 
@@ -64,18 +139,18 @@ namespace Strategies
                 {
                     if (GameInfo.UnexploredClustersByObjectID.ContainsKey(_navigatingToCluster.GetObjectID()) == true)
                     {
-                        Log($"Entered cluster: {ship.GetCluster().GetName()}, continuing on route to {_navigatingToCluster.GetName()}");
+                        Log($"\tEntered cluster: {ship.GetCluster().GetName()}, continuing on route to {_navigatingToCluster.GetName()}");
                         return;
                     }
                     else
                     {
-                        Log($"Arrived at cluster: {ship.GetCluster().GetName()}, but destination cluster {_navigatingToCluster.GetName()} has already been swept. Cancelling navigation, checking for next step.");
+                        Log($"\tArrived at cluster: {ship.GetCluster().GetName()}, but destination cluster {_navigatingToCluster.GetName()} has already been swept. Cancelling navigation, checking for next step.");
                         _navigatingToCluster = null;
                     }
                 }
                 else
                 {
-                    Log($"Arrived at cluster: {ship.GetCluster().GetName()}, checking for next step.");
+                    Log($"\tArrived at cluster: {ship.GetCluster().GetName()}, checking for next step.");
                     _navigatingToCluster = null;
                 }
             }
@@ -91,18 +166,19 @@ namespace Strategies
             //_currentSweepHop = 0;
 
             var otherFriendlyScoutShips = ship.GetCluster().GetShips().Where(p => p.GetObjectID() != ship.GetObjectID() && p.GetBaseHullType().GetName().Contains("Scout") == true && p.GetSide().GetObjectID() == ship.GetSide().GetObjectID());
-            var otherSweepingScoutShips = otherFriendlyScoutShips.Where(p => p.GetCommandTarget((sbyte)CommandType.c_cmdCurrent)?.GetObjectType() == (short)ObjectType.OT_buoy);
+            //var otherSweepingScoutShips = otherFriendlyScoutShips.Where(p => p.GetCommandTarget((sbyte)CommandType.c_cmdCurrent)?.GetObjectType() == (short)ObjectType.OT_buoy);
+            var sweepingScoutCount = GameInfo.GetSweepingScoutCount(ship.GetCluster());
 
-            Log($"otherFriendlyScoutShips: {otherFriendlyScoutShips.Count()}, otherSweepingScoutShips: {otherSweepingScoutShips.Count()}, is unexplored: {GameInfo.UnexploredClustersByObjectID.ContainsKey(ship.GetCluster().GetObjectID())} ");
+            Log($"\totherFriendlyScoutShips: {otherFriendlyScoutShips.Count()}, otherSweepingScoutShips: {sweepingScoutCount}, is unexplored: {GameInfo.UnexploredClustersByObjectID.ContainsKey(ship.GetCluster().GetObjectID())} ");
 
             // Ship has entered a cluster, find the next target and start scouting.
 
             // If cluster is unexplored, and less than 2 ships sweeping, start sweeping
-            if (GameInfo.UnexploredClustersByObjectID.ContainsKey(ship.GetCluster().GetObjectID()) == true && otherSweepingScoutShips.Count() < 2)
+            if (GameInfo.UnexploredClustersByObjectID.ContainsKey(ship.GetCluster().GetObjectID()) == true && sweepingScoutCount < 2)
                 SweepCluster();
 
             // If there are two ships sweeping, fly to a point 1/3 of the angle we entered in at, and wait for alephs to appear.
-            else if (otherSweepingScoutShips.Count() >= 2)
+            else if (sweepingScoutCount >= 2)
                 FlyToStationPointAndWaitForAelphs();
 
             // If there are no ships sweeping, go to the next system. 
@@ -135,14 +211,14 @@ namespace Strategies
 
         private void UpdateUnexploredWarpsList()
         {
-            Log("UpdateUnexploredWarpsList()");
+            Log("\tUpdateUnexploredWarpsList()");
 
             //var ship = _client.GetShip();
-            var unexploredWarps = _client.GetCore().GetWarps().Where(p => p.GetDestination().GetCluster().GetAsteroids().Count == 0 && GameInfo.UnexploredClustersByObjectID.ContainsKey(p.GetDestination().GetCluster().GetObjectID()) == false);
+            var unexploredWarps = ClientConnection.GetCore().GetWarps().Where(p => p.GetDestination().GetCluster().GetAsteroids().Count == 0 && GameInfo.UnexploredClustersByObjectID.ContainsKey(p.GetDestination().GetCluster().GetObjectID()) == false);
 
             foreach (var unexploredWarp in unexploredWarps)
             {
-                Log($"Found unexplored cluster: {unexploredWarp.GetDestination().GetCluster().GetName()}, adding cluster's id to the GameInfo.UnexploredClustersByObjectID list.");
+                Log($"\t\tFound unexplored cluster: {unexploredWarp.GetDestination().GetCluster().GetName()}, adding cluster's id to the GameInfo.UnexploredClustersByObjectID list.");
 
                 lock (GameInfo.UnexploredClustersByObjectID)
                 {
@@ -155,14 +231,14 @@ namespace Strategies
             foreach (var unexploredClusterName in GameInfo.UnexploredClustersByObjectID.Values)
                 s.Append(unexploredClusterName + " ");
 
-            Log("Current unexplored clusters: " + s.ToString());
+            Log("\t\tCurrent unexplored clusters: " + s.ToString());
         }
 
         private void FlyToStationPointAndWaitForAelphs()
         {
-            Log("FlyToStationPointAndWaitForAelphs");
+            Log("\tFlyToStationPointAndWaitForAelphs");
 
-            var ship = _client.GetShip();
+            var ship = ClientConnection.GetShip();
             var centerPoint = new VectorWrapper(0, 0, 0);
             var shipPosition = ship.GetPosition();
 
@@ -177,12 +253,12 @@ namespace Strategies
 
             VectorWrapper nextPoint = new VectorWrapper((startingPoint - centerPoint).Length() * (float)Math.Cos(newAngle), (startingPoint - centerPoint).Length() * (float)Math.Sin(newAngle), 0);
 
-            var buoy = _client.CreateBuoy((sbyte)BuoyType.c_buoyWaypoint, nextPoint.X(), nextPoint.Y(), nextPoint.Z(), ship.GetCluster().GetObjectID(), true);
+            var buoy = ClientConnection.CreateBuoy((sbyte)BuoyType.c_buoyWaypoint, nextPoint.X(), nextPoint.Y(), nextPoint.Z(), ship.GetCluster().GetObjectID(), true);
             var command = ship.GetDefaultOrder(buoy);
             ship.SetCommand((sbyte)CommandType.c_cmdCurrent, buoy, command);
             ship.SetAutopilot(true);
 
-            List<int> consideredWarpObjectIDs = new List<int>();
+            //List<int> consideredWarpObjectIDs = new List<int>();
 
             // Wait for Aelphs to appear. 
             Task.Run(() =>
@@ -193,35 +269,36 @@ namespace Strategies
 
                     bool foundNewWarp = false;
                     bool updatedUnexploredClusterListAfterMove = false;
-                    for (int i = 0; i < 120 * 100 && _cancellationTokenSource.IsCancellationRequested == false; i++)
+                    for (int i = 0; i < 120 * 100 && _cancellationTokenSource.IsCancellationRequested == false && foundNewWarp == false; i++)
                     {
                         var otherScoutShips = ship.GetCluster().GetShips().Where(p => p.GetObjectID() != ship.GetObjectID() && p.GetBaseHullType().GetName().Contains("Scout") == true);
-                        var otherSweepingScoutShips = otherScoutShips.Where(p => p.GetCommandTarget((sbyte)CommandType.c_cmdCurrent)?.GetObjectType() == (short)ObjectType.OT_buoy);
+                        //var otherSweepingScoutShips = otherScoutShips.Where(p => p.GetCommandTarget((sbyte)CommandType.c_cmdCurrent)?.GetObjectType() == (short)ObjectType.OT_buoy);
+                        int sweepingScoutCount = GameInfo.GetSweepingScoutCount(ship.GetCluster());
 
                         if (i % 500 == 0)
                         {
-                            Log($"Waiting for Alephs to be found: {i}.");
+                            Log($"\t\tWaiting for Alephs to be found: {i}.");
 
                             // Once we get within 400 of the waypoint, update the unexplored clusters list in case we happen to have found a new unexplored cluster. 
                             if (updatedUnexploredClusterListAfterMove == false && (nextPoint - ship.GetPosition()).LengthSquared() <  Math.Pow(400, 2))
                             {
-                                Log("Updating unexplored cluster list after ship move.");
+                                Log("\t\tUpdating unexplored cluster list after ship move.");
                                 UpdateUnexploredWarpsList();
                                 updatedUnexploredClusterListAfterMove = true;
                             }
                         }
 
-                        var newWarps = ship.GetCluster().GetWarps().Where(p => GameInfo.UnexploredClustersByObjectID.ContainsKey(p.GetDestination().GetCluster().GetObjectID()) == true && consideredWarpObjectIDs.Contains(p.GetObjectID()) == false);
+                        var newWarps = ship.GetCluster().GetWarps().Where(p => GameInfo.UnexploredClustersByObjectID.ContainsKey((p?.GetDestination()?.GetCluster()?.GetObjectID()).GetValueOrDefault(-1)) == true /*&& consideredWarpObjectIDs.Contains(p.GetObjectID()) == false*/);
                         if (newWarps.Count() > 0)
                         {
                             foreach (var newWarp in newWarps)
                             {
                                 // If there are other non-sweeping ships in the sector, then only 33% of those ships should go to the newly visible aelph.
-                                if (otherScoutShips.Count() - otherSweepingScoutShips.Count() > 0)
+                                if (otherScoutShips.Count() - sweepingScoutCount > 0)
                                 {
                                     if (_random.Next(0, 100) < 33)
                                     {
-                                        Log($"Warp found, 33% chance success, heading to {newWarp.GetName()}");
+                                        Log($"\t\tWarp found, 33% chance success, heading to {newWarp.GetName()}");
 
                                         ship.SetCommand((sbyte)CommandType.c_cmdCurrent, newWarp, (sbyte)CommandID.c_cidGoto);
                                         ship.SetAutopilot(true);
@@ -231,7 +308,7 @@ namespace Strategies
                                 }
                                 else // We are the only non-sweeping scout in the cluster, go to the new warp.
                                 {
-                                    Log($"Warp found, heading to {newWarp.GetName()}");
+                                    Log($"\t\tWarp found, heading to {newWarp.GetName()}");
 
                                     ship.SetCommand((sbyte)CommandType.c_cmdCurrent, newWarp, (sbyte)CommandID.c_cidGoto);
                                     ship.SetAutopilot(true);
@@ -241,12 +318,19 @@ namespace Strategies
                             }
                         }
 
+                        // If the cluster gets marked as explored and no new unexplored alephs were found, then just move on. 
+                        if (GameInfo.UnexploredClustersByObjectID.ContainsKey(ship.GetCluster().GetObjectID()) == false)
+                        {
+                            Log("\t\tCluster marked as explored, moving on.");
+                            break;
+                        }
+
                         Thread.Sleep(100);
                     }
 
                     if (foundNewWarp == false)
                     {
-                        Log("No aelph was found, heading to next available warp.");
+                        Log("\t\tNo aelph was found, heading to next available warp.");
                         SelectNextAelphTarget();
                     }
                 }
@@ -259,13 +343,13 @@ namespace Strategies
 
         private void SweepCluster()
         {
-            Log("SweepCluster()");
-
+            Log("\tSweepCluster()");
+            
             _isSweeping = true;
 
-            var ship = _client.GetShip();
+            var ship = ClientConnection.GetShip();
             var otherScoutShips = ship.GetCluster().GetShips().Where(p => p.GetObjectID() != ship.GetObjectID() && p.GetBaseHullType().GetName().Contains("Scout") == true);
-
+            
             var centerPoint = new VectorWrapper(0, 0, 0);
             var shipPosition = ship.GetPosition();
 
@@ -281,13 +365,32 @@ namespace Strategies
             {
                 try
                 {
+                    int currentSweepingScoutCount = GameInfo.IncrementSweepingScoutCount(ship.GetCluster());
                     _runningTasks++;
 
                     bool sweepComplete = true;
 
-                    // Skip the first hop and the last 2 hops, aelphs won't be that close together.
-                    for (int i = 1; i < SweepHopCount - 2 && _cancellationTokenSource.IsCancellationRequested == false; i++)
+                    int hopCount = SweepHopCount;
+                    bool hopCountReduced = false; // Changes to true when a second scout starts sweeping.
+                    bool firstSweepingScout = currentSweepingScoutCount == 1;
+
+                    // This is somewhat specific to hihigher, but we will assume that any cluster has an average of 3 warps and a station cluster has 4. 
+                    // This lets a scout stop sweeping early if all clusters are assumed to be found.
+                    int targetWarpCount = 3 + ship.GetCluster().GetStations().Count;
+
+                    for (int i = 1; 
+                            i < hopCount - 2  // Skip the first hop and the last 2 hops, aelphs won't be that close together.
+                            && _cancellationTokenSource.IsCancellationRequested == false 
+                            && ship.GetCluster().GetWarps().Count < targetWarpCount;  // If we find enough warps, we will consider this cluster scanned. If there are more warp clusters will be covered when the other cluster is discovered from the other side. Otherwise, it's up to the humans!
+                         i++)
                     {
+                        // If another scout starts sweeping, then reduce the hop count by half so that we get done quicker. The other scout will start sweeping from the other direction.
+                        if (hopCountReduced == false && GameInfo.GetSweepingScoutCount(ship.GetCluster()) >= 2)
+                        {
+                            Log($"\t\tA second scout is also sweeping, reducing the hop count to half.");
+                                hopCount = (SweepHopCount / 2) + 3; // Go a little farther so that the paths overlap. It's the classic pincer manuver!!
+                        }
+
                         if (sweepLeft == true)
                             currentAngleInRadians += nextSliceWidth;
                         else
@@ -295,24 +398,24 @@ namespace Strategies
 
                         VectorWrapper nextPoint = new VectorWrapper((startingPoint - centerPoint).Length() * (float)Math.Cos(currentAngleInRadians), (startingPoint - centerPoint).Length() * (float)Math.Sin(currentAngleInRadians), 0);
 
-                        Log($"nextPoint: {nextPoint.GetString()}, currentAngleInRadians: {currentAngleInRadians}, sweepHop: {i}");
+                        Log($"\t\tnextPoint: {nextPoint.GetString()}, currentAngleInRadians: {currentAngleInRadians}, sweepHop: {i}, firstSweepingScout: {firstSweepingScout}, target hopCount: {hopCount - 2}");
 
-                        var buoy = _client.CreateBuoy((sbyte)BuoyType.c_buoyWaypoint, nextPoint.X(), nextPoint.Y(), nextPoint.Z(), ship.GetCluster().GetObjectID(), true);
+                        var buoy = ClientConnection.CreateBuoy((sbyte)BuoyType.c_buoyWaypoint, nextPoint.X(), nextPoint.Y(), nextPoint.Z(), ship.GetCluster().GetObjectID(), true);
                         var command = ship.GetDefaultOrder(buoy);
                         ship.SetCommand((sbyte)CommandType.c_cmdCurrent, buoy, command);
                         ship.SetAutopilot(true);
 
                         bool reachedWaypoint = false;
-                        for (int j = 0; j < 120 * 100 && _cancellationTokenSource.IsCancellationRequested == false; j++)
+                        for (int j = 0; j < 60 * 100 && _cancellationTokenSource.IsCancellationRequested == false; j++)
                         {
                             VectorWrapper difference = nextPoint - ship.GetPosition();
 
                             if(j % 500 == 0)
-                                Log($"Current distance: {Math.Abs(difference.Length())}, iterations: {j}, {nextPoint.GetString()}");
+                                Log($"\t\tCurrent distance: {Math.Abs(difference.Length())}, iterations: {j}, {nextPoint.GetString()}, ship velocity: {ship.GetVelocity().Length()}");
 
-                            if ((nextPoint - ship.GetPosition()).LengthSquared() < Math.Pow(400, 2))
+                            if ((nextPoint - ship.GetPosition()).LengthSquared() < Math.Pow(600, 2))
                             {
-                                Log($"Reached waypoint: {nextPoint.GetString()}"); 
+                                Log($"\t\tReached waypoint: {nextPoint.GetString()}, ship velocity: {ship.GetVelocity().Length()}"); 
                                 reachedWaypoint = true;
                                 break;
                             }
@@ -320,20 +423,30 @@ namespace Strategies
                             Thread.Sleep(100);
                         }
 
-                        // We didn't reach the waypoint in two minutes. Something went wrong, let's just move on.
+                        // We didn't reach the waypoint in one minute. Something went wrong, let's just move on.
                         if (reachedWaypoint == false)
                         {
                             sweepComplete = false;
-                            Log("No waypoint was found in 120 seconds.");
+                            Log("\t\tNo waypoint was found in 120 seconds.");
                             break;
                         }
                     }
 
                     if (sweepComplete == true)
                     {
-                        Log($"Cluster exploration complete for ship.GetCluster().GetName(), removing from GameInfo.UnexploredClustersByObjectID");
-                        GameInfo.UnexploredClustersByObjectID.Remove(ship.GetCluster().GetObjectID());
-                        UpdateUnexploredWarpsList();
+                        currentSweepingScoutCount = GameInfo.GetSweepingScoutCount(ship.GetCluster());
+
+                        // If there is more than one sweeping scout, then the second scout will perform the removal of the scanned cluster.
+                        if (firstSweepingScout == false || currentSweepingScoutCount == 1)
+                        {
+                            Log($"\t\tCluster exploration complete for {ship.GetCluster().GetName()}, removing from GameInfo.UnexploredClustersByObjectID");
+                            GameInfo.UnexploredClustersByObjectID.Remove(ship.GetCluster().GetObjectID());
+                            UpdateUnexploredWarpsList();
+                        }
+                        else
+                        {
+                            Log($"\t\tCluster exploration complete for {ship.GetCluster().GetName()} for first sweeping scout.");
+                        }
                     }
 
                     SelectNextAelphTarget();
@@ -342,6 +455,7 @@ namespace Strategies
                 {
                     _runningTasks--;
                     _isSweeping = false;
+                    GameInfo.DecrementSweepingScoutCount(ship.GetCluster());
                 }
             });
 
@@ -412,29 +526,29 @@ namespace Strategies
 
         private void SelectNextAelphTarget()
         {
-            Log("SelectNextAelphTarget()");
+            Log("\tSelectNextAelphTarget()");
 
-            var ship = _client.GetShip();
+            var ship = ClientConnection.GetShip();
             
             var visibleWarps = ship.GetCluster().GetWarps();
             var otherFriendlyScoutShips = ship.GetCluster().GetShips().Where(p => p.GetObjectID() != ship.GetObjectID() && p.GetBaseHullType().GetName().Contains("Scout") == true && p.GetSide().GetObjectID() == ship.GetSide().GetObjectID());
 
             bool foundTargetWarp = false;
 
-            foreach (var visibleWarp in visibleWarps.Where(p => GameInfo.UnexploredClustersByObjectID.ContainsKey(p.GetDestination().GetCluster().GetObjectID()) == true).OrderBy(p => _client.GetDistanceSquared(p, ship)))
+            foreach (var visibleWarp in visibleWarps.Where(p => GameInfo.UnexploredClustersByObjectID.ContainsKey(p.GetDestination().GetCluster().GetObjectID()) == true).OrderBy(p => ClientConnection.GetDistanceSquared(p, ship)))
             {
                 if (GameInfo.UnexploredClustersByObjectID.ContainsKey(visibleWarp.GetDestination().GetCluster().GetObjectID()) == true)
                 {
-                    Log($"Unexplored Warp found: {visibleWarp.GetName()}");
+                    Log($"\t\tUnexplored Warp found: {visibleWarp.GetName()}");
 
-                    float myDistance = _client.GetDistanceSquared(ship, visibleWarp);
+                    float myDistance = ClientConnection.GetDistanceSquared(ship, visibleWarp);
                     bool isAnotherScoutCloser = false;
                     foreach (var otherScoutShip in otherFriendlyScoutShips)
                     {
-                        float otherScoutDistance = _client.GetDistanceSquared(otherScoutShip, visibleWarp);
+                        float otherScoutDistance = ClientConnection.GetDistanceSquared(otherScoutShip, visibleWarp);
                         if (otherScoutDistance < myDistance)
                         {
-                            Log($"Another scout: {otherScoutShip.GetName()} is already closer to: {visibleWarp.GetName()}, looking for another target.");
+                            Log($"\t\tAnother scout: {otherScoutShip.GetName()} is already closer to: {visibleWarp.GetName()}, looking for another target.");
                             isAnotherScoutCloser = true;
                             break;
                         }
@@ -443,7 +557,7 @@ namespace Strategies
                     // The cluster is on the unexplored list, and there's no other scout that is closer, let's go for it!
                     if (isAnotherScoutCloser == false)
                     {
-                        Log($"Found target warp, going to {visibleWarp.GetName()}");
+                        Log($"\t\tFound target warp, going to {visibleWarp.GetName()}");
 
                         foundTargetWarp = true;
                         ship.SetCommand((sbyte)CommandType.c_cmdCurrent, visibleWarp, (sbyte)CommandID.c_cidGoto);
@@ -455,7 +569,7 @@ namespace Strategies
 
             if (foundTargetWarp == false)
             {
-                Log($"No target warp found, selecting a visible warp at random.");
+                Log($"\t\tNo target warp found, selecting a visible warp at random.");
 
                 // Pick a random warp that is unexplored. 
                 var unvisitedWarps = visibleWarps.Where(p => GameInfo.UnexploredClustersByObjectID.ContainsKey(p.GetDestination().GetCluster().GetObjectID()) == true).ToList();
@@ -463,7 +577,7 @@ namespace Strategies
                 {
                     var targetWarp = unvisitedWarps[_random.Next(0, unvisitedWarps.Count)];
 
-                    Log($"Found unvisited random warp, going to: {targetWarp.GetName()}");
+                    Log($"\t\tFound unvisited random warp, going to: {targetWarp.GetName()}");
 
                     ship.SetCommand((sbyte)CommandType.c_cmdCurrent, targetWarp, (sbyte)CommandID.c_cidGoto);
                     ship.SetAutopilot(true);
@@ -477,9 +591,9 @@ namespace Strategies
                 IclusterIGCWrapper nearestCluster = FindNearestUnexploredCluster();
                 if (nearestCluster != null)
                 {
-                    Log($"Found an unexplored cluster {nearestCluster.GetName()}, navigating to it.");
+                    Log($"\t\tFound an unexplored cluster {nearestCluster.GetName()}, navigating to it.");
 
-                    var buoy = _client.CreateBuoy((sbyte)BuoyType.c_buoyWaypoint, 0, 0, 0, nearestCluster.GetObjectID(), true);
+                    var buoy = ClientConnection.CreateBuoy((sbyte)BuoyType.c_buoyWaypoint, 0, 0, 0, nearestCluster.GetObjectID(), true);
                     var command = ship.GetDefaultOrder(buoy);
                     ship.SetCommand((sbyte)CommandType.c_cmdCurrent, buoy, command);
                     ship.SetAutopilot(true);
@@ -495,7 +609,7 @@ namespace Strategies
             {
                 var targetWarp = visibleWarps[_random.Next(0, visibleWarps.Count)];
 
-                Log($"Found visited random warp, going to: {targetWarp.GetName()}");
+                Log($"\t\tFound visited random warp, going to: {targetWarp.GetName()}");
 
                 ship.SetCommand((sbyte)CommandType.c_cmdCurrent, targetWarp, (sbyte)CommandID.c_cidGoto);
                 ship.SetAutopilot(true);
@@ -510,10 +624,10 @@ namespace Strategies
 
             foreach (var unexploredClusterObjectID in GameInfo.UnexploredClustersByObjectID.Keys)
             {
-                var fromCluster = _client.GetShip().GetCluster();
-                var toCluster = _client.GetCore().GetCluster((short)unexploredClusterObjectID);
+                var fromCluster = ClientConnection.GetShip().GetCluster();
+                var toCluster = ClientConnection.GetCore().GetCluster((short)unexploredClusterObjectID);
 
-                DijkstraPathFinder pathFinder = new DijkstraPathFinder(_client.GetCore(), fromCluster, toCluster);
+                DijkstraPathFinder pathFinder = new DijkstraPathFinder(ClientConnection.GetCore(), fromCluster, toCluster);
                 
                 int distance = pathFinder.GetDistance(fromCluster, toCluster);
 
@@ -537,28 +651,58 @@ namespace Strategies
 
         public override void Start()
         {
-            var ship = _client.GetShip();
-            var side = _client.GetSide();
-            var mission = side.GetMission();
-            var hullTypes = mission.GetHullTypes();
+            var ship = ClientConnection.GetShip();
+            //var side = _client.GetSide();
+            //var mission = side.GetMission();
+            //var hullTypes = mission.GetHullTypes();
 
-            var station = ship.GetStation();
+            //var station = ship.GetStation();
 
-            // If we are in a station, then get a scout ready
-            if (station != null)
+            // Wait for the ship to join a cluster or a station.
+            //if (ship == null || (ship.GetCluster() == null && ship.GetStation() == null))
+            //{
+            //    Log("Start(): Waiting 30 seconds for ship to join station or cluster.");
+            //    Task.Run(() =>
+            //        {
+            //            for (int i = 0; i < 30 * 100; i++)
+            //            {
+            //                ship = ClientConnection.GetShip();
+            //                if (ship?.GetCluster() != null || ship?.GetStation() != null)
+            //                    break;
+
+            //                Thread.Sleep(100);
+            //            }
+
+            //            if (ship.GetStation() != null)
+            //            {
+            //                Log("\tStart(): We are in a station, changing ship to scout and launching.");
+            //                ChangeShip(ShipType.Scout, new ScoutProbeLoadout());
+            //            }
+            //            else if (IsCurrentShipAScout() == false)
+            //            {
+            //                Log("\tStart(): We are not in a scout, returing to the nearest station.");
+            //                ReturnToBase();
+            //            }
+            //        }
+            //    );
+            //}
+
+            if (ship.GetStation() != null)
+            {
+                Log("\tStart(): We are in a station, changing ship to scout and launching.");
                 ChangeShip(ShipType.Scout, new ScoutProbeLoadout());
-
-            if (IsCurrentShipAScount() == false)
+            }
+            else if (IsCurrentShipAScout() == false)
+            {
+                Log("\tStart(): We are not in a scout, returing to the nearest station.");
                 ReturnToBase();
+            }
 
-            //else
-            //    ScoutSector();
-            
         }
 
         private void ScoutSector()
         {
-            var ship = _client.GetShip();
+            var ship = ClientConnection.GetShip();
 
             // If the ship is in a station, launch.
             if (ship.GetStation() != null)
@@ -587,16 +731,16 @@ namespace Strategies
 
         private void ReturnToBase()
         {
-            var ship = _client.GetShip();
-            var targetBase = _client.FindTarget(ship, (int) (TargetType.c_ttStation | TargetType.c_ttFriendly | TargetType.c_ttAnyCluster), (short) StationAbilityBitMask.c_sabmFlag);
+            var ship = ClientConnection.GetShip();
+            var targetBase = ClientConnection.FindTarget(ship, (int) (TargetType.c_ttStation | TargetType.c_ttFriendly | TargetType.c_ttAnyCluster), (short) StationAbilityBitMask.c_sabmFlag);
 
             ship.SetCommand((sbyte)CommandType.c_cmdCurrent, targetBase, (sbyte)CommandID.c_cidGoto);
             ship.SetAutopilot(true);
         }
 
-        private bool IsCurrentShipAScount()
+        private bool IsCurrentShipAScout()
         {
-            var ship = _client.GetShip();
+            var ship = ClientConnection.GetShip();
             var baseHullType = ship.GetBaseHullType();
 
             return baseHullType.GetName().Contains("Scout");
@@ -604,8 +748,12 @@ namespace Strategies
 
         private void ChangeShip(ShipType shipType, LoadoutBase loadOut)
         {
-            var side = _client.GetSide();
-            var ship = _client.GetShip();
+            _waitingForLaunchToComplete = true;
+
+            Log($"\tChanging ship to {shipType}");
+
+            var side = ClientConnection.GetSide();
+            var ship = ClientConnection.GetShip();
             var mission = side.GetMission();
             var hullTypes = mission.GetHullTypes();
             var station = ship.GetStation();
@@ -621,7 +769,7 @@ namespace Strategies
             {
                 if (hullType.GetGroupID() >= 0 && station.CanBuy(hullType) == true && station.IsObsolete(hullType) == false)
                 {
-                    Log("buyable hullType: " + hullType.GetName());
+                    Log("\t\tbuyable hullType: " + hullType.GetName());
                     buyableHullTypes.Add(hullType);
                 }
             }
@@ -631,7 +779,7 @@ namespace Strategies
             if (scoutHull == null)
                 return;
 
-            Log($"Found Scout: {scoutHull.GetName()}");
+            Log($"\tFound Scout: {scoutHull.GetName()}");
 
             var partTypes = mission.GetPartTypes();
             List<AllegianceInterop.IpartTypeIGCWrapper> buyablePartTypes = new List<AllegianceInterop.IpartTypeIGCWrapper>();
@@ -666,16 +814,148 @@ namespace Strategies
                     if (isIncluded == true)
                     {
                         buyablePartTypes.Add(partType);
-                        Log($"\tFound part: {partType.GetName()}, capacity for part: {scoutHull.GetCapacity(partType.GetEquipmentType())}");
+                        Log($"\t\tFound part: {partType.GetName()}, capacity for part: {scoutHull.GetCapacity(partType.GetEquipmentType())}");
 
                     }
                 }
             }
 
+            // Sell all the parts
+            //var emptyShip = _client.CreateEmptyShip();
+            //emptyShip.SetBaseHullType(scoutHull);
+            //_client.BuyLoadout(emptyShip, false);
+
+            //emptyShip.Terminate();
+
+            // Now get the new empty ship from the client.
+            //ship = _client.GetShip();
+
+            foreach (var part in ship.GetParts())
+                ship.DeletePart(part);
+
             // Change the ship to the scout hull. 
             ship.SetBaseHullType(scoutHull);
-            _client.BuyDefaultLoadout(ship, station, scoutHull, _client.GetMoney());
+            ClientConnection.BuyDefaultLoadout(ship, station, scoutHull, ClientConnection.GetMoney());
 
+            ClearShipCargo(ship);
+
+
+            // Load Weapons, missiles, dispensers, etc.
+            if (loadOut.Weapon1 != null)
+            {
+                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Weapon1.Value)) == true);
+                if(part != null)
+                    ClientConnection.BuyPartOnBudget(ship, part, 0, ClientConnection.GetMoney());
+            }
+
+            if (loadOut.Weapon2 != null)
+            {
+                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Weapon2.Value)) == true);
+                if (part != null)
+                    ClientConnection.BuyPartOnBudget(ship, part, 1, ClientConnection.GetMoney());
+            }
+
+            if (loadOut.Weapon3 != null)
+            {
+                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Weapon3.Value)) == true);
+                if (part != null)
+                    ClientConnection.BuyPartOnBudget(ship, part, 2, ClientConnection.GetMoney());
+            }
+
+            if (loadOut.Weapon4 != null)
+            {
+                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Weapon4.Value)) == true);
+                if (part != null)
+                    ClientConnection.BuyPartOnBudget(ship, part, 3, ClientConnection.GetMoney());
+            }
+
+            if (loadOut.Turret1 != null)
+            {
+                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Turret1.Value)) == true);
+                if (part != null)
+                    ClientConnection.BuyPartOnBudget(ship, part, 0, ClientConnection.GetMoney());
+            }
+
+            if (loadOut.Turret2 != null)
+            {
+                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Turret2.Value)) == true);
+                if (part != null)
+                    ClientConnection.BuyPartOnBudget(ship, part, 1, ClientConnection.GetMoney());
+            }
+
+            if (loadOut.Turret3 != null)
+            {
+                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Turret3.Value)) == true);
+                if (part != null)
+                    ClientConnection.BuyPartOnBudget(ship, part, 2, ClientConnection.GetMoney());
+            }
+
+            if (loadOut.Turret4 != null)
+            {
+                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Turret4.Value)) == true);
+                if (part != null)
+                    ClientConnection.BuyPartOnBudget(ship, part, 3, ClientConnection.GetMoney());
+            }
+
+            if (loadOut.Dispenser != null)
+            {
+                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Dispenser.Value)) == true);
+                if (part != null)
+                    ClientConnection.BuyPartOnBudget(ship, part, 0, ClientConnection.GetMoney());
+            }
+
+            if (loadOut.Missiles != null)
+            {
+                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Missiles.Value)) == true);
+                if (part != null)
+                    ClientConnection.BuyPartOnBudget(ship, part, 0, ClientConnection.GetMoney());
+            }
+
+            if (loadOut.Cargo1 != null)
+            {
+                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Cargo1.Value)) == true);
+                if (part != null)
+                    ClientConnection.BuyPartOnBudget(ship, part, -1, ClientConnection.GetMoney());
+            }
+
+            if (loadOut.Cargo2 != null)
+            {
+                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Cargo2.Value)) == true);
+                if (part != null)
+                    ClientConnection.BuyPartOnBudget(ship, part, -2, ClientConnection.GetMoney());
+            }
+
+            if (loadOut.Cargo3 != null)
+            {
+                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Cargo3.Value)) == true);
+                if (part != null)
+                    ClientConnection.BuyPartOnBudget(ship, part, -3, ClientConnection.GetMoney());
+            }
+
+            if (loadOut.Cargo4 != null)
+            {
+                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Cargo4.Value)) == true);
+                if (part != null)
+                    ClientConnection.BuyPartOnBudget(ship, part, -4, ClientConnection.GetMoney());
+            }
+
+            if (loadOut.Cargo5 != null)
+            {
+                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Cargo5.Value)) == true);
+                if (part != null)
+                    ClientConnection.BuyPartOnBudget(ship, part, -5, ClientConnection.GetMoney());
+            }
+
+            //_client.EndLockDown(LockdownCriteria.lockdownLoadout);
+
+            // Launch! 
+            ClientConnection.BuyLoadout(ship, true);
+
+            ClientConnection.EndLockDown(LockdownCriteria.lockdownLoadout);
+        }
+
+        private void ClearShipCargo(IshipIGCWrapper ship)
+        {
             // Clear the cargo.
             for (sbyte i = -5; i < 0; i++)
             {
@@ -715,117 +995,6 @@ namespace Strategies
                 if (currentPart != null)
                     currentPart.Terminate();
             }
-
-
-            // Load Weapons, missiles, dispensers, etc.
-            if (loadOut.Weapon1 != null)
-            {
-                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Weapon1.Value)) == true);
-                if(part != null)
-                    _client.BuyPartOnBudget(ship, part, 0, _client.GetMoney());
-            }
-
-            if (loadOut.Weapon2 != null)
-            {
-                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Weapon2.Value)) == true);
-                if (part != null)
-                    _client.BuyPartOnBudget(ship, part, 1, _client.GetMoney());
-            }
-
-            if (loadOut.Weapon3 != null)
-            {
-                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Weapon3.Value)) == true);
-                if (part != null)
-                    _client.BuyPartOnBudget(ship, part, 2, _client.GetMoney());
-            }
-
-            if (loadOut.Weapon4 != null)
-            {
-                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Weapon4.Value)) == true);
-                if (part != null)
-                    _client.BuyPartOnBudget(ship, part, 3, _client.GetMoney());
-            }
-
-            if (loadOut.Turret1 != null)
-            {
-                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Turret1.Value)) == true);
-                if (part != null)
-                    _client.BuyPartOnBudget(ship, part, 0, _client.GetMoney());
-            }
-
-            if (loadOut.Turret2 != null)
-            {
-                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Turret2.Value)) == true);
-                if (part != null)
-                    _client.BuyPartOnBudget(ship, part, 1, _client.GetMoney());
-            }
-
-            if (loadOut.Turret3 != null)
-            {
-                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Turret3.Value)) == true);
-                if (part != null)
-                    _client.BuyPartOnBudget(ship, part, 2, _client.GetMoney());
-            }
-
-            if (loadOut.Turret4 != null)
-            {
-                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Turret4.Value)) == true);
-                if (part != null)
-                    _client.BuyPartOnBudget(ship, part, 3, _client.GetMoney());
-            }
-
-            if (loadOut.Dispenser != null)
-            {
-                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Dispenser.Value)) == true);
-                if (part != null)
-                    _client.BuyPartOnBudget(ship, part, 0, _client.GetMoney());
-            }
-
-            if (loadOut.Missiles != null)
-            {
-                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Missiles.Value)) == true);
-                if (part != null)
-                    _client.BuyPartOnBudget(ship, part, 0, _client.GetMoney());
-            }
-
-            if (loadOut.Cargo1 != null)
-            {
-                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Cargo1.Value)) == true);
-                if (part != null)
-                    _client.BuyPartOnBudget(ship, part, -1, _client.GetMoney());
-            }
-
-            if (loadOut.Cargo2 != null)
-            {
-                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Cargo2.Value)) == true);
-                if (part != null)
-                    _client.BuyPartOnBudget(ship, part, -2, _client.GetMoney());
-            }
-
-            if (loadOut.Cargo3 != null)
-            {
-                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Cargo3.Value)) == true);
-                if (part != null)
-                    _client.BuyPartOnBudget(ship, part, -3, _client.GetMoney());
-            }
-
-            if (loadOut.Cargo4 != null)
-            {
-                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Cargo4.Value)) == true);
-                if (part != null)
-                    _client.BuyPartOnBudget(ship, part, -4, _client.GetMoney());
-            }
-
-            if (loadOut.Cargo5 != null)
-            {
-                var part = buyablePartTypes.FirstOrDefault(p => p.GetName().Contains(loadOut.GetItemTypeString(loadOut.Cargo5.Value)) == true);
-                if (part != null)
-                    _client.BuyPartOnBudget(ship, part, -5, _client.GetMoney());
-            }
-
-            
-            // Launch! 
-            _client.BuyLoadout(ship, true);
         }
 
         private string GetHullTypeString(ShipType shipType)

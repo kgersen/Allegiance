@@ -1035,6 +1035,19 @@ DEFINE_FEDMSG(CS, HIGHLIGHT_CLUSTER, 199)  //Xynth #208 Notify clients of sector
 	bool				highlight;	
 END_FEDMSG
 
+
+DEFINE_FEDMSG(S, CLUSTERINFO, 200)  //BT - WOPR - Give the bots extra data at game start about the map so that they can determine when they have discovered enough stuff.
+	SectorID			clusterIDs[32]; // A list of all cluster IDs in the mission.
+	bool				homeSectors[32]; // A list of flags for which sectors are home sectors. Aligns with clusterIDs.
+
+	// Indexes on these align so warpFromCluster[1] = warpToCluster[1] to tell you what the source and destination for the warp is. 
+	// with 32 max sectors we can have 1024 warps with full connectivity. Of course this won't work for Bacon's anniversary map, 
+	// but then again... what really does?
+	SectorID			warpFromClusterIDs[1026]; // A list of source cluster IDs. 
+	SectorID			warpToClusterIDs[1026]; // A list of destination cluster IDs. 
+
+END_FEDMSG
+
 #endif // _MESSAGES_ 
 
 

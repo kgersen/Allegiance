@@ -5187,7 +5187,7 @@ inline IbaseIGC*   GetIbaseIGC(const BaseListIGC*  list, ObjectID    id)
     {
         IbaseIGC*   b = l->data();
 
-        if (b->GetObjectID() == id)
+        if (b != nullptr && b->GetObjectID() == id)
             return b;
     }
 

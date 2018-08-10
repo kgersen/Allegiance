@@ -2,6 +2,10 @@
 #include "NativeClient.h"
 #include "NativeClientClusterSite.h"
 #include "NativeClientThingSite.h"
+//#include "AllMessages.h"
+#include "MessageTypeNative.h"
+
+AllegianceInterop::CriticalSectionManager AllegianceInterop::NativeClient::m_criticalSection = AllegianceInterop::CriticalSectionManager();
 
 namespace AllegianceInterop
 {
@@ -111,9 +115,33 @@ namespace AllegianceInterop
 	void NativeClient::OnAppMessageEventHandler(FedMessaging * pthis, CFMConnection & cnxnFrom, FEDMESSAGE * pfm)
 	{
 		//Time m_now = Time::Now();
-
-		// Let the underlying client perform message housekeeping. 
-		BaseClient::HandleMsg(pfm, m_lastUpdate, m_now);
+		
+		try
+		{
+			// Let the underlying client perform message housekeeping. 
+			// if the message will be modifying the static code, then ensure that only one thread is updating the static core at a time
+			// it appears that something in the core variables is actually static, but I haven't found it yet.
+			// Pigs handles this by ensuring that all messages are processed serially, but this will cause lag in the bots. 
+			// Hopefully we can work around it like this.
+			if (pfm->fmid == AllegianceInterop::MessageTypeNative::FM_S_JOINED_MISSION
+				|| pfm->fmid == AllegianceInterop::MessageTypeNative::FM_S_EXPORT
+				|| pfm->fmid == AllegianceInterop::MessageTypeNative::FM_S_BUY_LOADOUT_ACK)
+			{
+				m_criticalSection.Lock();
+				BaseClient::HandleMsg(pfm, m_lastUpdate, m_now);
+				m_criticalSection.UnLock();
+			}
+			else
+			{
+				BaseClient::HandleMsg(pfm, m_lastUpdate, m_now);
+			}
+		}
+		catch (char * exceptionText)
+		{
+			debugf("\n\n*** OnAppMessageEventHandler Exception: %s\n\n", exceptionText);
+		}
+		
+		
 		
 		if (m_OnAppMessageDelegate != nullptr)
 		{

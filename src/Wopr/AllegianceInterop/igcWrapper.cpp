@@ -669,9 +669,9 @@ namespace AllegianceInterop
 		else
 			return gcnew IshipIGCWrapper(unmanagedValue);
 	}
-	const ShipListIGC*      ImissionIGCWrapper::GetShips()
+	GenericList(IshipIGCWrapper) ImissionIGCWrapper::GetShips()
 	{
-		return m_instance->GetShips();
+		ConvertSList(IshipIGC, ShipLinkIGC, m_instance->GetShips())
 	}
 	void                    ImissionIGCWrapper::AddStation(IstationIGCWrapper^ s)
 	{
@@ -690,9 +690,9 @@ namespace AllegianceInterop
 		else
 			return gcnew IstationIGCWrapper(unmanagedValue);
 	}
-	const StationListIGC*   ImissionIGCWrapper::GetStations()
+	GenericList(IstationIGCWrapper) ImissionIGCWrapper::GetStations()
 	{
-		return m_instance->GetStations();
+		ConvertSList(IstationIGC, StationLinkIGC, m_instance->GetStations())
 	}
 	void                    ImissionIGCWrapper::AddAsteroid(IasteroidIGCWrapper^ p)
 	{
@@ -1225,8 +1225,26 @@ namespace AllegianceInterop
 	}
 	String ^ ImodelIGCWrapper::GetName()
 	{
-		return gcnew String(m_instance->GetName());
+		const char * name = m_instance->GetName();
+
+		if (name[0] == '\0')
+			return GetSecondaryName();
+
+		return gcnew String(name);
 	}
+
+	String ^ ImodelIGCWrapper::GetSecondaryName()
+	{
+		const char * name = m_instance->GetName();
+
+		return gcnew String(name + strlen(name) + 1); // This is how common asteroid names are stored... I guess they were optimizing for dialup??
+
+		//if (m_instance->GetName()[0] == '\0')
+		//	return gcnew String(m_instance->GetName() + 1); // This is how common asteroid names are stored... I guess they were optimizing for dialup??
+		//else
+		//	return nullptr;
+	}
+
 	void                 ImodelIGCWrapper::SetName(const char* newVal)
 	{
 		return m_instance->SetName(newVal);
@@ -1382,9 +1400,9 @@ namespace AllegianceInterop
 	{
 		return m_instance->DeletePart(part->m_instance);
 	}
-	const PartListIGC*   IshipIGCWrapper::GetParts()
+	GenericList(IpartIGCWrapper) IshipIGCWrapper::GetParts()
 	{
-		return m_instance->GetParts();
+		ConvertSList(IpartIGC, PartLinkIGC, m_instance->GetParts())
 	}
 	IpartIGCWrapper ^ IshipIGCWrapper::GetMountedPart(EquipmentType type, Mount mountID)
 	{
@@ -2182,9 +2200,9 @@ namespace AllegianceInterop
 		else
 			return gcnew IshipIGCWrapper(unmanagedValue);
 	}
-	const ShipListIGC*      IstationIGCWrapper::GetShips()
+	GenericList(IshipIGCWrapper) IstationIGCWrapper::GetShips()
 	{
-		return m_instance->GetShips();
+		ConvertSList(IshipIGC, ShipLinkIGC, m_instance->GetShips())
 	}
 	void                    IstationIGCWrapper::RepairAndRefuel(IshipIGCWrapper^ pship)
 	{
@@ -3563,9 +3581,9 @@ namespace AllegianceInterop
 		else
 			return gcnew IstationIGCWrapper(unmanagedValue);
 	}
-	const StationListIGC*   IclusterIGCWrapper::GetStations()
+	GenericList(IstationIGCWrapper)   IclusterIGCWrapper::GetStations()
 	{
-		return m_instance->GetStations();
+		ConvertSList(IstationIGC, StationLinkIGC, m_instance->GetStations())
 	}
 	void                    IclusterIGCWrapper::AddShip(IshipIGCWrapper^ shipNew)
 	{
@@ -3956,9 +3974,9 @@ namespace AllegianceInterop
 		else
 			return gcnew IstationIGCWrapper(unmanagedValue);
 	}
-	const StationListIGC*       IsideIGCWrapper::GetStations()
+	GenericList(IstationIGCWrapper) IsideIGCWrapper::GetStations()
 	{
-		return m_instance->GetStations();
+		ConvertSList(IstationIGC, StationLinkIGC, m_instance->GetStations())
 	}
 	void                        IsideIGCWrapper::AddShip(IshipIGCWrapper^ s)
 	{
@@ -3977,9 +3995,9 @@ namespace AllegianceInterop
 		else
 			return gcnew IshipIGCWrapper(unmanagedValue);
 	}
-	const ShipListIGC*          IsideIGCWrapper::GetShips()
+	GenericList(IshipIGCWrapper) IsideIGCWrapper::GetShips()
 	{
-		return m_instance->GetShips();
+		ConvertSList(IshipIGC, ShipLinkIGC, m_instance->GetShips())
 	}
 	void                        IsideIGCWrapper::AddBucket(IbucketIGCWrapper^ s)
 	{

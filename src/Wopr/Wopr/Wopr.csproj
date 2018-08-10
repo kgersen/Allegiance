@@ -114,7 +114,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssemblyLoader.cs" />
     <Compile Include="Constants\BitReader.cs" />
     <Compile Include="Constants\BuoyType.cs" />
     <Compile Include="Constants\Civilization.cs" />
@@ -137,18 +136,24 @@
     <Compile Include="Entities\StaticCoreInfo.cs" />
     <Compile Include="Constants\EquipmentType.cs" />
     <Compile Include="Entities\TeamDirectorPlayerInfo.cs" />
+    <Compile Include="Loadouts\LoadoutBase.cs" />
+    <Compile Include="Loadouts\ScoutProbeLoadout.cs" />
     <Compile Include="MessageReceiver.cs" />
     <Compile Include="Constants\MessageType.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Constants\ServerType.cs" />
-    <Compile Include="StrategyBase.cs" />
+    <Compile Include="Strategies\CommanderResearchAndExpand.cs" />
+    <Compile Include="Strategies\ConnectToGame.cs" />
+    <Compile Include="Strategies\ScoutExploreMap.cs" />
+    <Compile Include="Strategies\StrategyBase.cs" />
     <Compile Include="TeamDirector.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="LaunchWithoutYellowCom.bat" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -162,7 +167,7 @@
     <PostBuildEvent>xcopy $(ProjectDir)\..\..\lib\steam\steam_api.dll . /s /d /y
 xcopy $(ProjectDir)..\..\Inc\steam_appid.txt . /s /d /y
 xcopy $(ProjectDir)..\..\..\objsv141_xp\$(ConfigurationName)\AllegianceInterop\AllegianceInterop.dll . /s /d /y
-xcopy $(ProjectDir)..\Strategies\bin\$(ConfigurationName)\Strategies.* . /s /d /y
+REM xcopy $(ProjectDir)..\Strategies\bin\$(ConfigurationName)\Strategies.* . /s /d /y
 </PostBuildEvent>
   </PropertyGroup>
 </Project>
