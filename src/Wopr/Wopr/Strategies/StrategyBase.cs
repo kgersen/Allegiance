@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AllegianceInterop;
+using Newtonsoft.Json;
 using Wopr;
 using Wopr.Constants;
 using Wopr.Entities;
@@ -89,6 +90,9 @@ namespace Wopr.Strategies
             _messageReceiver.FMD_S_SHIP_STATUS += _messageReceiver_FMD_S_SHIP_STATUS;
             //_messageReceiver.FMD_S_EXPORT += _messageReceiver_FMD_S_EXPORT;
             _messageReceiver.FMD_S_CLUSTERINFO += _messageReceiver_FMD_S_CLUSTERINFO;
+            //_messageReceiver.FMD_CS_PING += _messageReceiver_FMD_CS_PING; // We'll get one of these every 5 seconds, using this to drive "less frequent" updates.
+            //_messageReceiver.FMD_S_DOCKED += _messageReceiver_FMD_S_DOCKED;
+            //_messageReceiver.FMD_S_MISSION_STAGE += _messageReceiver_FMD_S_MISSION_STAGE;
 
             AttachMessages(_messageReceiver, botAuthenticationGuid, playerName, sideIndex, isGameController, isCommander);
 
@@ -97,9 +101,61 @@ namespace Wopr.Strategies
             Start();
         }
 
+        //private void _messageReceiver_FMD_S_MISSION_STAGE(ClientConnection client, AllegianceInterop.FMD_S_MISSION_STAGE message)
+        //{
+        //    if ((MissionStage)message.stage == MissionStage.STAGE_STARTED)
+        //        UpdateGalaxyView();
+        //}
+
+        //private void _messageReceiver_FMD_S_DOCKED(ClientConnection client, AllegianceInterop.FMD_S_DOCKED message)
+        //{
+        //    // When ever the server sends us a "DOCKED" message, we lose all of the info about ships we have seen, so we need to 
+        //    // re-update our galaxy view so that we know what's where.
+        //    UpdateGalaxyView();
+        //}
+
+        //private void UpdateGalaxyView()
+        //{
+        //    var targetCluster = ClientConnection.GetCore().GetClusters().OrderBy(p => p.GetObjectID());
+
+        //    foreach (var cluster in ClientConnection.GetCore().GetClusters().OrderBy(p => p.GetObjectID()))
+        //    {
+        //        AllegianceInterop.FMD_C_VIEW_CLUSTER viewCluster = new AllegianceInterop.FMD_C_VIEW_CLUSTER(cluster.GetObjectID(), -1, -1);
+        //        ClientConnection.SendMessageServer(viewCluster);
+        //        Thread.Sleep(250);
+        //    }
+        //}
+
+        //private void _messageReceiver_FMD_CS_PING(ClientConnection client, AllegianceInterop.FMD_CS_PING message)
+        //{
+        //    // refresh the galaxy view every 5 seconds.
+        //    UpdateGalaxyView();
+        //}
+
         private void _messageReceiver_FMD_S_CLUSTERINFO(ClientConnection client, AllegianceInterop.FMD_S_CLUSTERINFO message)
         {
             GameInfo.Clusters = message.Clusters;
+
+            //StreamWriter sw = new StreamWriter($@"c:\1\Logs\{PlayerName}_gameinfo.json");
+
+            //foreach (var cluster in GameInfo.Clusters)
+            //{
+            //    sw.Write(cluster.ClusterID + "; "  + cluster.IsHomeSector + ";");
+            //    bool firstWarp = true;
+            //    foreach (var warp in cluster.Warps)
+            //    {
+            //        if (firstWarp == true)
+            //            firstWarp = false;
+            //        else
+            //            sw.Write(", ");
+
+            //        sw.Write(" " + warp.FromCluster.ClusterID + "-" + warp.ToCluster.ClusterID);
+            //    }
+
+            //    sw.WriteLine("");
+            //}
+
+            //sw.Close();
         }
 
         //private void _messageReceiver_FMD_S_EXPORT(ClientConnection client, AllegianceInterop.FMD_S_EXPORT message)
@@ -115,6 +171,33 @@ namespace Wopr.Strategies
             // Check to ensure that we don't have any money hanging around in the bank. 
             if (client.SideLeaderShipID(SideIndex) != client.GetShip()?.GetObjectID() && client.GetMoney() > 1000)
                 SetAutoDonateAndDonateAllMoneyToTeamLeader(client.GetSide()?.GetShip(client.SideLeaderShipID(SideIndex)));
+
+            // Update ship status for hull, station and cluster IDs. 
+            var ship = client.GetCore().GetShip(message.shipID);
+
+            var shipName = ship.GetName();
+
+            // Update ship, clintlib doesn't do this for us, it expects us to use the sector view to 
+            // get information about the game states.
+            if (message.shipID != client.GetShip().GetObjectID())
+            {
+                //    if (message.status.GetHullID() > -1)
+                //        ship.SetBaseHullType(client.GetCore().GetHullType(message.status.GetHullID()));
+               
+
+                //if (message.status.GetStationID() >= 0)
+                //    ship.SetStation(client.GetCore().GetStation(message.status.GetStationID()));
+                //else
+                //    ship.SetStation(null);
+
+                // For some reason, the sectorID from this message isn't set into the ship's cluster ID. 
+                // I think the real allegiance client must track drone states outside of clintlib? It appears that this message only sets Last Seen Sector, but not the current cluster.
+                // As a work-around, always set each ship's current cluster to the message's sector ID.
+                if (message.status.GetStationID() < 0 && ship.GetHullType() != null)
+                    ship.SetCluster(client.GetCore().GetCluster(message.status.GetSectorID()));
+                else
+                    ship.SetCluster(null);
+            }
 
         }
 

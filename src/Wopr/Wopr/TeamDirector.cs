@@ -50,7 +50,7 @@ namespace Wopr
             for (int i = 0; i < 6; i++)
             {
                 var gameInfo = new GameInfo();
-                gameInfo.UnexploredClustersByObjectID = new Dictionary<int, string>();
+                //gameInfo.UnexploredClustersByObjectID = new Dictionary<int, string>();
 
                 _gameInfos.Add(gameInfo);
             }

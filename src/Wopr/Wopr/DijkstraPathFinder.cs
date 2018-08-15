@@ -30,7 +30,6 @@ namespace Wopr
         Dictionary<int?, int?> _estimate = new Dictionary<int?, int?>();
         Dictionary<int?, String> _queue = new Dictionary<int?, string>();
 
-
         public DijkstraPathFinder(List<ClusterInfo> clusterInfos, int fromClusterObjectID, int toClusterObjectID)
         {
             BuildPath(clusterInfos, fromClusterObjectID, toClusterObjectID);
@@ -141,6 +140,16 @@ namespace Wopr
                 returnValue = currentCluster;
 
             return returnValue;
+        }
+
+        public IclusterIGCWrapper NextCluster(IclusterIGCWrapper fromCluster, IclusterIGCWrapper toCluster)
+        {
+            int? nextClusterObjectID = NextClusterObjectID(fromCluster.GetObjectID(), toCluster.GetObjectID());
+
+            if(nextClusterObjectID != null)
+                return fromCluster.GetMission().GetCluster((short) nextClusterObjectID);
+
+            return null;
         }
     }
 }

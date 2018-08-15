@@ -1028,7 +1028,7 @@ HRESULT FedMessaging::ReceiveMessages()
             {
               if(pfm->fmid > 0 && pfm->cbmsg >= sizeof(FEDMESSAGE) && pfm->cbmsg <= PacketSize())
               {
-				 /* if (strcmp(pcnxnFrom->GetName(), "+BackTrak@Dev") == 0)
+				  if (strcmp(pcnxnFrom->GetName(), "+BackTrak@Dev") == 0)
 				  {
 					  debugf("(FM=%8x %s) Msg from %s(%8x) cbmsg=%d, fmid=%d, total packet size=%d\n",
 						  this, sOrC,
@@ -1040,7 +1040,7 @@ HRESULT FedMessaging::ReceiveMessages()
 
 					  FILE *file = fopen(outputFile, "w+");
 					  fwrite(pfm, sizeof(char), pfm->cbmsg, file);
-					  fclose(file);*/
+					  fclose(file);
 				  }
 
                 m_pfmSite->OnAppMessage(this, *pcnxnFrom, pfm);

@@ -121,8 +121,10 @@
     <Compile Include="Constants\CommandType.cs" />
     <Compile Include="Constants\ItemType.cs" />
     <Compile Include="Constants\ObjectType.cs" />
+    <Compile Include="Constants\PilotType.cs" />
     <Compile Include="Constants\ShipType.cs" />
     <Compile Include="Constants\StationAbilityBitMask.cs" />
+    <Compile Include="Constants\StationType.cs" />
     <Compile Include="Constants\StrategyID.cs" />
     <Compile Include="Constants\TargetType.cs" />
     <Compile Include="DijkstraPathFinder.cs" />

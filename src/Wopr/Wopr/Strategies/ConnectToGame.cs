@@ -88,7 +88,9 @@ namespace Wopr.Strategies
         private void MessageReceiver_FMD_S_MISSION_STAGE(ClientConnection client, AllegianceInterop.FMD_S_MISSION_STAGE message)
         {
             if ((MissionStage)message.stage == MissionStage.STAGE_STARTED)
+            {
                 FinishStrategy();
+            }
         }
 
         private void MessageReceiver_FMD_CS_FORCE_TEAM_READY(AllegianceInterop.ClientConnection client, AllegianceInterop.FMD_CS_FORCE_TEAM_READY message)

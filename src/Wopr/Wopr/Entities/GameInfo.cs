@@ -15,10 +15,10 @@ namespace Wopr.Entities
     {
         // The game server will give us a list of all clusters and warps, but not their locations at the beginning of the game so that bots will
         // know when they have explored the map. This object contains all warps and clusters in the game regardless of if we have eyed them or not.
-        public List<ClusterInfo> Clusters;
+        public List<ClusterInfo> Clusters { get; set; }
 
         // When a bot detects a new warp, it will add it to this list. When a bot completes a exploration sweep, it will remove the warp from the list.
-        public Dictionary<int, String> UnexploredClustersByObjectID { get; set; }
+        //public Dictionary<int, String> UnexploredClustersByObjectID { get; set; } = new Dictionary<int, String>()
 
         // When a bot starts sweeping a sector, it will increment the sweep count for the sector. When it is finished, it will decrement the counter.
         public Dictionary<int, int> SweepingScoutCountByClusterObjectID { get; set; } = new Dictionary<int, int>();

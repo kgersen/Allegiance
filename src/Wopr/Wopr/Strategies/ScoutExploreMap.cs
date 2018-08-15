@@ -102,7 +102,7 @@ namespace Wopr.Strategies
 
             string shipName = ship.GetName();
 
-            UpdateUnexploredWarpsList();
+            //UpdateUnexploredWarpsList();
 
             // If we are in a station, then get into a scout and get out there.
             if (station != null)
@@ -133,22 +133,28 @@ namespace Wopr.Strategies
                 return;
             }
 
+            // These clusters still need to be explored.
+            var currentUnexploredClusters = GameInfo.GetUnexploredClusters(client.GetCore());
+
+            // Are we on the way to another cluster to explore?
             if (_navigatingToCluster != null)
             {
+                // If we are not at the destination yet...
                 if (_navigatingToCluster.GetObjectID() != ship.GetCluster().GetObjectID())
                 {
-                    if (GameInfo.UnexploredClustersByObjectID.ContainsKey(_navigatingToCluster.GetObjectID()) == true)
+                    // And our destination cluster still hasn't been explored...
+                    if (currentUnexploredClusters.ContainsKey(_navigatingToCluster.GetObjectID()) == true)
                     {
                         Log($"\tEntered cluster: {ship.GetCluster().GetName()}, continuing on route to {_navigatingToCluster.GetName()}");
                         return;
                     }
-                    else
+                    else // The detination was explored by someone else, let's find a new destination.
                     {
                         Log($"\tArrived at cluster: {ship.GetCluster().GetName()}, but destination cluster {_navigatingToCluster.GetName()} has already been swept. Cancelling navigation, checking for next step.");
                         _navigatingToCluster = null;
                     }
                 }
-                else
+                else // We've arrived, let's see what we need to do next.
                 {
                     Log($"\tArrived at cluster: {ship.GetCluster().GetName()}, checking for next step.");
                     _navigatingToCluster = null;
@@ -157,24 +163,17 @@ namespace Wopr.Strategies
 
 
             _currentSectorID = message.status.GetSectorID();
-            //_sweepLeft = false;
-            //_sweepRight = false;
-            //_startingAngleInRadians = 0;
-            //_currentAngleInRadians = 0;
-            //_totalRadiansTraversed = 0;
-            //_startingPoint = ship.GetPosition();
-            //_currentSweepHop = 0;
 
             var otherFriendlyScoutShips = ship.GetCluster().GetShips().Where(p => p.GetObjectID() != ship.GetObjectID() && p.GetBaseHullType().GetName().Contains("Scout") == true && p.GetSide().GetObjectID() == ship.GetSide().GetObjectID());
             //var otherSweepingScoutShips = otherFriendlyScoutShips.Where(p => p.GetCommandTarget((sbyte)CommandType.c_cmdCurrent)?.GetObjectType() == (short)ObjectType.OT_buoy);
             var sweepingScoutCount = GameInfo.GetSweepingScoutCount(ship.GetCluster());
 
-            Log($"\totherFriendlyScoutShips: {otherFriendlyScoutShips.Count()}, otherSweepingScoutShips: {sweepingScoutCount}, is unexplored: {GameInfo.UnexploredClustersByObjectID.ContainsKey(ship.GetCluster().GetObjectID())} ");
+            Log($"\totherFriendlyScoutShips: {otherFriendlyScoutShips.Count()}, otherSweepingScoutShips: {sweepingScoutCount}, is unexplored: {currentUnexploredClusters.ContainsKey(ship.GetCluster().GetObjectID())} ");
 
             // Ship has entered a cluster, find the next target and start scouting.
 
             // If cluster is unexplored, and less than 2 ships sweeping, start sweeping
-            if (GameInfo.UnexploredClustersByObjectID.ContainsKey(ship.GetCluster().GetObjectID()) == true && sweepingScoutCount < 2)
+            if (currentUnexploredClusters.ContainsKey(ship.GetCluster().GetObjectID()) == true && sweepingScoutCount < 2)
                 SweepCluster();
 
             // If there are two ships sweeping, fly to a point 1/3 of the angle we entered in at, and wait for alephs to appear.
@@ -209,30 +208,30 @@ namespace Wopr.Strategies
 
         }
 
-        private void UpdateUnexploredWarpsList()
-        {
-            Log("\tUpdateUnexploredWarpsList()");
+        //private void UpdateUnexploredWarpsList()
+        //{
+        //    Log("\tUpdateUnexploredWarpsList()");
 
-            //var ship = _client.GetShip();
-            var unexploredWarps = ClientConnection.GetCore().GetWarps().Where(p => p.GetDestination().GetCluster().GetAsteroids().Count == 0 && GameInfo.UnexploredClustersByObjectID.ContainsKey(p.GetDestination().GetCluster().GetObjectID()) == false);
+        //    //var ship = _client.GetShip();
+        //    var unexploredWarps = ClientConnection.GetCore().GetWarps().Where(p => p.GetDestination().GetCluster().GetAsteroids().Count == 0 && GameInfo.UnexploredClustersByObjectID.ContainsKey(p.GetDestination().GetCluster().GetObjectID()) == false);
 
-            foreach (var unexploredWarp in unexploredWarps)
-            {
-                Log($"\t\tFound unexplored cluster: {unexploredWarp.GetDestination().GetCluster().GetName()}, adding cluster's id to the GameInfo.UnexploredClustersByObjectID list.");
+        //    foreach (var unexploredWarp in unexploredWarps)
+        //    {
+        //        Log($"\t\tFound unexplored cluster: {unexploredWarp.GetDestination().GetCluster().GetName()}, adding cluster's id to the GameInfo.UnexploredClustersByObjectID list.");
 
-                lock (GameInfo.UnexploredClustersByObjectID)
-                {
-                    if(GameInfo.UnexploredClustersByObjectID.ContainsKey(unexploredWarp.GetDestination().GetCluster().GetObjectID()) == false)
-                        GameInfo.UnexploredClustersByObjectID.Add(unexploredWarp.GetDestination().GetCluster().GetObjectID(), unexploredWarp.GetDestination().GetCluster().GetName());
-                }
-            }
+        //        lock (GameInfo.UnexploredClustersByObjectID)
+        //        {
+        //            if(GameInfo.UnexploredClustersByObjectID.ContainsKey(unexploredWarp.GetDestination().GetCluster().GetObjectID()) == false)
+        //                GameInfo.UnexploredClustersByObjectID.Add(unexploredWarp.GetDestination().GetCluster().GetObjectID(), unexploredWarp.GetDestination().GetCluster().GetName());
+        //        }
+        //    }
 
-            StringBuilder s = new StringBuilder();
-            foreach (var unexploredClusterName in GameInfo.UnexploredClustersByObjectID.Values)
-                s.Append(unexploredClusterName + " ");
+        //    StringBuilder s = new StringBuilder();
+        //    foreach (var unexploredClusterName in GameInfo.UnexploredClustersByObjectID.Values)
+        //        s.Append(unexploredClusterName + " ");
 
-            Log("\t\tCurrent unexplored clusters: " + s.ToString());
-        }
+        //    Log("\t\tCurrent unexplored clusters: " + s.ToString());
+        //}
 
         private void FlyToStationPointAndWaitForAelphs()
         {
@@ -267,6 +266,8 @@ namespace Wopr.Strategies
                 {
                     _runningTasks++;
 
+                    var currentUnexploredClusters = GameInfo.GetUnexploredClusters(ClientConnection.GetCore());
+
                     bool foundNewWarp = false;
                     bool updatedUnexploredClusterListAfterMove = false;
                     for (int i = 0; i < 120 * 100 && _cancellationTokenSource.IsCancellationRequested == false && foundNewWarp == false; i++)
@@ -283,12 +284,12 @@ namespace Wopr.Strategies
                             if (updatedUnexploredClusterListAfterMove == false && (nextPoint - ship.GetPosition()).LengthSquared() <  Math.Pow(400, 2))
                             {
                                 Log("\t\tUpdating unexplored cluster list after ship move.");
-                                UpdateUnexploredWarpsList();
+                                currentUnexploredClusters = GameInfo.GetUnexploredClusters(ClientConnection.GetCore());
                                 updatedUnexploredClusterListAfterMove = true;
                             }
                         }
 
-                        var newWarps = ship.GetCluster().GetWarps().Where(p => GameInfo.UnexploredClustersByObjectID.ContainsKey((p?.GetDestination()?.GetCluster()?.GetObjectID()).GetValueOrDefault(-1)) == true /*&& consideredWarpObjectIDs.Contains(p.GetObjectID()) == false*/);
+                        var newWarps = ship.GetCluster().GetWarps().Where(p => currentUnexploredClusters.ContainsKey((p?.GetDestination()?.GetCluster()?.GetObjectID()).GetValueOrDefault(-1)) == true /*&& consideredWarpObjectIDs.Contains(p.GetObjectID()) == false*/);
                         if (newWarps.Count() > 0)
                         {
                             foreach (var newWarp in newWarps)
@@ -319,7 +320,7 @@ namespace Wopr.Strategies
                         }
 
                         // If the cluster gets marked as explored and no new unexplored alephs were found, then just move on. 
-                        if (GameInfo.UnexploredClustersByObjectID.ContainsKey(ship.GetCluster().GetObjectID()) == false)
+                        if (currentUnexploredClusters.ContainsKey(ship.GetCluster().GetObjectID()) == false)
                         {
                             Log("\t\tCluster marked as explored, moving on.");
                             break;
@@ -359,13 +360,14 @@ namespace Wopr.Strategies
             double nextSliceWidth = (Math.PI * 2 / SweepHopCount);
             double currentAngleInRadians = startingAngleInRadians;
 
-            bool sweepLeft = otherScoutShips.Count() > 0;
-
             Task.Run(() =>
             {
                 try
                 {
                     int currentSweepingScoutCount = GameInfo.IncrementSweepingScoutCount(ship.GetCluster());
+
+                    //bool sweepLeft = currentSweepingScoutCount > 0;
+
                     _runningTasks++;
 
                     bool sweepComplete = true;
@@ -391,7 +393,7 @@ namespace Wopr.Strategies
                                 hopCount = (SweepHopCount / 2) + 3; // Go a little farther so that the paths overlap. It's the classic pincer manuver!!
                         }
 
-                        if (sweepLeft == true)
+                        if (firstSweepingScout == true)
                             currentAngleInRadians += nextSliceWidth;
                         else
                             currentAngleInRadians -= nextSliceWidth;
@@ -439,9 +441,19 @@ namespace Wopr.Strategies
                         // If there is more than one sweeping scout, then the second scout will perform the removal of the scanned cluster.
                         if (firstSweepingScout == false || currentSweepingScoutCount == 1)
                         {
-                            Log($"\t\tCluster exploration complete for {ship.GetCluster().GetName()}, removing from GameInfo.UnexploredClustersByObjectID");
-                            GameInfo.UnexploredClustersByObjectID.Remove(ship.GetCluster().GetObjectID());
-                            UpdateUnexploredWarpsList();
+                            var currentUnexploredClusters = GameInfo.GetUnexploredClusters(ClientConnection.GetCore());
+
+                            if (currentUnexploredClusters.ContainsKey(ship.GetCluster().GetObjectID()) == true)
+                            {
+                                Log("Initial sweep complete, but we didn't find everything. TODO: take a closer look?");
+                                DoTargetedSweep(ship);
+                            }
+                            else
+                            {
+                                Log($"\t\tCluster exploration complete for {ship.GetCluster().GetName()}, this cluster is no longer in the unexplored list.");
+                                //GameInfo.UnexploredClustersByObjectID.Remove(ship.GetCluster().GetObjectID());
+                                //UpdateUnexploredWarpsList();
+                            }
                         }
                         else
                         {
@@ -487,6 +499,11 @@ namespace Wopr.Strategies
             //    _sweepLeft = false;
             //    SelectNextAelphTarget();
             //}
+        }
+
+        private void DoTargetedSweep(IshipIGCWrapper ship)
+        {
+            Log("DoTargetedSweep(): Find the missing aleph using triangulation on the other alephs.");
         }
 
         //private void NavigateToNextSweepPoint()
@@ -535,34 +552,41 @@ namespace Wopr.Strategies
 
             bool foundTargetWarp = false;
 
-            foreach (var visibleWarp in visibleWarps.Where(p => GameInfo.UnexploredClustersByObjectID.ContainsKey(p.GetDestination().GetCluster().GetObjectID()) == true).OrderBy(p => ClientConnection.GetDistanceSquared(p, ship)))
-            {
-                if (GameInfo.UnexploredClustersByObjectID.ContainsKey(visibleWarp.GetDestination().GetCluster().GetObjectID()) == true)
-                {
-                    Log($"\t\tUnexplored Warp found: {visibleWarp.GetName()}");
+            var currentUnexploredClusters = GameInfo.GetUnexploredClusters(ClientConnection.GetCore());
 
-                    float myDistance = ClientConnection.GetDistanceSquared(ship, visibleWarp);
-                    bool isAnotherScoutCloser = false;
-                    foreach (var otherScoutShip in otherFriendlyScoutShips)
+            // When launching from home, just pick a target at random so that all clusters get some love.
+            if (ship.GetCluster().GetHomeSector() == false)
+            {
+
+                foreach (var visibleWarp in visibleWarps.Where(p => currentUnexploredClusters.ContainsKey(p.GetDestination().GetCluster().GetObjectID()) == true).OrderBy(p => ClientConnection.GetDistanceSquared(p, ship)))
+                {
+                    if (currentUnexploredClusters.ContainsKey(visibleWarp.GetDestination().GetCluster().GetObjectID()) == true)
                     {
-                        float otherScoutDistance = ClientConnection.GetDistanceSquared(otherScoutShip, visibleWarp);
-                        if (otherScoutDistance < myDistance)
+                        Log($"\t\tUnexplored Warp found: {visibleWarp.GetName()}");
+
+                        float myDistance = ClientConnection.GetDistanceSquared(ship, visibleWarp);
+                        bool isAnotherScoutCloser = false;
+                        foreach (var otherScoutShip in otherFriendlyScoutShips)
                         {
-                            Log($"\t\tAnother scout: {otherScoutShip.GetName()} is already closer to: {visibleWarp.GetName()}, looking for another target.");
-                            isAnotherScoutCloser = true;
+                            float otherScoutDistance = ClientConnection.GetDistanceSquared(otherScoutShip, visibleWarp);
+                            if (otherScoutDistance < myDistance)
+                            {
+                                Log($"\t\tAnother scout: {otherScoutShip.GetName()} is already closer to: {visibleWarp.GetName()}, looking for another target.");
+                                isAnotherScoutCloser = true;
+                                break;
+                            }
+                        }
+
+                        // The cluster is on the unexplored list, and there's no other scout that is closer, let's go for it!
+                        if (isAnotherScoutCloser == false)
+                        {
+                            Log($"\t\tFound target warp, going to {visibleWarp.GetName()}");
+
+                            foundTargetWarp = true;
+                            ship.SetCommand((sbyte)CommandType.c_cmdCurrent, visibleWarp, (sbyte)CommandID.c_cidGoto);
+                            ship.SetAutopilot(true);
                             break;
                         }
-                    }
-
-                    // The cluster is on the unexplored list, and there's no other scout that is closer, let's go for it!
-                    if (isAnotherScoutCloser == false)
-                    {
-                        Log($"\t\tFound target warp, going to {visibleWarp.GetName()}");
-
-                        foundTargetWarp = true;
-                        ship.SetCommand((sbyte)CommandType.c_cmdCurrent, visibleWarp, (sbyte)CommandID.c_cidGoto);
-                        ship.SetAutopilot(true);
-                        break;
                     }
                 }
             }
@@ -571,8 +595,10 @@ namespace Wopr.Strategies
             {
                 Log($"\t\tNo target warp found, selecting a visible warp at random.");
 
+                currentUnexploredClusters = GameInfo.GetUnexploredClusters(ClientConnection.GetCore());
+
                 // Pick a random warp that is unexplored. 
-                var unvisitedWarps = visibleWarps.Where(p => GameInfo.UnexploredClustersByObjectID.ContainsKey(p.GetDestination().GetCluster().GetObjectID()) == true).ToList();
+                var unvisitedWarps = visibleWarps.Where(p => currentUnexploredClusters.ContainsKey(p.GetDestination().GetCluster().GetObjectID()) == true).ToList();
                 if (unvisitedWarps.Count > 0)
                 {
                     var targetWarp = unvisitedWarps[_random.Next(0, unvisitedWarps.Count)];
@@ -622,7 +648,9 @@ namespace Wopr.Strategies
             IclusterIGCWrapper nearestCluster = null;
             int nearestClusterDistance = int.MaxValue;
 
-            foreach (var unexploredClusterObjectID in GameInfo.UnexploredClustersByObjectID.Keys)
+            var currentUnexploredClusters = GameInfo.GetUnexploredClusters(ClientConnection.GetCore());
+
+            foreach (var unexploredClusterObjectID in currentUnexploredClusters.Keys)
             {
                 var fromCluster = ClientConnection.GetShip().GetCluster();
                 var toCluster = ClientConnection.GetCore().GetCluster((short)unexploredClusterObjectID);

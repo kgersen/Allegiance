@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "igcWrapper.h"
 #include "Enums.h"
+#include "shipIGC.h"
 
 using namespace System;
 
@@ -1221,7 +1222,10 @@ namespace AllegianceInterop
 	}
 	void                 ImodelIGCWrapper::SetCluster(IclusterIGCWrapper^ pVal)
 	{
-		return m_instance->SetCluster(pVal->m_instance);
+		if (pVal == nullptr)
+			return m_instance->SetCluster(nullptr);
+		else
+			return m_instance->SetCluster(pVal->m_instance);
 	}
 	String ^ ImodelIGCWrapper::GetName()
 	{
@@ -1348,7 +1352,10 @@ namespace AllegianceInterop
 	}
 	void                 IshipIGCWrapper::SetStation(IstationIGCWrapper^ s)
 	{
-		return m_instance->SetStation(s->m_instance);
+		if (s == nullptr)
+			return m_instance->SetStation(nullptr);
+		else 
+			return m_instance->SetStation(s->m_instance);
 	}
 	void                 IshipIGCWrapper::Reset(bool bFull)
 	{
@@ -1368,6 +1375,9 @@ namespace AllegianceInterop
 	}
 	IhullTypeIGCWrapper ^ IshipIGCWrapper::GetHullType()
 	{
+		if (m_instance->HasValidHullType() == false)
+			return nullptr;
+
 		::IhullTypeIGC * unmanagedValue = (::IhullTypeIGC *) m_instance->GetHullType();
 
 		if (unmanagedValue == nullptr)
@@ -1386,7 +1396,10 @@ namespace AllegianceInterop
 	}
 	void                 IshipIGCWrapper::SetBaseHullType(IhullTypeIGCWrapper^ newVal)
 	{
-		return m_instance->SetBaseHullType(newVal->m_instance);
+		if (newVal == nullptr)
+			return m_instance->SetBaseHullType(nullptr);
+		else
+			return m_instance->SetBaseHullType(newVal->m_instance);
 	}
 	void                 IshipIGCWrapper::SetMission(ImissionIGCWrapper^ pMission)
 	{
@@ -1956,6 +1969,20 @@ namespace AllegianceInterop
 	{
 		return m_instance->GetWantBoost();
 	}
+
+	IstationTypeIGCWrapper ^ IshipIGCWrapper::GetStationType() 
+	{ 
+		return gcnew IstationTypeIGCWrapper((IstationTypeIGC*)(IbaseIGC*)m_instance->GetBaseData()); 
+	}
+
+	//void				IshipIGCWrapper::SetCluster(IclusterIGCWrapper ^ cluster) { m_instance->SetCluster(cluster->m_instance); }
+
+	PlayerInfoWrapper ^ IshipIGCWrapper::GetPlayerInfo()
+	{
+		return gcnew PlayerInfoWrapper((PlayerInfo *) m_instance->GetPrivateData());
+	}
+
+
 	IbuoyIGCWrapper::IbuoyIGCWrapper(::IbuoyIGC * instance) : ImodelIGCWrapper(instance)
 	{
 		m_instance = instance;

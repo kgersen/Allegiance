@@ -5528,7 +5528,11 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       CASTPFM(pfmAutoDonate, C, AUTODONATE, pfm);
 
       TrapHackBoot(pfmAutoDonate >= 0);
-      TrapHackBoot(pfsPlayer->GetMoney() >= pfmAutoDonate->amount);
+      //TrapHackBoot(pfsPlayer->GetMoney() >= pfmAutoDonate->amount);
+
+	  // Can't donate more than we have.
+	  if (pfsPlayer->GetMoney() < pfmAutoDonate->amount)
+		  pfmAutoDonate->amount = pfsPlayer->GetMoney();
 
       IsideIGC* pside = pfsPlayer->GetSide();
 	  SideID    sideID = pside->GetObjectID();
@@ -7644,6 +7648,37 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
               // make that new player the leader.
               if (pfspNewLeader->GetSide() == psidePlayer)
                   pfsMission->SetLeader(pfspNewLeader);
+
+			  // BT - WOPR - Steal all of the other player's money when a bot becomes team leader. 
+			  if (isBot == true)
+			  {
+				  ShipLinkIGC*   psl;
+				  for (psl = pfsPlayer->GetSide()->GetShips()->first();
+					  (psl != NULL);
+					  psl = psl->next())
+				  {
+					  IshipIGC * currentShip = psl->data();
+					  if (pfssNewLeader->GetShipID() == currentShip->GetObjectID())
+						  continue;
+
+					  CFSShip *pcfsShip = CFSShip::GetShipFromID(currentShip->GetObjectID());
+					  if (pcfsShip != nullptr && pcfsShip->IsPlayer() == true)
+					  {
+						  CFSPlayer * currentPlayer = pcfsShip->GetPlayer();
+
+						  currentPlayer->SetAutoDonate(pfspNewLeader, currentPlayer->GetMoney(), true);
+
+						  BEGIN_PFM_CREATE(g.fm, pfmMoneyChange, S, MONEY_CHANGE)
+						  END_PFM_CREATE
+
+						  pfmMoneyChange->dMoney = -currentPlayer->GetMoney();
+						  pfmMoneyChange->sidTo = currentPlayer->GetShipID();
+						  pfmMoneyChange->sidFrom = pfmMoneyChange->sidTo;
+
+						  g.fm.SendMessages(currentPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
+					  }
+				  }
+			  }
           }
       }
     }

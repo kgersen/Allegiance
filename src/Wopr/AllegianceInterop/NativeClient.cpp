@@ -33,6 +33,9 @@ namespace AllegianceInterop
 	{
 		// TODO: Read this from the registry or config.
 		UTL::SetArtPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Allegiance\\Artwork");
+
+		// Ensure that cluster info isn't deleted when the server sends us FM_S_DOCKED
+		m_deleteShipInfoOnDockMessage = false;
 	}
 
 	//void NativeClient::HookOnAppMessageEvent(void * function)

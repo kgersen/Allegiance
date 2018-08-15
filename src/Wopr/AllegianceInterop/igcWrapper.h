@@ -2,6 +2,7 @@
 #pragma once
 
 #include "igc.h"
+#include "clintlib.h"
 #include "Enums.h"
 
 // Use this to convert the unmanaged pointer into a wrapped object. In the unmanaged pointer is nullptr, then 
@@ -12,11 +13,14 @@
 #define ConvertSList(IGC_OBJECT, IGC_LINK, NATIVE_CALL) \
 	System::Collections::Generic::List<##IGC_OBJECT##Wrapper ^> ^ returnValue = gcnew System::Collections::Generic::List<##IGC_OBJECT##Wrapper ^>(); \
 \
-	for (IGC_LINK* pbl = NATIVE_CALL->last(); (pbl != NULL); pbl = pbl->txen())  \
-	{  \
-		IGC_OBJECT*     item = pbl->data();  \
-		returnValue->Add(gcnew IGC_OBJECT##Wrapper(item));  \
-	}  \
+	if(NATIVE_CALL != nullptr) \
+	{ \
+		for (IGC_LINK* pbl = NATIVE_CALL->last(); (pbl != NULL); pbl = pbl->txen())  \
+		{  \
+			IGC_OBJECT*     item = pbl->data();  \
+			returnValue->Add(gcnew IGC_OBJECT##Wrapper(item));  \
+		}  \
+	} \
 	return returnValue;\
 
 #define GenericList(ManagedType) System::Collections::Generic::List<ManagedType ^> ^ 
@@ -121,6 +125,24 @@ namespace AllegianceInterop
     ref class PersistPlayerScoreObjectWrapper;
     ref class PlayerScoreObjectWrapper;
     ref class GameOverScoreObjectWrapper;
+	
+	public ref class PlayerInfoWrapper
+	{
+	public:
+		PlayerInfo * m_instance = nullptr;
+
+		PlayerInfoWrapper(PlayerInfo * instance)
+		{
+			m_instance = instance;
+		}
+
+		ShipID LastSeenParent() { return m_instance->LastSeenParent(); }
+		SectorID LastSeenSector() { return m_instance->LastSeenSector(); }
+		HullID LastSeenShipType() { return m_instance->LastSeenShipType(); }
+		ShipState LastSeenState() { return m_instance->LastSeenState(); }
+		StationID LastSeenStation() { return m_instance->LastSeenStation(); }
+		DWORD LastSeentation() { return m_instance->LastStateChange(); }
+	};
 
 	public ref class VectorWrapper
 	{
@@ -1028,8 +1050,9 @@ namespace AllegianceInterop
         void                SetSkills(float fShoot, float fTurn, float fGoto);
         void			 SetWantBoost(bool bOn);
         bool 			 GetWantBoost();
-
-		
+		IstationTypeIGCWrapper ^ GetStationType();
+		//void				SetCluster(IclusterIGCWrapper ^ cluster);
+		PlayerInfoWrapper ^ GetPlayerInfo();
 		
     };
 

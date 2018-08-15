@@ -1094,6 +1094,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             CASTPFM(pfmDocked, S, DOCKED, pfm);
 
             //Pretend the server sends a ship delete message for everything the player could see
+			if(m_deleteShipInfoOnDockMessage == true) // BT - WOPR - Bots don't use the sector map, so they don't get this information restored by clicking on sectors like humans do. This enables bots to keep thier current view of the sectors.
             {
                 //We could use the old cluster ... but modifying the contents of a list
                 const ShipListIGC*  ships = m_pCoreIGC->GetShips();

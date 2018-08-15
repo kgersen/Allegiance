@@ -1427,6 +1427,72 @@ namespace AllegianceInterop
 
 	};
 
+	public ref class  ChatDataWrapper
+	{
+	private:
+		ChatData * m_instance;
+
+	public:
+		ChatDataWrapper(ChatData * instance)
+		{
+			m_instance = instance;
+		}
+
+		property ShipID sidSender
+		{
+		public:
+			ShipID get()
+			{
+				return m_instance->sidSender;
+			}
+		}
+
+		property ChatTarget chatTarget
+		{
+		public:
+			ChatTarget get()
+			{
+				return (ChatTarget) m_instance->chatTarget;
+			}
+		}
+
+		property ObjectID oidRecipient
+		{
+		public:
+			ObjectID get()
+			{
+				return m_instance->oidRecipient;
+			}
+		}
+		
+		property SoundID voiceOver
+		{
+		public:
+			SoundID get()
+			{
+				return m_instance->voiceOver;
+			}
+		}
+
+		property CommandID commandID
+		{
+		public:
+			CommandID get()
+			{
+				return m_instance->commandID;
+			}
+		}
+
+		property bool bObjectModel // was chat object model generated?
+		{
+		public:
+			bool get()
+			{
+				return m_instance->bObjectModel;
+			}
+		}
+	};
+
 
     [Serializable] public ref class FMD_CS_CHATMESSAGE : public ManagedObject<::FMD_CS_CHATMESSAGE>
 	{
@@ -1471,12 +1537,12 @@ namespace AllegianceInterop
 
 
 
-        property ChatData cd
+        property ChatDataWrapper ^ cd
 		{
 		public:
-			ChatData get()
+			ChatDataWrapper ^ get()
 			{
-				return m_Instance->cd; 
+				return gcnew ChatDataWrapper(&m_Instance->cd);
 			}
 		}
 
@@ -9991,7 +10057,7 @@ namespace AllegianceInterop
 	};
 
 
-	public ref class WarpInfo
+	[Serializable] public ref class WarpInfo
 	{
 	private:
 		ClusterInfo ^ m_fromCluster;
@@ -10004,12 +10070,39 @@ namespace AllegianceInterop
 			m_toCluster = toCluster;
 		}
 
+		property ClusterInfo ^ FromCluster
+		{
+		public:
+			ClusterInfo ^ get()
+			{
+				return m_fromCluster;
+			}
+			void set(ClusterInfo ^ value)
+			{
+				m_fromCluster = value;
+			}
+		}
+
+		property ClusterInfo ^ ToCluster
+		{
+		public:
+			ClusterInfo ^ get()
+			{
+				return m_toCluster;
+			}
+			void set(ClusterInfo ^ value)
+			{
+				m_toCluster = value;
+			}
+		}
+
+
 		ClusterInfo ^ GetCluster() { return m_fromCluster; }
 		ClusterInfo ^ GetDestinationCluster() { return m_toCluster; }
 	};
 
 
-	public ref class ClusterInfo
+	[Serializable] public ref class ClusterInfo
 	{
 	private: 
 		SectorID m_clusterID;
@@ -10021,6 +10114,45 @@ namespace AllegianceInterop
 		{
 			m_clusterID = clusterID;
 			m_isHomeSector = isHomeSector;
+		}
+
+		property System::Collections::Generic::List<WarpInfo ^> ^ Warps
+		{
+		public:
+			System::Collections::Generic::List<WarpInfo ^> ^ get()
+			{
+				return m_warps;
+			}
+			void set(System::Collections::Generic::List<WarpInfo ^> ^ value)
+			{
+				m_warps = value;
+			}
+		}
+
+		property SectorID ClusterID
+		{
+		public:
+			SectorID get()
+			{
+				return m_clusterID;
+			}
+			void set(SectorID value)
+			{
+				m_clusterID = value;
+			}
+		}
+
+		property bool IsHomeSector
+		{
+		public:
+			bool get()
+			{
+				return m_isHomeSector;
+			}
+			void set(bool value)
+			{
+				m_isHomeSector = value;
+			}
 		}
 
 		SectorID GetObjectID() { return m_clusterID; }
