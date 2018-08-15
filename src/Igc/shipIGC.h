@@ -191,6 +191,11 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
             return m_shipID;
         }
 
+		virtual bool HasValidHullType()
+		{
+			return m_myHullType.GetHullType() != NULL;
+		}
+
     // ImodelIGC
         virtual void    SetCluster(IclusterIGC* cluster)
         {

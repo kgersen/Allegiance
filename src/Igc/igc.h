@@ -3439,6 +3439,8 @@ class IshipIGC : public IscannerIGC
 		virtual void                SetSkills(float fShoot, float fTurn, float fGoto) = 0;
 		virtual void				SetWantBoost(bool bOn) = 0;
 		virtual bool 				GetWantBoost() = 0;
+
+		virtual bool				HasValidHullType() = 0;
 };
 
 class IbuoyIGC : public ImodelIGC

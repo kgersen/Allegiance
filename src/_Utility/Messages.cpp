@@ -1040,8 +1040,10 @@ HRESULT FedMessaging::ReceiveMessages()
 
 					  FILE *file = fopen(outputFile, "w+");
 					  fwrite(pfm, sizeof(char), pfm->cbmsg, file);
-					  fclose(file);*/
+					  fclose(file);
 				  }
+				  */
+
 
                 m_pfmSite->OnAppMessage(this, *pcnxnFrom, pfm);
                 pfm = PfmGetNext(pfm);

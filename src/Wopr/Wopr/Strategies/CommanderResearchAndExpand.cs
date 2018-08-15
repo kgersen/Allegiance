@@ -46,13 +46,27 @@ namespace Wopr.Strategies
             {
                 if (ship.GetStationType().GetConstructorNeedRockSound() == message.cd.voiceOver && ship.GetCluster() != null)
                 {
-                    PlaceStation(ship, ship.GetCluster().GetObjectID());
+                    // Clear previous destination.
+                    if (_constuctorsInFlightToClusterObjectIDByShipObjectID.ContainsKey(ship.GetObjectID()) == true)
+                    {
+                        Log($"Constructor {ship.GetName()} needs a new target rock.");
+                        _constuctorsInFlightToClusterObjectIDByShipObjectID.Remove(ship.GetObjectID());
+                    }
+
+                    if (ship.GetCluster() != null)
+                    {
+                        PlaceStation(ship, ship.GetCluster().GetObjectID());
+                    }
+                    else
+                    {
+                        //  Waiting on FMD_S_SHIP_STATUS to update this ship's current position. (This happens when a constructor first launches.).
+                        Log($"Constructor {ship.GetName()} is waiting for rock, but it doesn't have a cluster yet. Will use current Home Cluster {GetHomeCluster().GetName()} for starting point.");
+                        PlaceStation(ship, GetHomeCluster().GetObjectID());
+                    }
                 }
                 else
                 {
-                    Log($"Constructor is waiting for rock, but it doesn't have a cluster yet. Waiting on FMD_S_SHIP_STATUS to update it's current position. (This happens when a constructor first launches.). Will use current Home Cluster {GetHomeCluster().GetName()} for starting point.");
-                    PlaceStation(ship, GetHomeCluster().GetObjectID());
-                    
+                   
                 }
                
             }
@@ -706,21 +720,28 @@ namespace Wopr.Strategies
 
             foreach (var bucket in buckets)
             {
-                if (bucket.GetName().StartsWith(techName) == true && side.CanBuy(bucket) == true && bucket.GetPercentComplete() <= 0)
+                if (bucket.GetName().StartsWith(techName) == true && side.CanBuy(bucket) == true)
                 {
                     foundBucket = true;
 
-                    if (money > bucket.GetPrice()/* && bucket.GetPercentComplete() <= 0*/)
+                    if (bucket.GetPercentComplete() <= 0)
                     {
-                        Log($"Adding money to bucket {bucket.GetName()}. Bucket wants: {bucket.GetBuyable().GetPrice()}, we have: {money}");
-                        ClientConnection.AddMoneyToBucket(bucket, bucket.GetPrice());
-                        return true;
+                        if (money > bucket.GetPrice()/* && bucket.GetPercentComplete() <= 0*/)
+                        {
+                            Log($"Adding money to bucket {bucket.GetName()}. Bucket wants: {bucket.GetBuyable().GetPrice()}, we have: {money}");
+                            ClientConnection.AddMoneyToBucket(bucket, bucket.GetPrice());
+                            return true;
+                        }
+                        else
+                        {
+                            Log($"Not enough money to buy {techName}, money: {money}, bucketPrice: {bucket.GetPrice()}");
+                            //Log("Already building: " + bucket.GetPercentComplete());
+                            return false;
+                        }
                     }
                     else
                     {
-                        Log($"Not enough money to buy {techName}, money: {money}, bucketPrice: {bucket.GetPrice()}");
-                        //Log("Already building: " + bucket.GetPercentComplete());
-                        return false;
+                        Log($"Bucket progress for {techName}: {bucket.GetPercentComplete()}%");
                     }
                 }
             }
