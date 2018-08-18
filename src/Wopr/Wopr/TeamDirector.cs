@@ -36,7 +36,8 @@ namespace Wopr
         //private Dictionary<String, AllegianceInterop.ClientConnection.OnAppMessageDelegate> _currentStrategyAppMessageDelegateByPlayerName { get; set; } = new Dictionary<string, AllegianceInterop.ClientConnection.OnAppMessageDelegate>();
         //private Dictionary<string, TeamDirectorPlayerInfo> _teamDirectorPlayerInfoByPlayerName = new Dictionary<string, TeamDirectorPlayerInfo>();
 
-        private List<GameInfo> _gameInfos;
+        //private List<GameInfo> _gameInfos;
+        private GameInfo _gameInfo = new GameInfo();
 
         //[NonSerialized]
         //Task _messagePump;
@@ -46,14 +47,14 @@ namespace Wopr
             _cancellationTokenSource = cancellationTokenSource;
             _lobbyAddress = lobbyAddress;
 
-            _gameInfos = new List<GameInfo>();
-            for (int i = 0; i < 6; i++)
-            {
-                var gameInfo = new GameInfo();
-                //gameInfo.UnexploredClustersByObjectID = new Dictionary<int, string>();
+            //_gameInfos = new List<GameInfo>();
+            //for (int i = 0; i < 6; i++)
+            //{
+            //    var gameInfo = new GameInfo();
+            //    //gameInfo.UnexploredClustersByObjectID = new Dictionary<int, string>();
 
-                _gameInfos.Add(gameInfo);
-            }
+            //    _gameInfos.Add(gameInfo);
+            //}
 
 
             using (var view32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine,
@@ -155,6 +156,24 @@ namespace Wopr
             CreatePlayer(playerName, currentStrategy.SideIndex, currentStrategy.IsGameController, currentStrategy.IsCommander);
         }
 
+        internal void UpdateTeamStrategies()
+        {
+            // Get team leader's ship
+            var teamLeaderShip = _connectedClientsByPlayerName.Values.Where(p => p.GetShip() != null && p.GetSide() != null &&  p.SideLeaderShipID(p.GetSide().GetObjectID()) == p.GetShip()?.GetObjectID()).FirstOrDefault()?.GetShip();
+
+            if (teamLeaderShip == null)
+                return;
+
+            if (_gameInfo.Clusters == null)
+                return;
+
+            // Wait for the map to be fully scouted before starting combat operations.
+            if (_gameInfo.GetUnexploredClusters(teamLeaderShip.GetMission()).Count > 0 || _gameInfo.Clusters.Count == 0)
+                return;
+
+            // Do we have any enemy constructors visible?
+        }
+
         //public void LoadStrategies()
         //{
         //    // To load strategies into the current app domain without using transparent proxy, you can uncomment this, but it
@@ -194,7 +213,7 @@ namespace Wopr
         //        null,
         //        null).Unwrap();
         //}
-        
+
 
         public void ChangeStrategy(AllegianceInterop.ClientConnection clientConnection, StrategyID strategyID, string playerName, short sideIndex, bool isGameController, bool isCommander)
         {
@@ -223,7 +242,7 @@ namespace Wopr
                 _currentStrategyByPlayerName.Remove(playerName);
             }
 
-            StrategyBase strategy = StrategyBase.GetInstance(strategyID, clientConnection, _gameInfos[sideIndex], _botAuthenticationGuid, playerName, sideIndex, isGameController, isCommander);
+            StrategyBase strategy = StrategyBase.GetInstance(strategyID, clientConnection, _gameInfo, _botAuthenticationGuid, playerName, sideIndex, isGameController, isCommander);
 
             strategy.OnStrategyComplete += Strategy_OnStrategyComplete;
 

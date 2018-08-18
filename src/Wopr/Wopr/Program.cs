@@ -174,30 +174,35 @@ namespace Wopr
                 //if (sw.ElapsedMilliseconds > 100)
                 //    Console.WriteLine($"teamDirectorBlue.SendAndReceiveMessagesForAllClients run time: {sw.ElapsedMilliseconds}");
 
-                //if (Console.KeyAvailable)
-                //{
-                //    ConsoleKeyInfo key = Console.ReadKey(true);
-                //    switch (key.Key)
-                //    {
-                //        case ConsoleKey.Q:
-                //            cancellationTokenSource.Cancel();
-                //            break;
-                //        default:
-                //            Console.WriteLine("\nPress q to quit.");
-                //            break;
-                //    }
-                //}
+                if (Console.KeyAvailable)
+                {
+                    ConsoleKeyInfo key = Console.ReadKey(true);
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.Q:
+                            cancellationTokenSource.Cancel();
+                            break;
+                        default:
+                            Console.WriteLine("\nPress q to quit.");
+                            break;
+                    }
+                }
 
-                var keyInfo = Console.ReadKey();
-                if (keyInfo.KeyChar == 'q')
-                {
-                    cancellationTokenSource.Cancel();
-                    break;
-                }
-                else
-                {
-                    Console.WriteLine("\nPress q to quit.");
-                }
+                teamDirectorYellow.UpdateTeamStrategies();
+                teamDirectorBlue.UpdateTeamStrategies();
+
+                Thread.Sleep(100);
+
+                //var keyInfo = Console.ReadKey();
+                //if (keyInfo.KeyChar == 'q')
+                //{
+                //    cancellationTokenSource.Cancel();
+                //    break;
+                //}
+                //else
+                //{
+                //    Console.WriteLine("\nPress q to quit.");
+                //}
             } while (cancellationTokenSource.IsCancellationRequested == false);
 
             

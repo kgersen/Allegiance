@@ -99,7 +99,6 @@ namespace Wopr.Strategies
             Log($"MessageReceiver_FMD_S_SHIP_STATUS: my ship id = {ship.GetObjectID()},  message.shipID = {message.shipID}, message.status.GetSectorID(): {message.status.GetSectorID()}");
 
            
-
             string shipName = ship.GetName();
 
             //UpdateUnexploredWarpsList();
@@ -125,9 +124,22 @@ namespace Wopr.Strategies
                 ReturnToBase();
                 return;
             }
-            
+
+            // If we don't have any command and the ship is stopped, reset and get moving!
+            if ((CommandID)ship.GetCommandID((sbyte)CommandType.c_cmdCurrent) <= CommandID.c_cidNone && ship.GetVelocity().Length() == 0)
+            {
+                Log($"\tWe're stopped with no command. Resetting current variables, and selecting a new destination. _currentSectorID: {_currentSectorID}, _isSweeping: {_isSweeping}, _navigatingToCluster: {_navigatingToCluster}, _waitingForLaunchToComplete: {_waitingForLaunchToComplete}");
+
+                _currentSectorID = -1;
+                _isSweeping = false;
+                _navigatingToCluster = null;
+                _waitingForLaunchToComplete = false;
+                
+                //return;
+            }
+
             // If we are already moving, and this status message is for our current sector, or we are already sweeping, then ignore it.
-            if (ship.GetVelocity().Length() > 0  && (message.status.GetSectorID() == _currentSectorID || _isSweeping == true))
+            if (ship.GetVelocity().Length() > 0 && (message.status.GetSectorID() == _currentSectorID || _isSweeping == true))
             {
                 Log($"\tSkipping message: ship.GetVelocity(): {ship.GetVelocity().Length()},  ship.GetCluster() = {ship.GetCluster()?.GetName()}, message.status.GetSectorID() = {message.status.GetSectorID()}, _currentSectorID = {_currentSectorID}, _isSweeping = {_isSweeping}");
                 return;

@@ -90,9 +90,9 @@ namespace Wopr.Strategies
             _messageReceiver.FMD_S_SHIP_STATUS += _messageReceiver_FMD_S_SHIP_STATUS;
             //_messageReceiver.FMD_S_EXPORT += _messageReceiver_FMD_S_EXPORT;
             _messageReceiver.FMD_S_CLUSTERINFO += _messageReceiver_FMD_S_CLUSTERINFO;
-            //_messageReceiver.FMD_CS_PING += _messageReceiver_FMD_CS_PING; // We'll get one of these every 5 seconds, using this to drive "less frequent" updates.
-            //_messageReceiver.FMD_S_DOCKED += _messageReceiver_FMD_S_DOCKED;
-            //_messageReceiver.FMD_S_MISSION_STAGE += _messageReceiver_FMD_S_MISSION_STAGE;
+            _messageReceiver.FMD_CS_PING += _messageReceiver_FMD_CS_PING; // We'll get one of these every 5 seconds, using this to drive "less frequent" updates.
+            _messageReceiver.FMD_S_DOCKED += _messageReceiver_FMD_S_DOCKED;
+            _messageReceiver.FMD_S_MISSION_STAGE += _messageReceiver_FMD_S_MISSION_STAGE;
 
             AttachMessages(_messageReceiver, botAuthenticationGuid, playerName, sideIndex, isGameController, isCommander);
 
@@ -101,36 +101,40 @@ namespace Wopr.Strategies
             Start();
         }
 
-        //private void _messageReceiver_FMD_S_MISSION_STAGE(ClientConnection client, AllegianceInterop.FMD_S_MISSION_STAGE message)
-        //{
-        //    if ((MissionStage)message.stage == MissionStage.STAGE_STARTED)
-        //        UpdateGalaxyView();
-        //}
+        private void _messageReceiver_FMD_S_MISSION_STAGE(ClientConnection client, AllegianceInterop.FMD_S_MISSION_STAGE message)
+        {
+            if ((MissionStage)message.stage == MissionStage.STAGE_STARTED)
+                UpdateGalaxyView();
+        }
 
-        //private void _messageReceiver_FMD_S_DOCKED(ClientConnection client, AllegianceInterop.FMD_S_DOCKED message)
-        //{
-        //    // When ever the server sends us a "DOCKED" message, we lose all of the info about ships we have seen, so we need to 
-        //    // re-update our galaxy view so that we know what's where.
-        //    UpdateGalaxyView();
-        //}
+        private void _messageReceiver_FMD_S_DOCKED(ClientConnection client, AllegianceInterop.FMD_S_DOCKED message)
+        {
+            // When ever the server sends us a "DOCKED" message, we lose all of the info about ships we have seen, so we need to 
+            // re-update our galaxy view so that we know what's where.
+            UpdateGalaxyView();
+        }
 
-        //private void UpdateGalaxyView()
-        //{
-        //    var targetCluster = ClientConnection.GetCore().GetClusters().OrderBy(p => p.GetObjectID());
+        private void UpdateGalaxyView()
+        {
+            // Only the commander needs to keep an updated galaxy, and only when it's docked.
+            if (IsCommander == true && ClientConnection.GetShip()?.GetStation() != null)
+            {
+                var targetCluster = ClientConnection.GetCore().GetClusters().OrderBy(p => p.GetObjectID());
 
-        //    foreach (var cluster in ClientConnection.GetCore().GetClusters().OrderBy(p => p.GetObjectID()))
-        //    {
-        //        AllegianceInterop.FMD_C_VIEW_CLUSTER viewCluster = new AllegianceInterop.FMD_C_VIEW_CLUSTER(cluster.GetObjectID(), -1, -1);
-        //        ClientConnection.SendMessageServer(viewCluster);
-        //        Thread.Sleep(250);
-        //    }
-        //}
+                foreach (var cluster in ClientConnection.GetCore().GetClusters().OrderBy(p => p.GetObjectID()))
+                {
+                    AllegianceInterop.FMD_C_VIEW_CLUSTER viewCluster = new AllegianceInterop.FMD_C_VIEW_CLUSTER(cluster.GetObjectID(), -1, -1);
+                    ClientConnection.SendMessageServer(viewCluster);
+                    //Thread.Sleep(250);
+                }
+            }
+        }
 
-        //private void _messageReceiver_FMD_CS_PING(ClientConnection client, AllegianceInterop.FMD_CS_PING message)
-        //{
-        //    // refresh the galaxy view every 5 seconds.
-        //    UpdateGalaxyView();
-        //}
+        private void _messageReceiver_FMD_CS_PING(ClientConnection client, AllegianceInterop.FMD_CS_PING message)
+        {
+            // refresh the galaxy view every 5 seconds.
+            UpdateGalaxyView();
+        }
 
         private void _messageReceiver_FMD_S_CLUSTERINFO(ClientConnection client, AllegianceInterop.FMD_S_CLUSTERINFO message)
         {
@@ -199,6 +203,13 @@ namespace Wopr.Strategies
                     ship.SetCluster(null);
             }
 
+            // Log the ship's current telemetry
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"position: X: {client.GetShip()?.GetPosition()?.X()}, Y: {client.GetShip()?.GetPosition()?.Y()}, Z: {client.GetShip()?.GetPosition()?.Z()}");
+            sb.AppendLine($"speed: {client.GetShip()?.GetVelocity()?.Length()}");
+            sb.AppendLine($"current command: {((CommandID ?)client.GetShip()?.GetCommandID((sbyte)CommandType.c_cmdCurrent))?.ToString()}, command target: {client.GetShip()?.GetCommandTarget((sbyte)CommandType.c_cmdCurrent)?.GetName()}");
+
+            File.WriteAllText($@"c:\1\Logs\{client.GetShip().GetName()}_telemetry.txt", sb.ToString());
         }
 
         private void SetAutoDonateAndDonateAllMoneyToTeamLeader(IshipIGCWrapper teamLeaderShip)

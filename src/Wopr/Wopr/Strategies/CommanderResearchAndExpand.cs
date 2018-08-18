@@ -8,15 +8,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Wopr;
 using Wopr.Constants;
+using Wopr.Entities;
 
 namespace Wopr.Strategies
 {
     public class CommanderResearchAndExpand : StrategyBase
     {
-        private Queue<String> _investmentQueue = new Queue<string>();
+        private List<String> _investmentList = new List<String>();
 
         // Key: Ship Object ID, Value: Cluster Object ID.
-        Dictionary<int, int> _constuctorsInFlightToClusterObjectIDByShipObjectID = new Dictionary<int, int>();
+        Dictionary<int, InflightConstructor> _constuctorsInFlightToClusterObjectIDByShipObjectID = new Dictionary<int, InflightConstructor>();
 
         List<int> _clustersWaitingForConstructors = new List<int>();
 
@@ -32,7 +33,54 @@ namespace Wopr.Strategies
             messageReceiver.FMD_S_STATIONS_UPDATE += MessageReceiver_FMD_S_STATIONS_UPDATE;
             messageReceiver.FMD_CS_CHATMESSAGE += MessageReceiver_FMD_CS_CHATMESSAGE;
             messageReceiver.FMD_S_MONEY_CHANGE += MessageReceiver_FMD_S_MONEY_CHANGE;
+            //messageReceiver.FMD_S_PINGDATA += MessageReceiver_FMD_S_PINGDATA; // Use this to drive infrequent updates (updates every 5 seconds).
+            messageReceiver.FMD_CS_PING += MessageReceiver_FMD_CS_PING; // Use this to drive infrequent updates (updates every 5 seconds).
         }
+
+        private void MessageReceiver_FMD_CS_PING(ClientConnection client, AllegianceInterop.FMD_CS_PING message)
+        {
+            // Check all in-flight cons to make sure their destinations are still legit.
+            foreach (short shipID in _constuctorsInFlightToClusterObjectIDByShipObjectID.Keys.ToArray())
+            {
+                var constructorInFlight = _constuctorsInFlightToClusterObjectIDByShipObjectID[shipID];
+
+                var ship = ClientConnection.GetSide().GetShip(shipID);
+                if (ship == null) // The constructor has built on the target rock.
+                {
+                    Log($"shipID: {shipID} is no longer valid, removing from _constuctorsInFlightToClusterObjectIDByShipObjectID list.");
+
+                    _constuctorsInFlightToClusterObjectIDByShipObjectID.Remove(shipID);
+                    continue;
+                }
+
+                //if (ship.GetCommandID((sbyte)CommandType.c_cmdCurrent) <= (sbyte)CommandID.c_cidNone) // The constructor's target rock is no longer available, or it has no current plan. 
+                //{
+                //    Log($"shipID: {shipID} doesn't have a current command. Finding a new destination for {ship.GetName()}");
+
+                //    _constuctorsInFlightToClusterObjectIDByShipObjectID.Remove(shipID);
+
+                //    this.PlaceStation(ship, GetHomeCluster().GetObjectID());
+                //}
+            }
+
+            // Find any idle cons and see if we can send them on their way.
+            // Looks like we don't always have an updated command from cons, so this won't work. 
+            //foreach (var ship in client.GetSide().GetShips().Where(p => (PilotType)p.GetPilotType() == PilotType.c_ptBuilder))
+            //{
+            //    if (ship.GetCommandID((sbyte)CommandType.c_cmdCurrent) <= (sbyte)CommandID.c_cidNone) // The constructor's target rock is no longer available, or it has no current plan. 
+            //    {
+            //        Log($"{ship.GetName()} doesn't have a current command. Finding a new destination for it.");
+
+            //        _constuctorsInFlightToClusterObjectIDByShipObjectID.Remove(ship.GetObjectID());
+
+            //        this.PlaceStation(ship, GetHomeCluster().GetObjectID());
+            //    }
+            //}
+
+            if(client.GetSide()?.GetBuckets()?.Count > 0)
+                QueueTechForAvailableMoney();
+        }
+        
 
         private void MessageReceiver_FMD_S_MONEY_CHANGE(ClientConnection client, AllegianceInterop.FMD_S_MONEY_CHANGE message)
         {
@@ -87,14 +135,14 @@ namespace Wopr.Strategies
 
         private void MessageReceiver_FMD_S_BUCKET_STATUS(AllegianceInterop.ClientConnection client, AllegianceInterop.FMD_S_BUCKET_STATUS message)
         {
-            if (message.sideID != SideIndex)
-                return;
+            //if (message.sideID != SideIndex)
+            //    return;
 
-            var side = client.GetSide();
-            var completedBucket = side.GetBucket(message.iBucket);
-            var completedBucketName = completedBucket.GetName();
+            //var side = client.GetSide();
+            //var completedBucket = side.GetBucket(message.iBucket);
+            //var completedBucketName = completedBucket.GetName();
 
-            QueueTechForAvailableMoney();
+            //QueueTechForAvailableMoney();
 
             //if (completedBucketName.StartsWith(".") == true && completedBucketName.Contains("Miner") == true)
             //{
@@ -128,7 +176,7 @@ namespace Wopr.Strategies
             var ship = client.GetCore().GetShip(message.shipID);
 
 
-            if ((PilotType) ship.GetPilotType() == PilotType.c_ptBuilder)
+            if ((PilotType) ship.GetPilotType() == PilotType.c_ptBuilder && message.status.GetSectorID() >= 0 && ship.GetSide().GetObjectID() == client.GetSide().GetObjectID())
                 PlaceStation(ship, message.status.GetSectorID());
             
         }
@@ -163,7 +211,12 @@ namespace Wopr.Strategies
                 return;
             }
 
-            _constuctorsInFlightToClusterObjectIDByShipObjectID.Add(ship.GetObjectID(), targetCluster.GetObjectID());
+            _constuctorsInFlightToClusterObjectIDByShipObjectID.Add(ship.GetObjectID(), new InflightConstructor()
+            {
+                Cluster = targetCluster,
+                Ship = ship, 
+                StationType = stationType
+            });
 
 
             if (targetCluster != null)
@@ -175,15 +228,16 @@ namespace Wopr.Strategies
 
                     while (targetCluster.GetAsteroids().Count == 0 && _cancellationTokenSource.IsCancellationRequested == false)
                     {
-                        Log($"Looking for intermediate cluster, target cluster: {targetCluster.GetName()} has not been discovered yet.");
-
                         if (intermediateCluster == null || (shipCluster.GetObjectID() == intermediateCluster.GetObjectID()))
+                        //if (ship.GetCommandID((sbyte) CommandType.c_cmdCurrent) <= (sbyte) CommandID.c_cidNone)
                         {
-                            var pathFinder = new DijkstraPathFinder(ClientConnection.GetCore(), targetCluster, GetHomeCluster());
+                            Log($"Looking for intermediate cluster, target cluster: {targetCluster.GetName()} has not been discovered yet. Current ship command is: {((CommandID)ship.GetCommandID((sbyte)CommandType.c_cmdCurrent)).ToString()}");
+                            
+                            var pathFinder = new DijkstraPathFinder(GameInfo.Clusters, targetCluster.GetObjectID(), GetHomeCluster().GetObjectID());
 
                             // Find a sector on the route that we have already explored, we will send the constructor there while we wait for scouts to find the way.
-                            for (var currentCluster = targetCluster; currentCluster.GetAsteroids().Count == 0; currentCluster = pathFinder.NextCluster(currentCluster, GetHomeCluster()))
-                                intermediateCluster = currentCluster;
+                            for (intermediateCluster = targetCluster; intermediateCluster.GetAsteroids().Count == 0; intermediateCluster = pathFinder.NextCluster(intermediateCluster, GetHomeCluster()));
+                               
 
                             if (intermediateCluster != null && shipCluster != null && shipCluster.GetObjectID() != intermediateCluster.GetObjectID())
                             {
@@ -197,7 +251,7 @@ namespace Wopr.Strategies
                             }
                         }
 
-                        Thread.Sleep(100);
+                        Thread.Sleep(250);
                     }
 
                     if (targetCluster.GetAsteroids().Count > 0)
@@ -408,7 +462,8 @@ namespace Wopr.Strategies
             var enemyHomeCluster = ClientConnection.GetCore().GetClusters().Where(p => p.GetHomeSector() == true && p.GetObjectID() != homeCluster.GetObjectID()).FirstOrDefault();
 
             // Always build a home tele first if we don't have one in our home cluster.
-            if (stationType == StationType.Teleport && homeCluster.GetStations().Exists(p => p.GetName().Contains("Teleport") == true) == false && _constuctorsInFlightToClusterObjectIDByShipObjectID.ContainsValue(homeCluster.GetObjectID()) == false)
+            if (stationType == StationType.Teleport && homeCluster.GetStations().Exists(p => p.GetName().Contains("Teleport") == true) == false 
+                && _constuctorsInFlightToClusterObjectIDByShipObjectID.Values.Count(r => r.Cluster.GetObjectID() == homeCluster.GetObjectID()) == 0)
             {
                 Log($"There is no home teleporter yet, let's put this tele con at home: {homeCluster.GetName()}");
                 return homeCluster;
@@ -420,13 +475,23 @@ namespace Wopr.Strategies
                 // For hihigher, this is the middle cluster.
                 Log("Checking for an empty cluster that is bordered by our own stations.");
                 var goodRefCluster = ClientConnection.GetCore().GetClusters()
-                    .Where(p => p.GetStations().Count == 0 
-                        && _constuctorsInFlightToClusterObjectIDByShipObjectID.ContainsValue(p.GetObjectID()) == false
-                        && p.GetWarps().All(r => r.GetDestination().GetCluster().GetStations().All(s => s.GetSide().GetObjectID() == ClientConnection.GetSide().GetObjectID())))
+                    .Where(p => p.GetStations().Count == 0  // Make sure there are no stations in it already.
+                        && _constuctorsInFlightToClusterObjectIDByShipObjectID.Values.Count(r => r.Cluster.GetObjectID() == p.GetObjectID()) == 0 // Are any other cons heading to this cluster?
+                        && GameInfo.GetUnexploredClusters(p.GetMission()).ContainsKey(p.GetObjectID()) == false // Is this cluster fully explored?
+                        && p.GetWarps().All(r => 
+                            r.GetDestination().GetCluster().GetStations().Count > 0  // Neighboring clusters have at least one station
+                            && r.GetDestination().GetCluster().GetStations().All(s => s.GetSide().GetObjectID() == ClientConnection.GetSide().GetObjectID()))) // And all the stations belong to our side.
                     .FirstOrDefault();
 
                 if (goodRefCluster != null)
+                {
+                    Log($"Found a good cluster for a refinery: {goodRefCluster.GetName()}");
                     return goodRefCluster;
+                }
+                else
+                {
+                    Log($"No good refinery cluster found. Looking for a good spot on available lines.");
+                }
             }
 
             //var availableClusters = GameInfo.Clusters.Where(p => p.GetHomeSector() == true || ClientConnection.
@@ -461,7 +526,8 @@ namespace Wopr.Strategies
                     Log($"Considering cluster: {currentCluster.GetName()}, nextCluster: {nextCluster.GetName()}");
 
                     // Don't select this cluster if another constructor is already on the way to it.
-                    if (_constuctorsInFlightToClusterObjectIDByShipObjectID.ContainsValue(currentCluster.GetObjectID()) == true)
+                    if(_constuctorsInFlightToClusterObjectIDByShipObjectID.Values.Count(r => r.Cluster.GetObjectID() == currentCluster.GetObjectID()) > 0)
+                    //if (_constuctorsInFlightToClusterObjectIDByShipObjectID.ContainsValue(currentCluster.GetObjectID()) == true)
                     {
                         Log($"There is already a constructor heading to {currentCluster.GetName()}, skipping to next sector.");
                         continue;
@@ -497,12 +563,25 @@ namespace Wopr.Strategies
                             }
                         }
 
-                        // We have a covering station in front of this one, so this is a good sector use for mining or tech bases.
+                        // We have a covering station in front of this one, so this is a good sector use for mining or tech bases, but we want refs to be as close to home as possible.
                         if (stationType == StationType.Refinery
                             && ClusterContainsStation(StationType.Refinery, currentCluster) == false)
                         {
-                            Log($"This is good spot for a refinery! Recommending: {currentCluster.GetName()}");
-                            return currentCluster;
+                            var homeSectorPath = new DijkstraPathFinder(ClientConnection.GetCore(), currentCluster, homeCluster);
+                            IclusterIGCWrapper refCluster = currentCluster;
+                            for (nextCluster = currentCluster; nextCluster != homeCluster && nextCluster != null; nextCluster = homeSectorPath.NextCluster(nextCluster, homeCluster))
+                            {
+                                if (nextCluster.GetStations().Count(p => p.GetSide().GetObjectID() == ClientConnection.GetSide().GetObjectID()) > 0)
+                                {
+                                    Log($"Found a refinery cluster that is on a line protected by another station, with a friendly station backing it: {refCluster.GetName()}");
+                                    return refCluster;
+                                }
+
+                                refCluster = nextCluster;
+                            }
+
+                            //Log($"This is good spot for a refinery! Recommending: {currentCluster.GetName()}");
+                            //return currentCluster;
                         }
 
                         if (stationType == StationType.Garrison
@@ -567,10 +646,20 @@ namespace Wopr.Strategies
                 }
             }
 
+            if (stationType == StationType.Refinery)
+            {
+                Log($"No good cluster found for this refinery, waiting for a good option to appear.");
+                return null;
+            }
+
+
             Log($"No targeted clusters were found, placing con in a random open cluster.");
 
             // No targeted clusters were found, let's go with any random empty cluster that we know about.
-            var emptyClusters = ClientConnection.GetCore().GetClusters().Where(p => p.GetAsteroids().Count > 0 && p.GetStations().Count == 0 && _constuctorsInFlightToClusterObjectIDByShipObjectID.ContainsValue(p.GetObjectID()) == false).ToArray();
+            var emptyClusters = ClientConnection.GetCore().GetClusters().Where(p => p.GetAsteroids().Count > 0 
+                    && p.GetStations().Count == 0 
+                    && _constuctorsInFlightToClusterObjectIDByShipObjectID.Values.Count(r => r.Cluster.GetObjectID() == p.GetObjectID()) == 0)
+                .ToArray();
 
             if (emptyClusters.Count() == 0)
                 return null;
@@ -640,7 +729,7 @@ namespace Wopr.Strategies
 
         private void QueueTechForAvailableMoney()
         {
-            if (_investmentQueue.Contains(".Miner") == false && ClientConnection.GetSide().GetShips().Where(p => p.GetName().Contains("Miner")).Count() < ClientConnection.GetCore().GetMissionParams().GetMaxDrones())
+            if (IsTechAvailableForInvestment(".Miner") == true && ClientConnection.GetSide().GetShips().Count > 0 && ClientConnection.GetSide().GetShips().Where(p => p.GetName().Contains("Miner")).Count() < ClientConnection.GetCore().GetMissionParams().GetMaxDrones())
             {
                 QueueTech(".Miner");
             }
@@ -648,14 +737,14 @@ namespace Wopr.Strategies
             var maxOutpostCount = GetHomeCluster().GetWarps().Count;
 
 
-            if (_investmentQueue.Contains("Outpost") == false && ClientConnection.GetSide().GetShips().Where(p => p.GetName().Contains("Outpost")).Count() + ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Outpost")).Count() < maxOutpostCount)
+            if (IsTechAvailableForInvestment("Outpost") == true && ClientConnection.GetSide().GetShips().Where(p => p.GetName().Contains("Outpost")).Count() + ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Outpost")).Count() < maxOutpostCount)
             {
                 QueueTech("Outpost");
             }
 
             var maxTeleporterCount = maxOutpostCount - 1;
 
-            if (_investmentQueue.Contains("Teleport") == false && ClientConnection.GetSide().GetShips().Where(p => p.GetName().Contains("Teleport")).Count() + ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Outpost")).Count() < maxTeleporterCount)
+            if (IsTechAvailableForInvestment("Teleport") == true && ClientConnection.GetSide().GetShips().Where(p => p.GetName().Contains("Teleport")).Count() + ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Outpost")).Count() < maxTeleporterCount)
             {
                 QueueTech("Teleport");
             }
@@ -664,7 +753,7 @@ namespace Wopr.Strategies
             if (maxRefineryCount < 0)
                 maxRefineryCount = 0;
 
-            if (_investmentQueue.Contains("Refinery") == false && ClientConnection.GetSide().GetShips().Where(p => p.GetName().Contains("Refinery")).Count() + ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Refinery")).Count() < maxRefineryCount)
+            if (IsTechAvailableForInvestment("Refinery") == true && ClientConnection.GetSide().GetShips().Where(p => p.GetName().Contains("Refinery")).Count() + ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Refinery")).Count() < maxRefineryCount)
             {
                 QueueTech("Refinery");
             }
@@ -672,36 +761,71 @@ namespace Wopr.Strategies
             ProcessInvestmentQueue();
         }
 
+        private bool IsTechAvailableForInvestment(string techName)
+        {
+            var side = ClientConnection.GetSide();
+            var buckets = side?.GetBuckets();
+
+            if (side == null || buckets == null)
+                return false;
+
+            if (buckets.Exists(p => p.GetName().StartsWith(techName, StringComparison.InvariantCultureIgnoreCase) == true && side.CanBuy(p) == true) == false)
+                return false;
+
+            if (IsTechInProgress(techName) == true)
+                return false;
+
+            if (_investmentList.Contains(techName) == true)
+                return false;
+
+            return true;
+        }
+
+        private bool IsTechInProgress(string techName)
+        {
+            var side = ClientConnection.GetSide();
+            var buckets = side?.GetBuckets();
+
+            if (side == null || buckets == null)
+                return false;
+
+            return (buckets.FirstOrDefault(p => p.GetName().StartsWith(techName, StringComparison.InvariantCultureIgnoreCase) == true)?.GetPercentComplete()).GetValueOrDefault(0) > 0;
+        }
+
         private void ProcessInvestmentQueue()
         {
-            if (_investmentQueue.Count > 0)
+            foreach (var techName in _investmentList.ToArray())
             {
-                Log($"_investmentQueue.Count: {_investmentQueue.Count}");
-
-                while (_investmentQueue.Count > 0)
+                var investResult = InvestInTech(techName);
+                switch (investResult)
                 {
-                    string techName = _investmentQueue.Peek();
-
-                    if (InvestInTech(techName) == true)
-                    {
-                        _investmentQueue.Dequeue();
-                    }
-                    else
-                    {
+                    case InvestResult.AlreadyInProgress:
+                        _investmentList.Remove(techName);
                         break;
-                    }
-                }
 
-                //for (string techName = _investmentQueue.Peek(); InvestInTech(techName) == true && _investmentQueue.Count > 0; _investmentQueue.Dequeue(), techName = _investmentQueue.Peek()) ;
+                    case InvestResult.InsufficientFunds:
+                        break;
+
+                    case InvestResult.InvalidTechName:
+                        _investmentList.Remove(techName);
+                        break;
+
+                    case InvestResult.Succeeded:
+                        _investmentList.Remove(techName);
+                        break;
+
+                    default:
+                        throw new NotSupportedException(investResult.ToString());
+                }
             }
         }
 
         private void QueueTech(string techName)
         {
-            if (_investmentQueue.Contains(techName) == false)
+            if (_investmentList.Contains(techName) == false)
             {
                 Log($"Queueing tech: {techName}");
-                _investmentQueue.Enqueue(techName);
+                _investmentList.Add(techName);
             }
             else
             {
@@ -709,50 +833,41 @@ namespace Wopr.Strategies
             }
         }
 
-        private bool InvestInTech(string techName)
+        private InvestResult InvestInTech(string techName)
         {
             var side = ClientConnection.GetSide();
             var buckets = side.GetBuckets();
             var money = ClientConnection.GetMoney();
-            //var station = side.GetCu
-
-            bool foundBucket = false;
 
             foreach (var bucket in buckets)
             {
                 if (bucket.GetName().StartsWith(techName) == true && side.CanBuy(bucket) == true)
                 {
-                    foundBucket = true;
-
                     if (bucket.GetPercentComplete() <= 0)
                     {
-                        if (money > bucket.GetPrice()/* && bucket.GetPercentComplete() <= 0*/)
+                        if (money > bucket.GetPrice())
                         {
                             Log($"Adding money to bucket {bucket.GetName()}. Bucket wants: {bucket.GetBuyable().GetPrice()}, we have: {money}");
                             ClientConnection.AddMoneyToBucket(bucket, bucket.GetPrice());
-                            return true;
+                            return InvestResult.Succeeded;
                         }
                         else
                         {
                             Log($"Not enough money to buy {techName}, money: {money}, bucketPrice: {bucket.GetPrice()}");
                             //Log("Already building: " + bucket.GetPercentComplete());
-                            return false;
+                            return InvestResult.InsufficientFunds;
                         }
                     }
                     else
                     {
                         Log($"Bucket progress for {techName}: {bucket.GetPercentComplete()}%");
+                        return InvestResult.AlreadyInProgress;
                     }
                 }
             }
-
-            if (foundBucket == false)
-            {
-                Log($"A bucket was not found for tech: {techName}, removing this tech from the queue.");
-                return true;
-            }
-
-            return false;
+            
+            Log($"A bucket was not found for tech: {techName}, removing this tech from the queue.");
+            return InvestResult.InvalidTechName;
         }
     }
 }

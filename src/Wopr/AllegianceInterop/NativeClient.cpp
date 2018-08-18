@@ -36,6 +36,7 @@ namespace AllegianceInterop
 
 		// Ensure that cluster info isn't deleted when the server sends us FM_S_DOCKED
 		m_deleteShipInfoOnDockMessage = false;
+		m_allowClientToReceiveClusterUpdatesForAllClusters = true;
 	}
 
 	//void NativeClient::HookOnAppMessageEvent(void * function)

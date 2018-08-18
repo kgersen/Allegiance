@@ -119,6 +119,7 @@
     <Compile Include="Constants\Civilization.cs" />
     <Compile Include="Constants\CommandID.cs" />
     <Compile Include="Constants\CommandType.cs" />
+    <Compile Include="Constants\InvestResult.cs" />
     <Compile Include="Constants\ItemType.cs" />
     <Compile Include="Constants\ObjectType.cs" />
     <Compile Include="Constants\PilotType.cs" />
@@ -130,6 +131,7 @@
     <Compile Include="DijkstraPathFinder.cs" />
     <Compile Include="Entities\CoreInfo.cs" />
     <Compile Include="Entities\GameInfo.cs" />
+    <Compile Include="Entities\InflightConstructor.cs" />
     <Compile Include="Entities\ISupportReadingFromStreams.cs" />
     <Compile Include="Entities\MessageElement.cs" />
     <Compile Include="Entities\PersistPlayerScoreObject.cs" />

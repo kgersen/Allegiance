@@ -69,22 +69,27 @@ namespace Wopr.Entities
         {
             Dictionary<int, string> returnValue = new Dictionary<int, string>();
 
-            foreach (var clusterInfo in Clusters)
+            if (Clusters != null)
             {
-                var missionCluster = mission.GetCluster(clusterInfo.GetObjectID());
+                foreach (var clusterInfo in Clusters)
+                {
+                    var missionCluster = mission.GetCluster(clusterInfo.GetObjectID());
 
-                // Did we find all the warps?
-                if (missionCluster.GetWarps().Count < clusterInfo.GetWarps().Count)
-                {
-                    returnValue.Add(clusterInfo.GetObjectID(), missionCluster.GetName());
-                }
-                // Did we find the tech rock?
-                else if (missionCluster.GetAsteroids().Where(p => p.GetName().StartsWith("a") == false && p.GetName().StartsWith("He") == false).Count() == 0)
-                {
-                    returnValue.Add(clusterInfo.GetObjectID(), missionCluster.GetName());
+                    if (missionCluster == null)
+                        continue;
+
+                    // Did we find all the warps?
+                    if (missionCluster.GetWarps().Count < clusterInfo.GetWarps().Count)
+                    {
+                        returnValue.Add(clusterInfo.GetObjectID(), missionCluster.GetName());
+                    }
+                    // Did we find the tech rock?
+                    else if (missionCluster.GetAsteroids().Where(p => p.GetName().StartsWith("a") == false && p.GetName().StartsWith("He") == false).Count() == 0)
+                    {
+                        returnValue.Add(clusterInfo.GetObjectID(), missionCluster.GetName());
+                    }
                 }
             }
-
 
             return returnValue;
         }
