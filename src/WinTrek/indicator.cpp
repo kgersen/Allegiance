@@ -684,9 +684,9 @@ public:
         case MissileTrainingOverlay:
         {
             pointDelta = Point(1.0f, 1.0f);
-            pointA = pointCenter + Point(-80.0, -170.0f);
+            pointA = pointCenter + Point(-140.0, -170.0f);
             pointB = pointA + Point(5.0f, 0.0f);
-            description = "MIDDLE CLICK TO FIRE MISSILE";
+            description = "PRESS 5 OR MIDDLE CLICK TO FIRE MISSILE";
             description2 = "";
             break;
         }

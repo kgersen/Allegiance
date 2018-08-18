@@ -940,7 +940,7 @@ namespace Training
                 // Fire your missiles by pressing CONTROL plus SPACEBAR on the 
                 // keyboard.
                 //pGoalList->AddGoal (CreatePlaySoundGoal (tm_3_38Sound)); - does not match keymap
-                pGoal->AddStartAction(new MessageAction("Middle click to fire your secondary weapon."));
+                pGoal->AddStartAction(new MessageAction("Press 5 or Middle click to fire your secondary weapon."));
                 pGoal->AddStartAction(new SetHUDOverlayAction(MissileTrainingOverlay));
                 pGoal->AddConstraintCondition(CreateTooLongCondition(30.0f, tm_3_38Sound));
             }
