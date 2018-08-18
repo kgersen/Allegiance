@@ -7673,7 +7673,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
 						  pfmMoneyChange->dMoney = -currentPlayer->GetMoney();
 						  pfmMoneyChange->sidTo = currentPlayer->GetShipID();
-						  pfmMoneyChange->sidFrom = pfmMoneyChange->sidTo;
+						  pfmMoneyChange->sidFrom = pfssNewLeader->GetShipID();
 
 						  g.fm.SendMessages(currentPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
 					  }

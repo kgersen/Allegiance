@@ -814,6 +814,7 @@ public: //todo: make protected
     IAutoDownload *                 m_pAutoDownload;
 
 	bool							m_deleteShipInfoOnDockMessage = true; // BT - WOPR - Ensure that ship info is not removed when FM_S_DOCKED is received from the server. Bots don't use the command view, so they can't rebuild cluster info.
+	bool							m_allowClientToReceiveClusterUpdatesForAllClusters = false; // BT - WOPR - Enable bot clients to receive updates for clusters they are not currently in. This allows bots to track asteroids and warps that they have already seen.
 
 #ifdef USEAUTH
     TRef<IZoneAuthClient>           m_pzac;

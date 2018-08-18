@@ -1169,7 +1169,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                             ship->SetLastUpdate(time);
                         }
                         else
-                            assert (ship->GetCluster() == pcluster);
+                            assert (m_allowClientToReceiveClusterUpdatesForAllClusters == true || ship->GetCluster() == pcluster); // BT - WOPR - Enable bot clients to receive updates for clusters they are not currently in. This allows bots to track asteroids and warps that they have already seen.
                     }
                 }
             }
