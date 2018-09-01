@@ -39,6 +39,9 @@ namespace Wopr.Strategies
 
         private void MessageReceiver_FMD_CS_PING(ClientConnection client, AllegianceInterop.FMD_CS_PING message)
         {
+            string nextTechName = GetNextTechbaseName(); 
+
+
             // Check all in-flight cons to make sure their destinations are still legit.
             foreach (short shipID in _constuctorsInFlightToClusterObjectIDByShipObjectID.Keys.ToArray())
             {
@@ -195,6 +198,12 @@ namespace Wopr.Strategies
                 stationType = StationType.Teleport;
             else if (ship.GetName().Contains("Refinery") == true)
                 stationType = StationType.Refinery;
+            else if (ship.GetName().Contains("Supremacy") == true)
+                stationType = StationType.Supremacy;
+            else if (ship.GetName().Contains("Tactical") == true)
+                stationType = StationType.Tactical;
+            else if (ship.GetName().Contains("Expansion") == true)
+                stationType = StationType.Expansion;
             else
                 throw new NotSupportedException($"No station type found for ship name: {ship.GetName()}");
 
@@ -462,13 +471,13 @@ namespace Wopr.Strategies
             var enemyHomeCluster = ClientConnection.GetCore().GetClusters().Where(p => p.GetHomeSector() == true && p.GetObjectID() != homeCluster.GetObjectID()).FirstOrDefault();
 
             // Always build a home tele first if we don't have one in our home cluster.
-            if (stationType == StationType.Teleport && homeCluster.GetStations().Exists(p => p.GetName().Contains("Teleport") == true) == false 
+            if (stationType == StationType.Teleport && homeCluster.GetStations().Exists(p => p.GetName().Contains("Teleport") == true) == false
                 && _constuctorsInFlightToClusterObjectIDByShipObjectID.Values.Count(r => r.Cluster.GetObjectID() == homeCluster.GetObjectID()) == 0)
             {
                 Log($"There is no home teleporter yet, let's put this tele con at home: {homeCluster.GetName()}");
                 return homeCluster;
             }
-
+            
             // Try to find empty clusters where we have secured all sides.
             if (stationType == StationType.Refinery)
             {
@@ -598,19 +607,19 @@ namespace Wopr.Strategies
                             return currentCluster;
                         }
 
-                        if (stationType == StationType.Supremacy && ClusterContainsStation(StationType.Supremacy, currentCluster) == false)
+                        if (stationType == StationType.Supremacy && GetClusterTechRock(currentCluster).GetName().StartsWith("C") == true)
                         {
                             Log($"This is good spot for a supremacy! Recommending: {currentCluster.GetName()}");
                             return currentCluster;
                         }
 
-                        if (stationType == StationType.Expansion && ClusterContainsStation(StationType.Expansion, currentCluster) == false)
+                        if (stationType == StationType.Expansion && GetClusterTechRock(currentCluster).GetName().StartsWith("U") == true)
                         {
                             Log($"This is good spot for an expansion! Recommending: {currentCluster.GetName()}");
                             return currentCluster;
                         }
 
-                        if (stationType == StationType.Tactical && ClusterContainsStation(StationType.Tactical, currentCluster) == false)
+                        if (stationType == StationType.Tactical && GetClusterTechRock(currentCluster).GetName().StartsWith("S") == true)
                         {
                             Log($"This is good spot for a tactical! Recommending: {currentCluster.GetName()}");
                             return currentCluster;
@@ -642,6 +651,18 @@ namespace Wopr.Strategies
                                 return previousCluster;
                             }
                         }
+
+                        // If the station type is a tech base, and the current cluster has a tele + tech rock in it, then let's get aggro!
+                        if (currentCluster.GetStations().Exists(p => p.GetSide().GetObjectID() == ClientConnection.GetSide().GetObjectID() && p.GetName().Contains("Teleport") == true) == true)
+                        {
+
+                            if ((stationType == StationType.Supremacy || stationType == StationType.Expansion || stationType == StationType.Tactical) 
+                                && DoesClusterConatainTechrockForStationType(stationType, currentCluster) == true)
+                            {
+                                Log($"There is an enemy station in the next sector, but we have a tele and a tech rock, so placing tech base forward in {currentCluster.GetName()}!");
+                                return currentCluster;
+                            }
+                        }
                     }
                 }
             }
@@ -651,6 +672,26 @@ namespace Wopr.Strategies
                 Log($"No good cluster found for this refinery, waiting for a good option to appear.");
                 return null;
             }
+
+            if (stationType == StationType.Supremacy || stationType == StationType.Expansion || stationType == StationType.Tactical)
+            {
+                var nearestAvailableClusterWithTechRock = GetNearestAvailableClusterWithTechrock(stationType, homeCluster);
+                if (nearestAvailableClusterWithTechRock != null)
+                {
+                    Log($"No good target cluster found for tech base, but found a nearby available cluster: {nearestAvailableClusterWithTechRock.GetName()}.");
+                    return nearestAvailableClusterWithTechRock;
+                }
+
+                if (DoesClusterConatainTechrockForStationType(stationType, homeCluster) == true)
+                {
+                    Log($"No good target found, placing this tech base at home: {homeCluster.GetName()}.");
+                    return homeCluster;
+                }
+
+                Log($"No good cluster is available for this tech base, waiting for one to open up.");
+                return null;
+            }
+
 
 
             Log($"No targeted clusters were found, placing con in a random open cluster.");
@@ -690,6 +731,40 @@ namespace Wopr.Strategies
 
 
         }
+
+        private IclusterIGCWrapper GetNearestAvailableClusterWithTechrock(StationType stationType, IclusterIGCWrapper currentCluster)
+        {
+            // Get all the clusters in the galaxy sorted by distance to the home cluster, excluding ones that have enemy stations in them, and our home cluster.
+            var availableTechClusters = ClientConnection.GetCore().GetClusters().Where(p =>
+                    p.GetStations().Exists(r => r.GetSide().GetObjectID() != ClientConnection.GetSide().GetObjectID()) == false // Skip any clusters with enemy stations.
+                    && p.GetObjectID() != GetHomeCluster().GetObjectID() // Skip our home cluster.
+                    && DoesClusterConatainTechrockForStationType(stationType, p) == true // Only includes clusters with our target tech rock.
+                    )
+                .OrderBy(p => new DijkstraPathFinder(ClientConnection.GetCore(), p, GetHomeCluster()).GetDistance(p, GetHomeCluster()));
+
+            return availableTechClusters.FirstOrDefault();
+        }
+
+        private bool DoesClusterConatainTechrockForStationType(StationType stationType, IclusterIGCWrapper currentCluster)
+        {
+            switch (stationType)
+            {
+                case StationType.Expansion:
+                    return GetClusterTechRock(currentCluster)?.GetName()[0] == 'U';
+
+                case StationType.Supremacy:
+                    return GetClusterTechRock(currentCluster)?.GetName()[0] == 'C';
+
+                case StationType.Tactical:
+                    return GetClusterTechRock(currentCluster)?.GetName()[0] == 'S';
+
+                default:
+                    throw new NotSupportedException(stationType.ToString());
+            }
+
+            return false;
+        }
+
 
         private bool ClusterContainsStation(StationType stationType, IclusterIGCWrapper currentCluster)
         {
@@ -734,10 +809,12 @@ namespace Wopr.Strategies
                 QueueTech(".Miner");
             }
 
-            var maxOutpostCount = GetHomeCluster().GetWarps().Count;
+            var maxOutpostCount = ClientConnection.GetCore().GetClusters().Count / 4;
 
 
-            if (IsTechAvailableForInvestment("Outpost") == true && ClientConnection.GetSide().GetShips().Where(p => p.GetName().Contains("Outpost")).Count() + ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Outpost")).Count() < maxOutpostCount)
+            if (IsTechAvailableForInvestment("Outpost") == true 
+                && ClientConnection.GetSide().GetShips().Where(p => p.GetName().Contains("Outpost")).Count() + ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Outpost")).Count() < maxOutpostCount
+                && ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Outpost")).Count() < 1 || GetTechbaseCount() > 0)
             {
                 QueueTech("Outpost");
             }
@@ -749,7 +826,7 @@ namespace Wopr.Strategies
                 QueueTech("Teleport");
             }
 
-            var maxRefineryCount = ((int) (ClientConnection.GetCore().GetClusters().Count / 2)) - maxOutpostCount;
+            var maxRefineryCount = ((int) (ClientConnection.GetCore().GetClusters().Count / 6)) - maxOutpostCount;
             if (maxRefineryCount < 0)
                 maxRefineryCount = 0;
 
@@ -758,7 +835,104 @@ namespace Wopr.Strategies
                 QueueTech("Refinery");
             }
 
+            bool buildPhase1Techbase = GetOutpostCount() >= 1 && GetTeleportCount() >= 1 && GetTechbaseCount() == 0;
+            bool buildPhase2Techbase = GetOutpostCount() >= 2 && GetTeleportCount() >= 1 && GetTechbaseCount() == 1;
+
+            if (IsTechbaseInQueue() == false && (buildPhase1Techbase == true || buildPhase2Techbase == true))
+            {
+                var nextTechBaseName = GetNextTechbaseName();
+
+                if (nextTechBaseName != null)
+                {
+                    Log($"Techbase Time! Next tech base: {nextTechBaseName},  GetOutpostCount(): {GetOutpostCount()}, GetTeleportCount(): {GetTeleportCount()}, GetTechbaseCount(): {GetTechbaseCount()}");
+                    QueueTech(nextTechBaseName);
+                }
+            }
+
             ProcessInvestmentQueue();
+        }
+
+        private bool IsTechbaseInQueue()
+        {
+            // Do we have a tech base investment pending?
+            if (_investmentList.Contains("Supremacy") || _investmentList.Contains("Expansion") || _investmentList.Contains("Tactical"))
+                return true;
+
+            // Do we have a tech base researching?
+                if (IsTechInProgress("Supremacy") || IsTechInProgress("Expansion") || IsTechInProgress("Tactical"))
+                return true;
+
+            // Do we have a tech base constructor out?
+            if (ClientConnection.GetSide().GetShips().Exists(p => p.GetName().Contains("Supremacy") || p.GetName().Contains("Expansion") || p.GetName().Contains("Tactical")) == true)
+                return true;
+
+            return false;
+        }
+
+        private string GetNextTechbaseName()
+        {
+            var homeRock = GetClusterTechRock(GetHomeCluster());
+            
+            var availableTechRocks = GetHomeCluster().GetWarps().Select(p => GetClusterTechRock(p.GetDestination().GetCluster())).ToList();
+
+            if(homeRock != null)
+                availableTechRocks.Add(homeRock);
+
+            int urocks = 0;
+            int crocks = 0;
+            int srocks = 0;
+
+            foreach (var rock in availableTechRocks)
+            {
+                // This can happen at the very start of a game.
+                if (rock == null)
+                    continue; 
+
+                switch (rock.GetName()[0])
+                {
+                    case 'U':
+                        urocks++;
+                        break;
+
+                    case 'C':
+                        crocks++;
+                        break;
+
+                    case 'S':
+                        srocks++;
+                        break;
+                }
+            }
+
+            if (IsTechAvailableForInvestment("Expansion") == true && urocks >= crocks && urocks >= srocks)
+                return "Expansion";
+
+            if (IsTechAvailableForInvestment("Supremacy") == true &&  crocks >= srocks)
+                return "Supremacy";
+
+            if (IsTechAvailableForInvestment("Tactical") == true)
+                return "Tactical";
+
+            return null;
+        }
+
+        private int GetTeleportCount()
+        {
+            return ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Teleport")).Count();
+        }
+
+        private int GetOutpostCount()
+        {
+            return ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Outpost")).Count();
+        }
+
+        private int GetTechbaseCount()
+        {
+            return ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Tactical")).Count()
+                + ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Expansion")).Count()
+                + ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Supremacy")).Count()
+                + ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Ship")).Count()
+                + ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Dry")).Count();
         }
 
         private bool IsTechAvailableForInvestment(string techName)
