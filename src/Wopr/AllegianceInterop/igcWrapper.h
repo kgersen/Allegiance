@@ -876,6 +876,11 @@ namespace AllegianceInterop
         IObject*             GetIcon();
         void                 SetIcon(IObject* picon);
         SideID               GetFlag();
+
+		virtual String^ ToString() override
+		{
+			return GetName();
+		}
     };
 
     public ref class IdamageIGCWrapper : ImodelIGCWrapper

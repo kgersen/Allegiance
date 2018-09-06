@@ -306,7 +306,12 @@ namespace Wopr.Strategies
         {
             // Only the game controller can launch the game.
             if (IsGameController == false)
+            {
+                // If we are not the game controller, then re-send the ready message in case the other side joined after we readied up the first time.
+                AllegianceInterop.FMD_CS_FORCE_TEAM_READY forceReady = new AllegianceInterop.FMD_CS_FORCE_TEAM_READY(SideIndex, true);
+                client.SendMessageServer(forceReady);
                 return;
+            }
 
             Log($"FMD_S_TEAM_READY - Received ready status: {message.fReady} for side: {message.iSide}");
 
@@ -615,6 +620,11 @@ namespace Wopr.Strategies
                 );
 
             client.SendMessageServer(missionParameters);
+
+            Log($"ResetGameParameters: SideIndex = {SideIndex}");
+
+            AllegianceInterop.FMD_CS_FORCE_TEAM_READY forceReady = new AllegianceInterop.FMD_CS_FORCE_TEAM_READY(SideIndex, true);
+            client.SendMessageServer(forceReady);
         }
 
         private void CheckForLaunch(AllegianceInterop.ClientConnection client, int iSide, bool isReady)

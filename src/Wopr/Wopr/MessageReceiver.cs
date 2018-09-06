@@ -24,1286 +24,1293 @@ namespace Wopr
 
         public void OnAppMessage(AllegianceInterop.ClientConnection client, byte[] messageData)
         {
-            MemoryStream ms = new MemoryStream(messageData);
-            BinaryReader br = new BinaryReader(ms);
-
-            uint cbmsg = br.ReadUInt16();
-            uint fmid = br.ReadUInt16();
-
-            if (fmid != (int)MessageType.FM_CS_PING
-                && fmid != (int)MessageType.FM_S_HEAVY_SHIPS_UPDATE
-                && fmid != (int)MessageType.FM_S_EXPORT
-                && fmid != (int)MessageType.FM_S_LIGHT_SHIPS_UPDATE
-                //&& fmid != (int)MessageType.FM_S_BUCKET_STATUS
-                //&& fmid != (int)MessageType.FM_S_CREATE_BUCKETS
-                ) // skip spammy messages, these are all handled by base client, so we are not really interested in these.
+            try
             {
-                //Console.WriteLine($"{DateTime.Now.ToString()} {_playerName}: Received mesage id: {fmid} = {((MessageType)fmid).ToString()}");
-                File.AppendAllText(@"c:\1\Logs\" + _playerName + "_messages.txt", $"{DateTime.Now.ToString()} {_playerName}: Received mesage id: {fmid} = {((MessageType)fmid).ToString()}\n");
+                MemoryStream ms = new MemoryStream(messageData);
+                BinaryReader br = new BinaryReader(ms);
+
+                uint cbmsg = br.ReadUInt16();
+                uint fmid = br.ReadUInt16();
+
+                if (fmid != (int)MessageType.FM_CS_PING
+                    && fmid != (int)MessageType.FM_S_HEAVY_SHIPS_UPDATE
+                    && fmid != (int)MessageType.FM_S_EXPORT
+                    && fmid != (int)MessageType.FM_S_LIGHT_SHIPS_UPDATE
+                    //&& fmid != (int)MessageType.FM_S_BUCKET_STATUS
+                    //&& fmid != (int)MessageType.FM_S_CREATE_BUCKETS
+                    ) // skip spammy messages, these are all handled by base client, so we are not really interested in these.
+                {
+                    //Console.WriteLine($"{DateTime.Now.ToString()} {_playerName}: Received mesage id: {fmid} = {((MessageType)fmid).ToString()}");
+                    File.AppendAllText(@"c:\1\Logs\" + _playerName + "_messages.txt", $"{DateTime.Now.ToString()} {_playerName}: Received mesage id: {fmid} = {((MessageType)fmid).ToString()}\n");
+                }
+
+
+                switch ((MessageType)fmid)
+                {
+
+                    #region Allegiane Message Handlers
+
+                    // Generated from MessageType.cs with Expresso
+                    /*
+                     Regex: 
+                        (?<prefix>FM_)(?<name>\w+)\s*=\s*\d+,
+
+                     Replacement: 
+                        case MessageType.FM_${name}:
+                        AllegianceInterop.FMD_${name} ${name}msg = new AllegianceInterop.FMD_${name}(messageData);
+                        FMD_${name}?.Invoke(client, ${name}msg);
+                        break;
+                    */
+
+
+                    case MessageType.FM_C_LOGONREQ:
+                        if (FMD_C_LOGONREQ != null)
+                        {
+
+                            AllegianceInterop.FMD_C_LOGONREQ C_LOGONREQmsg = new AllegianceInterop.FMD_C_LOGONREQ(messageData);
+                            FMD_C_LOGONREQ?.Invoke(client, C_LOGONREQmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_LOGONACK:
+                        if (FMD_S_LOGONACK != null)
+                        {
+
+                            AllegianceInterop.FMD_S_LOGONACK S_LOGONACKmsg = new AllegianceInterop.FMD_S_LOGONACK(messageData);
+                            FMD_S_LOGONACK?.Invoke(client, S_LOGONACKmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_LOGOFF:
+                        if (FMD_CS_LOGOFF != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_LOGOFF CS_LOGOFFmsg = new AllegianceInterop.FMD_CS_LOGOFF(messageData);
+                            FMD_CS_LOGOFF?.Invoke(client, CS_LOGOFFmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_BUY_LOADOUT:
+                        if (FMD_C_BUY_LOADOUT != null)
+                        {
+
+                            AllegianceInterop.FMD_C_BUY_LOADOUT C_BUY_LOADOUTmsg = new AllegianceInterop.FMD_C_BUY_LOADOUT(messageData);
+                            FMD_C_BUY_LOADOUT?.Invoke(client, C_BUY_LOADOUTmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_BUY_LOADOUT_ACK:
+                        if (FMD_S_BUY_LOADOUT_ACK != null)
+                        {
+
+                            AllegianceInterop.FMD_S_BUY_LOADOUT_ACK S_BUY_LOADOUT_ACKmsg = new AllegianceInterop.FMD_S_BUY_LOADOUT_ACK(messageData);
+                            FMD_S_BUY_LOADOUT_ACK?.Invoke(client, S_BUY_LOADOUT_ACKmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_OBJECT_SPOTTED:
+                        if (FMD_S_OBJECT_SPOTTED != null)
+                        {
+
+                            AllegianceInterop.FMD_S_OBJECT_SPOTTED S_OBJECT_SPOTTEDmsg = new AllegianceInterop.FMD_S_OBJECT_SPOTTED(messageData);
+                            FMD_S_OBJECT_SPOTTED?.Invoke(client, S_OBJECT_SPOTTEDmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_SET_CLUSTER:
+                        if (FMD_S_SET_CLUSTER != null)
+                        {
+
+                            AllegianceInterop.FMD_S_SET_CLUSTER S_SET_CLUSTERmsg = new AllegianceInterop.FMD_S_SET_CLUSTER(messageData);
+                            FMD_S_SET_CLUSTER?.Invoke(client, S_SET_CLUSTERmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_DEV_COMPLETED:
+                        if (FMD_S_DEV_COMPLETED != null)
+                        {
+
+                            AllegianceInterop.FMD_S_DEV_COMPLETED S_DEV_COMPLETEDmsg = new AllegianceInterop.FMD_S_DEV_COMPLETED(messageData);
+                            FMD_S_DEV_COMPLETED?.Invoke(client, S_DEV_COMPLETEDmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_SET_BRIEFING_TEXT:
+                        if (FMD_S_SET_BRIEFING_TEXT != null)
+                        {
+
+                            AllegianceInterop.FMD_S_SET_BRIEFING_TEXT S_SET_BRIEFING_TEXTmsg = new AllegianceInterop.FMD_S_SET_BRIEFING_TEXT(messageData);
+                            FMD_S_SET_BRIEFING_TEXT?.Invoke(client, S_SET_BRIEFING_TEXTmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_PLAYERINFO:
+                        if (FMD_S_PLAYERINFO != null)
+                        {
+
+                            AllegianceInterop.FMD_S_PLAYERINFO S_PLAYERINFOmsg = new AllegianceInterop.FMD_S_PLAYERINFO(messageData);
+                            FMD_S_PLAYERINFO?.Invoke(client, S_PLAYERINFOmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_STATIC_MAP_INFO:
+                        if (FMD_S_STATIC_MAP_INFO != null)
+                        {
+
+                            AllegianceInterop.FMD_S_STATIC_MAP_INFO S_STATIC_MAP_INFOmsg = new AllegianceInterop.FMD_S_STATIC_MAP_INFO(messageData);
+                            FMD_S_STATIC_MAP_INFO?.Invoke(client, S_STATIC_MAP_INFOmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_PROJECTILE_INSTANCE:
+                        if (FMD_CS_PROJECTILE_INSTANCE != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_PROJECTILE_INSTANCE CS_PROJECTILE_INSTANCEmsg = new AllegianceInterop.FMD_CS_PROJECTILE_INSTANCE(messageData);
+                            FMD_CS_PROJECTILE_INSTANCE?.Invoke(client, CS_PROJECTILE_INSTANCEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_RANK_INFO:
+                        if (FMD_S_RANK_INFO != null)
+                        {
+
+                            AllegianceInterop.FMD_S_RANK_INFO S_RANK_INFOmsg = new AllegianceInterop.FMD_S_RANK_INFO(messageData);
+                            FMD_S_RANK_INFO?.Invoke(client, S_RANK_INFOmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_SET_START_TIME:
+                        if (FMD_S_SET_START_TIME != null)
+                        {
+
+                            AllegianceInterop.FMD_S_SET_START_TIME S_SET_START_TIMEmsg = new AllegianceInterop.FMD_S_SET_START_TIME(messageData);
+                            FMD_S_SET_START_TIME?.Invoke(client, S_SET_START_TIMEmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_SET_TEAM_INFO:
+                        if (FMD_CS_SET_TEAM_INFO != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_SET_TEAM_INFO CS_SET_TEAM_INFOmsg = new AllegianceInterop.FMD_CS_SET_TEAM_INFO(messageData);
+                            FMD_CS_SET_TEAM_INFO?.Invoke(client, CS_SET_TEAM_INFOmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_PLAYER_RESCUED:
+                        if (FMD_S_PLAYER_RESCUED != null)
+                        {
+
+                            AllegianceInterop.FMD_S_PLAYER_RESCUED S_PLAYER_RESCUEDmsg = new AllegianceInterop.FMD_S_PLAYER_RESCUED(messageData);
+                            FMD_S_PLAYER_RESCUED?.Invoke(client, S_PLAYER_RESCUEDmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_BALLOT:
+                        if (FMD_S_BALLOT != null)
+                        {
+
+                            AllegianceInterop.FMD_S_BALLOT S_BALLOTmsg = new AllegianceInterop.FMD_S_BALLOT(messageData);
+                            FMD_S_BALLOT?.Invoke(client, S_BALLOTmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_CANCEL_BALLOT:
+                        if (FMD_S_CANCEL_BALLOT != null)
+                        {
+
+                            AllegianceInterop.FMD_S_CANCEL_BALLOT S_CANCEL_BALLOTmsg = new AllegianceInterop.FMD_S_CANCEL_BALLOT(messageData);
+                            FMD_S_CANCEL_BALLOT?.Invoke(client, S_CANCEL_BALLOTmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_VOTE:
+                        if (FMD_C_VOTE != null)
+                        {
+
+                            AllegianceInterop.FMD_C_VOTE C_VOTEmsg = new AllegianceInterop.FMD_C_VOTE(messageData);
+                            FMD_C_VOTE?.Invoke(client, C_VOTEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_SHIP_DELETE:
+                        if (FMD_S_SHIP_DELETE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_SHIP_DELETE S_SHIP_DELETEmsg = new AllegianceInterop.FMD_S_SHIP_DELETE(messageData);
+                            FMD_S_SHIP_DELETE?.Invoke(client, S_SHIP_DELETEmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_RANDOMIZE_TEAMS:
+                        if (FMD_C_RANDOMIZE_TEAMS != null)
+                        {
+
+                            AllegianceInterop.FMD_C_RANDOMIZE_TEAMS C_RANDOMIZE_TEAMSmsg = new AllegianceInterop.FMD_C_RANDOMIZE_TEAMS(messageData);
+                            FMD_C_RANDOMIZE_TEAMS?.Invoke(client, C_RANDOMIZE_TEAMSmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_CHATMESSAGE:
+                        if (FMD_CS_CHATMESSAGE != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_CHATMESSAGE CS_CHATMESSAGEmsg = new AllegianceInterop.FMD_CS_CHATMESSAGE(messageData);
+                            FMD_CS_CHATMESSAGE?.Invoke(client, CS_CHATMESSAGEmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_SHIP_UPDATE:
+                        if (FMD_C_SHIP_UPDATE != null)
+                        {
+
+                            AllegianceInterop.FMD_C_SHIP_UPDATE C_SHIP_UPDATEmsg = new AllegianceInterop.FMD_C_SHIP_UPDATE(messageData);
+                            FMD_C_SHIP_UPDATE?.Invoke(client, C_SHIP_UPDATEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_EXPORT:
+                        if (FMD_S_EXPORT != null)
+                        {
+
+                            AllegianceInterop.FMD_S_EXPORT S_EXPORTmsg = new AllegianceInterop.FMD_S_EXPORT(messageData);
+                            FMD_S_EXPORT?.Invoke(client, S_EXPORTmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_POSTER:
+                        if (FMD_S_POSTER != null)
+                        {
+
+                            AllegianceInterop.FMD_S_POSTER S_POSTERmsg = new AllegianceInterop.FMD_S_POSTER(messageData);
+                            FMD_S_POSTER?.Invoke(client, S_POSTERmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_TREASURE:
+                        if (FMD_S_TREASURE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_TREASURE S_TREASUREmsg = new AllegianceInterop.FMD_S_TREASURE(messageData);
+                            FMD_S_TREASURE?.Invoke(client, S_TREASUREmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_DESTROY_TREASURE:
+                        if (FMD_S_DESTROY_TREASURE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_DESTROY_TREASURE S_DESTROY_TREASUREmsg = new AllegianceInterop.FMD_S_DESTROY_TREASURE(messageData);
+                            FMD_S_DESTROY_TREASURE?.Invoke(client, S_DESTROY_TREASUREmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_NEW_SHIP_INSTANCE:
+                        if (FMD_CS_NEW_SHIP_INSTANCE != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_NEW_SHIP_INSTANCE CS_NEW_SHIP_INSTANCEmsg = new AllegianceInterop.FMD_CS_NEW_SHIP_INSTANCE(messageData);
+                            FMD_CS_NEW_SHIP_INSTANCE?.Invoke(client, CS_NEW_SHIP_INSTANCEmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_DROP_PART:
+                        if (FMD_CS_DROP_PART != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_DROP_PART CS_DROP_PARTmsg = new AllegianceInterop.FMD_CS_DROP_PART(messageData);
+                            FMD_CS_DROP_PART?.Invoke(client, CS_DROP_PARTmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_SWAP_PART:
+                        if (FMD_CS_SWAP_PART != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_SWAP_PART CS_SWAP_PARTmsg = new AllegianceInterop.FMD_CS_SWAP_PART(messageData);
+                            FMD_CS_SWAP_PART?.Invoke(client, CS_SWAP_PARTmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_PING:
+                        if (FMD_CS_PING != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_PING CS_PINGmsg = new AllegianceInterop.FMD_CS_PING(messageData);
+                            FMD_CS_PING?.Invoke(client, CS_PINGmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_URLROOT:
+                        if (FMD_S_URLROOT != null)
+                        {
+
+                            AllegianceInterop.FMD_S_URLROOT S_URLROOTmsg = new AllegianceInterop.FMD_S_URLROOT(messageData);
+                            FMD_S_URLROOT?.Invoke(client, S_URLROOTmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_MISSION_STAGE:
+                        if (FMD_S_MISSION_STAGE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_MISSION_STAGE S_MISSION_STAGEmsg = new AllegianceInterop.FMD_S_MISSION_STAGE(messageData);
+                            FMD_S_MISSION_STAGE?.Invoke(client, S_MISSION_STAGEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_MISSIONDEF:
+                        if (FMD_S_MISSIONDEF != null)
+                        {
+
+                            AllegianceInterop.FMD_S_MISSIONDEF S_MISSIONDEFmsg = new AllegianceInterop.FMD_S_MISSIONDEF(messageData);
+                            FMD_S_MISSIONDEF?.Invoke(client, S_MISSIONDEFmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_POSITIONREQ:
+                        if (FMD_C_POSITIONREQ != null)
+                        {
+
+                            AllegianceInterop.FMD_C_POSITIONREQ C_POSITIONREQmsg = new AllegianceInterop.FMD_C_POSITIONREQ(messageData);
+                            FMD_C_POSITIONREQ?.Invoke(client, C_POSITIONREQmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_POSITIONREQ:
+                        if (FMD_S_POSITIONREQ != null)
+                        {
+
+                            AllegianceInterop.FMD_S_POSITIONREQ S_POSITIONREQmsg = new AllegianceInterop.FMD_S_POSITIONREQ(messageData);
+                            FMD_S_POSITIONREQ?.Invoke(client, S_POSITIONREQmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_POSITIONACK:
+                        if (FMD_C_POSITIONACK != null)
+                        {
+
+                            AllegianceInterop.FMD_C_POSITIONACK C_POSITIONACKmsg = new AllegianceInterop.FMD_C_POSITIONACK(messageData);
+                            FMD_C_POSITIONACK?.Invoke(client, C_POSITIONACKmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_DELPOSITIONREQ:
+                        if (FMD_CS_DELPOSITIONREQ != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_DELPOSITIONREQ CS_DELPOSITIONREQmsg = new AllegianceInterop.FMD_CS_DELPOSITIONREQ(messageData);
+                            FMD_CS_DELPOSITIONREQ?.Invoke(client, CS_DELPOSITIONREQmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_LOCK_LOBBY:
+                        if (FMD_CS_LOCK_LOBBY != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_LOCK_LOBBY CS_LOCK_LOBBYmsg = new AllegianceInterop.FMD_CS_LOCK_LOBBY(messageData);
+                            FMD_CS_LOCK_LOBBY?.Invoke(client, CS_LOCK_LOBBYmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_LOCK_SIDES:
+                        if (FMD_CS_LOCK_SIDES != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_LOCK_SIDES CS_LOCK_SIDESmsg = new AllegianceInterop.FMD_CS_LOCK_SIDES(messageData);
+                            FMD_CS_LOCK_SIDES?.Invoke(client, CS_LOCK_SIDESmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_PLAYER_READY:
+                        if (FMD_CS_PLAYER_READY != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_PLAYER_READY CS_PLAYER_READYmsg = new AllegianceInterop.FMD_CS_PLAYER_READY(messageData);
+                            FMD_CS_PLAYER_READY?.Invoke(client, CS_PLAYER_READYmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_TEAM_READY:
+                        if (FMD_S_TEAM_READY != null)
+                        {
+
+                            AllegianceInterop.FMD_S_TEAM_READY S_TEAM_READYmsg = new AllegianceInterop.FMD_S_TEAM_READY(messageData);
+                            FMD_S_TEAM_READY?.Invoke(client, S_TEAM_READYmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_FORCE_TEAM_READY:
+                        if (FMD_CS_FORCE_TEAM_READY != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_FORCE_TEAM_READY CS_FORCE_TEAM_READYmsg = new AllegianceInterop.FMD_CS_FORCE_TEAM_READY(messageData);
+                            FMD_CS_FORCE_TEAM_READY?.Invoke(client, CS_FORCE_TEAM_READYmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_DOCKED:
+                        if (FMD_C_DOCKED != null)
+                        {
+
+                            AllegianceInterop.FMD_C_DOCKED C_DOCKEDmsg = new AllegianceInterop.FMD_C_DOCKED(messageData);
+                            FMD_C_DOCKED?.Invoke(client, C_DOCKEDmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_CHANGE_TEAM_CIV:
+                        if (FMD_CS_CHANGE_TEAM_CIV != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_CHANGE_TEAM_CIV CS_CHANGE_TEAM_CIVmsg = new AllegianceInterop.FMD_CS_CHANGE_TEAM_CIV(messageData);
+                            FMD_CS_CHANGE_TEAM_CIV?.Invoke(client, CS_CHANGE_TEAM_CIVmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_AUTO_ACCEPT:
+                        if (FMD_CS_AUTO_ACCEPT != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_AUTO_ACCEPT CS_AUTO_ACCEPTmsg = new AllegianceInterop.FMD_CS_AUTO_ACCEPT(messageData);
+                            FMD_CS_AUTO_ACCEPT?.Invoke(client, CS_AUTO_ACCEPTmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_STATIONS_UPDATE:
+                        if (FMD_S_STATIONS_UPDATE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_STATIONS_UPDATE S_STATIONS_UPDATEmsg = new AllegianceInterop.FMD_S_STATIONS_UPDATE(messageData);
+                            FMD_S_STATIONS_UPDATE?.Invoke(client, S_STATIONS_UPDATEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_STATION_CAPTURE:
+                        if (FMD_S_STATION_CAPTURE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_STATION_CAPTURE S_STATION_CAPTUREmsg = new AllegianceInterop.FMD_S_STATION_CAPTURE(messageData);
+                            FMD_S_STATION_CAPTURE?.Invoke(client, S_STATION_CAPTUREmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_STATION_DESTROYED:
+                        if (FMD_S_STATION_DESTROYED != null)
+                        {
+
+                            AllegianceInterop.FMD_S_STATION_DESTROYED S_STATION_DESTROYEDmsg = new AllegianceInterop.FMD_S_STATION_DESTROYED(messageData);
+                            FMD_S_STATION_DESTROYED?.Invoke(client, S_STATION_DESTROYEDmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_MONEY_CHANGE:
+                        if (FMD_S_MONEY_CHANGE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_MONEY_CHANGE S_MONEY_CHANGEmsg = new AllegianceInterop.FMD_S_MONEY_CHANGE(messageData);
+                            FMD_S_MONEY_CHANGE?.Invoke(client, S_MONEY_CHANGEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_DOCKED:
+                        if (FMD_S_DOCKED != null)
+                        {
+
+                            AllegianceInterop.FMD_S_DOCKED S_DOCKEDmsg = new AllegianceInterop.FMD_S_DOCKED(messageData);
+                            FMD_S_DOCKED?.Invoke(client, S_DOCKEDmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_GAME_OVER:
+                        if (FMD_S_GAME_OVER != null)
+                        {
+
+                            AllegianceInterop.FMD_S_GAME_OVER S_GAME_OVERmsg = new AllegianceInterop.FMD_S_GAME_OVER(messageData);
+                            FMD_S_GAME_OVER?.Invoke(client, S_GAME_OVERmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_GAME_OVER_PLAYERS:
+                        if (FMD_S_GAME_OVER_PLAYERS != null)
+                        {
+
+                            AllegianceInterop.FMD_S_GAME_OVER_PLAYERS S_GAME_OVER_PLAYERSmsg = new AllegianceInterop.FMD_S_GAME_OVER_PLAYERS(messageData);
+                            FMD_S_GAME_OVER_PLAYERS?.Invoke(client, S_GAME_OVER_PLAYERSmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_BUCKET_DONATE:
+                        if (FMD_C_BUCKET_DONATE != null)
+                        {
+
+                            AllegianceInterop.FMD_C_BUCKET_DONATE C_BUCKET_DONATEmsg = new AllegianceInterop.FMD_C_BUCKET_DONATE(messageData);
+                            FMD_C_BUCKET_DONATE?.Invoke(client, C_BUCKET_DONATEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_BUCKET_STATUS:
+                        if (FMD_S_BUCKET_STATUS != null)
+                        {
+
+                            AllegianceInterop.FMD_S_BUCKET_STATUS S_BUCKET_STATUSmsg = new AllegianceInterop.FMD_S_BUCKET_STATUS(messageData);
+                            FMD_S_BUCKET_STATUS?.Invoke(client, S_BUCKET_STATUSmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_PLAYER_DONATE:
+                        if (FMD_C_PLAYER_DONATE != null)
+                        {
+
+                            AllegianceInterop.FMD_C_PLAYER_DONATE C_PLAYER_DONATEmsg = new AllegianceInterop.FMD_C_PLAYER_DONATE(messageData);
+                            FMD_C_PLAYER_DONATE?.Invoke(client, C_PLAYER_DONATEmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_SIDE_INACTIVE:
+                        if (FMD_CS_SIDE_INACTIVE != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_SIDE_INACTIVE CS_SIDE_INACTIVEmsg = new AllegianceInterop.FMD_CS_SIDE_INACTIVE(messageData);
+                            FMD_CS_SIDE_INACTIVE?.Invoke(client, CS_SIDE_INACTIVEmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_FIRE_MISSILE:
+                        if (FMD_CS_FIRE_MISSILE != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_FIRE_MISSILE CS_FIRE_MISSILEmsg = new AllegianceInterop.FMD_CS_FIRE_MISSILE(messageData);
+                            FMD_CS_FIRE_MISSILE?.Invoke(client, CS_FIRE_MISSILEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_SIDE_TECH_CHANGE:
+                        if (FMD_S_SIDE_TECH_CHANGE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_SIDE_TECH_CHANGE S_SIDE_TECH_CHANGEmsg = new AllegianceInterop.FMD_S_SIDE_TECH_CHANGE(messageData);
+                            FMD_S_SIDE_TECH_CHANGE?.Invoke(client, S_SIDE_TECH_CHANGEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_SIDE_ATTRIBUTE_CHANGE:
+                        if (FMD_S_SIDE_ATTRIBUTE_CHANGE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_SIDE_ATTRIBUTE_CHANGE S_SIDE_ATTRIBUTE_CHANGEmsg = new AllegianceInterop.FMD_S_SIDE_ATTRIBUTE_CHANGE(messageData);
+                            FMD_S_SIDE_ATTRIBUTE_CHANGE?.Invoke(client, S_SIDE_ATTRIBUTE_CHANGEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_EJECT:
+                        if (FMD_S_EJECT != null)
+                        {
+
+                            AllegianceInterop.FMD_S_EJECT S_EJECTmsg = new AllegianceInterop.FMD_S_EJECT(messageData);
+                            FMD_S_EJECT?.Invoke(client, S_EJECTmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_SINGLE_SHIP_UPDATE:
+                        if (FMD_S_SINGLE_SHIP_UPDATE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_SINGLE_SHIP_UPDATE S_SINGLE_SHIP_UPDATEmsg = new AllegianceInterop.FMD_S_SINGLE_SHIP_UPDATE(messageData);
+                            FMD_S_SINGLE_SHIP_UPDATE?.Invoke(client, S_SINGLE_SHIP_UPDATEmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_SUICIDE:
+                        if (FMD_C_SUICIDE != null)
+                        {
+
+                            AllegianceInterop.FMD_C_SUICIDE C_SUICIDEmsg = new AllegianceInterop.FMD_C_SUICIDE(messageData);
+                            FMD_C_SUICIDE?.Invoke(client, C_SUICIDEmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_FIRE_EXPENDABLE:
+                        if (FMD_C_FIRE_EXPENDABLE != null)
+                        {
+
+                            AllegianceInterop.FMD_C_FIRE_EXPENDABLE C_FIRE_EXPENDABLEmsg = new AllegianceInterop.FMD_C_FIRE_EXPENDABLE(messageData);
+                            FMD_C_FIRE_EXPENDABLE?.Invoke(client, C_FIRE_EXPENDABLEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_MISSILE_DESTROYED:
+                        if (FMD_S_MISSILE_DESTROYED != null)
+                        {
+
+                            AllegianceInterop.FMD_S_MISSILE_DESTROYED S_MISSILE_DESTROYEDmsg = new AllegianceInterop.FMD_S_MISSILE_DESTROYED(messageData);
+                            FMD_S_MISSILE_DESTROYED?.Invoke(client, S_MISSILE_DESTROYEDmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_MINE_DESTROYED:
+                        if (FMD_S_MINE_DESTROYED != null)
+                        {
+
+                            AllegianceInterop.FMD_S_MINE_DESTROYED S_MINE_DESTROYEDmsg = new AllegianceInterop.FMD_S_MINE_DESTROYED(messageData);
+                            FMD_S_MINE_DESTROYED?.Invoke(client, S_MINE_DESTROYEDmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_PROBE_DESTROYED:
+                        if (FMD_S_PROBE_DESTROYED != null)
+                        {
+
+                            AllegianceInterop.FMD_S_PROBE_DESTROYED S_PROBE_DESTROYEDmsg = new AllegianceInterop.FMD_S_PROBE_DESTROYED(messageData);
+                            FMD_S_PROBE_DESTROYED?.Invoke(client, S_PROBE_DESTROYEDmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_ASTEROID_DESTROYED:
+                        if (FMD_S_ASTEROID_DESTROYED != null)
+                        {
+
+                            AllegianceInterop.FMD_S_ASTEROID_DESTROYED S_ASTEROID_DESTROYEDmsg = new AllegianceInterop.FMD_S_ASTEROID_DESTROYED(messageData);
+                            FMD_S_ASTEROID_DESTROYED?.Invoke(client, S_ASTEROID_DESTROYEDmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_FIRE_EXPENDABLE:
+                        if (FMD_S_FIRE_EXPENDABLE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_FIRE_EXPENDABLE S_FIRE_EXPENDABLEmsg = new AllegianceInterop.FMD_S_FIRE_EXPENDABLE(messageData);
+                            FMD_S_FIRE_EXPENDABLE?.Invoke(client, S_FIRE_EXPENDABLEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_TREASURE_SETS:
+                        if (FMD_S_TREASURE_SETS != null)
+                        {
+
+                            AllegianceInterop.FMD_S_TREASURE_SETS S_TREASURE_SETSmsg = new AllegianceInterop.FMD_S_TREASURE_SETS(messageData);
+                            FMD_S_TREASURE_SETS?.Invoke(client, S_TREASURE_SETSmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_SHIP_STATUS:
+                        if (FMD_S_SHIP_STATUS != null)
+                        {
+
+                            AllegianceInterop.FMD_S_SHIP_STATUS S_SHIP_STATUSmsg = new AllegianceInterop.FMD_S_SHIP_STATUS(messageData);
+                            FMD_S_SHIP_STATUS?.Invoke(client, S_SHIP_STATUSmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_PROBES_UPDATE:
+                        if (FMD_S_PROBES_UPDATE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_PROBES_UPDATE S_PROBES_UPDATEmsg = new AllegianceInterop.FMD_S_PROBES_UPDATE(messageData);
+                            FMD_S_PROBES_UPDATE?.Invoke(client, S_PROBES_UPDATEmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_ORDER_CHANGE:
+                        if (FMD_CS_ORDER_CHANGE != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_ORDER_CHANGE CS_ORDER_CHANGEmsg = new AllegianceInterop.FMD_CS_ORDER_CHANGE(messageData);
+                            FMD_CS_ORDER_CHANGE?.Invoke(client, CS_ORDER_CHANGEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_LEAVE_SHIP:
+                        if (FMD_S_LEAVE_SHIP != null)
+                        {
+
+                            AllegianceInterop.FMD_S_LEAVE_SHIP S_LEAVE_SHIPmsg = new AllegianceInterop.FMD_S_LEAVE_SHIP(messageData);
+                            FMD_S_LEAVE_SHIP?.Invoke(client, S_LEAVE_SHIPmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_JOINED_MISSION:
+                        if (FMD_S_JOINED_MISSION != null)
+                        {
+
+                            AllegianceInterop.FMD_S_JOINED_MISSION S_JOINED_MISSIONmsg = new AllegianceInterop.FMD_S_JOINED_MISSION(messageData);
+                            FMD_S_JOINED_MISSION?.Invoke(client, S_JOINED_MISSIONmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_LOADOUT_CHANGE:
+                        if (FMD_S_LOADOUT_CHANGE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_LOADOUT_CHANGE S_LOADOUT_CHANGEmsg = new AllegianceInterop.FMD_S_LOADOUT_CHANGE(messageData);
+                            FMD_S_LOADOUT_CHANGE?.Invoke(client, S_LOADOUT_CHANGEmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_ACTIVE_TURRET_UPDATE:
+                        if (FMD_C_ACTIVE_TURRET_UPDATE != null)
+                        {
+
+                            AllegianceInterop.FMD_C_ACTIVE_TURRET_UPDATE C_ACTIVE_TURRET_UPDATEmsg = new AllegianceInterop.FMD_C_ACTIVE_TURRET_UPDATE(messageData);
+                            FMD_C_ACTIVE_TURRET_UPDATE?.Invoke(client, C_ACTIVE_TURRET_UPDATEmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_INACTIVE_TURRET_UPDATE:
+                        if (FMD_C_INACTIVE_TURRET_UPDATE != null)
+                        {
+
+                            AllegianceInterop.FMD_C_INACTIVE_TURRET_UPDATE C_INACTIVE_TURRET_UPDATEmsg = new AllegianceInterop.FMD_C_INACTIVE_TURRET_UPDATE(messageData);
+                            FMD_C_INACTIVE_TURRET_UPDATE?.Invoke(client, C_INACTIVE_TURRET_UPDATEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_TELEPORT_ACK:
+                        if (FMD_S_TELEPORT_ACK != null)
+                        {
+
+                            AllegianceInterop.FMD_S_TELEPORT_ACK S_TELEPORT_ACKmsg = new AllegianceInterop.FMD_S_TELEPORT_ACK(messageData);
+                            FMD_S_TELEPORT_ACK?.Invoke(client, S_TELEPORT_ACKmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_BOARD_SHIP:
+                        if (FMD_C_BOARD_SHIP != null)
+                        {
+
+                            AllegianceInterop.FMD_C_BOARD_SHIP C_BOARD_SHIPmsg = new AllegianceInterop.FMD_C_BOARD_SHIP(messageData);
+                            FMD_C_BOARD_SHIP?.Invoke(client, C_BOARD_SHIPmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_VIEW_CLUSTER:
+                        if (FMD_C_VIEW_CLUSTER != null)
+                        {
+
+                            AllegianceInterop.FMD_C_VIEW_CLUSTER C_VIEW_CLUSTERmsg = new AllegianceInterop.FMD_C_VIEW_CLUSTER(messageData);
+                            FMD_C_VIEW_CLUSTER?.Invoke(client, C_VIEW_CLUSTERmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_KILL_SHIP:
+                        if (FMD_S_KILL_SHIP != null)
+                        {
+
+                            AllegianceInterop.FMD_S_KILL_SHIP S_KILL_SHIPmsg = new AllegianceInterop.FMD_S_KILL_SHIP(messageData);
+                            FMD_S_KILL_SHIP?.Invoke(client, S_KILL_SHIPmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_SET_WINGID:
+                        if (FMD_CS_SET_WINGID != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_SET_WINGID CS_SET_WINGIDmsg = new AllegianceInterop.FMD_CS_SET_WINGID(messageData);
+                            FMD_CS_SET_WINGID?.Invoke(client, CS_SET_WINGIDmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_ICQ_CHAT_ACK:
+                        if (FMD_S_ICQ_CHAT_ACK != null)
+                        {
+
+                            AllegianceInterop.FMD_S_ICQ_CHAT_ACK S_ICQ_CHAT_ACKmsg = new AllegianceInterop.FMD_S_ICQ_CHAT_ACK(messageData);
+                            FMD_S_ICQ_CHAT_ACK?.Invoke(client, S_ICQ_CHAT_ACKmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_CHATBUOY:
+                        if (FMD_CS_CHATBUOY != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_CHATBUOY CS_CHATBUOYmsg = new AllegianceInterop.FMD_CS_CHATBUOY(messageData);
+                            FMD_CS_CHATBUOY?.Invoke(client, CS_CHATBUOYmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_CREATE_CHAFF:
+                        if (FMD_S_CREATE_CHAFF != null)
+                        {
+
+                            AllegianceInterop.FMD_S_CREATE_CHAFF S_CREATE_CHAFFmsg = new AllegianceInterop.FMD_S_CREATE_CHAFF(messageData);
+                            FMD_S_CREATE_CHAFF?.Invoke(client, S_CREATE_CHAFFmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_MISSILE_SPOOFED:
+                        if (FMD_S_MISSILE_SPOOFED != null)
+                        {
+
+                            AllegianceInterop.FMD_S_MISSILE_SPOOFED S_MISSILE_SPOOFEDmsg = new AllegianceInterop.FMD_S_MISSILE_SPOOFED(messageData);
+                            FMD_S_MISSILE_SPOOFED?.Invoke(client, S_MISSILE_SPOOFEDmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_END_SPOOFING:
+                        if (FMD_S_END_SPOOFING != null)
+                        {
+
+                            AllegianceInterop.FMD_S_END_SPOOFING S_END_SPOOFINGmsg = new AllegianceInterop.FMD_S_END_SPOOFING(messageData);
+                            FMD_S_END_SPOOFING?.Invoke(client, S_END_SPOOFINGmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_AUTODONATE:
+                        if (FMD_C_AUTODONATE != null)
+                        {
+
+                            AllegianceInterop.FMD_C_AUTODONATE C_AUTODONATEmsg = new AllegianceInterop.FMD_C_AUTODONATE(messageData);
+                            FMD_C_AUTODONATE?.Invoke(client, C_AUTODONATEmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_MISSIONPARAMS:
+                        if (FMD_CS_MISSIONPARAMS != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_MISSIONPARAMS CS_MISSIONPARAMSmsg = new AllegianceInterop.FMD_CS_MISSIONPARAMS(messageData);
+                            FMD_CS_MISSIONPARAMS?.Invoke(client, CS_MISSIONPARAMSmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_PAYDAY:
+                        if (FMD_S_PAYDAY != null)
+                        {
+
+                            AllegianceInterop.FMD_S_PAYDAY S_PAYDAYmsg = new AllegianceInterop.FMD_S_PAYDAY(messageData);
+                            FMD_S_PAYDAY?.Invoke(client, S_PAYDAYmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_SET_MONEY:
+                        if (FMD_S_SET_MONEY != null)
+                        {
+
+                            AllegianceInterop.FMD_S_SET_MONEY S_SET_MONEYmsg = new AllegianceInterop.FMD_S_SET_MONEY(messageData);
+                            FMD_S_SET_MONEY?.Invoke(client, S_SET_MONEYmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_AUTODONATE:
+                        if (FMD_S_AUTODONATE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_AUTODONATE S_AUTODONATEmsg = new AllegianceInterop.FMD_S_AUTODONATE(messageData);
+                            FMD_S_AUTODONATE?.Invoke(client, S_AUTODONATEmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_MUTE:
+                        if (FMD_C_MUTE != null)
+                        {
+
+                            AllegianceInterop.FMD_C_MUTE C_MUTEmsg = new AllegianceInterop.FMD_C_MUTE(messageData);
+                            FMD_C_MUTE?.Invoke(client, C_MUTEmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_SET_TEAM_LEADER:
+                        if (FMD_CS_SET_TEAM_LEADER != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_SET_TEAM_LEADER CS_SET_TEAM_LEADERmsg = new AllegianceInterop.FMD_CS_SET_TEAM_LEADER(messageData);
+                            FMD_CS_SET_TEAM_LEADER?.Invoke(client, CS_SET_TEAM_LEADERmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_SET_TEAM_INVESTOR:
+                        if (FMD_CS_SET_TEAM_INVESTOR != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_SET_TEAM_INVESTOR CS_SET_TEAM_INVESTORmsg = new AllegianceInterop.FMD_CS_SET_TEAM_INVESTOR(messageData);
+                            FMD_CS_SET_TEAM_INVESTOR?.Invoke(client, CS_SET_TEAM_INVESTORmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_SET_MISSION_OWNER:
+                        if (FMD_CS_SET_MISSION_OWNER != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_SET_MISSION_OWNER CS_SET_MISSION_OWNERmsg = new AllegianceInterop.FMD_CS_SET_MISSION_OWNER(messageData);
+                            FMD_CS_SET_MISSION_OWNER?.Invoke(client, CS_SET_MISSION_OWNERmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_QUIT_MISSION:
+                        if (FMD_CS_QUIT_MISSION != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_QUIT_MISSION CS_QUIT_MISSIONmsg = new AllegianceInterop.FMD_CS_QUIT_MISSION(messageData);
+                            FMD_CS_QUIT_MISSION?.Invoke(client, CS_QUIT_MISSIONmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_JOIN_SIDE:
+                        if (FMD_S_JOIN_SIDE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_JOIN_SIDE S_JOIN_SIDEmsg = new AllegianceInterop.FMD_S_JOIN_SIDE(messageData);
+                            FMD_S_JOIN_SIDE?.Invoke(client, S_JOIN_SIDEmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_QUIT_SIDE:
+                        if (FMD_CS_QUIT_SIDE != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_QUIT_SIDE CS_QUIT_SIDEmsg = new AllegianceInterop.FMD_CS_QUIT_SIDE(messageData);
+                            FMD_CS_QUIT_SIDE?.Invoke(client, CS_QUIT_SIDEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_ENTER_GAME:
+                        if (FMD_S_ENTER_GAME != null)
+                        {
+
+                            AllegianceInterop.FMD_S_ENTER_GAME S_ENTER_GAMEmsg = new AllegianceInterop.FMD_S_ENTER_GAME(messageData);
+                            FMD_S_ENTER_GAME?.Invoke(client, S_ENTER_GAMEmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_RELOAD:
+                        if (FMD_CS_RELOAD != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_RELOAD CS_RELOADmsg = new AllegianceInterop.FMD_CS_RELOAD(messageData);
+                            FMD_CS_RELOAD?.Invoke(client, CS_RELOADmsg);
+                        }
+                        break;
+
+                    case MessageType.FM_S_GAIN_FLAG:
+                        if (FMD_S_GAIN_FLAG != null)
+                        {
+
+                            AllegianceInterop.FMD_S_GAIN_FLAG S_GAIN_FLAGmsg = new AllegianceInterop.FMD_S_GAIN_FLAG(messageData);
+                            FMD_S_GAIN_FLAG?.Invoke(client, S_GAIN_FLAGmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_START_GAME:
+                        if (FMD_C_START_GAME != null)
+                        {
+
+                            AllegianceInterop.FMD_C_START_GAME C_START_GAMEmsg = new AllegianceInterop.FMD_C_START_GAME(messageData);
+                            FMD_C_START_GAME?.Invoke(client, C_START_GAMEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_ACQUIRE_TREASURE:
+                        if (FMD_S_ACQUIRE_TREASURE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_ACQUIRE_TREASURE S_ACQUIRE_TREASUREmsg = new AllegianceInterop.FMD_S_ACQUIRE_TREASURE(messageData);
+                            FMD_S_ACQUIRE_TREASURE?.Invoke(client, S_ACQUIRE_TREASUREmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_TREASURE_ACK:
+                        if (FMD_C_TREASURE_ACK != null)
+                        {
+
+                            AllegianceInterop.FMD_C_TREASURE_ACK C_TREASURE_ACKmsg = new AllegianceInterop.FMD_C_TREASURE_ACK(messageData);
+                            FMD_C_TREASURE_ACK?.Invoke(client, C_TREASURE_ACKmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_ADD_PART:
+                        if (FMD_S_ADD_PART != null)
+                        {
+
+                            AllegianceInterop.FMD_S_ADD_PART S_ADD_PARTmsg = new AllegianceInterop.FMD_S_ADD_PART(messageData);
+                            FMD_S_ADD_PART?.Invoke(client, S_ADD_PARTmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_ENTER_LIFEPOD:
+                        if (FMD_S_ENTER_LIFEPOD != null)
+                        {
+
+                            AllegianceInterop.FMD_S_ENTER_LIFEPOD S_ENTER_LIFEPODmsg = new AllegianceInterop.FMD_S_ENTER_LIFEPOD(messageData);
+                            FMD_S_ENTER_LIFEPOD?.Invoke(client, S_ENTER_LIFEPODmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_LIGHT_SHIPS_UPDATE:
+                        if (FMD_S_LIGHT_SHIPS_UPDATE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_LIGHT_SHIPS_UPDATE S_LIGHT_SHIPS_UPDATEmsg = new AllegianceInterop.FMD_S_LIGHT_SHIPS_UPDATE(messageData);
+                            FMD_S_LIGHT_SHIPS_UPDATE?.Invoke(client, S_LIGHT_SHIPS_UPDATEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_HEAVY_SHIPS_UPDATE:
+                        if (FMD_S_HEAVY_SHIPS_UPDATE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_HEAVY_SHIPS_UPDATE S_HEAVY_SHIPS_UPDATEmsg = new AllegianceInterop.FMD_S_HEAVY_SHIPS_UPDATE(messageData);
+                            FMD_S_HEAVY_SHIPS_UPDATE?.Invoke(client, S_HEAVY_SHIPS_UPDATEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_VIEW_CLUSTER:
+                        if (FMD_S_VIEW_CLUSTER != null)
+                        {
+
+                            AllegianceInterop.FMD_S_VIEW_CLUSTER S_VIEW_CLUSTERmsg = new AllegianceInterop.FMD_S_VIEW_CLUSTER(messageData);
+                            FMD_S_VIEW_CLUSTER?.Invoke(client, S_VIEW_CLUSTERmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_BOARD_NACK:
+                        if (FMD_S_BOARD_NACK != null)
+                        {
+
+                            AllegianceInterop.FMD_S_BOARD_NACK S_BOARD_NACKmsg = new AllegianceInterop.FMD_S_BOARD_NACK(messageData);
+                            FMD_S_BOARD_NACK?.Invoke(client, S_BOARD_NACKmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_ASTEROIDS_UPDATE:
+                        if (FMD_S_ASTEROIDS_UPDATE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_ASTEROIDS_UPDATE S_ASTEROIDS_UPDATEmsg = new AllegianceInterop.FMD_S_ASTEROIDS_UPDATE(messageData);
+                            FMD_S_ASTEROIDS_UPDATE?.Invoke(client, S_ASTEROIDS_UPDATEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_ASTEROID_DRAINED:
+                        if (FMD_S_ASTEROID_DRAINED != null)
+                        {
+
+                            AllegianceInterop.FMD_S_ASTEROID_DRAINED S_ASTEROID_DRAINEDmsg = new AllegianceInterop.FMD_S_ASTEROID_DRAINED(messageData);
+                            FMD_S_ASTEROID_DRAINED?.Invoke(client, S_ASTEROID_DRAINEDmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_BUILDINGEFFECT_DESTROYED:
+                        if (FMD_S_BUILDINGEFFECT_DESTROYED != null)
+                        {
+
+                            AllegianceInterop.FMD_S_BUILDINGEFFECT_DESTROYED S_BUILDINGEFFECT_DESTROYEDmsg = new AllegianceInterop.FMD_S_BUILDINGEFFECT_DESTROYED(messageData);
+                            FMD_S_BUILDINGEFFECT_DESTROYED?.Invoke(client, S_BUILDINGEFFECT_DESTROYEDmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_REQUEST_MONEY:
+                        if (FMD_CS_REQUEST_MONEY != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_REQUEST_MONEY CS_REQUEST_MONEYmsg = new AllegianceInterop.FMD_CS_REQUEST_MONEY(messageData);
+                            FMD_CS_REQUEST_MONEY?.Invoke(client, CS_REQUEST_MONEYmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_SHIP_RESET:
+                        if (FMD_S_SHIP_RESET != null)
+                        {
+
+                            AllegianceInterop.FMD_S_SHIP_RESET S_SHIP_RESETmsg = new AllegianceInterop.FMD_S_SHIP_RESET(messageData);
+                            FMD_S_SHIP_RESET?.Invoke(client, S_SHIP_RESETmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_RIPCORD_REQUEST:
+                        if (FMD_C_RIPCORD_REQUEST != null)
+                        {
+
+                            AllegianceInterop.FMD_C_RIPCORD_REQUEST C_RIPCORD_REQUESTmsg = new AllegianceInterop.FMD_C_RIPCORD_REQUEST(messageData);
+                            FMD_C_RIPCORD_REQUEST?.Invoke(client, C_RIPCORD_REQUESTmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_RIPCORD_ACTIVATE:
+                        if (FMD_S_RIPCORD_ACTIVATE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_RIPCORD_ACTIVATE S_RIPCORD_ACTIVATEmsg = new AllegianceInterop.FMD_S_RIPCORD_ACTIVATE(messageData);
+                            FMD_S_RIPCORD_ACTIVATE?.Invoke(client, S_RIPCORD_ACTIVATEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_RIPCORD_DENIED:
+                        if (FMD_S_RIPCORD_DENIED != null)
+                        {
+
+                            AllegianceInterop.FMD_S_RIPCORD_DENIED S_RIPCORD_DENIEDmsg = new AllegianceInterop.FMD_S_RIPCORD_DENIED(messageData);
+                            FMD_S_RIPCORD_DENIED?.Invoke(client, S_RIPCORD_DENIEDmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_RIPCORD_ABORTED:
+                        if (FMD_S_RIPCORD_ABORTED != null)
+                        {
+
+                            AllegianceInterop.FMD_S_RIPCORD_ABORTED S_RIPCORD_ABORTEDmsg = new AllegianceInterop.FMD_S_RIPCORD_ABORTED(messageData);
+                            FMD_S_RIPCORD_ABORTED?.Invoke(client, S_RIPCORD_ABORTEDmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_WARP_BOMB:
+                        if (FMD_S_WARP_BOMB != null)
+                        {
+
+                            AllegianceInterop.FMD_S_WARP_BOMB S_WARP_BOMBmsg = new AllegianceInterop.FMD_S_WARP_BOMB(messageData);
+                            FMD_S_WARP_BOMB?.Invoke(client, S_WARP_BOMBmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_PROMOTE:
+                        if (FMD_S_PROMOTE != null)
+                        {
+
+                            AllegianceInterop.FMD_S_PROMOTE S_PROMOTEmsg = new AllegianceInterop.FMD_S_PROMOTE(messageData);
+                            FMD_S_PROMOTE?.Invoke(client, S_PROMOTEmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_PROMOTE:
+                        if (FMD_C_PROMOTE != null)
+                        {
+
+                            AllegianceInterop.FMD_C_PROMOTE C_PROMOTEmsg = new AllegianceInterop.FMD_C_PROMOTE(messageData);
+                            FMD_C_PROMOTE?.Invoke(client, C_PROMOTEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_CREATE_BUCKETS:
+                        if (FMD_S_CREATE_BUCKETS != null)
+                        {
+
+                            AllegianceInterop.FMD_S_CREATE_BUCKETS S_CREATE_BUCKETSmsg = new AllegianceInterop.FMD_S_CREATE_BUCKETS(messageData);
+                            FMD_S_CREATE_BUCKETS?.Invoke(client, S_CREATE_BUCKETSmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_RELAUNCH_SHIP:
+                        if (FMD_S_RELAUNCH_SHIP != null)
+                        {
+
+                            AllegianceInterop.FMD_S_RELAUNCH_SHIP S_RELAUNCH_SHIPmsg = new AllegianceInterop.FMD_S_RELAUNCH_SHIP(messageData);
+                            FMD_S_RELAUNCH_SHIP?.Invoke(client, S_RELAUNCH_SHIPmsg);
+                        }
+                        break;
+
+                    case MessageType.FM_S_PINGDATA:
+                        if (FMD_S_PINGDATA != null)
+                        {
+
+                            AllegianceInterop.FMD_S_PINGDATA S_PINGDATAmsg = new AllegianceInterop.FMD_S_PINGDATA(messageData);
+                            FMD_S_PINGDATA?.Invoke(client, S_PINGDATAmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_REQPINGDATA:
+                        if (FMD_C_REQPINGDATA != null)
+                        {
+
+                            AllegianceInterop.FMD_C_REQPINGDATA C_REQPINGDATAmsg = new AllegianceInterop.FMD_C_REQPINGDATA(messageData);
+                            FMD_C_REQPINGDATA?.Invoke(client, C_REQPINGDATAmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_CHANGE_ALLIANCE:
+                        if (FMD_C_CHANGE_ALLIANCE != null)
+                        {
+
+                            AllegianceInterop.FMD_C_CHANGE_ALLIANCE C_CHANGE_ALLIANCEmsg = new AllegianceInterop.FMD_C_CHANGE_ALLIANCE(messageData);
+                            FMD_C_CHANGE_ALLIANCE?.Invoke(client, C_CHANGE_ALLIANCEmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_CHANGE_ALLIANCES:
+                        if (FMD_S_CHANGE_ALLIANCES != null)
+                        {
+
+                            AllegianceInterop.FMD_S_CHANGE_ALLIANCES S_CHANGE_ALLIANCESmsg = new AllegianceInterop.FMD_S_CHANGE_ALLIANCES(messageData);
+                            FMD_S_CHANGE_ALLIANCES?.Invoke(client, S_CHANGE_ALLIANCESmsg);
+                        }
+                        break;
+                    case MessageType.FM_S_ASTEROID_MINED:
+                        if (FMD_S_ASTEROID_MINED != null)
+                        {
+
+                            AllegianceInterop.FMD_S_ASTEROID_MINED S_ASTEROID_MINEDmsg = new AllegianceInterop.FMD_S_ASTEROID_MINED(messageData);
+                            FMD_S_ASTEROID_MINED?.Invoke(client, S_ASTEROID_MINEDmsg);
+                        }
+                        break;
+                    case MessageType.FM_CS_HIGHLIGHT_CLUSTER:
+                        if (FMD_CS_HIGHLIGHT_CLUSTER != null)
+                        {
+
+                            AllegianceInterop.FMD_CS_HIGHLIGHT_CLUSTER CS_HIGHLIGHT_CLUSTERmsg = new AllegianceInterop.FMD_CS_HIGHLIGHT_CLUSTER(messageData);
+                            FMD_CS_HIGHLIGHT_CLUSTER?.Invoke(client, CS_HIGHLIGHT_CLUSTERmsg);
+                        }
+                        break;
+
+                    case MessageType.FM_S_CLUSTERINFO:
+                        if (FMD_S_CLUSTERINFO != null)
+                        {
+
+                            AllegianceInterop.FMD_S_CLUSTERINFO CS_HIGHLIGHT_CLUSTERmsg = new AllegianceInterop.FMD_S_CLUSTERINFO(messageData);
+                            FMD_S_CLUSTERINFO?.Invoke(client, CS_HIGHLIGHT_CLUSTERmsg);
+                        }
+                        break;
+
+                    // From messageslc.h
+                    case MessageType.FM_C_LOGON_LOBBY_OLD:
+                        if (FMD_C_LOGON_LOBBY_OLD != null)
+                        {
+
+                            AllegianceInterop.FMD_C_LOGON_LOBBY_OLD C_LOGON_LOBBY_OLDmsg = new AllegianceInterop.FMD_C_LOGON_LOBBY_OLD(messageData);
+                            FMD_C_LOGON_LOBBY_OLD?.Invoke(client, C_LOGON_LOBBY_OLDmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_LOGOFF_LOBBY:
+                        if (FMD_C_LOGOFF_LOBBY != null)
+                        {
+
+                            AllegianceInterop.FMD_C_LOGOFF_LOBBY C_LOGOFF_LOBBYmsg = new AllegianceInterop.FMD_C_LOGOFF_LOBBY(messageData);
+                            FMD_C_LOGOFF_LOBBY?.Invoke(client, C_LOGOFF_LOBBYmsg);
+                        }
+                        break;
+                    case MessageType.FM_L_AUTO_UPDATE_INFO:
+                        if (FMD_L_AUTO_UPDATE_INFO != null)
+                        {
+
+                            AllegianceInterop.FMD_L_AUTO_UPDATE_INFO L_AUTO_UPDATE_INFOmsg = new AllegianceInterop.FMD_L_AUTO_UPDATE_INFO(messageData);
+                            FMD_L_AUTO_UPDATE_INFO?.Invoke(client, L_AUTO_UPDATE_INFOmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_CREATE_MISSION_REQ:
+                        if (FMD_C_CREATE_MISSION_REQ != null)
+                        {
+
+                            AllegianceInterop.FMD_C_CREATE_MISSION_REQ C_CREATE_MISSION_REQmsg = new AllegianceInterop.FMD_C_CREATE_MISSION_REQ(messageData);
+                            FMD_C_CREATE_MISSION_REQ?.Invoke(client, C_CREATE_MISSION_REQmsg);
+                        }
+                        break;
+                    case MessageType.FM_L_CREATE_MISSION_ACK:
+                        if (FMD_L_CREATE_MISSION_ACK != null)
+                        {
+
+                            AllegianceInterop.FMD_L_CREATE_MISSION_ACK L_CREATE_MISSION_ACKmsg = new AllegianceInterop.FMD_L_CREATE_MISSION_ACK(messageData);
+                            FMD_L_CREATE_MISSION_ACK?.Invoke(client, L_CREATE_MISSION_ACKmsg);
+                        }
+                        break;
+                    case MessageType.FM_L_CREATE_MISSION_NACK:
+                        if (FMD_L_CREATE_MISSION_NACK != null)
+                        {
+
+                            AllegianceInterop.FMD_L_CREATE_MISSION_NACK L_CREATE_MISSION_NACKmsg = new AllegianceInterop.FMD_L_CREATE_MISSION_NACK(messageData);
+                            FMD_L_CREATE_MISSION_NACK?.Invoke(client, L_CREATE_MISSION_NACKmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_JOIN_GAME_REQ:
+                        if (FMD_C_JOIN_GAME_REQ != null)
+                        {
+
+                            AllegianceInterop.FMD_C_JOIN_GAME_REQ C_JOIN_GAME_REQmsg = new AllegianceInterop.FMD_C_JOIN_GAME_REQ(messageData);
+                            FMD_C_JOIN_GAME_REQ?.Invoke(client, C_JOIN_GAME_REQmsg);
+                        }
+                        break;
+                    case MessageType.FM_L_JOIN_GAME_NACK:
+                        if (FMD_L_JOIN_GAME_NACK != null)
+                        {
+
+                            AllegianceInterop.FMD_L_JOIN_GAME_NACK L_JOIN_GAME_NACKmsg = new AllegianceInterop.FMD_L_JOIN_GAME_NACK(messageData);
+                            FMD_L_JOIN_GAME_NACK?.Invoke(client, L_JOIN_GAME_NACKmsg);
+                        }
+                        break;
+                    case MessageType.FM_L_JOIN_MISSION:
+                        if (FMD_L_JOIN_MISSION != null)
+                        {
+
+                            AllegianceInterop.FMD_L_JOIN_MISSION L_JOIN_MISSIONmsg = new AllegianceInterop.FMD_L_JOIN_MISSION(messageData);
+                            FMD_L_JOIN_MISSION?.Invoke(client, L_JOIN_MISSIONmsg);
+                        }
+                        break;
+                    case MessageType.FM_L_LOGON_ACK:
+                        if (FMD_L_LOGON_ACK != null)
+                        {
+
+                            AllegianceInterop.FMD_L_LOGON_ACK L_LOGON_ACKmsg = new AllegianceInterop.FMD_L_LOGON_ACK(messageData);
+                            FMD_L_LOGON_ACK?.Invoke(client, L_LOGON_ACKmsg);
+                        }
+                        break;
+                    case MessageType.FM_L_LOGON_NACK:
+                        if (FMD_L_LOGON_NACK != null)
+                        {
+
+                            AllegianceInterop.FMD_L_LOGON_NACK L_LOGON_NACKmsg = new AllegianceInterop.FMD_L_LOGON_NACK(messageData);
+                            FMD_L_LOGON_NACK?.Invoke(client, L_LOGON_NACKmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_FIND_PLAYER:
+                        if (FMD_C_FIND_PLAYER != null)
+                        {
+
+                            AllegianceInterop.FMD_C_FIND_PLAYER C_FIND_PLAYERmsg = new AllegianceInterop.FMD_C_FIND_PLAYER(messageData);
+                            FMD_C_FIND_PLAYER?.Invoke(client, C_FIND_PLAYERmsg);
+                        }
+                        break;
+                    case MessageType.FM_L_FOUND_PLAYER:
+                        if (FMD_L_FOUND_PLAYER != null)
+                        {
+
+                            AllegianceInterop.FMD_L_FOUND_PLAYER L_FOUND_PLAYERmsg = new AllegianceInterop.FMD_L_FOUND_PLAYER(messageData);
+                            FMD_L_FOUND_PLAYER?.Invoke(client, L_FOUND_PLAYERmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_LOGON_LOBBY:
+                        if (FMD_C_LOGON_LOBBY != null)
+                        {
+
+                            AllegianceInterop.FMD_C_LOGON_LOBBY C_LOGON_LOBBYmsg = new AllegianceInterop.FMD_C_LOGON_LOBBY(messageData);
+                            FMD_C_LOGON_LOBBY?.Invoke(client, C_LOGON_LOBBYmsg);
+                        }
+                        break;
+                    case MessageType.FM_C_GET_SERVERS_REQ:
+                        if (FMD_C_GET_SERVERS_REQ != null)
+                        {
+
+                            AllegianceInterop.FMD_C_GET_SERVERS_REQ C_GET_SERVERS_REQmsg = new AllegianceInterop.FMD_C_GET_SERVERS_REQ(messageData);
+                            FMD_C_GET_SERVERS_REQ?.Invoke(client, C_GET_SERVERS_REQmsg);
+                        }
+                        break;
+                    case MessageType.FM_L_SERVERS_LIST:
+                        if (FMD_L_SERVERS_LIST != null)
+                        {
+
+                            AllegianceInterop.FMD_L_SERVERS_LIST L_SERVERS_LISTmsg = new AllegianceInterop.FMD_L_SERVERS_LIST(messageData);
+                            FMD_L_SERVERS_LIST?.Invoke(client, L_SERVERS_LISTmsg);
+                        }
+                        break;
+
+                    // messagesall.h
+                    case MessageType.FM_LS_LOBBYMISSIONINFO:
+                        if (FMD_LS_LOBBYMISSIONINFO != null)
+                        {
+
+                            AllegianceInterop.FMD_LS_LOBBYMISSIONINFO LS_LOBBYMISSIONINFOmsg = new AllegianceInterop.FMD_LS_LOBBYMISSIONINFO(messageData);
+                            FMD_LS_LOBBYMISSIONINFO?.Invoke(client, LS_LOBBYMISSIONINFOmsg);
+                        }
+                        break;
+                    case MessageType.FM_LS_MISSION_GONE:
+                        if (FMD_LS_MISSION_GONE != null)
+                        {
+
+                            AllegianceInterop.FMD_LS_MISSION_GONE LS_MISSION_GONEmsg = new AllegianceInterop.FMD_LS_MISSION_GONE(messageData);
+                            FMD_LS_MISSION_GONE?.Invoke(client, LS_MISSION_GONEmsg);
+                        }
+                        break;
+                    case MessageType.FM_LS_SQUAD_MEMBERSHIPS:
+                        if (FMD_LS_SQUAD_MEMBERSHIPS != null)
+                        {
+
+                            AllegianceInterop.FMD_LS_SQUAD_MEMBERSHIPS LS_SQUAD_MEMBERSHIPSmsg = new AllegianceInterop.FMD_LS_SQUAD_MEMBERSHIPS(messageData);
+                            FMD_LS_SQUAD_MEMBERSHIPS?.Invoke(client, LS_SQUAD_MEMBERSHIPSmsg);
+                        }
+                        break;
+
+
+                    //case MessageType.FM_S_THREAT:
+                    //    AllegianceInterop.FMD_S_THREAT S_THREATmsg = new AllegianceInterop.FMD_S_THREAT(messageData);
+                    //    FMD_S_THREAT?.Invoke(client, S_THREATmsg);
+                    //    break;
+                    //case MessageType.FM_S_GAME_STATE:
+                    //    AllegianceInterop.FMD_S_GAME_STATE S_GAME_STATEmsg = new AllegianceInterop.FMD_S_GAME_STATE(messageData);
+                    //    FMD_S_GAME_STATE?.Invoke(client, S_GAME_STATEmsg);
+                    //    break;
+                    //case MessageType.FM_C_BANDWIDTH:
+                    //    AllegianceInterop.FMD_C_BANDWIDTH C_BANDWIDTHmsg = new AllegianceInterop.FMD_C_BANDWIDTH(messageData);
+                    //    FMD_C_BANDWIDTH?.Invoke(client, C_BANDWIDTHmsg);
+                    //   break;
+
+                    #endregion
+
+                    default:
+                        Console.WriteLine("*** MessageReceiver::ReceiveMessage: Unknown message id received: " + fmid);
+                        break;
+                }
             }
-
-
-            switch ((MessageType)fmid)
+            catch (Exception ex)
             {
-
-                #region Allegiane Message Handlers
-
-                // Generated from MessageType.cs with Expresso
-                /*
-                 Regex: 
-                    (?<prefix>FM_)(?<name>\w+)\s*=\s*\d+,
-
-                 Replacement: 
-                    case MessageType.FM_${name}:
-                    AllegianceInterop.FMD_${name} ${name}msg = new AllegianceInterop.FMD_${name}(messageData);
-                    FMD_${name}?.Invoke(client, ${name}msg);
-                    break;
-                */
-
-
-                case MessageType.FM_C_LOGONREQ:
-                    if (FMD_C_LOGONREQ != null)
-                    {
-
-                        AllegianceInterop.FMD_C_LOGONREQ C_LOGONREQmsg = new AllegianceInterop.FMD_C_LOGONREQ(messageData);
-                        FMD_C_LOGONREQ?.Invoke(client, C_LOGONREQmsg);
-                    }
-                    break;
-                case MessageType.FM_S_LOGONACK:
-                    if (FMD_S_LOGONACK != null)
-                    {
-
-                        AllegianceInterop.FMD_S_LOGONACK S_LOGONACKmsg = new AllegianceInterop.FMD_S_LOGONACK(messageData);
-                        FMD_S_LOGONACK?.Invoke(client, S_LOGONACKmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_LOGOFF:
-                    if (FMD_CS_LOGOFF != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_LOGOFF CS_LOGOFFmsg = new AllegianceInterop.FMD_CS_LOGOFF(messageData);
-                        FMD_CS_LOGOFF?.Invoke(client, CS_LOGOFFmsg);
-                    }
-                    break;
-                case MessageType.FM_C_BUY_LOADOUT:
-                    if (FMD_C_BUY_LOADOUT != null)
-                    {
-
-                        AllegianceInterop.FMD_C_BUY_LOADOUT C_BUY_LOADOUTmsg = new AllegianceInterop.FMD_C_BUY_LOADOUT(messageData);
-                        FMD_C_BUY_LOADOUT?.Invoke(client, C_BUY_LOADOUTmsg);
-                    }
-                    break;
-                case MessageType.FM_S_BUY_LOADOUT_ACK:
-                    if (FMD_S_BUY_LOADOUT_ACK != null)
-                    {
-
-                        AllegianceInterop.FMD_S_BUY_LOADOUT_ACK S_BUY_LOADOUT_ACKmsg = new AllegianceInterop.FMD_S_BUY_LOADOUT_ACK(messageData);
-                        FMD_S_BUY_LOADOUT_ACK?.Invoke(client, S_BUY_LOADOUT_ACKmsg);
-                    }
-                    break;
-                case MessageType.FM_S_OBJECT_SPOTTED:
-                    if (FMD_S_OBJECT_SPOTTED != null)
-                    {
-
-                        AllegianceInterop.FMD_S_OBJECT_SPOTTED S_OBJECT_SPOTTEDmsg = new AllegianceInterop.FMD_S_OBJECT_SPOTTED(messageData);
-                        FMD_S_OBJECT_SPOTTED?.Invoke(client, S_OBJECT_SPOTTEDmsg);
-                    }
-                    break;
-                case MessageType.FM_S_SET_CLUSTER:
-                    if (FMD_S_SET_CLUSTER != null)
-                    {
-
-                        AllegianceInterop.FMD_S_SET_CLUSTER S_SET_CLUSTERmsg = new AllegianceInterop.FMD_S_SET_CLUSTER(messageData);
-                        FMD_S_SET_CLUSTER?.Invoke(client, S_SET_CLUSTERmsg);
-                    }
-                    break;
-                case MessageType.FM_S_DEV_COMPLETED:
-                    if (FMD_S_DEV_COMPLETED != null)
-                    {
-
-                        AllegianceInterop.FMD_S_DEV_COMPLETED S_DEV_COMPLETEDmsg = new AllegianceInterop.FMD_S_DEV_COMPLETED(messageData);
-                        FMD_S_DEV_COMPLETED?.Invoke(client, S_DEV_COMPLETEDmsg);
-                    }
-                    break;
-                case MessageType.FM_S_SET_BRIEFING_TEXT:
-                    if (FMD_S_SET_BRIEFING_TEXT != null)
-                    {
-
-                        AllegianceInterop.FMD_S_SET_BRIEFING_TEXT S_SET_BRIEFING_TEXTmsg = new AllegianceInterop.FMD_S_SET_BRIEFING_TEXT(messageData);
-                        FMD_S_SET_BRIEFING_TEXT?.Invoke(client, S_SET_BRIEFING_TEXTmsg);
-                    }
-                    break;
-                case MessageType.FM_S_PLAYERINFO:
-                    if (FMD_S_PLAYERINFO != null)
-                    {
-
-                        AllegianceInterop.FMD_S_PLAYERINFO S_PLAYERINFOmsg = new AllegianceInterop.FMD_S_PLAYERINFO(messageData);
-                        FMD_S_PLAYERINFO?.Invoke(client, S_PLAYERINFOmsg);
-                    }
-                    break;
-                case MessageType.FM_S_STATIC_MAP_INFO:
-                    if (FMD_S_STATIC_MAP_INFO != null)
-                    {
-
-                        AllegianceInterop.FMD_S_STATIC_MAP_INFO S_STATIC_MAP_INFOmsg = new AllegianceInterop.FMD_S_STATIC_MAP_INFO(messageData);
-                        FMD_S_STATIC_MAP_INFO?.Invoke(client, S_STATIC_MAP_INFOmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_PROJECTILE_INSTANCE:
-                    if (FMD_CS_PROJECTILE_INSTANCE != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_PROJECTILE_INSTANCE CS_PROJECTILE_INSTANCEmsg = new AllegianceInterop.FMD_CS_PROJECTILE_INSTANCE(messageData);
-                        FMD_CS_PROJECTILE_INSTANCE?.Invoke(client, CS_PROJECTILE_INSTANCEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_RANK_INFO:
-                    if (FMD_S_RANK_INFO != null)
-                    {
-
-                        AllegianceInterop.FMD_S_RANK_INFO S_RANK_INFOmsg = new AllegianceInterop.FMD_S_RANK_INFO(messageData);
-                        FMD_S_RANK_INFO?.Invoke(client, S_RANK_INFOmsg);
-                    }
-                    break;
-                case MessageType.FM_S_SET_START_TIME:
-                    if (FMD_S_SET_START_TIME != null)
-                    {
-
-                        AllegianceInterop.FMD_S_SET_START_TIME S_SET_START_TIMEmsg = new AllegianceInterop.FMD_S_SET_START_TIME(messageData);
-                        FMD_S_SET_START_TIME?.Invoke(client, S_SET_START_TIMEmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_SET_TEAM_INFO:
-                    if (FMD_CS_SET_TEAM_INFO != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_SET_TEAM_INFO CS_SET_TEAM_INFOmsg = new AllegianceInterop.FMD_CS_SET_TEAM_INFO(messageData);
-                        FMD_CS_SET_TEAM_INFO?.Invoke(client, CS_SET_TEAM_INFOmsg);
-                    }
-                    break;
-                case MessageType.FM_S_PLAYER_RESCUED:
-                    if (FMD_S_PLAYER_RESCUED != null)
-                    {
-
-                        AllegianceInterop.FMD_S_PLAYER_RESCUED S_PLAYER_RESCUEDmsg = new AllegianceInterop.FMD_S_PLAYER_RESCUED(messageData);
-                        FMD_S_PLAYER_RESCUED?.Invoke(client, S_PLAYER_RESCUEDmsg);
-                    }
-                    break;
-                case MessageType.FM_S_BALLOT:
-                    if (FMD_S_BALLOT != null)
-                    {
-
-                        AllegianceInterop.FMD_S_BALLOT S_BALLOTmsg = new AllegianceInterop.FMD_S_BALLOT(messageData);
-                        FMD_S_BALLOT?.Invoke(client, S_BALLOTmsg);
-                    }
-                    break;
-                case MessageType.FM_S_CANCEL_BALLOT:
-                    if (FMD_S_CANCEL_BALLOT != null)
-                    {
-
-                        AllegianceInterop.FMD_S_CANCEL_BALLOT S_CANCEL_BALLOTmsg = new AllegianceInterop.FMD_S_CANCEL_BALLOT(messageData);
-                        FMD_S_CANCEL_BALLOT?.Invoke(client, S_CANCEL_BALLOTmsg);
-                    }
-                    break;
-                case MessageType.FM_C_VOTE:
-                    if (FMD_C_VOTE != null)
-                    {
-
-                        AllegianceInterop.FMD_C_VOTE C_VOTEmsg = new AllegianceInterop.FMD_C_VOTE(messageData);
-                        FMD_C_VOTE?.Invoke(client, C_VOTEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_SHIP_DELETE:
-                    if (FMD_S_SHIP_DELETE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_SHIP_DELETE S_SHIP_DELETEmsg = new AllegianceInterop.FMD_S_SHIP_DELETE(messageData);
-                        FMD_S_SHIP_DELETE?.Invoke(client, S_SHIP_DELETEmsg);
-                    }
-                    break;
-                case MessageType.FM_C_RANDOMIZE_TEAMS:
-                    if (FMD_C_RANDOMIZE_TEAMS != null)
-                    {
-
-                        AllegianceInterop.FMD_C_RANDOMIZE_TEAMS C_RANDOMIZE_TEAMSmsg = new AllegianceInterop.FMD_C_RANDOMIZE_TEAMS(messageData);
-                        FMD_C_RANDOMIZE_TEAMS?.Invoke(client, C_RANDOMIZE_TEAMSmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_CHATMESSAGE:
-                    if (FMD_CS_CHATMESSAGE != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_CHATMESSAGE CS_CHATMESSAGEmsg = new AllegianceInterop.FMD_CS_CHATMESSAGE(messageData);
-                        FMD_CS_CHATMESSAGE?.Invoke(client, CS_CHATMESSAGEmsg);
-                    }
-                    break;
-                case MessageType.FM_C_SHIP_UPDATE:
-                    if (FMD_C_SHIP_UPDATE != null)
-                    {
-
-                        AllegianceInterop.FMD_C_SHIP_UPDATE C_SHIP_UPDATEmsg = new AllegianceInterop.FMD_C_SHIP_UPDATE(messageData);
-                        FMD_C_SHIP_UPDATE?.Invoke(client, C_SHIP_UPDATEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_EXPORT:
-                    if (FMD_S_EXPORT != null)
-                    {
-
-                        AllegianceInterop.FMD_S_EXPORT S_EXPORTmsg = new AllegianceInterop.FMD_S_EXPORT(messageData);
-                        FMD_S_EXPORT?.Invoke(client, S_EXPORTmsg);
-                    }
-                    break;
-                case MessageType.FM_S_POSTER:
-                    if (FMD_S_POSTER != null)
-                    {
-
-                        AllegianceInterop.FMD_S_POSTER S_POSTERmsg = new AllegianceInterop.FMD_S_POSTER(messageData);
-                        FMD_S_POSTER?.Invoke(client, S_POSTERmsg);
-                    }
-                    break;
-                case MessageType.FM_S_TREASURE:
-                    if (FMD_S_TREASURE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_TREASURE S_TREASUREmsg = new AllegianceInterop.FMD_S_TREASURE(messageData);
-                        FMD_S_TREASURE?.Invoke(client, S_TREASUREmsg);
-                    }
-                    break;
-                case MessageType.FM_S_DESTROY_TREASURE:
-                    if (FMD_S_DESTROY_TREASURE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_DESTROY_TREASURE S_DESTROY_TREASUREmsg = new AllegianceInterop.FMD_S_DESTROY_TREASURE(messageData);
-                        FMD_S_DESTROY_TREASURE?.Invoke(client, S_DESTROY_TREASUREmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_NEW_SHIP_INSTANCE:
-                    if (FMD_CS_NEW_SHIP_INSTANCE != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_NEW_SHIP_INSTANCE CS_NEW_SHIP_INSTANCEmsg = new AllegianceInterop.FMD_CS_NEW_SHIP_INSTANCE(messageData);
-                        FMD_CS_NEW_SHIP_INSTANCE?.Invoke(client, CS_NEW_SHIP_INSTANCEmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_DROP_PART:
-                    if (FMD_CS_DROP_PART != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_DROP_PART CS_DROP_PARTmsg = new AllegianceInterop.FMD_CS_DROP_PART(messageData);
-                        FMD_CS_DROP_PART?.Invoke(client, CS_DROP_PARTmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_SWAP_PART:
-                    if (FMD_CS_SWAP_PART != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_SWAP_PART CS_SWAP_PARTmsg = new AllegianceInterop.FMD_CS_SWAP_PART(messageData);
-                        FMD_CS_SWAP_PART?.Invoke(client, CS_SWAP_PARTmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_PING:
-                    if (FMD_CS_PING != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_PING CS_PINGmsg = new AllegianceInterop.FMD_CS_PING(messageData);
-                        FMD_CS_PING?.Invoke(client, CS_PINGmsg);
-                    }
-                    break;
-                case MessageType.FM_S_URLROOT:
-                    if (FMD_S_URLROOT != null)
-                    {
-
-                        AllegianceInterop.FMD_S_URLROOT S_URLROOTmsg = new AllegianceInterop.FMD_S_URLROOT(messageData);
-                        FMD_S_URLROOT?.Invoke(client, S_URLROOTmsg);
-                    }
-                    break;
-                case MessageType.FM_S_MISSION_STAGE:
-                    if (FMD_S_MISSION_STAGE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_MISSION_STAGE S_MISSION_STAGEmsg = new AllegianceInterop.FMD_S_MISSION_STAGE(messageData);
-                        FMD_S_MISSION_STAGE?.Invoke(client, S_MISSION_STAGEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_MISSIONDEF:
-                    if (FMD_S_MISSIONDEF != null)
-                    {
-
-                        AllegianceInterop.FMD_S_MISSIONDEF S_MISSIONDEFmsg = new AllegianceInterop.FMD_S_MISSIONDEF(messageData);
-                        FMD_S_MISSIONDEF?.Invoke(client, S_MISSIONDEFmsg);
-                    }
-                    break;
-                case MessageType.FM_C_POSITIONREQ:
-                    if (FMD_C_POSITIONREQ != null)
-                    {
-
-                        AllegianceInterop.FMD_C_POSITIONREQ C_POSITIONREQmsg = new AllegianceInterop.FMD_C_POSITIONREQ(messageData);
-                        FMD_C_POSITIONREQ?.Invoke(client, C_POSITIONREQmsg);
-                    }
-                    break;
-                case MessageType.FM_S_POSITIONREQ:
-                    if (FMD_S_POSITIONREQ != null)
-                    {
-
-                        AllegianceInterop.FMD_S_POSITIONREQ S_POSITIONREQmsg = new AllegianceInterop.FMD_S_POSITIONREQ(messageData);
-                        FMD_S_POSITIONREQ?.Invoke(client, S_POSITIONREQmsg);
-                    }
-                    break;
-                case MessageType.FM_C_POSITIONACK:
-                    if (FMD_C_POSITIONACK != null)
-                    {
-
-                        AllegianceInterop.FMD_C_POSITIONACK C_POSITIONACKmsg = new AllegianceInterop.FMD_C_POSITIONACK(messageData);
-                        FMD_C_POSITIONACK?.Invoke(client, C_POSITIONACKmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_DELPOSITIONREQ:
-                    if (FMD_CS_DELPOSITIONREQ != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_DELPOSITIONREQ CS_DELPOSITIONREQmsg = new AllegianceInterop.FMD_CS_DELPOSITIONREQ(messageData);
-                        FMD_CS_DELPOSITIONREQ?.Invoke(client, CS_DELPOSITIONREQmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_LOCK_LOBBY:
-                    if (FMD_CS_LOCK_LOBBY != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_LOCK_LOBBY CS_LOCK_LOBBYmsg = new AllegianceInterop.FMD_CS_LOCK_LOBBY(messageData);
-                        FMD_CS_LOCK_LOBBY?.Invoke(client, CS_LOCK_LOBBYmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_LOCK_SIDES:
-                    if (FMD_CS_LOCK_SIDES != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_LOCK_SIDES CS_LOCK_SIDESmsg = new AllegianceInterop.FMD_CS_LOCK_SIDES(messageData);
-                        FMD_CS_LOCK_SIDES?.Invoke(client, CS_LOCK_SIDESmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_PLAYER_READY:
-                    if (FMD_CS_PLAYER_READY != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_PLAYER_READY CS_PLAYER_READYmsg = new AllegianceInterop.FMD_CS_PLAYER_READY(messageData);
-                        FMD_CS_PLAYER_READY?.Invoke(client, CS_PLAYER_READYmsg);
-                    }
-                    break;
-                case MessageType.FM_S_TEAM_READY:
-                    if (FMD_S_TEAM_READY != null)
-                    {
-
-                        AllegianceInterop.FMD_S_TEAM_READY S_TEAM_READYmsg = new AllegianceInterop.FMD_S_TEAM_READY(messageData);
-                        FMD_S_TEAM_READY?.Invoke(client, S_TEAM_READYmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_FORCE_TEAM_READY:
-                    if (FMD_CS_FORCE_TEAM_READY != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_FORCE_TEAM_READY CS_FORCE_TEAM_READYmsg = new AllegianceInterop.FMD_CS_FORCE_TEAM_READY(messageData);
-                        FMD_CS_FORCE_TEAM_READY?.Invoke(client, CS_FORCE_TEAM_READYmsg);
-                    }
-                    break;
-                case MessageType.FM_C_DOCKED:
-                    if (FMD_C_DOCKED != null)
-                    {
-
-                        AllegianceInterop.FMD_C_DOCKED C_DOCKEDmsg = new AllegianceInterop.FMD_C_DOCKED(messageData);
-                        FMD_C_DOCKED?.Invoke(client, C_DOCKEDmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_CHANGE_TEAM_CIV:
-                    if (FMD_CS_CHANGE_TEAM_CIV != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_CHANGE_TEAM_CIV CS_CHANGE_TEAM_CIVmsg = new AllegianceInterop.FMD_CS_CHANGE_TEAM_CIV(messageData);
-                        FMD_CS_CHANGE_TEAM_CIV?.Invoke(client, CS_CHANGE_TEAM_CIVmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_AUTO_ACCEPT:
-                    if (FMD_CS_AUTO_ACCEPT != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_AUTO_ACCEPT CS_AUTO_ACCEPTmsg = new AllegianceInterop.FMD_CS_AUTO_ACCEPT(messageData);
-                        FMD_CS_AUTO_ACCEPT?.Invoke(client, CS_AUTO_ACCEPTmsg);
-                    }
-                    break;
-                case MessageType.FM_S_STATIONS_UPDATE:
-                    if (FMD_S_STATIONS_UPDATE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_STATIONS_UPDATE S_STATIONS_UPDATEmsg = new AllegianceInterop.FMD_S_STATIONS_UPDATE(messageData);
-                        FMD_S_STATIONS_UPDATE?.Invoke(client, S_STATIONS_UPDATEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_STATION_CAPTURE:
-                    if (FMD_S_STATION_CAPTURE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_STATION_CAPTURE S_STATION_CAPTUREmsg = new AllegianceInterop.FMD_S_STATION_CAPTURE(messageData);
-                        FMD_S_STATION_CAPTURE?.Invoke(client, S_STATION_CAPTUREmsg);
-                    }
-                    break;
-                case MessageType.FM_S_STATION_DESTROYED:
-                    if (FMD_S_STATION_DESTROYED != null)
-                    {
-
-                        AllegianceInterop.FMD_S_STATION_DESTROYED S_STATION_DESTROYEDmsg = new AllegianceInterop.FMD_S_STATION_DESTROYED(messageData);
-                        FMD_S_STATION_DESTROYED?.Invoke(client, S_STATION_DESTROYEDmsg);
-                    }
-                    break;
-                case MessageType.FM_S_MONEY_CHANGE:
-                    if (FMD_S_MONEY_CHANGE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_MONEY_CHANGE S_MONEY_CHANGEmsg = new AllegianceInterop.FMD_S_MONEY_CHANGE(messageData);
-                        FMD_S_MONEY_CHANGE?.Invoke(client, S_MONEY_CHANGEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_DOCKED:
-                    if (FMD_S_DOCKED != null)
-                    {
-
-                        AllegianceInterop.FMD_S_DOCKED S_DOCKEDmsg = new AllegianceInterop.FMD_S_DOCKED(messageData);
-                        FMD_S_DOCKED?.Invoke(client, S_DOCKEDmsg);
-                    }
-                    break;
-                case MessageType.FM_S_GAME_OVER:
-                    if (FMD_S_GAME_OVER != null)
-                    {
-
-                        AllegianceInterop.FMD_S_GAME_OVER S_GAME_OVERmsg = new AllegianceInterop.FMD_S_GAME_OVER(messageData);
-                        FMD_S_GAME_OVER?.Invoke(client, S_GAME_OVERmsg);
-                    }
-                    break;
-                case MessageType.FM_S_GAME_OVER_PLAYERS:
-                    if (FMD_S_GAME_OVER_PLAYERS != null)
-                    {
-
-                        AllegianceInterop.FMD_S_GAME_OVER_PLAYERS S_GAME_OVER_PLAYERSmsg = new AllegianceInterop.FMD_S_GAME_OVER_PLAYERS(messageData);
-                        FMD_S_GAME_OVER_PLAYERS?.Invoke(client, S_GAME_OVER_PLAYERSmsg);
-                    }
-                    break;
-                case MessageType.FM_C_BUCKET_DONATE:
-                    if (FMD_C_BUCKET_DONATE != null)
-                    {
-
-                        AllegianceInterop.FMD_C_BUCKET_DONATE C_BUCKET_DONATEmsg = new AllegianceInterop.FMD_C_BUCKET_DONATE(messageData);
-                        FMD_C_BUCKET_DONATE?.Invoke(client, C_BUCKET_DONATEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_BUCKET_STATUS:
-                    if (FMD_S_BUCKET_STATUS != null)
-                    {
-
-                        AllegianceInterop.FMD_S_BUCKET_STATUS S_BUCKET_STATUSmsg = new AllegianceInterop.FMD_S_BUCKET_STATUS(messageData);
-                        FMD_S_BUCKET_STATUS?.Invoke(client, S_BUCKET_STATUSmsg);
-                    }
-                    break;
-                case MessageType.FM_C_PLAYER_DONATE:
-                    if (FMD_C_PLAYER_DONATE != null)
-                    {
-
-                        AllegianceInterop.FMD_C_PLAYER_DONATE C_PLAYER_DONATEmsg = new AllegianceInterop.FMD_C_PLAYER_DONATE(messageData);
-                        FMD_C_PLAYER_DONATE?.Invoke(client, C_PLAYER_DONATEmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_SIDE_INACTIVE:
-                    if (FMD_CS_SIDE_INACTIVE != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_SIDE_INACTIVE CS_SIDE_INACTIVEmsg = new AllegianceInterop.FMD_CS_SIDE_INACTIVE(messageData);
-                        FMD_CS_SIDE_INACTIVE?.Invoke(client, CS_SIDE_INACTIVEmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_FIRE_MISSILE:
-                    if (FMD_CS_FIRE_MISSILE != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_FIRE_MISSILE CS_FIRE_MISSILEmsg = new AllegianceInterop.FMD_CS_FIRE_MISSILE(messageData);
-                        FMD_CS_FIRE_MISSILE?.Invoke(client, CS_FIRE_MISSILEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_SIDE_TECH_CHANGE:
-                    if (FMD_S_SIDE_TECH_CHANGE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_SIDE_TECH_CHANGE S_SIDE_TECH_CHANGEmsg = new AllegianceInterop.FMD_S_SIDE_TECH_CHANGE(messageData);
-                        FMD_S_SIDE_TECH_CHANGE?.Invoke(client, S_SIDE_TECH_CHANGEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_SIDE_ATTRIBUTE_CHANGE:
-                    if (FMD_S_SIDE_ATTRIBUTE_CHANGE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_SIDE_ATTRIBUTE_CHANGE S_SIDE_ATTRIBUTE_CHANGEmsg = new AllegianceInterop.FMD_S_SIDE_ATTRIBUTE_CHANGE(messageData);
-                        FMD_S_SIDE_ATTRIBUTE_CHANGE?.Invoke(client, S_SIDE_ATTRIBUTE_CHANGEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_EJECT:
-                    if (FMD_S_EJECT != null)
-                    {
-
-                        AllegianceInterop.FMD_S_EJECT S_EJECTmsg = new AllegianceInterop.FMD_S_EJECT(messageData);
-                        FMD_S_EJECT?.Invoke(client, S_EJECTmsg);
-                    }
-                    break;
-                case MessageType.FM_S_SINGLE_SHIP_UPDATE:
-                    if (FMD_S_SINGLE_SHIP_UPDATE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_SINGLE_SHIP_UPDATE S_SINGLE_SHIP_UPDATEmsg = new AllegianceInterop.FMD_S_SINGLE_SHIP_UPDATE(messageData);
-                        FMD_S_SINGLE_SHIP_UPDATE?.Invoke(client, S_SINGLE_SHIP_UPDATEmsg);
-                    }
-                    break;
-                case MessageType.FM_C_SUICIDE:
-                    if (FMD_C_SUICIDE != null)
-                    {
-
-                        AllegianceInterop.FMD_C_SUICIDE C_SUICIDEmsg = new AllegianceInterop.FMD_C_SUICIDE(messageData);
-                        FMD_C_SUICIDE?.Invoke(client, C_SUICIDEmsg);
-                    }
-                    break;
-                case MessageType.FM_C_FIRE_EXPENDABLE:
-                    if (FMD_C_FIRE_EXPENDABLE != null)
-                    {
-
-                        AllegianceInterop.FMD_C_FIRE_EXPENDABLE C_FIRE_EXPENDABLEmsg = new AllegianceInterop.FMD_C_FIRE_EXPENDABLE(messageData);
-                        FMD_C_FIRE_EXPENDABLE?.Invoke(client, C_FIRE_EXPENDABLEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_MISSILE_DESTROYED:
-                    if (FMD_S_MISSILE_DESTROYED != null)
-                    {
-
-                        AllegianceInterop.FMD_S_MISSILE_DESTROYED S_MISSILE_DESTROYEDmsg = new AllegianceInterop.FMD_S_MISSILE_DESTROYED(messageData);
-                        FMD_S_MISSILE_DESTROYED?.Invoke(client, S_MISSILE_DESTROYEDmsg);
-                    }
-                    break;
-                case MessageType.FM_S_MINE_DESTROYED:
-                    if (FMD_S_MINE_DESTROYED != null)
-                    {
-
-                        AllegianceInterop.FMD_S_MINE_DESTROYED S_MINE_DESTROYEDmsg = new AllegianceInterop.FMD_S_MINE_DESTROYED(messageData);
-                        FMD_S_MINE_DESTROYED?.Invoke(client, S_MINE_DESTROYEDmsg);
-                    }
-                    break;
-                case MessageType.FM_S_PROBE_DESTROYED:
-                    if (FMD_S_PROBE_DESTROYED != null)
-                    {
-
-                        AllegianceInterop.FMD_S_PROBE_DESTROYED S_PROBE_DESTROYEDmsg = new AllegianceInterop.FMD_S_PROBE_DESTROYED(messageData);
-                        FMD_S_PROBE_DESTROYED?.Invoke(client, S_PROBE_DESTROYEDmsg);
-                    }
-                    break;
-                case MessageType.FM_S_ASTEROID_DESTROYED:
-                    if (FMD_S_ASTEROID_DESTROYED != null)
-                    {
-
-                        AllegianceInterop.FMD_S_ASTEROID_DESTROYED S_ASTEROID_DESTROYEDmsg = new AllegianceInterop.FMD_S_ASTEROID_DESTROYED(messageData);
-                        FMD_S_ASTEROID_DESTROYED?.Invoke(client, S_ASTEROID_DESTROYEDmsg);
-                    }
-                    break;
-                case MessageType.FM_S_FIRE_EXPENDABLE:
-                    if (FMD_S_FIRE_EXPENDABLE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_FIRE_EXPENDABLE S_FIRE_EXPENDABLEmsg = new AllegianceInterop.FMD_S_FIRE_EXPENDABLE(messageData);
-                        FMD_S_FIRE_EXPENDABLE?.Invoke(client, S_FIRE_EXPENDABLEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_TREASURE_SETS:
-                    if (FMD_S_TREASURE_SETS != null)
-                    {
-
-                        AllegianceInterop.FMD_S_TREASURE_SETS S_TREASURE_SETSmsg = new AllegianceInterop.FMD_S_TREASURE_SETS(messageData);
-                        FMD_S_TREASURE_SETS?.Invoke(client, S_TREASURE_SETSmsg);
-                    }
-                    break;
-                case MessageType.FM_S_SHIP_STATUS:
-                    if (FMD_S_SHIP_STATUS != null)
-                    {
-
-                        AllegianceInterop.FMD_S_SHIP_STATUS S_SHIP_STATUSmsg = new AllegianceInterop.FMD_S_SHIP_STATUS(messageData);
-                        FMD_S_SHIP_STATUS?.Invoke(client, S_SHIP_STATUSmsg);
-                    }
-                    break;
-                case MessageType.FM_S_PROBES_UPDATE:
-                    if (FMD_S_PROBES_UPDATE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_PROBES_UPDATE S_PROBES_UPDATEmsg = new AllegianceInterop.FMD_S_PROBES_UPDATE(messageData);
-                        FMD_S_PROBES_UPDATE?.Invoke(client, S_PROBES_UPDATEmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_ORDER_CHANGE:
-                    if (FMD_CS_ORDER_CHANGE != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_ORDER_CHANGE CS_ORDER_CHANGEmsg = new AllegianceInterop.FMD_CS_ORDER_CHANGE(messageData);
-                        FMD_CS_ORDER_CHANGE?.Invoke(client, CS_ORDER_CHANGEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_LEAVE_SHIP:
-                    if (FMD_S_LEAVE_SHIP != null)
-                    {
-
-                        AllegianceInterop.FMD_S_LEAVE_SHIP S_LEAVE_SHIPmsg = new AllegianceInterop.FMD_S_LEAVE_SHIP(messageData);
-                        FMD_S_LEAVE_SHIP?.Invoke(client, S_LEAVE_SHIPmsg);
-                    }
-                    break;
-                case MessageType.FM_S_JOINED_MISSION:
-                    if (FMD_S_JOINED_MISSION != null)
-                    {
-
-                        AllegianceInterop.FMD_S_JOINED_MISSION S_JOINED_MISSIONmsg = new AllegianceInterop.FMD_S_JOINED_MISSION(messageData);
-                        FMD_S_JOINED_MISSION?.Invoke(client, S_JOINED_MISSIONmsg);
-                    }
-                    break;
-                case MessageType.FM_S_LOADOUT_CHANGE:
-                    if (FMD_S_LOADOUT_CHANGE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_LOADOUT_CHANGE S_LOADOUT_CHANGEmsg = new AllegianceInterop.FMD_S_LOADOUT_CHANGE(messageData);
-                        FMD_S_LOADOUT_CHANGE?.Invoke(client, S_LOADOUT_CHANGEmsg);
-                    }
-                    break;
-                case MessageType.FM_C_ACTIVE_TURRET_UPDATE:
-                    if (FMD_C_ACTIVE_TURRET_UPDATE != null)
-                    {
-
-                        AllegianceInterop.FMD_C_ACTIVE_TURRET_UPDATE C_ACTIVE_TURRET_UPDATEmsg = new AllegianceInterop.FMD_C_ACTIVE_TURRET_UPDATE(messageData);
-                        FMD_C_ACTIVE_TURRET_UPDATE?.Invoke(client, C_ACTIVE_TURRET_UPDATEmsg);
-                    }
-                    break;
-                case MessageType.FM_C_INACTIVE_TURRET_UPDATE:
-                    if (FMD_C_INACTIVE_TURRET_UPDATE != null)
-                    {
-
-                        AllegianceInterop.FMD_C_INACTIVE_TURRET_UPDATE C_INACTIVE_TURRET_UPDATEmsg = new AllegianceInterop.FMD_C_INACTIVE_TURRET_UPDATE(messageData);
-                        FMD_C_INACTIVE_TURRET_UPDATE?.Invoke(client, C_INACTIVE_TURRET_UPDATEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_TELEPORT_ACK:
-                    if (FMD_S_TELEPORT_ACK != null)
-                    {
-
-                        AllegianceInterop.FMD_S_TELEPORT_ACK S_TELEPORT_ACKmsg = new AllegianceInterop.FMD_S_TELEPORT_ACK(messageData);
-                        FMD_S_TELEPORT_ACK?.Invoke(client, S_TELEPORT_ACKmsg);
-                    }
-                    break;
-                case MessageType.FM_C_BOARD_SHIP:
-                    if (FMD_C_BOARD_SHIP != null)
-                    {
-
-                        AllegianceInterop.FMD_C_BOARD_SHIP C_BOARD_SHIPmsg = new AllegianceInterop.FMD_C_BOARD_SHIP(messageData);
-                        FMD_C_BOARD_SHIP?.Invoke(client, C_BOARD_SHIPmsg);
-                    }
-                    break;
-                case MessageType.FM_C_VIEW_CLUSTER:
-                    if (FMD_C_VIEW_CLUSTER != null)
-                    {
-
-                        AllegianceInterop.FMD_C_VIEW_CLUSTER C_VIEW_CLUSTERmsg = new AllegianceInterop.FMD_C_VIEW_CLUSTER(messageData);
-                        FMD_C_VIEW_CLUSTER?.Invoke(client, C_VIEW_CLUSTERmsg);
-                    }
-                    break;
-                case MessageType.FM_S_KILL_SHIP:
-                    if (FMD_S_KILL_SHIP != null)
-                    {
-
-                        AllegianceInterop.FMD_S_KILL_SHIP S_KILL_SHIPmsg = new AllegianceInterop.FMD_S_KILL_SHIP(messageData);
-                        FMD_S_KILL_SHIP?.Invoke(client, S_KILL_SHIPmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_SET_WINGID:
-                    if (FMD_CS_SET_WINGID != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_SET_WINGID CS_SET_WINGIDmsg = new AllegianceInterop.FMD_CS_SET_WINGID(messageData);
-                        FMD_CS_SET_WINGID?.Invoke(client, CS_SET_WINGIDmsg);
-                    }
-                    break;
-                case MessageType.FM_S_ICQ_CHAT_ACK:
-                    if (FMD_S_ICQ_CHAT_ACK != null)
-                    {
-
-                        AllegianceInterop.FMD_S_ICQ_CHAT_ACK S_ICQ_CHAT_ACKmsg = new AllegianceInterop.FMD_S_ICQ_CHAT_ACK(messageData);
-                        FMD_S_ICQ_CHAT_ACK?.Invoke(client, S_ICQ_CHAT_ACKmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_CHATBUOY:
-                    if (FMD_CS_CHATBUOY != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_CHATBUOY CS_CHATBUOYmsg = new AllegianceInterop.FMD_CS_CHATBUOY(messageData);
-                        FMD_CS_CHATBUOY?.Invoke(client, CS_CHATBUOYmsg);
-                    }
-                    break;
-                case MessageType.FM_S_CREATE_CHAFF:
-                    if (FMD_S_CREATE_CHAFF != null)
-                    {
-
-                        AllegianceInterop.FMD_S_CREATE_CHAFF S_CREATE_CHAFFmsg = new AllegianceInterop.FMD_S_CREATE_CHAFF(messageData);
-                        FMD_S_CREATE_CHAFF?.Invoke(client, S_CREATE_CHAFFmsg);
-                    }
-                    break;
-                case MessageType.FM_S_MISSILE_SPOOFED:
-                    if (FMD_S_MISSILE_SPOOFED != null)
-                    {
-
-                        AllegianceInterop.FMD_S_MISSILE_SPOOFED S_MISSILE_SPOOFEDmsg = new AllegianceInterop.FMD_S_MISSILE_SPOOFED(messageData);
-                        FMD_S_MISSILE_SPOOFED?.Invoke(client, S_MISSILE_SPOOFEDmsg);
-                    }
-                    break;
-                case MessageType.FM_S_END_SPOOFING:
-                    if (FMD_S_END_SPOOFING != null)
-                    {
-
-                        AllegianceInterop.FMD_S_END_SPOOFING S_END_SPOOFINGmsg = new AllegianceInterop.FMD_S_END_SPOOFING(messageData);
-                        FMD_S_END_SPOOFING?.Invoke(client, S_END_SPOOFINGmsg);
-                    }
-                    break;
-                case MessageType.FM_C_AUTODONATE:
-                    if (FMD_C_AUTODONATE != null)
-                    {
-
-                        AllegianceInterop.FMD_C_AUTODONATE C_AUTODONATEmsg = new AllegianceInterop.FMD_C_AUTODONATE(messageData);
-                        FMD_C_AUTODONATE?.Invoke(client, C_AUTODONATEmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_MISSIONPARAMS:
-                    if (FMD_CS_MISSIONPARAMS != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_MISSIONPARAMS CS_MISSIONPARAMSmsg = new AllegianceInterop.FMD_CS_MISSIONPARAMS(messageData);
-                        FMD_CS_MISSIONPARAMS?.Invoke(client, CS_MISSIONPARAMSmsg);
-                    }
-                    break;
-                case MessageType.FM_S_PAYDAY:
-                    if (FMD_S_PAYDAY != null)
-                    {
-
-                        AllegianceInterop.FMD_S_PAYDAY S_PAYDAYmsg = new AllegianceInterop.FMD_S_PAYDAY(messageData);
-                        FMD_S_PAYDAY?.Invoke(client, S_PAYDAYmsg);
-                    }
-                    break;
-                case MessageType.FM_S_SET_MONEY:
-                    if (FMD_S_SET_MONEY != null)
-                    {
-
-                        AllegianceInterop.FMD_S_SET_MONEY S_SET_MONEYmsg = new AllegianceInterop.FMD_S_SET_MONEY(messageData);
-                        FMD_S_SET_MONEY?.Invoke(client, S_SET_MONEYmsg);
-                    }
-                    break;
-                case MessageType.FM_S_AUTODONATE:
-                    if (FMD_S_AUTODONATE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_AUTODONATE S_AUTODONATEmsg = new AllegianceInterop.FMD_S_AUTODONATE(messageData);
-                        FMD_S_AUTODONATE?.Invoke(client, S_AUTODONATEmsg);
-                    }
-                    break;
-                case MessageType.FM_C_MUTE:
-                    if (FMD_C_MUTE != null)
-                    {
-
-                        AllegianceInterop.FMD_C_MUTE C_MUTEmsg = new AllegianceInterop.FMD_C_MUTE(messageData);
-                        FMD_C_MUTE?.Invoke(client, C_MUTEmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_SET_TEAM_LEADER:
-                    if (FMD_CS_SET_TEAM_LEADER != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_SET_TEAM_LEADER CS_SET_TEAM_LEADERmsg = new AllegianceInterop.FMD_CS_SET_TEAM_LEADER(messageData);
-                        FMD_CS_SET_TEAM_LEADER?.Invoke(client, CS_SET_TEAM_LEADERmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_SET_TEAM_INVESTOR:
-                    if (FMD_CS_SET_TEAM_INVESTOR != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_SET_TEAM_INVESTOR CS_SET_TEAM_INVESTORmsg = new AllegianceInterop.FMD_CS_SET_TEAM_INVESTOR(messageData);
-                        FMD_CS_SET_TEAM_INVESTOR?.Invoke(client, CS_SET_TEAM_INVESTORmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_SET_MISSION_OWNER:
-                    if (FMD_CS_SET_MISSION_OWNER != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_SET_MISSION_OWNER CS_SET_MISSION_OWNERmsg = new AllegianceInterop.FMD_CS_SET_MISSION_OWNER(messageData);
-                        FMD_CS_SET_MISSION_OWNER?.Invoke(client, CS_SET_MISSION_OWNERmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_QUIT_MISSION:
-                    if (FMD_CS_QUIT_MISSION != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_QUIT_MISSION CS_QUIT_MISSIONmsg = new AllegianceInterop.FMD_CS_QUIT_MISSION(messageData);
-                        FMD_CS_QUIT_MISSION?.Invoke(client, CS_QUIT_MISSIONmsg);
-                    }
-                    break;
-                case MessageType.FM_S_JOIN_SIDE:
-                    if (FMD_S_JOIN_SIDE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_JOIN_SIDE S_JOIN_SIDEmsg = new AllegianceInterop.FMD_S_JOIN_SIDE(messageData);
-                        FMD_S_JOIN_SIDE?.Invoke(client, S_JOIN_SIDEmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_QUIT_SIDE:
-                    if (FMD_CS_QUIT_SIDE != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_QUIT_SIDE CS_QUIT_SIDEmsg = new AllegianceInterop.FMD_CS_QUIT_SIDE(messageData);
-                        FMD_CS_QUIT_SIDE?.Invoke(client, CS_QUIT_SIDEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_ENTER_GAME:
-                    if (FMD_S_ENTER_GAME != null)
-                    {
-
-                        AllegianceInterop.FMD_S_ENTER_GAME S_ENTER_GAMEmsg = new AllegianceInterop.FMD_S_ENTER_GAME(messageData);
-                        FMD_S_ENTER_GAME?.Invoke(client, S_ENTER_GAMEmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_RELOAD:
-                    if (FMD_CS_RELOAD != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_RELOAD CS_RELOADmsg = new AllegianceInterop.FMD_CS_RELOAD(messageData);
-                        FMD_CS_RELOAD?.Invoke(client, CS_RELOADmsg);
-                    }
-                    break;
-
-                case MessageType.FM_S_GAIN_FLAG:
-                    if (FMD_S_GAIN_FLAG != null)
-                    {
-
-                        AllegianceInterop.FMD_S_GAIN_FLAG S_GAIN_FLAGmsg = new AllegianceInterop.FMD_S_GAIN_FLAG(messageData);
-                        FMD_S_GAIN_FLAG?.Invoke(client, S_GAIN_FLAGmsg);
-                    }
-                    break;
-                case MessageType.FM_C_START_GAME:
-                    if (FMD_C_START_GAME != null)
-                    {
-
-                        AllegianceInterop.FMD_C_START_GAME C_START_GAMEmsg = new AllegianceInterop.FMD_C_START_GAME(messageData);
-                        FMD_C_START_GAME?.Invoke(client, C_START_GAMEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_ACQUIRE_TREASURE:
-                    if (FMD_S_ACQUIRE_TREASURE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_ACQUIRE_TREASURE S_ACQUIRE_TREASUREmsg = new AllegianceInterop.FMD_S_ACQUIRE_TREASURE(messageData);
-                        FMD_S_ACQUIRE_TREASURE?.Invoke(client, S_ACQUIRE_TREASUREmsg);
-                    }
-                    break;
-                case MessageType.FM_C_TREASURE_ACK:
-                    if (FMD_C_TREASURE_ACK != null)
-                    {
-
-                        AllegianceInterop.FMD_C_TREASURE_ACK C_TREASURE_ACKmsg = new AllegianceInterop.FMD_C_TREASURE_ACK(messageData);
-                        FMD_C_TREASURE_ACK?.Invoke(client, C_TREASURE_ACKmsg);
-                    }
-                    break;
-                case MessageType.FM_S_ADD_PART:
-                    if (FMD_S_ADD_PART != null)
-                    {
-
-                        AllegianceInterop.FMD_S_ADD_PART S_ADD_PARTmsg = new AllegianceInterop.FMD_S_ADD_PART(messageData);
-                        FMD_S_ADD_PART?.Invoke(client, S_ADD_PARTmsg);
-                    }
-                    break;
-                case MessageType.FM_S_ENTER_LIFEPOD:
-                    if (FMD_S_ENTER_LIFEPOD != null)
-                    {
-
-                        AllegianceInterop.FMD_S_ENTER_LIFEPOD S_ENTER_LIFEPODmsg = new AllegianceInterop.FMD_S_ENTER_LIFEPOD(messageData);
-                        FMD_S_ENTER_LIFEPOD?.Invoke(client, S_ENTER_LIFEPODmsg);
-                    }
-                    break;
-                case MessageType.FM_S_LIGHT_SHIPS_UPDATE:
-                    if (FMD_S_LIGHT_SHIPS_UPDATE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_LIGHT_SHIPS_UPDATE S_LIGHT_SHIPS_UPDATEmsg = new AllegianceInterop.FMD_S_LIGHT_SHIPS_UPDATE(messageData);
-                        FMD_S_LIGHT_SHIPS_UPDATE?.Invoke(client, S_LIGHT_SHIPS_UPDATEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_HEAVY_SHIPS_UPDATE:
-                    if (FMD_S_HEAVY_SHIPS_UPDATE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_HEAVY_SHIPS_UPDATE S_HEAVY_SHIPS_UPDATEmsg = new AllegianceInterop.FMD_S_HEAVY_SHIPS_UPDATE(messageData);
-                        FMD_S_HEAVY_SHIPS_UPDATE?.Invoke(client, S_HEAVY_SHIPS_UPDATEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_VIEW_CLUSTER:
-                    if (FMD_S_VIEW_CLUSTER != null)
-                    {
-
-                        AllegianceInterop.FMD_S_VIEW_CLUSTER S_VIEW_CLUSTERmsg = new AllegianceInterop.FMD_S_VIEW_CLUSTER(messageData);
-                        FMD_S_VIEW_CLUSTER?.Invoke(client, S_VIEW_CLUSTERmsg);
-                    }
-                    break;
-                case MessageType.FM_S_BOARD_NACK:
-                    if (FMD_S_BOARD_NACK != null)
-                    {
-
-                        AllegianceInterop.FMD_S_BOARD_NACK S_BOARD_NACKmsg = new AllegianceInterop.FMD_S_BOARD_NACK(messageData);
-                        FMD_S_BOARD_NACK?.Invoke(client, S_BOARD_NACKmsg);
-                    }
-                    break;
-                case MessageType.FM_S_ASTEROIDS_UPDATE:
-                    if (FMD_S_ASTEROIDS_UPDATE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_ASTEROIDS_UPDATE S_ASTEROIDS_UPDATEmsg = new AllegianceInterop.FMD_S_ASTEROIDS_UPDATE(messageData);
-                        FMD_S_ASTEROIDS_UPDATE?.Invoke(client, S_ASTEROIDS_UPDATEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_ASTEROID_DRAINED:
-                    if (FMD_S_ASTEROID_DRAINED != null)
-                    {
-
-                        AllegianceInterop.FMD_S_ASTEROID_DRAINED S_ASTEROID_DRAINEDmsg = new AllegianceInterop.FMD_S_ASTEROID_DRAINED(messageData);
-                        FMD_S_ASTEROID_DRAINED?.Invoke(client, S_ASTEROID_DRAINEDmsg);
-                    }
-                    break;
-                case MessageType.FM_S_BUILDINGEFFECT_DESTROYED:
-                    if (FMD_S_BUILDINGEFFECT_DESTROYED != null)
-                    {
-
-                        AllegianceInterop.FMD_S_BUILDINGEFFECT_DESTROYED S_BUILDINGEFFECT_DESTROYEDmsg = new AllegianceInterop.FMD_S_BUILDINGEFFECT_DESTROYED(messageData);
-                        FMD_S_BUILDINGEFFECT_DESTROYED?.Invoke(client, S_BUILDINGEFFECT_DESTROYEDmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_REQUEST_MONEY:
-                    if (FMD_CS_REQUEST_MONEY != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_REQUEST_MONEY CS_REQUEST_MONEYmsg = new AllegianceInterop.FMD_CS_REQUEST_MONEY(messageData);
-                        FMD_CS_REQUEST_MONEY?.Invoke(client, CS_REQUEST_MONEYmsg);
-                    }
-                    break;
-                case MessageType.FM_S_SHIP_RESET:
-                    if (FMD_S_SHIP_RESET != null)
-                    {
-
-                        AllegianceInterop.FMD_S_SHIP_RESET S_SHIP_RESETmsg = new AllegianceInterop.FMD_S_SHIP_RESET(messageData);
-                        FMD_S_SHIP_RESET?.Invoke(client, S_SHIP_RESETmsg);
-                    }
-                    break;
-                case MessageType.FM_C_RIPCORD_REQUEST:
-                    if (FMD_C_RIPCORD_REQUEST != null)
-                    {
-
-                        AllegianceInterop.FMD_C_RIPCORD_REQUEST C_RIPCORD_REQUESTmsg = new AllegianceInterop.FMD_C_RIPCORD_REQUEST(messageData);
-                        FMD_C_RIPCORD_REQUEST?.Invoke(client, C_RIPCORD_REQUESTmsg);
-                    }
-                    break;
-                case MessageType.FM_S_RIPCORD_ACTIVATE:
-                    if (FMD_S_RIPCORD_ACTIVATE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_RIPCORD_ACTIVATE S_RIPCORD_ACTIVATEmsg = new AllegianceInterop.FMD_S_RIPCORD_ACTIVATE(messageData);
-                        FMD_S_RIPCORD_ACTIVATE?.Invoke(client, S_RIPCORD_ACTIVATEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_RIPCORD_DENIED:
-                    if (FMD_S_RIPCORD_DENIED != null)
-                    {
-
-                        AllegianceInterop.FMD_S_RIPCORD_DENIED S_RIPCORD_DENIEDmsg = new AllegianceInterop.FMD_S_RIPCORD_DENIED(messageData);
-                        FMD_S_RIPCORD_DENIED?.Invoke(client, S_RIPCORD_DENIEDmsg);
-                    }
-                    break;
-                case MessageType.FM_S_RIPCORD_ABORTED:
-                    if (FMD_S_RIPCORD_ABORTED != null)
-                    {
-
-                        AllegianceInterop.FMD_S_RIPCORD_ABORTED S_RIPCORD_ABORTEDmsg = new AllegianceInterop.FMD_S_RIPCORD_ABORTED(messageData);
-                        FMD_S_RIPCORD_ABORTED?.Invoke(client, S_RIPCORD_ABORTEDmsg);
-                    }
-                    break;
-                case MessageType.FM_S_WARP_BOMB:
-                    if (FMD_S_WARP_BOMB != null)
-                    {
-
-                        AllegianceInterop.FMD_S_WARP_BOMB S_WARP_BOMBmsg = new AllegianceInterop.FMD_S_WARP_BOMB(messageData);
-                        FMD_S_WARP_BOMB?.Invoke(client, S_WARP_BOMBmsg);
-                    }
-                    break;
-                case MessageType.FM_S_PROMOTE:
-                    if (FMD_S_PROMOTE != null)
-                    {
-
-                        AllegianceInterop.FMD_S_PROMOTE S_PROMOTEmsg = new AllegianceInterop.FMD_S_PROMOTE(messageData);
-                        FMD_S_PROMOTE?.Invoke(client, S_PROMOTEmsg);
-                    }
-                    break;
-                case MessageType.FM_C_PROMOTE:
-                    if (FMD_C_PROMOTE != null)
-                    {
-
-                        AllegianceInterop.FMD_C_PROMOTE C_PROMOTEmsg = new AllegianceInterop.FMD_C_PROMOTE(messageData);
-                        FMD_C_PROMOTE?.Invoke(client, C_PROMOTEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_CREATE_BUCKETS:
-                    if (FMD_S_CREATE_BUCKETS != null)
-                    {
-
-                        AllegianceInterop.FMD_S_CREATE_BUCKETS S_CREATE_BUCKETSmsg = new AllegianceInterop.FMD_S_CREATE_BUCKETS(messageData);
-                        FMD_S_CREATE_BUCKETS?.Invoke(client, S_CREATE_BUCKETSmsg);
-                    }
-                    break;
-                case MessageType.FM_S_RELAUNCH_SHIP:
-                    if (FMD_S_RELAUNCH_SHIP != null)
-                    {
-
-                        AllegianceInterop.FMD_S_RELAUNCH_SHIP S_RELAUNCH_SHIPmsg = new AllegianceInterop.FMD_S_RELAUNCH_SHIP(messageData);
-                        FMD_S_RELAUNCH_SHIP?.Invoke(client, S_RELAUNCH_SHIPmsg);
-                    }
-                    break;
-
-                case MessageType.FM_S_PINGDATA:
-                    if (FMD_S_PINGDATA != null)
-                    {
-
-                        AllegianceInterop.FMD_S_PINGDATA S_PINGDATAmsg = new AllegianceInterop.FMD_S_PINGDATA(messageData);
-                        FMD_S_PINGDATA?.Invoke(client, S_PINGDATAmsg);
-                    }
-                    break;
-                case MessageType.FM_C_REQPINGDATA:
-                    if (FMD_C_REQPINGDATA != null)
-                    {
-
-                        AllegianceInterop.FMD_C_REQPINGDATA C_REQPINGDATAmsg = new AllegianceInterop.FMD_C_REQPINGDATA(messageData);
-                        FMD_C_REQPINGDATA?.Invoke(client, C_REQPINGDATAmsg);
-                    }
-                    break;
-                case MessageType.FM_C_CHANGE_ALLIANCE:
-                    if (FMD_C_CHANGE_ALLIANCE != null)
-                    {
-
-                        AllegianceInterop.FMD_C_CHANGE_ALLIANCE C_CHANGE_ALLIANCEmsg = new AllegianceInterop.FMD_C_CHANGE_ALLIANCE(messageData);
-                        FMD_C_CHANGE_ALLIANCE?.Invoke(client, C_CHANGE_ALLIANCEmsg);
-                    }
-                    break;
-                case MessageType.FM_S_CHANGE_ALLIANCES:
-                    if (FMD_S_CHANGE_ALLIANCES != null)
-                    {
-
-                        AllegianceInterop.FMD_S_CHANGE_ALLIANCES S_CHANGE_ALLIANCESmsg = new AllegianceInterop.FMD_S_CHANGE_ALLIANCES(messageData);
-                        FMD_S_CHANGE_ALLIANCES?.Invoke(client, S_CHANGE_ALLIANCESmsg);
-                    }
-                    break;
-                case MessageType.FM_S_ASTEROID_MINED:
-                    if (FMD_S_ASTEROID_MINED != null)
-                    {
-
-                        AllegianceInterop.FMD_S_ASTEROID_MINED S_ASTEROID_MINEDmsg = new AllegianceInterop.FMD_S_ASTEROID_MINED(messageData);
-                        FMD_S_ASTEROID_MINED?.Invoke(client, S_ASTEROID_MINEDmsg);
-                    }
-                    break;
-                case MessageType.FM_CS_HIGHLIGHT_CLUSTER:
-                    if (FMD_CS_HIGHLIGHT_CLUSTER != null)
-                    {
-
-                        AllegianceInterop.FMD_CS_HIGHLIGHT_CLUSTER CS_HIGHLIGHT_CLUSTERmsg = new AllegianceInterop.FMD_CS_HIGHLIGHT_CLUSTER(messageData);
-                        FMD_CS_HIGHLIGHT_CLUSTER?.Invoke(client, CS_HIGHLIGHT_CLUSTERmsg);
-                    }
-                    break;
-
-                case MessageType.FM_S_CLUSTERINFO:
-                    if (FMD_S_CLUSTERINFO != null)
-                    {
-
-                        AllegianceInterop.FMD_S_CLUSTERINFO CS_HIGHLIGHT_CLUSTERmsg = new AllegianceInterop.FMD_S_CLUSTERINFO(messageData);
-                        FMD_S_CLUSTERINFO?.Invoke(client, CS_HIGHLIGHT_CLUSTERmsg);
-                    }
-                    break;
-
-                // From messageslc.h
-                case MessageType.FM_C_LOGON_LOBBY_OLD:
-                    if (FMD_C_LOGON_LOBBY_OLD != null)
-                    {
-
-                        AllegianceInterop.FMD_C_LOGON_LOBBY_OLD C_LOGON_LOBBY_OLDmsg = new AllegianceInterop.FMD_C_LOGON_LOBBY_OLD(messageData);
-                        FMD_C_LOGON_LOBBY_OLD?.Invoke(client, C_LOGON_LOBBY_OLDmsg);
-                    }
-                    break;
-                case MessageType.FM_C_LOGOFF_LOBBY:
-                    if (FMD_C_LOGOFF_LOBBY != null)
-                    {
-
-                        AllegianceInterop.FMD_C_LOGOFF_LOBBY C_LOGOFF_LOBBYmsg = new AllegianceInterop.FMD_C_LOGOFF_LOBBY(messageData);
-                        FMD_C_LOGOFF_LOBBY?.Invoke(client, C_LOGOFF_LOBBYmsg);
-                    }
-                    break;
-                case MessageType.FM_L_AUTO_UPDATE_INFO:
-                    if (FMD_L_AUTO_UPDATE_INFO != null)
-                    {
-
-                        AllegianceInterop.FMD_L_AUTO_UPDATE_INFO L_AUTO_UPDATE_INFOmsg = new AllegianceInterop.FMD_L_AUTO_UPDATE_INFO(messageData);
-                        FMD_L_AUTO_UPDATE_INFO?.Invoke(client, L_AUTO_UPDATE_INFOmsg);
-                    }
-                    break;
-                case MessageType.FM_C_CREATE_MISSION_REQ:
-                    if (FMD_C_CREATE_MISSION_REQ != null)
-                    {
-
-                        AllegianceInterop.FMD_C_CREATE_MISSION_REQ C_CREATE_MISSION_REQmsg = new AllegianceInterop.FMD_C_CREATE_MISSION_REQ(messageData);
-                        FMD_C_CREATE_MISSION_REQ?.Invoke(client, C_CREATE_MISSION_REQmsg);
-                    }
-                    break;
-                case MessageType.FM_L_CREATE_MISSION_ACK:
-                    if (FMD_L_CREATE_MISSION_ACK != null)
-                    {
-
-                        AllegianceInterop.FMD_L_CREATE_MISSION_ACK L_CREATE_MISSION_ACKmsg = new AllegianceInterop.FMD_L_CREATE_MISSION_ACK(messageData);
-                        FMD_L_CREATE_MISSION_ACK?.Invoke(client, L_CREATE_MISSION_ACKmsg);
-                    }
-                    break;
-                case MessageType.FM_L_CREATE_MISSION_NACK:
-                    if (FMD_L_CREATE_MISSION_NACK != null)
-                    {
-
-                        AllegianceInterop.FMD_L_CREATE_MISSION_NACK L_CREATE_MISSION_NACKmsg = new AllegianceInterop.FMD_L_CREATE_MISSION_NACK(messageData);
-                        FMD_L_CREATE_MISSION_NACK?.Invoke(client, L_CREATE_MISSION_NACKmsg);
-                    }
-                    break;
-                case MessageType.FM_C_JOIN_GAME_REQ:
-                    if (FMD_C_JOIN_GAME_REQ != null)
-                    {
-
-                        AllegianceInterop.FMD_C_JOIN_GAME_REQ C_JOIN_GAME_REQmsg = new AllegianceInterop.FMD_C_JOIN_GAME_REQ(messageData);
-                        FMD_C_JOIN_GAME_REQ?.Invoke(client, C_JOIN_GAME_REQmsg);
-                    }
-                    break;
-                case MessageType.FM_L_JOIN_GAME_NACK:
-                    if (FMD_L_JOIN_GAME_NACK != null)
-                    {
-
-                        AllegianceInterop.FMD_L_JOIN_GAME_NACK L_JOIN_GAME_NACKmsg = new AllegianceInterop.FMD_L_JOIN_GAME_NACK(messageData);
-                        FMD_L_JOIN_GAME_NACK?.Invoke(client, L_JOIN_GAME_NACKmsg);
-                    }
-                    break;
-                case MessageType.FM_L_JOIN_MISSION:
-                    if (FMD_L_JOIN_MISSION != null)
-                    {
-
-                        AllegianceInterop.FMD_L_JOIN_MISSION L_JOIN_MISSIONmsg = new AllegianceInterop.FMD_L_JOIN_MISSION(messageData);
-                        FMD_L_JOIN_MISSION?.Invoke(client, L_JOIN_MISSIONmsg);
-                    }
-                    break;
-                case MessageType.FM_L_LOGON_ACK:
-                    if (FMD_L_LOGON_ACK != null)
-                    {
-
-                        AllegianceInterop.FMD_L_LOGON_ACK L_LOGON_ACKmsg = new AllegianceInterop.FMD_L_LOGON_ACK(messageData);
-                        FMD_L_LOGON_ACK?.Invoke(client, L_LOGON_ACKmsg);
-                    }
-                    break;
-                case MessageType.FM_L_LOGON_NACK:
-                    if (FMD_L_LOGON_NACK != null)
-                    {
-
-                        AllegianceInterop.FMD_L_LOGON_NACK L_LOGON_NACKmsg = new AllegianceInterop.FMD_L_LOGON_NACK(messageData);
-                        FMD_L_LOGON_NACK?.Invoke(client, L_LOGON_NACKmsg);
-                    }
-                    break;
-                case MessageType.FM_C_FIND_PLAYER:
-                    if (FMD_C_FIND_PLAYER != null)
-                    {
-
-                        AllegianceInterop.FMD_C_FIND_PLAYER C_FIND_PLAYERmsg = new AllegianceInterop.FMD_C_FIND_PLAYER(messageData);
-                        FMD_C_FIND_PLAYER?.Invoke(client, C_FIND_PLAYERmsg);
-                    }
-                    break;
-                case MessageType.FM_L_FOUND_PLAYER:
-                    if (FMD_L_FOUND_PLAYER != null)
-                    {
-
-                        AllegianceInterop.FMD_L_FOUND_PLAYER L_FOUND_PLAYERmsg = new AllegianceInterop.FMD_L_FOUND_PLAYER(messageData);
-                        FMD_L_FOUND_PLAYER?.Invoke(client, L_FOUND_PLAYERmsg);
-                    }
-                    break;
-                case MessageType.FM_C_LOGON_LOBBY:
-                    if (FMD_C_LOGON_LOBBY != null)
-                    {
-
-                        AllegianceInterop.FMD_C_LOGON_LOBBY C_LOGON_LOBBYmsg = new AllegianceInterop.FMD_C_LOGON_LOBBY(messageData);
-                        FMD_C_LOGON_LOBBY?.Invoke(client, C_LOGON_LOBBYmsg);
-                    }
-                    break;
-                case MessageType.FM_C_GET_SERVERS_REQ:
-                    if (FMD_C_GET_SERVERS_REQ != null)
-                    {
-
-                        AllegianceInterop.FMD_C_GET_SERVERS_REQ C_GET_SERVERS_REQmsg = new AllegianceInterop.FMD_C_GET_SERVERS_REQ(messageData);
-                        FMD_C_GET_SERVERS_REQ?.Invoke(client, C_GET_SERVERS_REQmsg);
-                    }
-                    break;
-                case MessageType.FM_L_SERVERS_LIST:
-                    if (FMD_L_SERVERS_LIST != null)
-                    {
-
-                        AllegianceInterop.FMD_L_SERVERS_LIST L_SERVERS_LISTmsg = new AllegianceInterop.FMD_L_SERVERS_LIST(messageData);
-                        FMD_L_SERVERS_LIST?.Invoke(client, L_SERVERS_LISTmsg);
-                    }
-                    break;
-
-                // messagesall.h
-                case MessageType.FM_LS_LOBBYMISSIONINFO:
-                    if (FMD_LS_LOBBYMISSIONINFO != null)
-                    {
-
-                        AllegianceInterop.FMD_LS_LOBBYMISSIONINFO LS_LOBBYMISSIONINFOmsg = new AllegianceInterop.FMD_LS_LOBBYMISSIONINFO(messageData);
-                        FMD_LS_LOBBYMISSIONINFO?.Invoke(client, LS_LOBBYMISSIONINFOmsg);
-                    }
-                    break;
-                case MessageType.FM_LS_MISSION_GONE:
-                    if (FMD_LS_MISSION_GONE != null)
-                    {
-
-                        AllegianceInterop.FMD_LS_MISSION_GONE LS_MISSION_GONEmsg = new AllegianceInterop.FMD_LS_MISSION_GONE(messageData);
-                        FMD_LS_MISSION_GONE?.Invoke(client, LS_MISSION_GONEmsg);
-                    }
-                    break;
-                case MessageType.FM_LS_SQUAD_MEMBERSHIPS:
-                    if (FMD_LS_SQUAD_MEMBERSHIPS != null)
-                    {
-
-                        AllegianceInterop.FMD_LS_SQUAD_MEMBERSHIPS LS_SQUAD_MEMBERSHIPSmsg = new AllegianceInterop.FMD_LS_SQUAD_MEMBERSHIPS(messageData);
-                        FMD_LS_SQUAD_MEMBERSHIPS?.Invoke(client, LS_SQUAD_MEMBERSHIPSmsg);
-                    }
-                    break;
-
-
-                //case MessageType.FM_S_THREAT:
-                //    AllegianceInterop.FMD_S_THREAT S_THREATmsg = new AllegianceInterop.FMD_S_THREAT(messageData);
-                //    FMD_S_THREAT?.Invoke(client, S_THREATmsg);
-                //    break;
-                //case MessageType.FM_S_GAME_STATE:
-                //    AllegianceInterop.FMD_S_GAME_STATE S_GAME_STATEmsg = new AllegianceInterop.FMD_S_GAME_STATE(messageData);
-                //    FMD_S_GAME_STATE?.Invoke(client, S_GAME_STATEmsg);
-                //    break;
-                //case MessageType.FM_C_BANDWIDTH:
-                //    AllegianceInterop.FMD_C_BANDWIDTH C_BANDWIDTHmsg = new AllegianceInterop.FMD_C_BANDWIDTH(messageData);
-                //    FMD_C_BANDWIDTH?.Invoke(client, C_BANDWIDTHmsg);
-                //   break;
-
-                #endregion
-
-                default:
-                    Console.WriteLine("*** MessageReceiver::ReceiveMessage: Unknown message id received: " + fmid);
-                    break;
+                File.AppendAllText($@"c:\1\logs\{_playerName}_OnAppMessageExceptions.txt", ex.ToString());
             }
         }
 

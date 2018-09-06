@@ -123,11 +123,13 @@
     <Compile Include="Constants\ItemType.cs" />
     <Compile Include="Constants\ObjectType.cs" />
     <Compile Include="Constants\PilotType.cs" />
+    <Compile Include="Constants\ShipState.cs" />
     <Compile Include="Constants\ShipType.cs" />
     <Compile Include="Constants\StationAbilityBitMask.cs" />
     <Compile Include="Constants\StationType.cs" />
     <Compile Include="Constants\StrategyID.cs" />
     <Compile Include="Constants\TargetType.cs" />
+    <Compile Include="Constants\TechpathType.cs" />
     <Compile Include="DijkstraPathFinder.cs" />
     <Compile Include="Entities\CoreInfo.cs" />
     <Compile Include="Entities\GameInfo.cs" />

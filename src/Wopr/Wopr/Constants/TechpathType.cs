@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace Wopr.Constants
 {
-    public enum InvestResult
+    enum TechpathType
     {
-        Succeeded,
-        InsufficientFunds,
-        AlreadyInProgress,
-        InvalidTechName,
-        NotAvailableYet
+        Supremacy,
+        Expansion,
+        Tactical
     }
 }

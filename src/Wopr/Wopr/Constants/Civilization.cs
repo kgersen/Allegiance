@@ -11,7 +11,7 @@ namespace Wopr.Constants
     public enum  Civilization : short
     {
         Belters = 101,
-        Bios = 35,
+        //Bios = 35,
         Gigacorp = 18,
         IronCoalition = 25
     }

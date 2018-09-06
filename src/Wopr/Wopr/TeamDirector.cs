@@ -362,14 +362,14 @@ namespace Wopr
                 //{
                     while (_cancellationTokenSource.IsCancellationRequested == false)
                     {
-                        //try
-                        //{
+                        try
+                        {
                             clientConnection.SendAndReceiveUpdate();
-                        //}
-                        //catch (Exception ex)
-                        //{
-                        //    Log(createPlayerParams.playerName, ex);
-                        //}
+                        }
+                        catch (Exception ex)
+                        {
+                            Log(createPlayerParams.playerName, ex);
+                        }
 
                         StrategyBase currentStrategy;
                         if (_currentStrategyByPlayerName.TryGetValue(createPlayerParams.playerName, out currentStrategy) == true)
