@@ -159,7 +159,8 @@ namespace Wopr
         internal void UpdateTeamStrategies()
         {
             // Get team leader's ship
-            var teamLeaderShip = _connectedClientsByPlayerName.Values.Where(p => p.GetShip() != null && p.GetSide() != null &&  p.SideLeaderShipID(p.GetSide().GetObjectID()) == p.GetShip()?.GetObjectID()).FirstOrDefault()?.GetShip();
+            var teamLeaderShip = _connectedClientsByPlayerName.Values.ToArray()
+                .Where(p => p.GetShip() != null && p.GetSide() != null &&  p.SideLeaderShipID(p.GetSide().GetObjectID()) == p.GetShip()?.GetObjectID()).FirstOrDefault()?.GetShip();
 
             if (teamLeaderShip == null)
                 return;

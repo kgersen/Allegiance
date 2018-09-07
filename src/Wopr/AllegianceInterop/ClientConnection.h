@@ -259,6 +259,10 @@ namespace AllegianceInterop
 
 		ShipID SideLeaderShipID(SideID sideID) { return m_nativeClient->MyMission()->SideLeaderShipID(sideID); }
 
+		void DonateMoney(PlayerInfoWrapper ^ playerInfo, float amount) {
+			m_nativeClient->DonateMoney(playerInfo->m_instance, amount);
+		}
+
 	};
 }
 

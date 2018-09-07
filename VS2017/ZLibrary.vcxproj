@@ -2,9 +2,14 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <VcpkgConfiguration Condition="'$(Configuration)' == 'FZDebug'">Debug</VcpkgConfiguration>
+    <VcpkgConfiguration Condition="'$(Configuration)'=='FZDebug-NoYellowComm'">Debug</VcpkgConfiguration>
     <VcpkgConfiguration Condition="'$(Configuration)' == 'FZRetail'">Release</VcpkgConfiguration>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="FZDebug-NoYellowComm|Win32">
+      <Configuration>FZDebug-NoYellowComm</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="FZDebug|Win32">
       <Configuration>FZDebug</Configuration>
       <Platform>Win32</Platform>
@@ -39,6 +44,11 @@
     <UseOfMfc>false</UseOfMfc>
     <PlatformToolset>v141_xp</PlatformToolset>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug-NoYellowComm|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <PlatformToolset>v141_xp</PlatformToolset>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
@@ -54,15 +64,45 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug-NoYellowComm|Win32'" Label="PropertySheets">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs$(PlatformToolset)\$(Configuration)\ZLib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug-NoYellowComm|Win32'">..\objs$(PlatformToolset)\$(Configuration)\ZLib\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs$(PlatformToolset)\$(Configuration)\ZLib\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug-NoYellowComm|Win32'">..\objs$(PlatformToolset)\$(Configuration)\ZLib\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs$(PlatformToolset)\$(Configuration)\ZLib\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs$(PlatformToolset)\$(Configuration)\ZLib\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG;_CRT_SECURE_NO_DEPRECATE;__MODULE__#"ZLib";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <BasicRuntimeChecks>StackFrameRuntimeCheck</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <WarningLevel>Level1</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Lib>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug-NoYellowComm|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\src\lib\Steam;..\src\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

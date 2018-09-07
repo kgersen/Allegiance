@@ -14,6 +14,7 @@ namespace Wopr.Strategies
 {
     public class CommanderResearchAndExpand : StrategyBase
     {
+        private const int AmountOfMoneyToKeepOnHand = 1000; // The amount of money that the commander should keep on hand to let players buy bombers and stuff.
         private const string SecondTechbaseMarker = "Second Techbase";
 
         private List<String> _investmentList = new List<String>();
@@ -106,15 +107,16 @@ namespace Wopr.Strategies
                 "Enh Miner",
                 "Enh Fighter",
                 "Stealth Fighter",
-                "EW Util Cannon 2",
+                "EW Utl Cannon 2",
                 "EW Sniper Rifle 1",
                 "LRM Hunter 2",
-                "GA: Sig Cloak 2",
-                "GA: Ship Agility 1",
+                "Sig Cloak 2",
+                "GA: Missile Track 1",
                 "GA: Ship Energy 1",
+                "GA: Ship Agility 1",
                 "GA: EW Range 1",
                 "GA: Ship Speed 1",
-                "GA: Missile Track 1",
+                
 
                 "Bomber",
                 "Upgrade Tactical",
@@ -124,15 +126,16 @@ namespace Wopr.Strategies
 
                 SecondTechbaseMarker, // We can now build a secondary tech if we want to.
 
-                "EW Util Cannon 3",
+                "EW Utl Cannon 3",
                 "EW Sniper Rifle 2",
                 "LRM Hunter 3",
                 "Sig Cloak 3",
-                "Ship Agility 2",
-                "Ship Energy 2",
+                "GA: Missile Track 2",
+                "GA: Ship Energy 2",
+                "GA: Ship Agility 2",
                 "GA: EW Range 2",
                 "GA: Ship Speed 2",
-                "GA: Missile Track 2",
+                
 
                 "Stealth Bomber",
 
@@ -146,13 +149,13 @@ namespace Wopr.Strategies
                 "Med Shield 2",
                 "ER Nanite 2",
                 
-                "EWS Probe 2",
+                //"EWS Probe 2",
                 
                 "Teleport Probe 1",
-                "Teleport Probe 2",
+                //"Teleport Probe 2",
                 "Hvy Scout",
                 
-                "EWS Probe 3",
+                //"EWS Probe 3",
                 "Med Shield 3",
                 "ER Nanite 3"
             });
@@ -206,7 +209,7 @@ namespace Wopr.Strategies
                 "Med Shield 2",
                 "ER Nanite 2",
 
-                "EWS Probe 2",
+                //"EWS Probe 2",
 
                 "Hvy Scout",
 
@@ -216,7 +219,7 @@ namespace Wopr.Strategies
                 "GA: EWS Probe 3",
                 "GA: Med Shield 3",
                 "GA: ER Nanite 3",
-                "GA: Counter 3",
+                "Counter 3",
 
                 "GA: Station Hull 2",
                 "GA: Station Shield 2",
@@ -227,15 +230,19 @@ namespace Wopr.Strategies
 
             List<String> expansionSecondary = new List<string>(new string[]
                 {
+                    "GA: PW&EW Damage 1",
+                    "GA: PW Range 1",
                     "GA: Faster He3 1",
                     "GA: He3 Yield 1",
-                    "GA: PW Range 1",
                     "GA: Ship Acceleration 1",
                     "GA: Ship Signature 1",
-                    "GA: PW&EW Damage 1",
-                    "GA: PW&EW Damage 2",
+
                     "Pulse Probe 1",
+
                     "Upgrade Expansion",
+
+                    "GA: PW&EW Damage 2",
+                    "GA: PW Range 2",
                     "GA: Faster He3 2",
                     "GA: He3 Yield 2",
                     "GA: Station Hull 1",
@@ -244,7 +251,7 @@ namespace Wopr.Strategies
                     "GA: Ship Signature 2",
                     "GA: Station Hull 2",
                     "GA: Station Shield 2",
-                    "GA: PW Range 2",
+                    
                     "Pulse Probe 2",
                     "Adv Miner",
                     "Adv Constructor"
@@ -257,12 +264,10 @@ namespace Wopr.Strategies
                     "GA: Ship Agility 1",
                     "GA: Ship Speed 1",
                     "GA: Missile Track 1",
-                    "GA: Ship Signature 1",
                     "Upgrade Tactical",
                     "GA: Ship Agility 2",
                     "GA: Ship Speed 2",
                     "GA: Missile Track 2",
-                    "GA: Ship Signature 2"
                 });
 
             _secondaryTechPaths.Add(TechpathType.Tactical, tacticalSecondary);
@@ -275,12 +280,14 @@ namespace Wopr.Strategies
                     "GA: Sensors 1",
                     "GA: Ripcord 1",
                     "Upgrade Supremacy",
+                    "EWS Probe 2",
                     "GA: Ship Hull 2",
                     "GA: Missile Damage 2",
                     "GA: Sensors 2",
                     "GA: Ripcord 2",
                     "SRM Anti-Base 2",
                     "SRM Anti-Base 3",
+                    "EWS Probe 3"
                 });
 
             _secondaryTechPaths.Add(TechpathType.Supremacy, supremacySecondary);
@@ -297,6 +304,23 @@ namespace Wopr.Strategies
             messageReceiver.FMD_S_MONEY_CHANGE += MessageReceiver_FMD_S_MONEY_CHANGE;
             //messageReceiver.FMD_S_PINGDATA += MessageReceiver_FMD_S_PINGDATA; // Use this to drive infrequent updates (updates every 5 seconds).
             messageReceiver.FMD_CS_PING += MessageReceiver_FMD_CS_PING; // Use this to drive infrequent updates (updates every 5 seconds).
+            messageReceiver.FMD_CS_REQUEST_MONEY += MessageReceiver_FMD_CS_REQUEST_MONEY;
+        }
+
+        private void MessageReceiver_FMD_CS_REQUEST_MONEY(ClientConnection client, AllegianceInterop.FMD_CS_REQUEST_MONEY message)
+        {
+            // If we got the cash, hand out the goodies!
+            if (client.GetMoney() > message.amount)
+            {
+                var requestingShip = client.GetSide().GetShip(message.shipidRequest);
+
+                if (requestingShip != null)
+                {
+                    Log($"Got a money request from {requestingShip.GetName()} for {message.amount}");
+
+                    client.DonateMoney(client.GetSide().GetShip(message.shipidRequest).GetPlayerInfo(), message.amount);
+                }
+            }
         }
 
         private void MessageReceiver_FMD_CS_PING(ClientConnection client, AllegianceInterop.FMD_CS_PING message)
@@ -1192,8 +1216,8 @@ namespace Wopr.Strategies
                 // Only trigger the secondary tech base build once.
                 if (techname == SecondTechbaseMarker && _readyForSecondTechbase == true)
                     continue;
-
-                if (IsTechAvailableForInvestment(techname) == true)
+                
+                if (IsTechWaitingToBeBuilt(techname) == true)
                 {
                     QueueTech(techname);
                     //return true;
@@ -1211,16 +1235,13 @@ namespace Wopr.Strategies
         /// <returns></returns>
         private TechpathType? GetTechpath(bool primaryTechpath)
         {
+            // Can't have a secondary tech path until the primary techpath has been determined.
+            if (_primaryTechpath == null && primaryTechpath == false)
+                return null;
+
             var stations = ClientConnection.GetSide().GetStations().ToList();
             stations.Reverse();
-
-            int stationOffset;
-
-            //if (primaryTechpath == true)
-            //    stationOffset = 1;
-            //else
-            //    stationOffset = 2;
-
+            
             foreach (var station in stations)
             {
                 if (station == null)
@@ -1308,8 +1329,8 @@ namespace Wopr.Strategies
             }
 
             // Debugging override...
-            if(IsTechAvailableForInvestment("Tactical") == true)
-                return "Tactical";
+            if(IsTechAvailableForInvestment("Supremacy") == true)
+                return "Supremacy";
 
             if (IsTechAvailableForInvestment("Expansion") == true && urocks >= crocks && urocks >= srocks)
                 return "Expansion";
@@ -1342,6 +1363,26 @@ namespace Wopr.Strategies
                 + ClientConnection.GetSide().GetStations().Where(p => p.GetName().Contains("Dry")).Count();
         }
 
+        private bool IsTechWaitingToBeBuilt(string techName)
+        {
+            var side = ClientConnection.GetSide();
+            var buckets = side?.GetBuckets();
+
+            if (side == null || buckets == null)
+                return false;
+
+            if (_investmentList.Contains(techName) == true)
+                return false;
+
+            bool isNonBucketMarker = techName == SecondTechbaseMarker;
+
+            if (isNonBucketMarker == true && _secondaryTechpath == null)
+                return true;
+            
+            // If it's in the tech tree and hasn't been started, then it's waiting to be built even if we can't buy it yet.
+            return buckets.Exists(p => p.GetName().StartsWith(techName, StringComparison.InvariantCultureIgnoreCase) == true && p.GetPercentComplete() == 0);
+        }
+
         private bool IsTechAvailableForInvestment(string techName)
         {
             var side = ClientConnection.GetSide();
@@ -1352,6 +1393,7 @@ namespace Wopr.Strategies
 
             bool isNonBucketMarker = techName == SecondTechbaseMarker;
 
+            // If it's not in the tech tree or we can buy it, or it's already been started, then we don't want to invest in it again.
             if (isNonBucketMarker == false && buckets.Exists(p => p.GetName().StartsWith(techName, StringComparison.InvariantCultureIgnoreCase) == true && side.CanBuy(p) == true && p.GetPercentComplete() == 0) == false)
                 return false;
 
@@ -1435,15 +1477,17 @@ namespace Wopr.Strategies
                 string bucketName = bucket.GetName();
                 if (bucket.GetName().StartsWith(techName, StringComparison.InvariantCultureIgnoreCase) == true)
                 {
+                    
+                       
                     if (side.CanBuy(bucket) == true)
                     {
                         if (bucket.GetPercentComplete() <= 0)
                         {
                             var money = ClientConnection.GetMoney();
 
-                            if (money >= bucket.GetBuyable().GetPrice())
+                            if (money >= bucket.GetBuyable().GetPrice() + AmountOfMoneyToKeepOnHand) // Leave a little cash to let players buy things.
                             {
-                                Log($"Adding money to bucket {bucket.GetName()}. Bucket wants: {bucket.GetBuyable().GetPrice()}, we have: {money}");
+                                Log($"Adding money to bucket {bucket.GetName()}. Bucket wants: {bucket.GetBuyable().GetPrice()}, we have: {money}, reserving {AmountOfMoneyToKeepOnHand} for player purchases.");
                                 ClientConnection.AddMoneyToBucket(bucket, bucket.GetBuyable().GetPrice());
                                 return InvestResult.Succeeded;
                             }
@@ -1462,6 +1506,12 @@ namespace Wopr.Strategies
                     }
                     else
                     {
+                        var buyable = bucket.GetBuyable();
+                        if ((ObjectType)buyable.GetObjectType() == ObjectType.OT_stationType)
+                        {
+                            continue; // See if there is an advanced station in the bucket list.
+                        }
+
                         return InvestResult.NotAvailableYet;
                     }
                 }
@@ -1479,51 +1529,62 @@ namespace Wopr.Strategies
             // Find any miners loafing around the base.
             foreach (var ship in dockedMiners)
             {
-                // This can be done with one Linq statement, but it gets really hard to debug.
+                var orderedClustersWithHe3 = ClientConnection.GetCore().GetClusters().Where(p => p.GetAsteroids()
+                                                    .Where(r => r.GetName().StartsWith("He"))
+                                                    .Sum(x => x.GetOre()) > 150)
+                                                .OrderByDescending(p => p.GetAsteroids()
+                                                    .Where(r => r.GetName().StartsWith("He"))
+                                                    .Sum(x => x.GetOre()));
+                
                 var currentCluster = ClientConnection.GetCore().GetCluster(ship.GetPlayerInfo().LastSeenSector());
                 var adjacentClusters = currentCluster.GetWarps().Select(p => p.GetDestination().GetCluster());
-                var adjacentNonEnemyClusters = adjacentClusters.Where(p => p.GetStations().Exists(r => r.GetSide().GetObjectID() != ClientConnection.GetSide().GetObjectID()) == false);
-                var adjacentClustersWithHe3 = adjacentNonEnemyClusters.Where(p => p.GetAsteroids()
-                                                .Where(r => r.GetName().StartsWith("He"))
-                                                .Sum(x => x.GetOre()) > 150);
-                var orderedClustersWithHe3 = adjacentClustersWithHe3.OrderByDescending(p => p.GetAsteroids()
-                                                .Where(r => r.GetName().StartsWith("He"))
-                                                .Sum(x => x.GetOre()));
 
-                // Find a sector close to home with He3 in it. 
-                if (orderedClustersWithHe3.Count() > 0)
+                var orderedNonEnemyClustersWithHe3 = orderedClustersWithHe3.Where(p => p.GetStations().Exists(r => r.GetSide().GetObjectID() != ClientConnection.GetSide().GetObjectID()) == false);
+
+                var orderedNonEnemyAdjacentClustersWithHe3 = orderedNonEnemyClustersWithHe3.Where(p => adjacentClusters.Select(x => x.GetObjectID()).Contains(p.GetObjectID()) == true);
+
+                var friendlyStations = ClientConnection.GetSide().GetStations().Where(p => p.GetSide().GetObjectID() == ClientConnection.GetSide().GetObjectID());
+                var friendlyClustersWithoutEnemyStations = friendlyStations.Where(p => p.GetCluster().GetStations().Exists(r => r.GetSide().GetObjectID() != ClientConnection.GetSide().GetObjectID()) == false).Select(p => p.GetCluster());
+                
+                var orderedFriendlyStationClustersWithHe3 = orderedNonEnemyClustersWithHe3.Where(p => friendlyClustersWithoutEnemyStations.Select(x => x.GetObjectID()).Contains(p.GetObjectID()) == true);
+
+                var orderedContestedStationClustersWithHe3 = orderedClustersWithHe3.Where(p => friendlyStations.Select(r => r.GetCluster()).Select(x => x.GetObjectID()).Contains(p.GetObjectID()) == true);
+                
+                IclusterIGCWrapper targetCluster = null;
+                
+                if (targetCluster == null && orderedNonEnemyAdjacentClustersWithHe3.Count() > 0)
                 {
-                    Log($"Kicking loafing miner to {orderedClustersWithHe3.First().GetName()}");
+                    targetCluster = orderedNonEnemyAdjacentClustersWithHe3.First();
+                    Log($"Kicking loafing miner {ship.GetName()} to non-enemy adjacent cluster {targetCluster.GetName()}");
+                }
 
-                    var buoy = ClientConnection.CreateBuoy((sbyte)BuoyType.c_buoyCluster, 0, 0, 0, orderedClustersWithHe3.First().GetObjectID(), true);
+                if (targetCluster == null && orderedFriendlyStationClustersWithHe3.Count() > 0)
+                {
+                    targetCluster = orderedFriendlyStationClustersWithHe3.First();
+                    Log($"Kicking loafing miner {ship.GetName()} to friendly station cluster {targetCluster.GetName()}");
+                }
+
+                if (targetCluster == null && orderedContestedStationClustersWithHe3.Count() > 0)
+                {
+                    // TODO: Request TeamDirectory for miner D.
+                    targetCluster = orderedContestedStationClustersWithHe3.First();
+                    Log($"Kicking loafing miner {ship.GetName()} to contested station cluster {targetCluster.GetName()}");
+                }
+
+                if (targetCluster == null && orderedClustersWithHe3.Count() > 0)
+                {
+                    // TODO: Request TeamDirector to bomb something!
+                    // TODO: Request TeamDirectory for miner D.
+                    targetCluster = orderedClustersWithHe3.First();
+                    Log($"Kicking loafing miner {ship.GetName()} to enemy cluster {targetCluster.GetName()}.");
+                }
+
+                if (targetCluster != null)
+                {
+                    var buoy = ClientConnection.CreateBuoy((sbyte)BuoyType.c_buoyCluster, 0, 0, 0, targetCluster.GetObjectID(), true);
                     var command = ship.GetDefaultOrder(buoy);
 
                     ClientConnection.SendChat(ClientConnection.GetShip(), ChatTarget.CHAT_INDIVIDUAL, ship.GetObjectID(), 0, "", (sbyte)command, buoy.GetObjectType(), buoy.GetObjectID(), buoy, true);
-
-                }
-                else
-                {
-                    var friendlyStations = ClientConnection.GetSide().GetStations().Where(p => p.GetSide().GetObjectID() == ClientConnection.GetSide().GetObjectID());
-                    var friendlyClustersWithoutEnemyStations = friendlyStations.Where(p => p.GetCluster().GetStations().Exists(r => r.GetSide().GetObjectID() != ClientConnection.GetSide().GetObjectID()) == false).Select(p => p.GetCluster());
-
-                    var adjacentFriendlyClustersWithHe3 = friendlyClustersWithoutEnemyStations.Where(p => p.GetAsteroids()
-                                               .Where(r => r.GetName().StartsWith("He"))
-                                               .Sum(x => x.GetOre()) > 150);
-                    var orderedFriendlyClustersWithHe3 = adjacentFriendlyClustersWithHe3.OrderByDescending(p => p.GetAsteroids()
-                                                    .Where(r => r.GetName().StartsWith("He"))
-                                                    .Sum(x => x.GetOre()));
-
-                    if (orderedFriendlyClustersWithHe3.Count() > 0)
-                    {
-                        Log($"Kicking loafing miner to friendly cluster: {orderedFriendlyClustersWithHe3.First().GetName()}");
-
-                        var buoy = ClientConnection.CreateBuoy((sbyte)BuoyType.c_buoyCluster, 0, 0, 0, orderedFriendlyClustersWithHe3.First().GetObjectID(), true);
-                        var command = ship.GetDefaultOrder(buoy);
-
-                        ClientConnection.SendChat(ClientConnection.GetShip(), ChatTarget.CHAT_INDIVIDUAL, ship.GetObjectID(), 0, "", (sbyte)command, buoy.GetObjectType(), buoy.GetObjectID(), buoy, true);
-
-                        //ClientConnection.SendChat(ClientConnection.GetShip(), ChatTarget.CHAT_INDIVIDUAL, ship.GetObjectID(), 0, "", (sbyte)CommandID.c_cidMine, orderedFriendlyClustersWithHe3.First().GetObjectType(), orderedFriendlyClustersWithHe3.First().GetObjectID(), null, false);
-                    }
                 }
                 
             }

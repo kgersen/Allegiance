@@ -2,9 +2,14 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <VcpkgConfiguration Condition="'$(Configuration)' == 'FZDebug'">Debug</VcpkgConfiguration>
+    <VcpkgConfiguration Condition="'$(Configuration)'=='FZDebug-NoYellowComm'">Debug</VcpkgConfiguration>
     <VcpkgConfiguration Condition="'$(Configuration)' == 'FZRetail'">Release</VcpkgConfiguration>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="FZDebug-NoYellowComm|Win32">
+      <Configuration>FZDebug-NoYellowComm</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="FZDebug|Win32">
       <Configuration>FZDebug</Configuration>
       <Platform>Win32</Platform>
@@ -39,6 +44,12 @@
     <UseOfAtl>false</UseOfAtl>
     <PlatformToolset>v141_xp</PlatformToolset>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug-NoYellowComm|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>false</UseOfAtl>
+    <PlatformToolset>v141_xp</PlatformToolset>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <WholeProgramOptimization>false</WholeProgramOptimization>
@@ -53,15 +64,38 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug-NoYellowComm|Win32'" Label="PropertySheets">
+    <Import Project="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props" Condition="exists('$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.props')" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs$(PlatformToolset)\$(Configuration)\_Utility\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='FZDebug-NoYellowComm|Win32'">..\objs$(PlatformToolset)\$(Configuration)\_Utility\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs$(PlatformToolset)\$(Configuration)\_Utility\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug-NoYellowComm|Win32'">..\objs$(PlatformToolset)\$(Configuration)\_Utility\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs$(PlatformToolset)\$(Configuration)\_Utility\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs$(PlatformToolset)\$(Configuration)\_Utility\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\src\Lib\AllegianceSecurity;..\src\lib\Steam;..\src\Lib\nlohmann\json\include;..\src\Inc;..\src\_Utility;..\src\WinTrek;..\src\ZLib;..\src\Guids;..\src\Zone;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NOMINMAX;_AFXDLL;WIN32;_WINDOWS;STRICT;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <WarningLevel>Level1</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug-NoYellowComm|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\src\Lib\AllegianceSecurity;..\src\lib\Steam;..\src\Lib\nlohmann\json\include;..\src\Inc;..\src\_Utility;..\src\WinTrek;..\src\ZLib;..\src\Guids;..\src\Zone;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -118,6 +152,7 @@
     <ClCompile Include="..\src\_Utility\Messages.cpp" />
     <ClCompile Include="..\src\_Utility\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug-NoYellowComm|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\src\_Utility\Utility.cpp" />

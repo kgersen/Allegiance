@@ -167,7 +167,7 @@ public:
 		if (m_pt)
 			m_pt->AddRef();
 
-		if (ptOld)
+		if (ptOld && ptOld != (Type *) 0xdddddddd && ptOld != (Type *) 0xcdcdcdcd && ptOld != (Type *) 0xcccccccc)
 			ptOld->Release();
 
 		return *this;

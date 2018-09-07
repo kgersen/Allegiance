@@ -97,6 +97,27 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'FZDebug-NoYellowComm|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\FZDebug-NoYellowComm\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'FZDebug-NoYellowComm|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\FZDebug-NoYellowComm\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Crc32.NET, Version=1.0.0.0, Culture=neutral, PublicKeyToken=dc0b95cf99bf4e99, processorArchitecture=MSIL">
       <HintPath>packages\Crc32.NET.1.2.0\lib\net20\Crc32.NET.dll</HintPath>
@@ -173,7 +194,6 @@
     <PostBuildEvent>xcopy $(ProjectDir)\..\..\lib\steam\steam_api.dll . /s /d /y
 xcopy $(ProjectDir)..\..\Inc\steam_appid.txt . /s /d /y
 xcopy $(ProjectDir)..\..\..\objsv141_xp\$(ConfigurationName)\AllegianceInterop\AllegianceInterop.dll . /s /d /y
-REM xcopy $(ProjectDir)..\Strategies\bin\$(ConfigurationName)\Strategies.* . /s /d /y
-</PostBuildEvent>
+REM xcopy $(ProjectDir)..\Strategies\bin\$(ConfigurationName)\Strategies.* . /s /d /y</PostBuildEvent>
   </PropertyGroup>
 </Project>
