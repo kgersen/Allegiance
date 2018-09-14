@@ -317,7 +317,7 @@ namespace Wopr
             //});
 
 
-            AllegianceInterop.ClientConnection clientConnection = new AllegianceInterop.ClientConnection();
+            AllegianceInterop.ClientConnection clientConnection = new AllegianceInterop.ClientConnection(Configuration.ArtPath);
 
 
 

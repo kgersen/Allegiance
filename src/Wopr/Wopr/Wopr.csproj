@@ -192,6 +192,10 @@
   <PropertyGroup>
     <PostBuildEvent>xcopy $(ProjectDir)\..\..\lib\steam\steam_api.dll . /s /d /y
 xcopy $(ProjectDir)..\..\Inc\steam_appid.txt . /s /d /y
+
+REM echo $(ProjectDir)..\..\..\objsv141_xp\$(ConfigurationName)\AllegianceInterop\AllegianceInterop.dll
+REM dir $(ProjectDir)..\..\..\objsv141_xp\$(ConfigurationName)\AllegianceInterop\AllegianceInterop.dll
+
 xcopy $(ProjectDir)..\..\..\objsv141_xp\$(ConfigurationName)\AllegianceInterop\AllegianceInterop.dll . /s /d /y
 REM xcopy $(ProjectDir)..\Strategies\bin\$(ConfigurationName)\Strategies.* . /s /d /y</PostBuildEvent>
   </PropertyGroup>

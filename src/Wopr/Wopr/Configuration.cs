@@ -23,5 +23,13 @@ namespace Wopr
                 return System.Configuration.ConfigurationManager.AppSettings.Get("LobbyAddress");
             }
         }
+
+        public static string ArtPath
+        {
+            get
+            {
+                return System.Configuration.ConfigurationManager.AppSettings.Get("ArtPath");
+            }
+        }
     }
 }

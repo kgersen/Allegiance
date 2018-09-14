@@ -10,9 +10,12 @@ namespace AllegianceInterop
 	// Uses a method I found here: https://stackoverflow.com/questions/13770832/fire-an-event-in-c-cli-from-unmanaged-c-c-function
 	// Have to jump through some hoops to get an event raised in unmanaged C++ to get to C++/CLI
 	// Cleaned it up with this: https://msdn.microsoft.com/en-us/library/367eeye0.aspx
-	ClientConnection::ClientConnection()
+	ClientConnection::ClientConnection(String ^ artpath)
 	{
-		m_nativeClient = new NativeClient();
+		marshal_context^ context = gcnew marshal_context();
+
+
+		m_nativeClient = new NativeClient(context->marshal_as<const char*>(artpath));
 		m_deleteNativeClientOnFinalize = true;
 
 		// Create delegate wrappers. 

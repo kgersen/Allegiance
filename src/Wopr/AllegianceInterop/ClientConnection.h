@@ -131,7 +131,7 @@ namespace AllegianceInterop
 		delegate void OnAppMessageDelegate(ClientConnection ^ clientConnection, array<Byte> ^ bytes);
 		event OnAppMessageDelegate ^ OnAppMessage;
 
-		ClientConnection();
+		ClientConnection(String ^ artpath);
 		~ClientConnection();
 		!ClientConnection();
 
@@ -259,7 +259,7 @@ namespace AllegianceInterop
 
 		ShipID SideLeaderShipID(SideID sideID) { return m_nativeClient->MyMission()->SideLeaderShipID(sideID); }
 
-		void DonateMoney(PlayerInfoWrapper ^ playerInfo, float amount) {
+		void DonateMoney(PlayerInfoWrapper ^ playerInfo, Money amount) {
 			m_nativeClient->DonateMoney(playerInfo->m_instance, amount);
 		}
 

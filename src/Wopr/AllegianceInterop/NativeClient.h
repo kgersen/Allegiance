@@ -57,9 +57,7 @@ namespace AllegianceInterop
 
 	public:
 
-		
-
-		NativeClient();
+		NativeClient(const char * artpath);
 
 		
 		void HookOnAppMessageEvent(OnAppMessageEventFunction function);

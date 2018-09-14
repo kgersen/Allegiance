@@ -65,6 +65,7 @@ namespace Wopr.Strategies
                 // Once the client connects to the server, the FM_S_LOGONACK response will trigger the disconnect from the lobby.
                 if (client.ConnectToServer(message.szServer, (int)message.dwPort, PlayerName, BotAuthenticationGuid, (int)message.dwCookie) == true)
                 {
+                    Log("\tConnected!");
                     connected = true;
                     break;
                 }
@@ -556,6 +557,78 @@ namespace Wopr.Strategies
                 }
             }
             
+        }
+
+        private void MessageReceiver_FMD_LS_LOBBYMISSIONINFO_Old(AllegianceInterop.ClientConnection client, AllegianceInterop.FMD_LS_LOBBYMISSIONINFO message)
+        {
+            Log($"Got mission info for game: {message.szGameName}, server address: {message.szServerAddr}, server port: {message.dwPort}, mission cookie: {message.dwCookie}");
+
+            //switch (_serverType)
+            //{
+            //    case ServerType.Lobby:
+            if (_isClientConnectedToServer == false && message.szGameName == GameName)
+            {
+                _isClientConnectedToServer = true;
+
+                Log("Connecting to game, waiting for FM_S_LOGONACK from server.");
+
+                bool connected = false;
+                while (connected == false && _cancellationTokenSource.IsCancellationRequested == false)
+                {
+                    // Once the client connects to the server, the FM_S_LOGONACK response will trigger the disconnect from the lobby.
+                    if (client.ConnectToServer(message.szServerAddr, (int)message.dwPort, PlayerName, BotAuthenticationGuid, (int)message.dwCookie) == true)
+                    {
+                        connected = true;
+                        break;
+                    }
+
+                    Log("\tCouldn't connect, retrying.");
+
+                    Thread.Sleep(100);
+                }
+
+
+                //Task.Run(() =>
+                //{
+                //    bool connected = false;
+                //    while(connected == false && _cancellationTokenSource.IsCancellationRequested == false)
+                //    {
+                //        // Once the client connects to the server, the FM_S_LOGONACK response will trigger the disconnect from the lobby.
+                //        if (ClientConnection.ConnectToServer(message.szServerAddr, (int)message.dwPort, PlayerName, BotAuthenticationGuid, (int)message.dwCookie) == true)
+                //        {
+                //            connected = true;
+                //            break;
+                //        }
+
+                //        Log("\tCouldn't connect, retrying.");
+
+                //        Thread.Sleep(100);
+                //    }
+                //});
+            }
+
+            _receivedMissionCount++;
+            _waitingForMissionCount--;
+
+            // No more mission details are coming, and we didn't find a bot game, so create a new one. 
+            if (_waitingForMissionCount == 0 && _isClientConnectedToServer == false)
+            {
+                _hasCreatedGame = true;
+                AllegianceInterop.FMD_C_CREATE_MISSION_REQ req = new AllegianceInterop.FMD_C_CREATE_MISSION_REQ(message.szServerName, message.szServerAddr, CoreName, GameName);
+                client.SendMessageLobby(req);
+
+
+            }
+
+            //        break;
+
+            //    case ServerType.Server:
+            //        Log("Ready to join mission.");
+            //        break;
+
+            //    default:
+            //        throw new NotSupportedException(_serverType.ToString());
+            //}
         }
 
         private void MessageReceiver_FMD_L_SERVERS_LIST(AllegianceInterop.ClientConnection client, AllegianceInterop.FMD_L_SERVERS_LIST message)

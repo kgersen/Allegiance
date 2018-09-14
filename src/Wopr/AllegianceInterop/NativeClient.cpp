@@ -54,7 +54,7 @@ namespace AllegianceInterop
 		OnLogonAckEvent(fValidated, bRetry, szFailureReason);
 	}
 
-	NativeClient::NativeClient()
+	NativeClient::NativeClient(const char * artpath)
 	{
 		// Intercept underlying exceptions so that the application can't crash out. 
 		/*typedef void(*SignalHandlerPointer)(int);
@@ -62,7 +62,7 @@ namespace AllegianceInterop
 		previousHandler = signal(SIGSEGV, SignalHandler);*/
 
 		// TODO: Read this from the registry or config.
-		UTL::SetArtPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Allegiance\\Artwork");
+		UTL::SetArtPath(artpath);
 
 		// Ensure that cluster info isn't deleted when the server sends us FM_S_DOCKED
 		m_deleteShipInfoOnDockMessage = false;

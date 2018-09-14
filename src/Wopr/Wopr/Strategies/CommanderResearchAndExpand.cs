@@ -1329,8 +1329,8 @@ namespace Wopr.Strategies
             }
 
             // Debugging override...
-            if(IsTechAvailableForInvestment("Supremacy") == true)
-                return "Supremacy";
+            //if(IsTechAvailableForInvestment("Supremacy") == true)
+            //    return "Supremacy";
 
             if (IsTechAvailableForInvestment("Expansion") == true && urocks >= crocks && urocks >= srocks)
                 return "Expansion";

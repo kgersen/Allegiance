@@ -78,6 +78,7 @@ namespace Wopr
 
             bool launchWithoutYellowCom = false;
             bool launchWithYellowComOnly = false;
+            bool launchWithBlueComOnly = false;
 
             if (args.Length == 2 && args[0] == "-t")
             {
@@ -96,6 +97,12 @@ namespace Wopr
             {
                 Console.WriteLine("Will launch with yellow comm only for debugging.");
                 launchWithYellowComOnly = true;
+            }
+
+            if (args.Length == 1 && args[0] == "-b")
+            {
+                Console.WriteLine("Will launch with blue comm only for debugging.");
+                launchWithBlueComOnly = true;
             }
 
             if (Directory.Exists(@"c:\1\Logs\") == false)
@@ -122,7 +129,10 @@ namespace Wopr
             if (launchWithoutYellowCom == false)
                  teamDirectorYellow.CreatePlayer("yellowcom@BOT", 0, false, true);
 
-            if (launchWithYellowComOnly == false)
+            if(launchWithBlueComOnly == true)
+                teamDirectorBlue.CreatePlayer("bluecom@BOT", 0, true, true);
+
+            if (launchWithYellowComOnly == false && launchWithBlueComOnly == false)
             {
 
                 //teamDirectorYellow.CreatePlayer("yellow_XX@BOT", 0, false, false);
