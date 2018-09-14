@@ -1,18 +1,43 @@
 #include "stdafx.h"
+
 #include "NativeClient.h"
 #include "NativeClientClusterSite.h"
 #include "NativeClientThingSite.h"
 //#include "AllMessages.h"
 #include "MessageTypeNative.h"
 
+
 AllegianceInterop::CriticalSectionManager AllegianceInterop::NativeClient::m_criticalSection = AllegianceInterop::CriticalSectionManager();
 
 namespace AllegianceInterop
 {
+	int NativeClient::ExceptionFilter(unsigned int code, struct _EXCEPTION_POINTERS *ep)
+	{
+		debugf("NativeClient::ExceptionFilter()");
+		if (code == EXCEPTION_ACCESS_VIOLATION)
+		{
+			debugf("\tcaught AV as expected.");
+			return EXCEPTION_EXECUTE_HANDLER;
+		}
+		else
+		{
+			debugf("\tdidn't catch AV, unexpected.");
+			return EXCEPTION_CONTINUE_SEARCH;
+		};
+	}
+
 	HRESULT NativeClient::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFrom, FEDMESSAGE * pfm)
 	{
-		//if(m_counter < 400)
-		OnAppMessageEvent(pthis, cnxnFrom, pfm);
+		
+		__try
+		{
+			//if(m_counter < 400)
+			OnAppMessageEvent(pthis, cnxnFrom, pfm);
+		}
+		__except (ExceptionFilter(GetExceptionCode(), GetExceptionInformation()))
+		{
+			debugf("Exception Hit!");
+		}
 
 		//m_counter++;
 
@@ -31,6 +56,11 @@ namespace AllegianceInterop
 
 	NativeClient::NativeClient()
 	{
+		// Intercept underlying exceptions so that the application can't crash out. 
+		/*typedef void(*SignalHandlerPointer)(int);
+		SignalHandlerPointer previousHandler;
+		previousHandler = signal(SIGSEGV, SignalHandler);*/
+
 		// TODO: Read this from the registry or config.
 		UTL::SetArtPath("C:\\Program Files (x86)\\Steam\\steamapps\\common\\Allegiance\\Artwork");
 

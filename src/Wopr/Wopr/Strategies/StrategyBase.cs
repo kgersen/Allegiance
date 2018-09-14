@@ -19,6 +19,9 @@ namespace Wopr.Strategies
         public delegate void OnStrategryCompleteHandler(StrategyBase strategy);
         public event OnStrategryCompleteHandler OnStrategyComplete;
 
+        public delegate void OnGameCompleteHandler(StrategyBase strategy);
+        public event OnGameCompleteHandler OnGameComplete;
+
 
         private static Dictionary<StrategyID, Type> _strategyTypesByStrategyID = null;
 
@@ -93,12 +96,27 @@ namespace Wopr.Strategies
             _messageReceiver.FMD_CS_PING += _messageReceiver_FMD_CS_PING; // We'll get one of these every 5 seconds, using this to drive "less frequent" updates.
             _messageReceiver.FMD_S_DOCKED += _messageReceiver_FMD_S_DOCKED;
             _messageReceiver.FMD_S_MISSION_STAGE += _messageReceiver_FMD_S_MISSION_STAGE;
+            _messageReceiver.FMD_S_BALLOT += _messageReceiver_FMD_S_BALLOT;
+            _messageReceiver.FMD_S_GAME_OVER += _messageReceiver_FMD_S_GAME_OVER;
 
             AttachMessages(_messageReceiver, botAuthenticationGuid, playerName, sideIndex, isGameController, isCommander);
 
             Log($"Starting strategy: {StrategyID.ToString()}");
 
             Start();
+        }
+
+        private void _messageReceiver_FMD_S_GAME_OVER(ClientConnection client, AllegianceInterop.FMD_S_GAME_OVER message)
+        {
+            OnGameComplete?.Invoke(this);
+        }
+
+        private void _messageReceiver_FMD_S_BALLOT(ClientConnection client, AllegianceInterop.FMD_S_BALLOT message)
+        {
+            Log($"Received ballot: {message.BallotText}, voting yes. (Remove this after debugging)");
+
+            AllegianceInterop.FMD_C_VOTE vote = new AllegianceInterop.FMD_C_VOTE(message.ballotID, true);
+            ClientConnection.SendMessageServer(vote);
         }
 
         private void _messageReceiver_FMD_S_MISSION_STAGE(ClientConnection client, AllegianceInterop.FMD_S_MISSION_STAGE message)

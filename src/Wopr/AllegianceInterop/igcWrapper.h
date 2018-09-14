@@ -1013,7 +1013,7 @@ namespace AllegianceInterop
         bool                GetAutopilot();
         void                SetAutopilot(bool bAutopilot);
         bool                LegalCommand(CommandID cid);
-        void                SetRunawayCheckCooldown(float dtRunAway);
+        //void                SetRunawayCheckCooldown(float dtRunAway);
         IshipIGCWrapper ^ GetAutoDonate();
         void                SetAutoDonate(IshipIGCWrapper^ pship);
         ImodelIGCWrapper ^ GetRipcordModel();
@@ -1032,7 +1032,7 @@ namespace AllegianceInterop
         void			 ClearAchievementMask();
         AchievementMask	 GetAchievementMask();
         void			 MarkPreviouslySpotted();
-        bool			 RecentlySpotted();
+        //bool			 RecentlySpotted();
         DamageTrackWrapper ^ GetDamageTrack();
         void                CreateDamageTrack();
         void                DeleteDamageTrack();
@@ -2179,8 +2179,8 @@ namespace AllegianceInterop
         void    StopCommand(Time t);
         void    SpotWarp();
         void    SpotSpecialAsteroid();
-        void AddTargetSpot();
-        short   GetTargetsSpotted();
+        //void AddTargetSpot();
+        //short   GetTargetsSpotted();
         void SetRepair(float repair);
         float GetRepair();
         void    KillBase(bool bPilot);

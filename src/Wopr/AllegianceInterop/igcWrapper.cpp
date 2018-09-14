@@ -1776,10 +1776,10 @@ namespace AllegianceInterop
 	{
 		return m_instance->LegalCommand(cid);
 	}
-	void                IshipIGCWrapper::SetRunawayCheckCooldown(float dtRunAway)
+	/*void                IshipIGCWrapper::SetRunawayCheckCooldown(float dtRunAway)
 	{
 		return m_instance->SetRunawayCheckCooldown(dtRunAway);
-	}
+	}*/
 	IshipIGCWrapper ^ IshipIGCWrapper::GetAutoDonate()
 	{
 		::IshipIGC * unmanagedValue = (::IshipIGC *) m_instance->GetAutoDonate();
@@ -1867,10 +1867,10 @@ namespace AllegianceInterop
 	{
 		return m_instance->MarkPreviouslySpotted();
 	}
-	bool			 IshipIGCWrapper::RecentlySpotted()
+	/*bool			 IshipIGCWrapper::RecentlySpotted()
 	{
 		return m_instance->RecentlySpotted();
-	}
+	}*/
 	DamageTrackWrapper ^ IshipIGCWrapper::GetDamageTrack()
 	{
 		::DamageTrack * unmanagedValue = (::DamageTrack *) m_instance->GetDamageTrack();
@@ -4736,14 +4736,14 @@ namespace AllegianceInterop
 	{
 		return m_instance->SpotSpecialAsteroid();
 	}
-	void PlayerScoreObjectWrapper::AddTargetSpot()
+	/*void PlayerScoreObjectWrapper::AddTargetSpot()
 	{
 		return m_instance->AddTargetSpot();
 	}
 	short   PlayerScoreObjectWrapper::GetTargetsSpotted()
 	{
 		return m_instance->GetTargetsSpotted();
-	}
+	}*/
 	void PlayerScoreObjectWrapper::SetRepair(float repair)
 	{
 		return m_instance->SetRepair(repair);

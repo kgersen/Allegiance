@@ -38,6 +38,7 @@ namespace AllegianceInterop
 		//void(* m_OnLogonLobbyAckDelegate)(bool fValidated, bool bRetry, LPCSTR szFailureReason);
 		//void(* m_OnLogonAckDelegate)(bool fValidated, bool bRetry, LPCSTR szFailureReason);
 
+		int ExceptionFilter(unsigned int code, struct _EXCEPTION_POINTERS *ep);
 
 		// Inherited via IFedMessagingSite
 		virtual HRESULT OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnFrom, FEDMESSAGE * pfm) override;

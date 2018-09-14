@@ -215,7 +215,11 @@ namespace Wopr
         //        null).Unwrap();
         //}
 
-
+        public void ChangeStrategy(AllegianceInterop.ClientConnection clientConnection, StrategyID strategyID, StrategyBase lastStrategy)
+        {
+            ChangeStrategy(clientConnection, strategyID, lastStrategy.PlayerName, lastStrategy.SideIndex, lastStrategy.IsGameController, lastStrategy.IsCommander);
+        }
+        
         public void ChangeStrategy(AllegianceInterop.ClientConnection clientConnection, StrategyID strategyID, string playerName, short sideIndex, bool isGameController, bool isCommander)
         {
             //AllegianceInterop.ClientConnection clientConnection;
@@ -246,14 +250,15 @@ namespace Wopr
             StrategyBase strategy = StrategyBase.GetInstance(strategyID, clientConnection, _gameInfo, _botAuthenticationGuid, playerName, sideIndex, isGameController, isCommander);
 
             strategy.OnStrategyComplete += Strategy_OnStrategyComplete;
+            strategy.OnGameComplete += Strategy_OnGameComplete;
 
 
             //StrategyBase strategy = _assemblyLoader.CreateInstance(strategyID);
 
             //strategy.Attach(clientConnection, _gameInfos[sideIndex], _botAuthenticationGuid, playerName, sideIndex, isGameController, isCommander);
 
-            
-           
+
+
 
             // Can't hook the transparent object directly to the client, the events raised by c++/cli won't trigger on the managed end
             // becuase they are attached to a copy of the object in the far application domain, so we will attach to the event on the 
@@ -269,13 +274,19 @@ namespace Wopr
             //    _currentStrategyAppMessageDelegateByPlayerName.Add(playerName, onAppMessageDelegate);
             //    _currentStrategyByPlayerName.Add(playerName, strategy);
 
-                
+
             //}
             //else
             //{
             //    throw new Exception($"Error, couldn't find the {strategyID.ToString()} strategy in the loaded strategy list.");
             //}
 
+        }
+
+        private void Strategy_OnGameComplete(StrategyBase strategy)
+        {
+            Log(strategy.PlayerName, $"OnGameComplete: Starting up a new game.");
+            ChangeStrategy(strategy.ClientConnection, StrategyID.ConnectToGame, strategy);
         }
 
         private class CreatePlayerThreadParams
