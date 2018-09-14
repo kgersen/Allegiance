@@ -13,7 +13,8 @@ namespace Wopr.Strategies
     public class ConnectToGame : StrategyBase
     {
         private const int MaxTeams = 2;
-        private const string TargetServer = "LocalTest";
+        //private const string TargetServer = "LocalTest";
+        //private const string TargetServer = "AEast2";
         private const string GameName = "SuperBotMatch9000";
         private const string CoreName = "PCore016";
         private const int MaxPlayersPerGame = 200;
@@ -38,6 +39,7 @@ namespace Wopr.Strategies
             messageReceiver.FMD_L_LOGON_ACK += this.MessageReceiver_FMD_L_LOGON_ACK;
             messageReceiver.FMD_L_SERVERS_LIST += MessageReceiver_FMD_L_SERVERS_LIST;
             messageReceiver.FMD_LS_LOBBYMISSIONINFO += MessageReceiver_FMD_LS_LOBBYMISSIONINFO;
+            messageReceiver.FMD_L_JOIN_MISSION += MessageReceiver_FMD_L_JOIN_MISSION;
             messageReceiver.FMD_S_LOGONACK += MessageReceiver_FMD_S_LOGONACK;
             messageReceiver.FMD_S_JOINED_MISSION += MessageReceiver_FMD_S_JOINED_MISSION;
             messageReceiver.FMD_S_JOIN_SIDE += MessageReceiver_FMD_S_JOIN_SIDE;
@@ -52,6 +54,25 @@ namespace Wopr.Strategies
             messageReceiver.FMD_S_MISSION_STAGE += MessageReceiver_FMD_S_MISSION_STAGE;
 
             messageReceiver.FMD_S_SHIP_STATUS += MessageReceiver_FMD_S_SHIP_STATUS;
+        }
+
+        private void MessageReceiver_FMD_L_JOIN_MISSION(ClientConnection client, AllegianceInterop.FMD_L_JOIN_MISSION message)
+        {
+            bool connected = false;
+            while (connected == false && _cancellationTokenSource.IsCancellationRequested == false)
+            {
+                Log($"Connecting to szServer: {message.szServer}, message.dwPort: {message.dwPort}, PlayerName: {PlayerName}, message.dwCookie: {message.dwCookie}");
+                // Once the client connects to the server, the FM_S_LOGONACK response will trigger the disconnect from the lobby.
+                if (client.ConnectToServer(message.szServer, (int)message.dwPort, PlayerName, BotAuthenticationGuid, (int)message.dwCookie) == true)
+                {
+                    connected = true;
+                    break;
+                }
+
+                Log("\tCouldn't connect, retrying.");
+
+                Thread.Sleep(100);
+            }
         }
 
         // Handles a client rejoining a game already in progress.
@@ -481,20 +502,23 @@ namespace Wopr.Strategies
 
                 Log("Connecting to game, waiting for FM_S_LOGONACK from server.");
 
-                bool connected = false;
-                while (connected == false && _cancellationTokenSource.IsCancellationRequested == false)
-                {
-                    // Once the client connects to the server, the FM_S_LOGONACK response will trigger the disconnect from the lobby.
-                    if (client.ConnectToServer(message.szServerAddr, (int)message.dwPort, PlayerName, BotAuthenticationGuid, (int)message.dwCookie) == true)
-                    {
-                        connected = true;
-                        break;
-                    }
+                AllegianceInterop.FMD_C_JOIN_GAME_REQ joinGame = new AllegianceInterop.FMD_C_JOIN_GAME_REQ(message.dwCookie);
+                client.SendMessageLobby(joinGame);
 
-                    Log("\tCouldn't connect, retrying.");
+                //bool connected = false;
+                //while (connected == false && _cancellationTokenSource.IsCancellationRequested == false)
+                //{
+                //    // Once the client connects to the server, the FM_S_LOGONACK response will trigger the disconnect from the lobby.
+                //    if (client.ConnectToServer(message.szServerAddr, (int)message.dwPort, PlayerName, BotAuthenticationGuid, (int)message.dwCookie) == true)
+                //    {
+                //        connected = true;
+                //        break;
+                //    }
 
-                    Thread.Sleep(100);
-                }
+                //    Log("\tCouldn't connect, retrying.");
+
+                //    Thread.Sleep(100);
+                //}
 
 
                 //Task.Run(() =>
@@ -516,28 +540,22 @@ namespace Wopr.Strategies
                 //});
             }
 
-            _receivedMissionCount++;
-            _waitingForMissionCount--;
-
-            // No more mission details are coming, and we didn't find a bot game, so create a new one. 
-            if (_waitingForMissionCount == 0 && _isClientConnectedToServer == false)
+            if (Configuration.ServerName.Equals(message.szServerName, StringComparison.InvariantCultureIgnoreCase) == true)
             {
-                _hasCreatedGame = true;
-                AllegianceInterop.FMD_C_CREATE_MISSION_REQ req = new AllegianceInterop.FMD_C_CREATE_MISSION_REQ(message.szServerName, message.szServerAddr, CoreName, GameName);
-                client.SendMessageLobby(req);
+                _receivedMissionCount++;
+                _waitingForMissionCount--;
 
+                // No more mission details are coming, and we didn't find a bot game, so create a new one. 
+                if (_waitingForMissionCount == 0 && _isClientConnectedToServer == false)
+                {
+                    Log($"MessageReceiver_FMD_LS_LOBBYMISSIONINFO(): Creating game. message.szServerName: {message.szServerName}, message.szServerAddr: {message.szServerAddr}, CoreName: {CoreName},  GameName: {GameName}");
 
+                    _hasCreatedGame = true;
+                    AllegianceInterop.FMD_C_CREATE_MISSION_REQ req = new AllegianceInterop.FMD_C_CREATE_MISSION_REQ(message.szServerName, message.szServerAddr, CoreName, GameName);
+                    client.SendMessageLobby(req);
+                }
             }
-
-            //        break;
-
-            //    case ServerType.Server:
-            //        Log("Ready to join mission.");
-            //        break;
-
-            //    default:
-            //        throw new NotSupportedException(_serverType.ToString());
-            //}
+            
         }
 
         private void MessageReceiver_FMD_L_SERVERS_LIST(AllegianceInterop.ClientConnection client, AllegianceInterop.FMD_L_SERVERS_LIST message)
@@ -550,7 +568,7 @@ namespace Wopr.Strategies
             {
                 Log("\t" + server.szName + ":" + server.szRemoteAddress);
 
-                if (server.szName == TargetServer)
+                if (Configuration.ServerName.Equals(server.szName, StringComparison.InvariantCultureIgnoreCase) == true)
                     targetServer = server;
             }
 
@@ -576,8 +594,8 @@ namespace Wopr.Strategies
                 }
                 else if (targetServer != null)
                 {
-                    Log($"Waiting for mission details from Lobby for {targetServer.iCurGames} missions.");
-                    _waitingForMissionCount = targetServer.iCurGames;
+                    _waitingForMissionCount += targetServer.iCurGames;
+                    Log($"Waiting for mission details from Lobby for {targetServer.iCurGames} missions. IsGameController: {IsGameController}, _hasCreatedGame: {_hasCreatedGame}, targetServer: {targetServer},  _waitingForMissionCount: {_waitingForMissionCount}, _receivedMissionCount: {_receivedMissionCount}");
                 }
                 else
                 {

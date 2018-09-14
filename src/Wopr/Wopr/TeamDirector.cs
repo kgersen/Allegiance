@@ -285,8 +285,9 @@ namespace Wopr
 
         private void Strategy_OnGameComplete(StrategyBase strategy)
         {
-            Log(strategy.PlayerName, $"OnGameComplete: Starting up a new game.");
-            ChangeStrategy(strategy.ClientConnection, StrategyID.ConnectToGame, strategy);
+            Log(strategy.PlayerName, $"OnGameComplete: Exiting WOPR to trigger a new game to start.");
+
+            _cancellationTokenSource.Cancel();
         }
 
         private class CreatePlayerThreadParams

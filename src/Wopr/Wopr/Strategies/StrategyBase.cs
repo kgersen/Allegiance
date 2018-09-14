@@ -108,15 +108,29 @@ namespace Wopr.Strategies
 
         private void _messageReceiver_FMD_S_GAME_OVER(ClientConnection client, AllegianceInterop.FMD_S_GAME_OVER message)
         {
+            // Don't receive any more messages from the client for this strategy. 
+            ClientConnection.OnAppMessage -= _messageReceiver.OnAppMessage;
+            
             OnGameComplete?.Invoke(this);
         }
 
         private void _messageReceiver_FMD_S_BALLOT(ClientConnection client, AllegianceInterop.FMD_S_BALLOT message)
         {
-            Log($"Received ballot: {message.BallotText}, voting yes. (Remove this after debugging)");
+            if ((ObjectType) message.otInitiator == ObjectType.OT_ship)
+            {
+                var shipName = client.GetCore().GetShip(message.oidInitiator)?.GetName();
 
-            AllegianceInterop.FMD_C_VOTE vote = new AllegianceInterop.FMD_C_VOTE(message.ballotID, true);
-            ClientConnection.SendMessageServer(vote);
+                if (shipName != null && (shipName.EndsWith("@Dev", StringComparison.InvariantCultureIgnoreCase) == true
+                                        || shipName.EndsWith("@Alleg", StringComparison.InvariantCultureIgnoreCase) == true
+                                        )
+                      )
+                {
+                    Log($"Received ballot: {message.BallotText} from {shipName}, voting yes. (Remove this after debugging)");
+
+                    AllegianceInterop.FMD_C_VOTE vote = new AllegianceInterop.FMD_C_VOTE(message.ballotID, true);
+                    ClientConnection.SendMessageServer(vote);
+                }
+            }
         }
 
         private void _messageReceiver_FMD_S_MISSION_STAGE(ClientConnection client, AllegianceInterop.FMD_S_MISSION_STAGE message)
