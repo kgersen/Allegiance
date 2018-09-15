@@ -126,7 +126,7 @@ namespace Wopr
 
             // Yellow Team
 
-            if (launchWithoutYellowCom == false)
+            if (launchWithoutYellowCom == false && launchWithBlueComOnly == false)
                  teamDirectorYellow.CreatePlayer("yellowcom@BOT", 0, false, true);
 
             if(launchWithBlueComOnly == true)
@@ -193,6 +193,7 @@ namespace Wopr
                     {
                         case ConsoleKey.Q:
                             cancellationTokenSource.Cancel();
+                            //teamDirectorBlue.PostResignAndQuit();
                             break;
                         default:
                             Console.WriteLine("\nPress q to quit.");
@@ -211,7 +212,8 @@ namespace Wopr
                     if (DateTime.Now.Subtract(_applicationStartTime).TotalHours > 2)
                     {
                         Console.WriteLine($"Application has been running for more than 2 hours, restarting game. {_applicationStartTime}, {DateTime.Now}");
-                        cancellationTokenSource.Cancel();
+                        //cancellationTokenSource.Cancel();
+                        teamDirectorBlue.PostResignAndQuit();
                     }
                 }
 

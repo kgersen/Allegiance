@@ -39,10 +39,11 @@ namespace Wopr.Strategies
             messageReceiver.FMD_L_LOGON_ACK += this.MessageReceiver_FMD_L_LOGON_ACK;
             messageReceiver.FMD_L_SERVERS_LIST += MessageReceiver_FMD_L_SERVERS_LIST;
             messageReceiver.FMD_LS_LOBBYMISSIONINFO += MessageReceiver_FMD_LS_LOBBYMISSIONINFO;
-            messageReceiver.FMD_L_JOIN_MISSION += MessageReceiver_FMD_L_JOIN_MISSION;
+            //messageReceiver.FMD_L_JOIN_MISSION += MessageReceiver_FMD_L_JOIN_MISSION;
             messageReceiver.FMD_S_LOGONACK += MessageReceiver_FMD_S_LOGONACK;
             messageReceiver.FMD_S_JOINED_MISSION += MessageReceiver_FMD_S_JOINED_MISSION;
             messageReceiver.FMD_S_JOIN_SIDE += MessageReceiver_FMD_S_JOIN_SIDE;
+            messageReceiver.FMD_S_AUTODONATE += MessageReceiver_FMD_S_AUTODONATE;
             messageReceiver.FMD_CS_SET_MISSION_OWNER += MessageReceiver_FMD_CS_SET_MISSION_OWNER;
             messageReceiver.FMD_CS_QUIT_SIDE += MessageReceiver_FMD_CS_QUIT_SIDE;
             
@@ -56,25 +57,27 @@ namespace Wopr.Strategies
             messageReceiver.FMD_S_SHIP_STATUS += MessageReceiver_FMD_S_SHIP_STATUS;
         }
 
-        private void MessageReceiver_FMD_L_JOIN_MISSION(ClientConnection client, AllegianceInterop.FMD_L_JOIN_MISSION message)
-        {
-            bool connected = false;
-            while (connected == false && _cancellationTokenSource.IsCancellationRequested == false)
-            {
-                Log($"Connecting to szServer: {message.szServer}, message.dwPort: {message.dwPort}, PlayerName: {PlayerName}, message.dwCookie: {message.dwCookie}");
-                // Once the client connects to the server, the FM_S_LOGONACK response will trigger the disconnect from the lobby.
-                if (client.ConnectToServer(message.szServer, (int)message.dwPort, PlayerName, BotAuthenticationGuid, (int)message.dwCookie) == true)
-                {
-                    Log("\tConnected!");
-                    connected = true;
-                    break;
-                }
+       
 
-                Log("\tCouldn't connect, retrying.");
+        //private void MessageReceiver_FMD_L_JOIN_MISSION(ClientConnection client, AllegianceInterop.FMD_L_JOIN_MISSION message)
+        //{
+        //    bool connected = false;
+        //    while (connected == false && _cancellationTokenSource.IsCancellationRequested == false)
+        //    {
+        //        Log($"Connecting to szServer: {message.szServer}, message.dwPort: {message.dwPort}, PlayerName: {PlayerName}, message.dwCookie: {message.dwCookie}");
+        //        // Once the client connects to the server, the FM_S_LOGONACK response will trigger the disconnect from the lobby.
+        //        if (client.ConnectToServer(message.szServer, (int)message.dwPort, PlayerName, BotAuthenticationGuid, (int)message.dwCookie) == true)
+        //        {
+        //            Log("\tConnected!");
+        //            connected = true;
+        //            break;
+        //        }
 
-                Thread.Sleep(100);
-            }
-        }
+        //        Log("\tCouldn't connect, retrying.");
+
+        //        Thread.Sleep(100);
+        //    }
+        //}
 
         // Handles a client rejoining a game already in progress.
         private void MessageReceiver_FMD_S_SHIP_STATUS(ClientConnection client, AllegianceInterop.FMD_S_SHIP_STATUS message)
@@ -310,9 +313,9 @@ namespace Wopr.Strategies
                 {
                     if (bucket.GetName() == ".Miner")
                     {
-                        if (money > bucket.GetPrice() && bucket.GetPercentComplete() <= 0)
+                        if (money > bucket.GetPrice() && bucket.GetCompleteF() == false)
                         {
-                            Log("Adding money to bucket. Bucket wants: " + bucket.GetBuyable().GetPrice() + ", we have: " + money);
+                            Log("Adding money to bucket. Bucket wants: " + bucket.GetPrice() + ", we have: " + money);
                             client.AddMoneyToBucket(bucket, bucket.GetPrice());
                         }
                         else
@@ -439,6 +442,24 @@ namespace Wopr.Strategies
 
             //    _playerInfoByShipID[message.shipID].iSide = message.sideID;
             //}
+        }
+
+        private void MessageReceiver_FMD_S_AUTODONATE(ClientConnection client, AllegianceInterop.FMD_S_AUTODONATE message)
+        {
+            
+            // If we are supposed to be the commander and we get an "auto-donate message", force ourselves into the commander seat!
+            // This also steals all the money from all the other players. 
+            if (IsCommander == true && message.sidDonateTo != client.GetShip().GetObjectID())
+            {
+                AllegianceInterop.FMD_CS_SET_TEAM_LEADER setTeamLeader = new AllegianceInterop.FMD_CS_SET_TEAM_LEADER(client.GetSide().GetObjectID(), client.GetShip().GetObjectID());
+                client.SendMessageServer(setTeamLeader);
+            }
+
+            if (IsGameController == true && message.sidDonateTo != client.GetShip().GetObjectID())
+            {
+                AllegianceInterop.FMD_CS_SET_MISSION_OWNER setMissionOwner = new AllegianceInterop.FMD_CS_SET_MISSION_OWNER(client.GetSide().GetObjectID(), client.GetShip().GetObjectID());
+                client.SendMessageServer(setMissionOwner);
+            }
         }
 
         private void MessageReceiver_FMD_S_JOINED_MISSION(ClientConnection client, AllegianceInterop.FMD_S_JOINED_MISSION message)

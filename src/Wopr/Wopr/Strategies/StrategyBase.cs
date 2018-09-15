@@ -122,6 +122,7 @@ namespace Wopr.Strategies
 
                 if (shipName != null && (shipName.EndsWith("@Dev", StringComparison.InvariantCultureIgnoreCase) == true
                                         || shipName.EndsWith("@Alleg", StringComparison.InvariantCultureIgnoreCase) == true
+                                        || shipName.EndsWith("@Bot", StringComparison.InvariantCultureIgnoreCase) == true
                                         )
                       )
                 {

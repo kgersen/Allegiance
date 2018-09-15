@@ -253,7 +253,7 @@ namespace AllegianceInterop
 				cid,
 				otTarget,
 				oidTarget,
-				pmodelTarget->m_instance,
+				pmodelTarget ? pmodelTarget->m_instance : nullptr,
 				bObjectModel);
 		}
 

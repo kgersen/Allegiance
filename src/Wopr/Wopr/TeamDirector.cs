@@ -219,7 +219,14 @@ namespace Wopr
         {
             ChangeStrategy(clientConnection, strategyID, lastStrategy.PlayerName, lastStrategy.SideIndex, lastStrategy.IsGameController, lastStrategy.IsCommander);
         }
-        
+
+        internal void PostResignAndQuit()
+        {
+            var firstConnectedClient = _connectedClientsByPlayerName.Values.FirstOrDefault();
+
+            firstConnectedClient.SendChat(firstConnectedClient.GetShip(), AllegianceInterop.ChatTarget.CHAT_TEAM, -1, -1, "#resign", -1, -1, -1, null, false);
+        }
+
         public void ChangeStrategy(AllegianceInterop.ClientConnection clientConnection, StrategyID strategyID, string playerName, short sideIndex, bool isGameController, bool isCommander)
         {
             //AllegianceInterop.ClientConnection clientConnection;

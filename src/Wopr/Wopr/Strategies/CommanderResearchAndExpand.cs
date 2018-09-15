@@ -98,18 +98,19 @@ namespace Wopr.Strategies
                 "Prox Mine 3",
                 "EWS Probe 3",
                 "Med Shield 3",
-                "ER Nanite 3"
+                "ER Nanite 3",
+                "Omni Fighter"
             });
 
             _primaryTechPaths.Add(TechpathType.Supremacy, supremacyTechPath);
 
             List<String> tacticalTechPath = new List<string>(new string[] {
                 "Enh Miner",
-                "Enh Fighter",
                 "Stealth Fighter",
                 "EW Utl Cannon 2",
                 "EW Sniper Rifle 1",
                 "LRM Hunter 2",
+                "Sig Cloak 1",
                 "Sig Cloak 2",
                 "GA: Missile Track 1",
                 "GA: Ship Energy 1",
@@ -117,12 +118,9 @@ namespace Wopr.Strategies
                 "GA: EW Range 1",
                 "GA: Ship Speed 1",
                 
-
                 "Bomber",
                 "Upgrade Tactical",
                 "Adv Stealth Fighter",
-
-                //"Enh Constructor",
 
                 SecondTechbaseMarker, // We can now build a secondary tech if we want to.
 
@@ -157,7 +155,8 @@ namespace Wopr.Strategies
                 
                 //"EWS Probe 3",
                 "Med Shield 3",
-                "ER Nanite 3"
+                "ER Nanite 3",
+                "Omni Fighter"
             });
 
             _primaryTechPaths.Add(TechpathType.Tactical, tacticalTechPath);
@@ -196,6 +195,9 @@ namespace Wopr.Strategies
                 "Hvy Troop Transport",
                 "SRM EMP Missile",
 
+                "GA: Ship Signature 1",
+                "GA: Ship Signature 2",
+
                 "Prox Mine 2",
                 "Pulse Probe 1",
                 
@@ -208,6 +210,7 @@ namespace Wopr.Strategies
 
                 "Med Shield 2",
                 "ER Nanite 2",
+                "Med Shield 3",
 
                 //"EWS Probe 2",
 
@@ -223,7 +226,8 @@ namespace Wopr.Strategies
 
                 "GA: Station Hull 2",
                 "GA: Station Shield 2",
-                
+                "Omni Fighter"
+
             });
 
             _primaryTechPaths.Add(TechpathType.Expansion, expansionTechPath);
@@ -1380,7 +1384,7 @@ namespace Wopr.Strategies
                 return true;
             
             // If it's in the tech tree and hasn't been started, then it's waiting to be built even if we can't buy it yet.
-            return buckets.Exists(p => p.GetName().StartsWith(techName, StringComparison.InvariantCultureIgnoreCase) == true && p.GetPercentComplete() == 0);
+            return buckets.Exists(p => p.GetName().StartsWith(techName, StringComparison.InvariantCultureIgnoreCase) == true && p.GetCompleteF() == false);
         }
 
         private bool IsTechAvailableForInvestment(string techName)
@@ -1394,7 +1398,7 @@ namespace Wopr.Strategies
             bool isNonBucketMarker = techName == SecondTechbaseMarker;
 
             // If it's not in the tech tree or we can buy it, or it's already been started, then we don't want to invest in it again.
-            if (isNonBucketMarker == false && buckets.Exists(p => p.GetName().StartsWith(techName, StringComparison.InvariantCultureIgnoreCase) == true && side.CanBuy(p) == true && p.GetPercentComplete() == 0) == false)
+            if (isNonBucketMarker == false && buckets.Exists(p => p.GetName().StartsWith(techName, StringComparison.InvariantCultureIgnoreCase) == true && side.CanBuy(p) == true && p.GetCompleteF() == false) == false)
                 return false;
 
             if (IsTechInProgress(techName) == true)
@@ -1419,9 +1423,11 @@ namespace Wopr.Strategies
 
         private void ProcessInvestmentQueue()
         {
+            var availableMoney = ClientConnection.GetMoney();
+
             foreach (var techName in _investmentList.ToArray())
             {
-                var investResult = InvestInTech(techName);
+                var investResult = InvestInTech(techName, ref availableMoney);
                 switch (investResult)
                 {
                     case InvestResult.AlreadyInProgress:
@@ -1440,20 +1446,34 @@ namespace Wopr.Strategies
                         break;
 
                     case InvestResult.NotAvailableYet:
-                        return; // Don't skip the item in the queue, wait for it to become available.
+                        //return; // Don't skip the item in the queue, wait for it to become available.
+                        break; // If we have enough money for the not available yet tech, then keep going, maybe there is something else that is cheap that we can also invest in.
 
                     default:
                         throw new NotSupportedException(investResult.ToString());
                 }
+
+                // Out of money... no need to keep checking for more investments.
+                if (availableMoney <= 0)
+                    return;
             }
         }
 
         private void QueueTech(string techName)
         {
+            QueueTech(techName, false);
+        }
+
+        private void QueueTech(string techName, bool topOfList)
+        {
             if (_investmentList.Contains(techName) == false)
             {
-                Log($"Queueing tech: {techName}");
-                _investmentList.Add(techName);
+                Log($"Queueing tech: {techName}, topOfList: {topOfList}");
+
+                if (topOfList == true)
+                    _investmentList.Insert(0, techName);
+                else
+                    _investmentList.Add(techName);
             }
             else
             {
@@ -1461,7 +1481,7 @@ namespace Wopr.Strategies
             }
         }
 
-        private InvestResult InvestInTech(string techName)
+        private InvestResult InvestInTech(string techName, ref int availableMoney)
         {
             var side = ClientConnection.GetSide();
             var buckets = side.GetBuckets();
@@ -1481,19 +1501,23 @@ namespace Wopr.Strategies
                        
                     if (side.CanBuy(bucket) == true)
                     {
-                        if (bucket.GetPercentComplete() <= 0)
+                        if (bucket.GetCompleteF() == false && bucket.GetPrice() - bucket.GetMoney() > 0)
                         {
                             var money = ClientConnection.GetMoney();
 
-                            if (money >= bucket.GetBuyable().GetPrice() + AmountOfMoneyToKeepOnHand) // Leave a little cash to let players buy things.
+                            if (money >= bucket.GetPrice() + AmountOfMoneyToKeepOnHand) // Leave a little cash to let players buy things.
                             {
-                                Log($"Adding money to bucket {bucket.GetName()}. Bucket wants: {bucket.GetBuyable().GetPrice()}, we have: {money}, reserving {AmountOfMoneyToKeepOnHand} for player purchases.");
-                                ClientConnection.AddMoneyToBucket(bucket, bucket.GetBuyable().GetPrice());
+                                Log($"Adding money to bucket {bucket.GetName()}. Bucket wants: {bucket.GetPrice()}, we have: {money}, reserving {AmountOfMoneyToKeepOnHand} for player purchases.");
+
+                                // Remove the spent money from the available money so that we can keep investing in other stuff. 
+                                availableMoney -= bucket.GetPrice() - bucket.GetMoney();
+
+                                ClientConnection.AddMoneyToBucket(bucket, bucket.GetPrice());
                                 return InvestResult.Succeeded;
                             }
                             else
                             {
-                                Log($"Not enough money to buy {techName}, money: {money}, bucketPrice: {bucket.GetBuyable().GetPrice()}");
+                                Log($"Not enough money to buy {techName}, money: {money}, bucketPrice: {bucket.GetPrice()}");
                                 //Log("Already building: " + bucket.GetPercentComplete());
                                 return InvestResult.InsufficientFunds;
                             }
@@ -1511,6 +1535,9 @@ namespace Wopr.Strategies
                         {
                             continue; // See if there is an advanced station in the bucket list.
                         }
+
+                        // We can skip this tech if it's not available, but we want to set aside money so that when it becomes available we can have it.
+                        availableMoney -= bucket.GetPrice() - bucket.GetMoney();
 
                         return InvestResult.NotAvailableYet;
                     }
