@@ -10972,17 +10972,17 @@ class ThingSiteImpl : public ThingSite
                                                                 PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
                                                                 pso->AddTargetSpot();
                                                                 if (pfsShip->IsPlayer())
-                                                                    pfsShip->GetPlayer()->GetSteamAchievements()->AwardIGCAchievements(c_achmProbeSpot);
+                                                                    pfsShip->GetPlayer()->GetSteamAchievements()->AwardIGCAchievements(c_achmProbeSpot); //Xynth This is good, we can do this
                                                             }
                                                         }
-                                                        else if (s->GetObjectType() == OT_ship) {
-                                                            IshipIGC* spottingShip = (IshipIGC*)s;
-                                                            if (spottingShip->GetPilotType() >= c_ptPlayer) {
-                                                                CFSShip* pfsShip = (CFSShip*)(spottingShip->GetPrivateData());
-                                                                PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
-                                                                pso->AddTargetSpot();
-                                                            }
-                                                        }
+                                                        //else if (s->GetObjectType() == OT_ship) {
+                                                        //    IshipIGC* spottingShip = (IshipIGC*)s;
+                                                            //if (spottingShip->GetPilotType() >= c_ptPlayer) {
+                                                            //    CFSShip* pfsShip = (CFSShip*)(spottingShip->GetPrivateData());
+                                                            //    PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
+                                                                //pso->AddTargetSpot(); //Xynth let's not do this, this is bad
+                                                            //}
+                                                        //}
                                                         //mark hv ship as previously spotted, no matter by whom
                                                         pSpottedShip->MarkPreviouslySpotted();
                                                     }
