@@ -43,12 +43,14 @@ enum EStats
 	PLAYER_LOSS = 8,
 	REPAIR_PERCENT = 9,
 	COMM_ELO = 10,
-	COMM_GAMES = 11
+	COMM_GAMES = 11,
+	SUM_SCORE_2 = 12,
+	PLAYER_RANK_2 = 13
 
 	// Don't forget to update g_nMaximumSteamStatCount and m_Stats!
 };
 const int g_nMaximumSteamAchievementCount = 20; // Always keep this in sync with the number of achievments in EAchievements!
-const int g_nMaximumSteamStatCount = 12; // Always keep this in sync with the number of stats in EStats!
+const int g_nMaximumSteamStatCount = 14; // Always keep this in sync with the number of stats in EStats!
 
 // BT - STEAM
                             // 0   1    2    3      4  
@@ -111,7 +113,9 @@ private:
 		"PLAYER_LOSS",
 		"REPAIR_PERCENT",
 		"COMM_ELO",
-		"COMM_GAMES"
+		"COMM_GAMES",
+		"SUM_SCORE_2",
+		"PLAYER_RANK_2"
 	};
 
 	bool GetAchievement(EAchievements achievement);

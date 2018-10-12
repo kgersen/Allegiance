@@ -378,10 +378,10 @@ void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso, IshipIGC * pIshi
 	int score = ppso->GetScore();
 	if (score > 0)
 	{
-		getSucceed = GetStat(EStats::SUM_SCORE, &tempStat);
+		getSucceed = GetStat(EStats::SUM_SCORE_2, &tempStat);
 		if (getSucceed)
 		{
-			SetStat(EStats::SUM_SCORE, tempStat + score);
+			SetStat(EStats::SUM_SCORE_2, tempStat + score);
 			CheckRank(tempStat + score);
 		}
 	}
@@ -508,7 +508,7 @@ bool CSteamAchievements::CheckRank(int currentScore)
 {
 	int currentRank, earnedRank;
 	bool getSucceed;
-	getSucceed = GetStat(EStats::PLAYER_RANK, &currentRank);
+	getSucceed = GetStat(EStats::PLAYER_RANK_2, &currentRank);
 	if (getSucceed)
 	{
 		if (currentRank >= 5)
@@ -524,7 +524,7 @@ bool CSteamAchievements::CheckRank(int currentScore)
 		if (currentScore > RANK_REQUIREMENTS[earnedRank + 1])
 		{
 			earnedRank++;
-			SetStat(EStats::PLAYER_RANK, earnedRank);
+			SetStat(EStats::PLAYER_RANK_2, earnedRank);
 			return true; //add return for a future level up splash
 		}
 	}
@@ -537,9 +537,9 @@ RankID CSteamAchievements::GetRank()
 	bool getSucceed;
 
 	int currentScore;
-	getSucceed = GetStat(EStats::SUM_SCORE, &currentScore);
+	getSucceed = GetStat(EStats::SUM_SCORE_2, &currentScore);
 
-	getSucceed = GetStat(EStats::PLAYER_RANK, &rank);
+	getSucceed = GetStat(EStats::PLAYER_RANK_2, &rank);
 	if (getSucceed)
 		return RankID(rank);
 	else
