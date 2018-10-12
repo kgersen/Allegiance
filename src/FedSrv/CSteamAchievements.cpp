@@ -519,7 +519,7 @@ bool CSteamAchievements::CheckRank(int currentScore)
 
 
 	earnedRank = currentRank;
-	if (getSucceed)
+	if (getSucceed && (currentRank < 50))
 	{
 		if (currentScore > RANK_REQUIREMENTS[earnedRank + 1])
 		{
