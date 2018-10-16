@@ -1891,7 +1891,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
 
 		virtual bool RecentlySpotted(void) const
 		{
-            return (GetMyLastUpdate() - m_timePreviouslySpotted < 50.0f);
+            return (GetMyLastUpdate() < m_timePreviouslySpotted + 50.0f);
 		}
 		virtual float GetRepair(void) const
 		{
