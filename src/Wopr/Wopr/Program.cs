@@ -215,6 +215,12 @@ namespace Wopr
                         //cancellationTokenSource.Cancel();
                         teamDirectorBlue.PostResignAndQuit();
                     }
+
+                    if (DateTime.Now.Subtract(_applicationStartTime).TotalMinutes > 121)
+                    {
+                        Console.WriteLine($"Application has been running for more than 2 hours, and got stuck posting a resign. Forcing direct exit.");
+                        System.Environment.Exit(0);
+                    }
                 }
 
                 //var keyInfo = Console.ReadKey();

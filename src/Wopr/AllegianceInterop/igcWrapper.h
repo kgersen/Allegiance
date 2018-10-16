@@ -141,7 +141,8 @@ namespace AllegianceInterop
 		HullID LastSeenShipType() { return m_instance->LastSeenShipType(); }
 		ShipState LastSeenState() { return m_instance->LastSeenState(); }
 		StationID LastSeenStation() { return m_instance->LastSeenStation(); }
-		DWORD LastSeentation() { return m_instance->LastStateChange(); }
+		DWORD LastStateChange() { return m_instance->LastStateChange(); }
+		Money GetMoney() { return m_instance->GetMoney(); }
 	};
 
 	public ref class VectorWrapper

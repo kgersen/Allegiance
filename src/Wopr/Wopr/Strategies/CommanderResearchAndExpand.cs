@@ -38,6 +38,7 @@ namespace Wopr.Strategies
             _secondaryTechPaths = new Dictionary<TechpathType, List<string>>();
 
             List<String> supremacyTechPath = new List<string>(new string[] {
+                "Booster 1",
                 "Enh Miner",
                 "Enh Fighter",
                 "PW Gattling Gun 2",
@@ -112,6 +113,7 @@ namespace Wopr.Strategies
                 "LRM Hunter 2",
                 "Sig Cloak 1",
                 "Sig Cloak 2",
+                "Booster 1",
                 "GA: Missile Track 1",
                 "GA: Ship Energy 1",
                 "GA: Ship Agility 1",
@@ -163,6 +165,7 @@ namespace Wopr.Strategies
 
             List<String> expansionTechPath = new List<string>(new string[] {
                 "Enh Miner",
+                "Booster 1",
                 "Interceptor",
                 "PW Mini-Gun 2",
 
@@ -234,6 +237,7 @@ namespace Wopr.Strategies
 
             List<String> expansionSecondary = new List<string>(new string[]
                 {
+                    "Booster 1",
                     "GA: PW&EW Damage 1",
                     "GA: PW Range 1",
                     "GA: Faster He3 1",
@@ -318,7 +322,7 @@ namespace Wopr.Strategies
             {
                 var requestingShip = client.GetSide().GetShip(message.shipidRequest);
 
-                if (requestingShip != null)
+                if (requestingShip != null && requestingShip?.GetPlayerInfo()?.GetMoney() < message.amount)
                 {
                     Log($"Got a money request from {requestingShip.GetName()} for {message.amount}");
 
