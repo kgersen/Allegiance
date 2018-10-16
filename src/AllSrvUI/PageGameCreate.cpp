@@ -443,6 +443,9 @@ void CPageGameCreate::OnGameCreate()
 	}
   }
 
+  // BT - Turn off drones for LAN games so that it doesn't confuse the game with a Pig deathmatch.
+  m_spGameParameters->put_Drones(false);
+
   // Set the TotalMaxPlayers property of the IAGCGameParameters
   CString strMaxPlayers;
   m_comboMaxPlayers.GetLBText(m_nMaxPlayers, strMaxPlayers);
