@@ -43,18 +43,20 @@ enum EStats
 	PLAYER_LOSS = 8,
 	REPAIR_PERCENT = 9,
 	COMM_ELO = 10,
-	COMM_GAMES = 11
+	COMM_GAMES = 11,
+	SUM_SCORE_2 = 12,
+	PLAYER_RANK_2 = 13
 
 	// Don't forget to update g_nMaximumSteamStatCount and m_Stats!
 };
 const int g_nMaximumSteamAchievementCount = 20; // Always keep this in sync with the number of achievments in EAchievements!
-const int g_nMaximumSteamStatCount = 12; // Always keep this in sync with the number of stats in EStats!
+const int g_nMaximumSteamStatCount = 14; // Always keep this in sync with the number of stats in EStats!
 
 // BT - STEAM
                             // 0   1    2    3      4  
-const int RANK_REQUIREMENTS[51] = { 0, 300, 690, 1197, 1856, 2713, 3827, 5275, 7157, 9604, 12786, 16922, 22298, 29288, 38374, 50186, 65542, 85504, 111455, 145192, 189050, 246065, 320184, 416539,
-541801, 704641, 916333, 1191533, 1549293, 2014381, 2618996, 3404994, 4426793, 5755130, 7481970, 9726860, 12645219, 16439084, 21371109, 27782742, 36117865, 46953524, 61039882, 79352146, 103158090,
-134105817, 174337862, 226639520, 294631676, 383021479, 497928223 };
+const int RANK_REQUIREMENTS[51] = { 0, 100, 220, 364, 536, 744, 992, 1291, 1649, 2079, 2595, 3215, 3958, 4849, 5919, 7203,
+8744, 10593,12811, 15474, 18668, 22502, 27103, 32623, 39248, 47198, 56737, 68185, 81922, 98406, 118188, 141925, 170410,
+204593, 245611, 294834, 353900, 424781, 509837, 611904, 734385, 881362, 1057735, 1269382, 1523359, 1828131, 2193857, 2632728, 3159374, 3791349, 4549719};
 
 class CSteamAchievements
 {
@@ -111,7 +113,9 @@ private:
 		"PLAYER_LOSS",
 		"REPAIR_PERCENT",
 		"COMM_ELO",
-		"COMM_GAMES"
+		"COMM_GAMES",
+		"SUM_SCORE_2",
+		"PLAYER_RANK_2"
 	};
 
 	bool GetAchievement(EAchievements achievement);
