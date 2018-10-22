@@ -5912,11 +5912,15 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         pqd->dwConnectionID = cnxnFrom.GetID();
 
 		// BT - STEAM
-		if (g.bEnforceSteamDRM == true)
+		if (g.bEnforceSteamDRM == true && strcmp(pqd->szCDKey, g.szBotAuthenticationGuid) != 0)
 		{
 			Strcpy(pqd->szDrmHash, pfmLogon->drmHash);
 			pqd->steamID = pfmLogon->steamID;
-			int tokenCRC = MemoryCRC(pfmLogon->steamAuthTicket, pfmLogon->steamAuthTicketLength);
+
+			int tokenCRC = 0;
+
+			if(pfmLogon->steamAuthTicketLength < sizeof(pfmLogon->steamAuthTicket))
+				tokenCRC = MemoryCRC(pfmLogon->steamAuthTicket, pfmLogon->steamAuthTicketLength);
 
 			// BT - STEAM - Enable anyone in the Microsoft Allegiance - Developer group to connect to the game server with any client.
 			if (CSteamUserGroupStatus::IsMemberOfDevelopersGroup(pqd->steamID) == false)
