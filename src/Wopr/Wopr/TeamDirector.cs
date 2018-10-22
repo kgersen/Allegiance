@@ -224,7 +224,10 @@ namespace Wopr
         {
             var firstConnectedClient = _connectedClientsByPlayerName.Values.FirstOrDefault();
 
-            firstConnectedClient.SendChat(firstConnectedClient.GetShip(), AllegianceInterop.ChatTarget.CHAT_TEAM, -1, -1, "#resign", -1, -1, -1, null, false);
+            var ship = firstConnectedClient.GetShip();
+
+            if (ship != null)    
+                firstConnectedClient.SendChat(ship, AllegianceInterop.ChatTarget.CHAT_TEAM, -1, -1, "#resign", -1, -1, -1, null, false);
         }
 
         public void ChangeStrategy(AllegianceInterop.ClientConnection clientConnection, StrategyID strategyID, string playerName, short sideIndex, bool isGameController, bool isCommander)

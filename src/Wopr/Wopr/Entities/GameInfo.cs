@@ -25,6 +25,9 @@ namespace Wopr.Entities
 
         public int GetSweepingScoutCount(IclusterIGCWrapper cluster)
         {
+            if (cluster == null)
+                return 0;
+
             int sweepingScoutCount;
             if (SweepingScoutCountByClusterObjectID.TryGetValue(cluster.GetObjectID(), out sweepingScoutCount) == true)
                 return sweepingScoutCount;

@@ -35,6 +35,20 @@ struct  CachedLoadout
 typedef Slist_utl<CachedLoadout>   CachedLoadoutList;
 typedef Slink_utl<CachedLoadout>   CachedLoadoutLink;
 
+// https://stackoverflow.com/questions/800383/what-is-the-difference-between-mutex-and-critical-section
+class CriticalSectionManager
+{
+private:
+	CRITICAL_SECTION m_CS;
+public:
+	CriticalSectionManager();
+	~CriticalSectionManager();
+	void Lock();
+	void UnLock();
+};
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 // IClientEventSource
 

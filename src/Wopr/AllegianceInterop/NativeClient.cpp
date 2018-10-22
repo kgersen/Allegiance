@@ -7,7 +7,7 @@
 #include "MessageTypeNative.h"
 
 
-AllegianceInterop::CriticalSectionManager AllegianceInterop::NativeClient::m_criticalSection = AllegianceInterop::CriticalSectionManager();
+CriticalSectionManager AllegianceInterop::NativeClient::m_criticalSection = CriticalSectionManager();
 
 namespace AllegianceInterop
 {

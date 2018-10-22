@@ -244,6 +244,9 @@ namespace AllegianceInterop
 		{
 			marshal_context^ context = gcnew marshal_context();
 
+			if (pshipSender == nullptr)
+				return;
+
 			m_nativeClient->SendChat(
 				pshipSender->m_instance,
 				(::ChatTarget) ctRecipient,

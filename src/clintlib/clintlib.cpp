@@ -11,6 +11,26 @@ ALLOC_MSG_LIST;
 
 bool g_bCheckFiles = false;
 
+CriticalSectionManager g_criticalSectionManager;
+
+CriticalSectionManager::CriticalSectionManager()
+{
+	::InitializeCriticalSection(&m_CS);
+}
+CriticalSectionManager::~CriticalSectionManager()
+{
+	::DeleteCriticalSection(&m_CS);
+}
+void CriticalSectionManager::Lock()
+{
+	::EnterCriticalSection(&m_CS);
+}
+void CriticalSectionManager::UnLock()
+{
+	::LeaveCriticalSection(&m_CS);
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 // ClientEventSource
 
@@ -674,113 +694,124 @@ void MissionInfo::Update(FMD_S_MISSIONDEF* pfmMissionDef)
     m_mapSideInfo.GetSink()();
 }
 
+
+
 void MissionInfo::Update(FMD_LS_LOBBYMISSIONINFO* pfmLobbyMissionInfo)
 {
-    int numSidesOld = NumSides();
-    Strncpy(m_pfmMissionDef->misparms.strGameName, FM_VAR_REF(pfmLobbyMissionInfo, szGameName), c_cbGameName);
-    m_pfmMissionDef->misparms.strGameName[c_cbGameName - 1] = '\0';
-    m_strGameDetailsFiles = (FM_VAR_REF(pfmLobbyMissionInfo, szGameDetailsFiles) != NULL)
-      ? FM_VAR_REF(pfmLobbyMissionInfo, szGameDetailsFiles) : "";
-    m_pfmMissionDef->misparms.nTeams = pfmLobbyMissionInfo->nTeams;
-    m_pfmMissionDef->misparms.nMinPlayersPerTeam = pfmLobbyMissionInfo->nMinPlayersPerTeam;
-    m_pfmMissionDef->misparms.nMaxPlayersPerTeam = pfmLobbyMissionInfo->nMaxPlayersPerTeam;
-    m_pfmMissionDef->misparms.iMinRank = pfmLobbyMissionInfo->nMinRank;
-    m_pfmMissionDef->misparms.iMaxRank = pfmLobbyMissionInfo->nMaxRank;
-    m_pfmMissionDef->misparms.timeStart = Time(pfmLobbyMissionInfo->dwStartTime);
-    m_fGuaranteedSlotsAvailable = pfmLobbyMissionInfo->fGuaranteedSlotsAvailable;
-    m_fAnySlotsAvailable = pfmLobbyMissionInfo->fAnySlotsAvailable;
-    m_nNumPlayers = pfmLobbyMissionInfo->nNumPlayers;
+	//printf("MissionInfo::Update - Trying For Lock\n");
+
+	g_criticalSectionManager.Lock();
+
+	//printf("MissionInfo::Update - Lock\n");
+
+	int numSidesOld = NumSides();
+	Strncpy(m_pfmMissionDef->misparms.strGameName, FM_VAR_REF(pfmLobbyMissionInfo, szGameName), c_cbGameName);
+	m_pfmMissionDef->misparms.strGameName[c_cbGameName - 1] = '\0';
+	m_strGameDetailsFiles = (FM_VAR_REF(pfmLobbyMissionInfo, szGameDetailsFiles) != NULL)
+		? FM_VAR_REF(pfmLobbyMissionInfo, szGameDetailsFiles) : "";
+	m_pfmMissionDef->misparms.nTeams = pfmLobbyMissionInfo->nTeams;
+	m_pfmMissionDef->misparms.nMinPlayersPerTeam = pfmLobbyMissionInfo->nMinPlayersPerTeam;
+	m_pfmMissionDef->misparms.nMaxPlayersPerTeam = pfmLobbyMissionInfo->nMaxPlayersPerTeam;
+	m_pfmMissionDef->misparms.iMinRank = pfmLobbyMissionInfo->nMinRank;
+	m_pfmMissionDef->misparms.iMaxRank = pfmLobbyMissionInfo->nMaxRank;
+	m_pfmMissionDef->misparms.timeStart = Time(pfmLobbyMissionInfo->dwStartTime);
+	m_fGuaranteedSlotsAvailable = pfmLobbyMissionInfo->fGuaranteedSlotsAvailable;
+	m_fAnySlotsAvailable = pfmLobbyMissionInfo->fAnySlotsAvailable;
+	m_nNumPlayers = pfmLobbyMissionInfo->nNumPlayers;
 	m_nNumNoatPlayers = pfmLobbyMissionInfo->nNumNoatPlayers; //Imago #169
-    SetInProgress(pfmLobbyMissionInfo->fInProgress);
-    SetCountdownStarted(pfmLobbyMissionInfo->fCountdownStarted);
-    m_pfmMissionDef->misparms.bScoresCount = pfmLobbyMissionInfo->fScoresCount;
-    m_pfmMissionDef->misparms.bAllowDevelopments = pfmLobbyMissionInfo->fAllowDevelopments;
-    m_pfmMissionDef->misparms.bInvulnerableStations = pfmLobbyMissionInfo->fInvulnerableStations;
-    m_pfmMissionDef->misparms.bObjectModelCreated = pfmLobbyMissionInfo->fMSArena;
+	SetInProgress(pfmLobbyMissionInfo->fInProgress);
+	SetCountdownStarted(pfmLobbyMissionInfo->fCountdownStarted);
+	m_pfmMissionDef->misparms.bScoresCount = pfmLobbyMissionInfo->fScoresCount;
+	m_pfmMissionDef->misparms.bAllowDevelopments = pfmLobbyMissionInfo->fAllowDevelopments;
+	m_pfmMissionDef->misparms.bInvulnerableStations = pfmLobbyMissionInfo->fInvulnerableStations;
+	m_pfmMissionDef->misparms.bObjectModelCreated = pfmLobbyMissionInfo->fMSArena;
 	// KGJV - receive game core file
 	Strncpy(m_pfmMissionDef->misparms.szIGCStaticFile, FM_VAR_REF(pfmLobbyMissionInfo, szIGCStaticFile), c_cbFileName);
 	// KGJV #114 - fill in server name & ip
-	Strncpy(m_pfmMissionDef->szServerName, FM_VAR_REF(pfmLobbyMissionInfo,szServerName), c_cbName);
-	Strncpy(m_pfmMissionDef->szServerAddr, FM_VAR_REF(pfmLobbyMissionInfo,szServerAddr), 16);
-	UTL::SetPrivilegedUsers( ((FM_VAR_REF(pfmLobbyMissionInfo, szPrivilegedUsers) != NULL) ?  FM_VAR_REF(pfmLobbyMissionInfo, szPrivilegedUsers) : ""),m_pfmMissionDef->dwCookie); //Imago 6/10 #2
-	UTL::SetServerVersion(FM_VAR_REF(pfmLobbyMissionInfo, szServerVersion),m_pfmMissionDef->dwCookie); //Imago 7/10 #62
-    m_pfmMissionDef->misparms.nTotalMaxPlayersPerGame = pfmLobbyMissionInfo->nMaxPlayersPerGame;
-    m_pfmMissionDef->misparms.bSquadGame = pfmLobbyMissionInfo->fSquadGame;
-    m_pfmMissionDef->misparms.bEjectPods = pfmLobbyMissionInfo->fEjectPods;
+	Strncpy(m_pfmMissionDef->szServerName, FM_VAR_REF(pfmLobbyMissionInfo, szServerName), c_cbName);
+	Strncpy(m_pfmMissionDef->szServerAddr, FM_VAR_REF(pfmLobbyMissionInfo, szServerAddr), 16);
+	UTL::SetPrivilegedUsers(((FM_VAR_REF(pfmLobbyMissionInfo, szPrivilegedUsers) != NULL) ? FM_VAR_REF(pfmLobbyMissionInfo, szPrivilegedUsers) : ""), m_pfmMissionDef->dwCookie); //Imago 6/10 #2
+	UTL::SetServerVersion(FM_VAR_REF(pfmLobbyMissionInfo, szServerVersion), m_pfmMissionDef->dwCookie); //Imago 7/10 #62
+	m_pfmMissionDef->misparms.nTotalMaxPlayersPerGame = pfmLobbyMissionInfo->nMaxPlayersPerGame;
+	m_pfmMissionDef->misparms.bSquadGame = pfmLobbyMissionInfo->fSquadGame;
+	m_pfmMissionDef->misparms.bEjectPods = pfmLobbyMissionInfo->fEjectPods;
 
-    if (pfmLobbyMissionInfo->fLimitedLives && m_pfmMissionDef->misparms.iLives == 0x7fff)
-        m_pfmMissionDef->misparms.iLives = 1;
-    else if (!pfmLobbyMissionInfo->fLimitedLives && m_pfmMissionDef->misparms.iLives != 0x7fff)
-        m_pfmMissionDef->misparms.iLives = 0x7fff;
+	if (pfmLobbyMissionInfo->fLimitedLives && m_pfmMissionDef->misparms.iLives == 0x7fff)
+		m_pfmMissionDef->misparms.iLives = 1;
+	else if (!pfmLobbyMissionInfo->fLimitedLives && m_pfmMissionDef->misparms.iLives != 0x7fff)
+		m_pfmMissionDef->misparms.iLives = 0x7fff;
 
-    if (pfmLobbyMissionInfo->fConquest && !m_pfmMissionDef->misparms.IsConquestGame())
-        m_pfmMissionDef->misparms.iGoalConquestPercentage = 100;
-    else if (!pfmLobbyMissionInfo->fConquest && m_pfmMissionDef->misparms.IsConquestGame())
-        m_pfmMissionDef->misparms.iGoalConquestPercentage = 0;
+	if (pfmLobbyMissionInfo->fConquest && !m_pfmMissionDef->misparms.IsConquestGame())
+		m_pfmMissionDef->misparms.iGoalConquestPercentage = 100;
+	else if (!pfmLobbyMissionInfo->fConquest && m_pfmMissionDef->misparms.IsConquestGame())
+		m_pfmMissionDef->misparms.iGoalConquestPercentage = 0;
 
-    if (pfmLobbyMissionInfo->fDeathMatch && !m_pfmMissionDef->misparms.IsDeathMatchGame())
-        m_pfmMissionDef->misparms.nGoalTeamKills = 1;
-    else if (!pfmLobbyMissionInfo->fDeathMatch && m_pfmMissionDef->misparms.IsDeathMatchGame())
-        m_pfmMissionDef->misparms.nGoalTeamKills = 0;
+	if (pfmLobbyMissionInfo->fDeathMatch && !m_pfmMissionDef->misparms.IsDeathMatchGame())
+		m_pfmMissionDef->misparms.nGoalTeamKills = 1;
+	else if (!pfmLobbyMissionInfo->fDeathMatch && m_pfmMissionDef->misparms.IsDeathMatchGame())
+		m_pfmMissionDef->misparms.nGoalTeamKills = 0;
 
-    if (pfmLobbyMissionInfo->fCountdown && !m_pfmMissionDef->misparms.IsCountdownGame())
-        m_pfmMissionDef->misparms.dtGameLength = 600;
-    else if (!pfmLobbyMissionInfo->fCountdown && m_pfmMissionDef->misparms.IsCountdownGame())
-        m_pfmMissionDef->misparms.dtGameLength = 0;
+	if (pfmLobbyMissionInfo->fCountdown && !m_pfmMissionDef->misparms.IsCountdownGame())
+		m_pfmMissionDef->misparms.dtGameLength = 600;
+	else if (!pfmLobbyMissionInfo->fCountdown && m_pfmMissionDef->misparms.IsCountdownGame())
+		m_pfmMissionDef->misparms.dtGameLength = 0;
 
-    if (pfmLobbyMissionInfo->fProsperity && !m_pfmMissionDef->misparms.IsProsperityGame())
-        m_pfmMissionDef->misparms.fGoalTeamMoney = 100;
-    else if (!pfmLobbyMissionInfo->fProsperity && m_pfmMissionDef->misparms.IsProsperityGame())
-        m_pfmMissionDef->misparms.fGoalTeamMoney = 0;
+	if (pfmLobbyMissionInfo->fProsperity && !m_pfmMissionDef->misparms.IsProsperityGame())
+		m_pfmMissionDef->misparms.fGoalTeamMoney = 100;
+	else if (!pfmLobbyMissionInfo->fProsperity && m_pfmMissionDef->misparms.IsProsperityGame())
+		m_pfmMissionDef->misparms.fGoalTeamMoney = 0;
 
-    if (pfmLobbyMissionInfo->fArtifacts && !m_pfmMissionDef->misparms.IsArtifactsGame())
-        m_pfmMissionDef->misparms.nGoalArtifactsCount = 10;
-    else if (!pfmLobbyMissionInfo->fArtifacts && m_pfmMissionDef->misparms.IsArtifactsGame())
-        m_pfmMissionDef->misparms.nGoalArtifactsCount = 0;
+	if (pfmLobbyMissionInfo->fArtifacts && !m_pfmMissionDef->misparms.IsArtifactsGame())
+		m_pfmMissionDef->misparms.nGoalArtifactsCount = 10;
+	else if (!pfmLobbyMissionInfo->fArtifacts && m_pfmMissionDef->misparms.IsArtifactsGame())
+		m_pfmMissionDef->misparms.nGoalArtifactsCount = 0;
 
-    if (pfmLobbyMissionInfo->fFlags && !m_pfmMissionDef->misparms.IsFlagsGame())
-        m_pfmMissionDef->misparms.nGoalFlagsCount = 10;
-    else if (!pfmLobbyMissionInfo->fFlags && m_pfmMissionDef->misparms.IsFlagsGame())
-        m_pfmMissionDef->misparms.nGoalFlagsCount = 0;
+	if (pfmLobbyMissionInfo->fFlags && !m_pfmMissionDef->misparms.IsFlagsGame())
+		m_pfmMissionDef->misparms.nGoalFlagsCount = 10;
+	else if (!pfmLobbyMissionInfo->fFlags && m_pfmMissionDef->misparms.IsFlagsGame())
+		m_pfmMissionDef->misparms.nGoalFlagsCount = 0;
 
-    if (pfmLobbyMissionInfo->fTerritorial && !m_pfmMissionDef->misparms.IsTerritoryGame())
-        m_pfmMissionDef->misparms.iGoalTerritoryPercentage = 70;
-    else if (!pfmLobbyMissionInfo->fTerritorial && m_pfmMissionDef->misparms.IsTerritoryGame())
-        m_pfmMissionDef->misparms.iGoalTerritoryPercentage = 100;
+	if (pfmLobbyMissionInfo->fTerritorial && !m_pfmMissionDef->misparms.IsTerritoryGame())
+		m_pfmMissionDef->misparms.iGoalTerritoryPercentage = 70;
+	else if (!pfmLobbyMissionInfo->fTerritorial && m_pfmMissionDef->misparms.IsTerritoryGame())
+		m_pfmMissionDef->misparms.iGoalTerritoryPercentage = 100;
 
-    // create or destroy sides, as needed.
-    if (NumSides() > numSidesOld)
-    {
-        // create the new sides the easy way
-        for(SideID sideID = numSidesOld; sideID < NumSides(); sideID++)
-        {
-            GetSideInfo(sideID);
-        }
-    }
-    else
-    {
-        // destroy the old sides
-        for (SideID sideID = numSidesOld - 1; sideID >= NumSides(); sideID--)
-        {
-            m_mapSideInfo.Remove(sideID);
-        }
-    }
+	// create or destroy sides, as needed.
+	if (NumSides() > numSidesOld)
+	{
+		// create the new sides the easy way
+		for (SideID sideID = numSidesOld; sideID < NumSides(); sideID++)
+		{
+			GetSideInfo(sideID);
+		}
+	}
+	else
+	{
+		// destroy the old sides
+		for (SideID sideID = numSidesOld - 1; sideID >= NumSides(); sideID--)
+		{
+			m_mapSideInfo.Remove(sideID);
+		}
+	}
 
-    // copy the squad info
-    {        
-        SideID sideID;
-        SquadID* vSquadIDs = (SquadID*)FM_VAR_REF(pfmLobbyMissionInfo, rgSquadIDs);
-        int numSquads = pfmLobbyMissionInfo->cbrgSquadIDs / sizeof(SquadID);
+	// copy the squad info
+	{
+		SideID sideID;
+		SquadID* vSquadIDs = (SquadID*)FM_VAR_REF(pfmLobbyMissionInfo, rgSquadIDs);
+		int numSquads = pfmLobbyMissionInfo->cbrgSquadIDs / sizeof(SquadID);
 
-        assert(numSquads < c_cSidesMax);
-        for (sideID = 0; sideID < numSquads; sideID++)
-            squadIDs[sideID] = vSquadIDs[sideID];
-        for (; sideID < c_cSidesMax; sideID++)
-            squadIDs[sideID] = NA;
-    }
+		assert(numSquads < c_cSidesMax);
+		for (sideID = 0; sideID < numSquads; sideID++)
+			squadIDs[sideID] = vSquadIDs[sideID];
+		for (; sideID < c_cSidesMax; sideID++)
+			squadIDs[sideID] = NA;
+	}
 
-    // signal the sides list in case something has changed.
-    m_mapSideInfo.GetSink()();
+	// signal the sides list in case something has changed.
+	m_mapSideInfo.GetSink()();
+
+	//printf("MissionInfo::Update - UnLock\n");
+	g_criticalSectionManager.UnLock();
 }
 
 void MissionInfo::UpdateStartTime(Time timeStart)
@@ -1108,7 +1139,8 @@ BaseClient::BaseClient(void)
     m_strCDKey(""),
 	// KGJV pigs - extra default init
 	m_sidBoardAfterDisembark(NA),
-	m_sidTeleportAfterDisembark(NA)
+	m_sidTeleportAfterDisembark(NA),
+	m_strPasswordToJoin("")
 {
     CoInitialize(NULL);
     m_timeLastPing = m_lastSend;
@@ -2306,7 +2338,15 @@ void    BaseClient::SendChat(IshipIGC*      pshipSender,
             break;
 
             case CHAT_TEAM:
-                oidRecipient = m_ship->GetSide()->GetObjectID();
+				IsideIGC * side;
+
+				if (m_ship != nullptr)
+					side = m_ship->GetSide();
+
+				if (side != nullptr)
+					oidRecipient = side->GetObjectID();
+				else
+					oidRecipient = NA;
             break;
 
             case CHAT_ALL_SECTOR:

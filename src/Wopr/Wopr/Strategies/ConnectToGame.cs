@@ -513,7 +513,7 @@ namespace Wopr.Strategies
 
         private void MessageReceiver_FMD_LS_LOBBYMISSIONINFO(AllegianceInterop.ClientConnection client, AllegianceInterop.FMD_LS_LOBBYMISSIONINFO message)
         {
-            Log($"Got mission info for game: {message.szGameName}, server address: {message.szServerAddr}, server port: {message.dwPort}, mission cookie: {message.dwCookie}");
+            Log($"Got mission info for game: {message.szGameName}, server address: {message.szServerAddr}, server port: {message.dwPort}, mission cookie: {message.dwCookie}, _isClientConnectedToServer: {_isClientConnectedToServer}, GameName: {GameName}. ");
 
             //switch (_serverType)
             //{

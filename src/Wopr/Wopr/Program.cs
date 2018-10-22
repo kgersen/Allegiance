@@ -165,6 +165,8 @@ namespace Wopr
             //{
             //    teamDirectorBlue.CreatePlayer(playerName, 1, false, false);
             //});
+            
+            DateTime? resignPostedTime = null;
 
             do
             {
@@ -192,8 +194,10 @@ namespace Wopr
                     switch (key.Key)
                     {
                         case ConsoleKey.Q:
+                            Console.WriteLine("Exiting...");
                             cancellationTokenSource.Cancel();
                             //teamDirectorBlue.PostResignAndQuit();
+                            //resignPostedTime = DateTime.Now;
                             break;
                         default:
                             Console.WriteLine("\nPress q to quit.");
@@ -204,21 +208,27 @@ namespace Wopr
                 teamDirectorYellow.UpdateTeamStrategies();
                 teamDirectorBlue.UpdateTeamStrategies();
 
+                if (resignPostedTime != null && (DateTime.Now - resignPostedTime.GetValueOrDefault(DateTime.MinValue)).TotalSeconds > 3)
+                    cancellationTokenSource.Cancel();
+
                 Thread.Sleep(100);
 
                 // If we are not debugging, then only allow a game to run for 2 hours max. This will help ensure that the bots don't get locked up indefinitely.
                 if (launchWithoutYellowCom == false && launchWithYellowComOnly == false)
                 {
-                    if (DateTime.Now.Subtract(_applicationStartTime).TotalHours > 2)
+                    if (DateTime.Now.Subtract(_applicationStartTime).TotalHours > 2 && resignPostedTime == null)
                     {
                         Console.WriteLine($"Application has been running for more than 2 hours, restarting game. {_applicationStartTime}, {DateTime.Now}");
                         //cancellationTokenSource.Cancel();
                         teamDirectorBlue.PostResignAndQuit();
+                        resignPostedTime = DateTime.Now;
                     }
-
+                    
                     if (DateTime.Now.Subtract(_applicationStartTime).TotalMinutes > 121)
                     {
                         Console.WriteLine($"Application has been running for more than 2 hours, and got stuck posting a resign. Forcing direct exit.");
+                        //cancellationTokenSource.Cancel();
+                        //break;
                         System.Environment.Exit(0);
                     }
                 }

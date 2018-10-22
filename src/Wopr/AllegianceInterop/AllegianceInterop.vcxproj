@@ -356,7 +356,6 @@
     <ClInclude Include="AllMessages.h" />
     <ClInclude Include="ClientConnection.h" />
     <ClInclude Include="clintlibWrapper.h" />
-    <ClInclude Include="CriticalSectionManager.h" />
     <ClInclude Include="Enums.h" />
     <ClInclude Include="IbaseIGC.h.Old" />
     <ClInclude Include="igcWrapper.h" />
@@ -378,7 +377,6 @@
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="ClientConnection.cpp" />
     <ClCompile Include="clintlibWrapper.cpp" />
-    <ClCompile Include="CriticalSectionManager.cpp" />
     <ClCompile Include="igcWrapper.cpp" />
     <ClCompile Include="ManagedObject.cpp" />
     <ClCompile Include="NativeClient.cpp" />
