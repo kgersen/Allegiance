@@ -110,7 +110,10 @@ namespace Wopr
 
             if (launchWithYellowComOnly == false)
             {
-                foreach (var file in Directory.GetFiles(@"c:\1\Logs\", "*.txt"))
+                foreach (var file in Directory.GetFiles(@"c:\1\Logs\", "blue*.txt"))
+                    File.Delete(file);
+
+                foreach (var file in Directory.GetFiles(@"c:\1\Logs\", "yellow*.txt"))
                     File.Delete(file);
             }
             else
@@ -209,7 +212,10 @@ namespace Wopr
                 teamDirectorBlue.UpdateTeamStrategies();
 
                 if (resignPostedTime != null && (DateTime.Now - resignPostedTime.GetValueOrDefault(DateTime.MinValue)).TotalSeconds > 3)
+                {
+                    Log("Three seconds have elapsed for resign, exiting main loop.");
                     cancellationTokenSource.Cancel();
+                }
 
                 Thread.Sleep(100);
 
@@ -218,7 +224,7 @@ namespace Wopr
                 {
                     if (DateTime.Now.Subtract(_applicationStartTime).TotalHours > 2 && resignPostedTime == null)
                     {
-                        Console.WriteLine($"Application has been running for more than 2 hours, restarting game. {_applicationStartTime}, {DateTime.Now}");
+                        Log($"Application has been running for more than 2 hours, restarting game. {_applicationStartTime}, {DateTime.Now}");
                         //cancellationTokenSource.Cancel();
                         teamDirectorBlue.PostResignAndQuit();
                         resignPostedTime = DateTime.Now;
@@ -226,7 +232,7 @@ namespace Wopr
                     
                     if (DateTime.Now.Subtract(_applicationStartTime).TotalMinutes > 121)
                     {
-                        Console.WriteLine($"Application has been running for more than 2 hours, and got stuck posting a resign. Forcing direct exit.");
+                        Log($"Application has been running for more than 2 hours, and got stuck posting a resign. Forcing direct exit.");
                         //cancellationTokenSource.Cancel();
                         //break;
                         System.Environment.Exit(0);
@@ -245,17 +251,43 @@ namespace Wopr
                 //}
             } while (cancellationTokenSource.IsCancellationRequested == false);
 
-            
-            Console.WriteLine("Disconnecting Yellow Team.");
+
+            Log("Disconnecting Yellow Team.");
             teamDirectorYellow.DisconnectAllClients();
 
-            Console.WriteLine("Disconnecting Blue Team.");
+            Log("Disconnecting Blue Team.");
             teamDirectorBlue.DisconnectAllClients();
 
-            Console.WriteLine("Done.");
+            Log("Done.");
 
             System.Environment.Exit(0);
         }
-        
+
+        public void Log(string message)
+        {
+            Console.WriteLine($"{message}");
+
+            string filename = $"c:\\1\\Logs\\program.txt";
+
+            Exception lastException = null;
+            for (int i = 0; i < 30; i++)
+            {
+                try
+                {
+                    File.AppendAllText(filename, $"{DateTime.Now}: {message}\n");
+                    lastException = null;
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    lastException = ex;
+                    Thread.Sleep(10);
+                }
+            }
+
+            if (lastException != null)
+                throw lastException;
+        }
+
     }
 }

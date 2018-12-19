@@ -8,7 +8,7 @@
 // Use this to convert the unmanaged pointer into a wrapped object. In the unmanaged pointer is nullptr, then 
 // a null object will be returned instead of a wrapper on a null object.
 #define ConvertTo(ManagedType, UnmanagedObject) \
-	ManagedType ^ value = gcnew ManagedType(UnmanagedObject); if(value->m_instance == nullptr) return nullptr; else return value;
+	if(UnmanagedObject == nullptr) return nullptr; ManagedType ^ value = gcnew ManagedType(UnmanagedObject); if(value->m_instance == nullptr) return nullptr; else return value;
 
 #define ConvertSList(IGC_OBJECT, IGC_LINK, NATIVE_CALL) \
 	System::Collections::Generic::List<##IGC_OBJECT##Wrapper ^> ^ returnValue = gcnew System::Collections::Generic::List<##IGC_OBJECT##Wrapper ^>(); \
