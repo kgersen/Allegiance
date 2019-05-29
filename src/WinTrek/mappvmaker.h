@@ -15,6 +15,8 @@
 class CMapPVCluster;
 class ImissionPV;
 
+#include "mapmakerigc.h"
+
 class CwarpPV : public IObject
 {
 private:
@@ -88,7 +90,7 @@ public:
 class CMapPVData
 {
     protected:
-        static const char * smszClusterName[69];
+        static const char * smszClusterName[c_NumClusterNames];
 
     protected:
 

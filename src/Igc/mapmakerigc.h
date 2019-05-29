@@ -23,7 +23,7 @@ typedef  Slink_utl<ImapMakerIGC*>       MapMakerLinkIGC;
 // Constants currently being used.
 //
 const int c_MaxClustersPerMap = 50;
-const int c_NumClusterNames = 70;
+const int c_NumClusterNames = 72;
 const int c_NumberOfPlanetPosters = 25;
 
 const int c_FriendlyAleph = 0;          // Friend to Friend
