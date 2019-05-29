@@ -30,14 +30,14 @@ const char * CMapData::smszClusterName[c_NumClusterNames] =
     "Kilvero",      "Kishoten",     "Kuat",         "L'Sau",
     "Larchis",      "Lemminakean",  "Leighton",     "Louhi",
     "Loviatar",     "Luerentia",	"Meesh",		"Mercor",
-	"Miekko",       "Mielikki",     "Monmar",		"MrChaos"
+	"Miekko",       "Mielikki",     "Monmar",		"MrChaos",
     "Nadir",        "Night",        "Oblivion",		"Okanagon",     
 	"Oxyl",			"Pohjola",	    "Raiko",        "Resnik",       
 	"Rib'zki",		"Rimin",		"Sleipener",	"Solitaire",    
 	"Soron",        "Sri Metsa",    "Surma",		"Tathlum",      
 	"Tierankeen",   "Tjeerd",       "Torc",			"Touni",        
 	"Tauceti",      "Tj Butler",    "Titty Baby",	"Turakeen",   
-	"Udar",			"Virkinow",		"Wasp"			"Xuping"
+	"Udar",			"Virkinow",		"Wasp",			"Xuping"
 } ;
 
 const char * CmapMakerIGC::smszPlanetName[c_NumberOfPlanetPosters] =
