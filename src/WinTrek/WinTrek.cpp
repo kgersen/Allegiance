@@ -1459,6 +1459,10 @@ public:
 
     bool      OnActivateApp(bool bActive) override {
         bool result = EngineWindow::OnActivateApp(bActive);
+        //Imago 1/20 added below if.  makes no sense but it fixes a controls loss when alt+tabbing bug
+        if (bActive)
+            m_ptrekInput->SetFocus(false);
+        //end imago
         UpdateMouseEnabled();
         return result;
     }
