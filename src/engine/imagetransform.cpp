@@ -1,6 +1,7 @@
 
 #include "imagetransform.h"
 #include "image.h"
+#include <stdexcept>
 
 class ImageSize : public PointValue {
 private:

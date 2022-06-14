@@ -17,7 +17,7 @@
 
 // Disable this warning since STL may generate some very long symbolic names
 #pragma warning(disable: 4786)
-#include <typeinfo.h>
+#include <typeinfo>
 #include <comdef.h>
 #include <crtdbg.h>
 #include <zassert.h>

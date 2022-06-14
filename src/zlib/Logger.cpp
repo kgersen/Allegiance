@@ -1,6 +1,7 @@
 
 #include "Logger.h"
 #include <time.h>
+#include <stdexcept>
 
 std::shared_ptr<ILogger> CreateTimestampedFileLogger(std::string prefix) {
     //if prefix is too long this will be a problem

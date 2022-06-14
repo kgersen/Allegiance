@@ -13,6 +13,7 @@
 #include "ds3dbuffer.h"
 #include "ds3dvirtualbuffer.h"
 #include "soundutil.h"
+#include <functional>
 
 namespace SoundEngine {
 
