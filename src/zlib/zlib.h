@@ -10,17 +10,11 @@
 // warning C4355: 'this' : used in base member initializer list
 #pragma warning(disable:4355)
 
-#if !defined (_WIN64) 
+#if !defined (_WIN64) && !defined(__GNUC__)
 	#define FLOATASM //Imago guarded from x64 compilers on 6/20/09
 	#define USEASM
 #endif
 
-// VS.Net 2003 port: typename is required for template
-#if _MSC_VER >= 1310
-	#define VSNET_TNFIX typename
-#else
-	#define VSNET_TNFIX
-#endif
 //
 // Required CRT headers
 //
@@ -31,6 +25,8 @@
 #include "math.h"
 #include "time.h"
 #include "malloc.h"
+
+#include <algorithm>
 
 //
 // Required Win32 headers
@@ -44,7 +40,7 @@
 //
 
 // KGJV - Removed dependancy from DX
-#include "OldDXDefns.h"	// Older DX definitions included to get the project to build. At some point,
+#include "olddxdefns.h"	// Older DX definitions included to get the project to build. At some point,
 						// they all become redundant.
 
 //
@@ -65,8 +61,6 @@
 #include "tstack.h"
 #include "tlist.h"
 #include "tmap.h"
-
-#include "comobj.h"
 
 //
 // Types
@@ -99,7 +93,7 @@
 
 #include "base.h"
 #include "window.h"
-#include "win32app.h"
+#include "Win32app.h"
 #include "VersionInfo.h"
 
 //

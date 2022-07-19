@@ -1,4 +1,11 @@
-#include "pch.h"
+#include "efimage.h"
+
+#include <alloc.h>
+#include <font.h>
+#include <image.h>
+#include <tarray.h>
+
+#include "efart.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -239,7 +246,7 @@ public:
     void Render(Context* pcontext)
     {
         WrapImage::Render(pcontext);
-        pcontext->SetBlendMode(BlendModeSourceAlpha);
+        pcontext->SetBlendMode(BlendModeSourceAlphaPreMultiplied);
         pcontext->FillRect(GetBounds().GetRect(), GetColor()->GetValue());
     }
 };
@@ -529,7 +536,7 @@ public:
         #endif
         pcontext->SetShadeMode(ShadeModeGlobalColor);
 		pcontext->SetGlobalColor( Color::White() );
-		pcontext->SetBlendMode( BlendModeAlphaStampThrough );
+		pcontext->SetBlendMode( BlendModeSourceAlpha );
 
         TList<PosterData, DefaultNoEquals>::Iterator iter(m_list);
 

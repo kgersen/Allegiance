@@ -403,10 +403,10 @@ public:
                 m_pScrollPane->SetSize(m_vItems.GetCount());
                 
                 if (iItem < iOldTopItem) {
-                    SetScrollPosition(max(iOldTopItem - numRemoved, 0));
+                    SetScrollPosition(std::max(iOldTopItem - numRemoved, 0));
                 } else {
-                    SetScrollPosition(min(iOldTopItem, 
-                        max(m_vItems.GetCount() - m_cVisibleItems, 0)));
+                    SetScrollPosition(std::min(iOldTopItem, 
+                        std::max(m_vItems.GetCount() - m_cVisibleItems, 0)));
                 }
             }
             NeedPaint();
@@ -592,7 +592,7 @@ public:
         m_iTopItem = iPosition;
 
         if (m_iTopItem > (m_vItems.GetCount() - m_cVisibleItems)) {
-            m_iTopItem = max(0, m_vItems.GetCount() - m_cVisibleItems);
+            m_iTopItem = std::max(0, m_vItems.GetCount() - m_cVisibleItems);
         }
 
         if (m_iTopItem < 0) {
@@ -625,7 +625,7 @@ public:
             iBottom++;
 
         if (iBottom > LastVisibleItem())
-            m_iTopItem = max(iBottom - (m_cVisibleItems - 1), 0);
+            m_iTopItem = std::max(iBottom - (m_cVisibleItems - 1), 0);
         if (iTop < m_iTopItem)
             m_iTopItem = iTop;
 

@@ -7,7 +7,10 @@
 #ifndef _assert_h_
 #define _assert_h_
 
-#include "crtdbg.h"
+#include <memory>
+#include <windows.h>
+
+#include "Logger.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -16,7 +19,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #ifdef assert
-#error Don't use assert.h, zlib provides assert functionality.
+#error "Don't use assert.h, zlib provides assert functionality."
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -27,12 +30,9 @@
 void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line, const char* pszModule);
 #define ZRetailAssert(bCond)    ZAssertImpl((bCond) ? true : false, #bCond, __FILE__, __LINE__, __MODULE__)
 
-void logchat(const char*);  // mmf log chat, stuck it here, the code is in Win32app.cpp
-
 void retailf(const char* , ...);
 
-extern int g_outputdebugstring; // mmf added to support Radar's -debug command line
-extern bool g_bOutput;
+extern ILogger* g_pDebugLogger;
 
 #ifdef _DEBUG
     //

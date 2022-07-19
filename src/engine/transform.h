@@ -1,18 +1,16 @@
 #ifndef _Transform_h_
 #define _Transform_h_
 
+#include <zstring.h>
+
+#include "value.h"
+
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Transform
 //
 //////////////////////////////////////////////////////////////////////////////
-
-ZString GetString(int indent, const Matrix& mat);
-ZString GetString(int indent, const Matrix2& mat);
-
-ZString GetFunctionName(const Matrix& value);
-void Write(IMDLBinaryFile* pmdlFile, const Matrix& value);
-
 class Transform : public TStaticValue<Matrix> {
 protected:
     Transform(Value* pvalue0) :
@@ -182,6 +180,7 @@ private:
 
 public:
     ScaleTransform2(PointValue* ppoint);
+	ScaleTransform2(const Point& point);
 
     PointValue* GetScale() { return PointValue::Cast(GetChild(0)); }
 
@@ -258,11 +257,13 @@ public:
 class ScaleTransform : public Transform {
 private:
     Vector m_vec;
+	TRef<Number> m_pScale;
 
     void Evaluate();
 
 public:
     ScaleTransform(float scale);
+	ScaleTransform(Number* pscale);
     ScaleTransform(const Vector& vec);
 
     void SetScale(float scale);

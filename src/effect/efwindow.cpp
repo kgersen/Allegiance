@@ -1,4 +1,6 @@
-#include "pch.h"
+#include "efwindow.h"
+
+#include "efapp.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -14,6 +16,7 @@
 
 EffectWindow::EffectWindow(
           EffectApp*	papp,
+    UpdatingConfiguration* pConfiguration,
     const ZString&		strCommandLine,
     const ZString&		strTitle,
           bool			bStartFullscreen,
@@ -23,6 +26,7 @@ EffectWindow::EffectWindow(
 ) :
     EngineWindow(
         papp,
+        pConfiguration,
         strCommandLine,
         strTitle,
         bStartFullscreen,

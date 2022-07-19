@@ -12,8 +12,7 @@
 **  History:
 */
 // sideIGC.cpp : Implementation of CsideIGC
-#include "pch.h"
-#include "sideIGC.h"
+#include "sideigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CsideIGC
@@ -71,6 +70,13 @@ void            CsideIGC::Terminate(void)
         StationLinkIGC*  l;
         while (l = m_stations.first())       //intentional assignment
             l->data()->Terminate();
+    }
+
+    {
+        //Clear cluster list - clusters themselves already terminated
+        ClusterLinkIGC* lc;
+        while (lc = m_territoryClusters.first())
+            delete lc;
     }
 
     m_pMission->DeleteSide(this);
@@ -201,24 +207,27 @@ void            CsideIGC::CreateBuckets(void)
 
             {
                 //Add all developments that the side could, potentially, produce
-                for (DroneTypeLinkIGC*    l = m_pMission->GetDroneTypes()->first();
-                     (l != NULL);
-                     l = l->next())
-                {
-                    IdroneTypeIGC*    d = l->data();
+				for (DroneTypeLinkIGC*    l = m_pMission->GetDroneTypes()->first();
+					(l != NULL);
+					l = l->next())
+				{
+					IdroneTypeIGC*    d = l->data();
 
-                    if (d->GetRequiredTechs() <= ttbmLocalUltimate)
-                    {
-                        //It is something we might be able to build and it will actually
-                        //do something useful
-                        DataBucketIGC   db = {d, this};
-                        IbucketIGC*     b = (IbucketIGC*)(m_pMission->CreateObject(m_lastUpdate,
-                                                                                   OT_bucket,
-                                                                                   &db,
-                                                                                   sizeof(db)));
-                        assert (b);
-                        b->Release();   //Creating the bucket adds it to the side's list of buckets
-                    }
+					if (d != NULL) //Xynth d->GetRequiredTechs() bombed out 
+					{
+						if (d->GetRequiredTechs() <= ttbmLocalUltimate)
+						{
+							//It is something we might be able to build and it will actually
+							//do something useful
+							DataBucketIGC   db = { d, this };
+							IbucketIGC*     b = (IbucketIGC*)(m_pMission->CreateObject(m_lastUpdate,
+								OT_bucket,
+								&db,
+								sizeof(db)));
+							assert(b);
+							b->Release();   //Creating the bucket adds it to the side's list of buckets
+						}
+					}
                 }
             }
 
@@ -305,6 +314,184 @@ void            CsideIGC::CreateBuckets(void)
     }
 }
 
+bool CsideIGC::IsSurroundedByTerritory(IclusterIGC* pcluster, ClusterListIGC* clustersLinked, ClusterListIGC* clustersTerritory, int currentDepth)
+{
+    ZAssert(pcluster);
+    if (!pcluster)
+        return false;
+
+    if (clustersTerritory->find(pcluster))
+        return true;
+    clustersLinked->first(pcluster);
+    if (currentDepth < 3) {
+        bool emptySector = true;
+        for (StationLinkIGC* ls = pcluster->GetStations()->first(); ls != NULL; ls = ls->next()) {
+            if (ls->data()->SeenBySide(this)) {
+                emptySector = false;
+                break;
+            }
+        }
+        if (emptySector) {
+            byte checkedWarpCount = 0;
+            for (WarpLinkIGC* l = pcluster->GetWarps()->first(); (l != NULL); l = l->next())
+            {
+                IwarpIGC* w = l->data();
+                IwarpIGC* pwarpDestination = w->GetDestination();
+                if (pwarpDestination)
+                {
+                    IclusterIGC* pclusterOther = pwarpDestination->GetCluster();
+                    if (clustersLinked->find(pclusterOther) == NULL)
+                    {
+                        if (!IsSurroundedByTerritory(pclusterOther, clustersLinked, clustersTerritory, currentDepth + 1))
+                            return false;
+                    }
+                    checkedWarpCount++;
+                }
+            }
+            return (checkedWarpCount > 1);
+        }
+    }
+    return false;
+}
+
+void CsideIGC::HandleNewEnemyCluster(IclusterIGC* pcluster) {
+    if (!pcluster) {
+        ZAssert(false);
+        return;
+    }
+
+    // Stop miners from suiciding there
+    for (ShipLinkIGC* l = this->GetShips()->first(); (l != NULL); l = l->next()) {
+        IshipIGC* s = l->data();
+        if (s->GetPilotType() == c_ptMiner) {
+            if (s->GetCommandTarget(c_cmdQueued) && s->GetCommandTarget(c_cmdQueued)->GetCluster() == pcluster)
+                s->SetCommand(c_cmdQueued, NULL, c_cidNone);
+            bool acceptedBad = false;
+            bool planBad = false;
+            if (s->GetCommandTarget(c_cmdAccepted) && s->GetCommandTarget(c_cmdAccepted)->GetCluster() == pcluster)
+                acceptedBad = true;
+            if (s->GetCommandTarget(c_cmdPlan) && s->GetCommandTarget(c_cmdPlan)->GetCluster() == pcluster)
+                planBad = true;
+            if (s->GetCluster() == pcluster) {
+                //If already there, finish the current action (plan), but think of something better afterwards
+                if (acceptedBad) {
+                    CommandID tempCid = s->GetCommandID(c_cmdPlan);
+                    ImodelIGC* tempModel = s->GetCommandTarget(c_cmdPlan);
+					if (tempModel != nullptr)
+					{
+						tempModel->AddRef();
+						if (tempModel->GetObjectType() == OT_buoy)
+							((IbuoyIGC*)tempModel)->AddConsumer();
+						s->SetCommand(c_cmdAccepted, NULL, c_cidNone); //Also sets current & plan
+						s->SetCommand(c_cmdPlan, tempModel, tempCid);
+						tempModel->Release();
+						if (tempModel->GetObjectType() == OT_buoy)
+							((IbuoyIGC*)tempModel)->ReleaseConsumer();
+					}
+                }
+            }
+            else {
+                if (acceptedBad && planBad)
+                    s->SetCommand(c_cmdAccepted, NULL, c_cidNone);
+                else if (planBad)
+                    s->SetCommand(c_cmdPlan, NULL, c_cidNone);
+                else if (acceptedBad) {
+                    CommandID tempCid = s->GetCommandID(c_cmdPlan);
+                    ImodelIGC* tempModel = s->GetCommandTarget(c_cmdPlan);
+                    tempModel->AddRef();
+					if (tempModel != nullptr)
+					{
+						if (tempModel->GetObjectType() == OT_buoy)
+							((IbuoyIGC*)tempModel)->AddConsumer();
+						s->SetCommand(c_cmdAccepted, NULL, c_cidNone); //Also sets current & plan
+						s->SetCommand(c_cmdPlan, tempModel, tempCid);
+						tempModel->Release();
+						if (tempModel->GetObjectType() == OT_buoy)
+							((IbuoyIGC*)tempModel)->ReleaseConsumer();
+					}
+                }
+            }
+        }
+    }
+}
+
+void CsideIGC::UpdateTerritory()
+{
+    //Clear list
+    {
+        ClusterLinkIGC* lc;
+        while (lc = m_territoryClusters.first()) {
+            IclusterIGC* c = lc->data();
+            assert(c);
+            delete lc;          //remove it from the list
+            c->Release();       //reduce the ref count
+        }
+    }
+
+    ClusterListIGC clustersVisited;
+
+    // Add all clusters claimed by our stations
+    for (StationLinkIGC* l = this->GetStations()->first(); (l != NULL); l = l->next()) {
+        IclusterIGC*   pcluster = l->data()->GetCluster();
+        assert(pcluster);
+
+        if (!m_territoryClusters.find(pcluster)) {
+            bool enemyStation = false;
+            for (StationLinkIGC* llocal = pcluster->GetStations()->first(); (llocal != NULL); llocal = llocal->next()) {
+                if (llocal->data()->SeenBySide(this)) {
+                    IsideIGC* pstationSide = llocal->data()->GetSide();
+                    if (pstationSide != this && !IsideIGC::AlliedSides(this, pstationSide)) {
+                        enemyStation = true;
+                        break;
+                    }
+                }
+            }
+            if (!enemyStation) {
+                m_territoryClusters.last(pcluster);
+                pcluster->AddRef();
+                //debugf(" adding %s because of friendly station.\n", pcluster->GetName());
+                clustersVisited.last(pcluster);
+            }
+        }
+    }
+
+    // ToDo: Possibly add clusters claimed by allies' stations
+
+    // Check the clusters without stations
+    for (ClusterLinkIGC* lc = GetMission()->GetClusters()->first(); (lc != NULL); lc = lc->next()) {
+        IclusterIGC*   pcluster = lc->data();
+        assert(pcluster);
+
+        if (!clustersVisited.find(pcluster)) {
+            bool emptySector = true;
+            for (StationLinkIGC* ls = pcluster->GetStations()->first(); ls != NULL; ls = ls->next()) {
+                if (ls->data()->SeenBySide(this)) {
+                    emptySector = false;
+                    break;
+                }
+            }
+
+            if (emptySector) {
+                ClusterListIGC clLinkedClusters;
+                bool isTerritory = IsSurroundedByTerritory(pcluster, &clLinkedClusters, &m_territoryClusters);
+
+                // add the found, connected clusters to the territory and visited clusters
+                for (ClusterLinkIGC* lc = clLinkedClusters.first(); (lc != NULL); lc = lc->next()) {
+                    IclusterIGC*   pconnectedCluster = lc->data();
+                    assert(pconnectedCluster);
+
+                    if (isTerritory) {
+                        //debugf(" adding %s because its surrounded (origin sector: %s).\n", pconnectedCluster->GetName(), pcluster->GetName());
+                        m_territoryClusters.last(pconnectedCluster);
+                        pconnectedCluster->AddRef();
+                    }
+                    clustersVisited.first(pconnectedCluster);
+                }
+            }
+        }
+    }
+}
+
 long CsideIGC::GetProsperityPercentBought(void) const
 {
   // Iterate through each bucket, looking for the prosperity development
@@ -340,4 +527,3 @@ long CsideIGC::GetProsperityPercentComplete(void) const
   // Return zero if no prosperity development was found
   return 0;
 }
-

@@ -1,6 +1,12 @@
 #ifndef _ddstruct_h_
 #define _ddstruct_h_
 
+#include <alloc.h>
+#include <cstring>
+#include <olddxdefns.h>
+
+#include "pixelformat.h"
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Zero fill for structs with a dwSize member

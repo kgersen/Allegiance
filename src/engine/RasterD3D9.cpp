@@ -1,7 +1,6 @@
+#include "enginep.h"
 
-#include "pch.h"
-
-
+#include "D3DDevice9.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -18,6 +17,8 @@ private:
     DWORD					m_dwDrawPrimitiveFlags;
     Rect					m_rectClip;
 	bool					m_bValid;
+    ShadeMode               m_shadeMode;
+    BlendMode               m_blendMode;
 
     #ifdef _DEBUG
         bool m_bSurfaceLost;
@@ -103,7 +104,7 @@ public:
 
 /*    TRef<IDirect3DDevice9> GetD3DDeviceX()
     {
-		_ASSERT( false );
+        ZAssert( false );
         return NULL;
     }
 
@@ -177,6 +178,14 @@ public:
     void SetClipRect(const Rect& rectClip)
     {
         m_rectClip = rectClip;
+
+        m_Viewport.X = m_rectClip.XMin();
+        m_Viewport.Y = m_rectClip.YMin();
+        m_Viewport.Width = (int)(m_rectClip.XMax() - m_rectClip.XMin());
+        m_Viewport.Height = (int)(m_rectClip.YMax() - m_rectClip.YMin());
+        m_Viewport.MinZ = 0.0f;
+        m_Viewport.MaxZ = 1.0f;
+        CD3DDevice9::Get()->SetViewport(&m_Viewport);
     }
 
     void ClearZBuffer()
@@ -239,7 +248,8 @@ public:
 
     void SetShadeMode(ShadeMode shadeMode)
     {
-        switch (shadeMode) 
+        m_shadeMode = shadeMode;
+        switch (m_shadeMode)
 		{
             case ShadeModeNone:
             case ShadeModeCopy:
@@ -256,8 +266,6 @@ public:
 				// That value is set in Device3D::UpdateLighting() and is the same as
 				// the current material diffuse color.
 				// TODO: check that D3DTSS_ALPHAOP is reset to default value if not ShadeModeGlobalColor ?
-				D3DCall(CD3DDevice9::Get()->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_BLENDFACTORALPHA));
-					
             case ShadeModeGouraud:
                 D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD));
                 break;
@@ -265,47 +273,66 @@ public:
             default:
                 ZError("Invalid ShadeMode");
         }
+
+        if (m_blendMode >= 0) { //only if initialized
+            SetBlendMode(m_blendMode);
+        }
     }
 
     void SetBlendMode(BlendMode blendMode)
     {
-        switch (blendMode) {
+        m_blendMode = blendMode;
+        switch (m_blendMode) {
  
             case BlendModeSource:
-                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHABLENDENABLE, false));
-                break;
+				CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+				CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
+				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR));
+				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR));
+				break;
 
             case BlendModeAdd:
+                CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+                CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+                CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
                 D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
-                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
                 D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE));
                 break;
 
-            case BlendModeSourceAlpha:
-                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
-                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
-                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-                break;
-
-			case BlendModeSourceAlphaTest:
+			case BlendModeSourceAlpha:
+				CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+				CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+                CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
 				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
-                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
-                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
-				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL));
-				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHAREF, (DWORD)8));
-				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE)); 
+				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+				D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
 				break;
 
-            case BlendModeAlphaStampThrough:
-				CD3DDevice9::Get()->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1 );
-				CD3DDevice9::Get()->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
+            case BlendModeSourceAlphaPreMultiplied:
+                CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+                CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
                 D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHABLENDENABLE, true));
-                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA));
+                D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE));
                 D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA));
                 break;
 
             default:
+
                 ZError("Invalid BlendMode");
+        }
+
+        //Rock: We use a trick so that so that transparent pixels do not affect the z buffer: Ignore the pixel if it has a low alpha.
+        //Previously imago only had this enabled for rendering mines. Trying for everything right now and see if we get any problems.
+        D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL));
+        D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHAREF, (DWORD)8));
+        D3DCall(CD3DDevice9::Get()->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE));
+
+        if (m_shadeMode == ShadeModeGlobalColor) {
+            CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+            CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+            CD3DDevice9::Get()->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
         }
     }
 
@@ -450,7 +477,7 @@ public:
 
     void DrawTrianglesD3D(const D3DLVertex* pvertex, int vcount, const MeshIndex* pindex, int icount)
     {
-		_ASSERT( false );
+        ZAssert( false );
 		D3DCall( CD3DDevice9::Get()->SetFVF( D3DFVF_LVERTEX ) );
 		D3DCall( CD3DDevice9::Get()->DrawIndexedPrimitiveUP(	
 													D3DPT_TRIANGLELIST,
@@ -465,7 +492,7 @@ public:
 
     void DrawLinesD3D(const D3DLVertex* pvertex, int vcount, const MeshIndex* pindex, int icount)
     {
-		_ASSERT( false );
+        ZAssert( false );
  		D3DCall( CD3DDevice9::Get()->SetFVF( D3DFVF_LVERTEX ) );
 		D3DCall( CD3DDevice9::Get()->DrawIndexedPrimitiveUP(	
 													D3DPT_LINELIST,
@@ -480,7 +507,7 @@ public:
 
     void DrawPointsD3D(const D3DLVertex* pvertex, int vcount)
     {
-		_ASSERT( false );
+        ZAssert( false );
  		D3DCall( CD3DDevice9::Get()->SetFVF( D3DFVF_LVERTEX ) );
 		D3DCall( CD3DDevice9::Get()->DrawPrimitiveUP(	D3DPT_POINTLIST,
 													vcount,

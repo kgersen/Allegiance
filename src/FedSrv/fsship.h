@@ -94,6 +94,7 @@ public:
   virtual void  SetSide(CFSMission * pfsMission, IsideIGC * pside);
   IstationIGC * GetStation()            {return m_pShip->GetStation();}
   const char *  GetName()               {return m_pShip->GetName();}
+  void			SetName(char * szName)  { m_pShip->SetName(szName); }
 
   static CFSShip * GetShipFromID(ShipID shipID)  
   {
@@ -326,6 +327,12 @@ public:
   { 
     return m_strCDKey; 
   }
+
+  const bool IsBot()
+  {
+	  return strcmp(GetCDKey(), g.szBotAuthenticationGuid) == 0;
+  }
+
   virtual void    SetSide(CFSMission * pmission, IsideIGC * pside);
   bool            CanCheat()            
   {

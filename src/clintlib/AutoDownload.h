@@ -1,4 +1,4 @@
-
+#pragma once
 /*-------------------------------------------------------------------------
  * clintlib\AutoDownload.h
  * 
@@ -8,7 +8,11 @@
  * Copyright 1986-2000 Microsoft Corporation, All Rights Reserved
  *-----------------------------------------------------------------------*/
 
-#include "regkey.h"
+#include <cstdio>
+#include <FTPSession.h>
+#include <regkey.h>
+#include <windows.h>
+#include <zassert.h>
 
 class IAutoUpdateSink;
 /*      AutoDownload incepts the logon ack, delaying it until the download
@@ -71,7 +75,7 @@ public:
      *      bForceCRCCheck: if true, file times are ignored and CRC are always checked
      *      bSkipReloader: if true, then reloader is not launch: an error is displayed
      */
-    virtual void BeginUpdate(IAutoUpdateSink * pSink, bool bForceCRCCheck, bool bSkipReloader) = 0;
+    virtual void BeginUpdate(IAutoUpdateSink * pSink, bool bForceCRCCheck) = 0;
 
     /*-------------------------------------------------------------------------
      * HandleAutoDownload()
@@ -199,7 +203,7 @@ public:
      *      true only on success
      */
     static bool MoveFiles(const char * szTempPath, const char * szArtPath_, bool bSkipSharingViolation, 
-                          bool * pbFilesWereSkipped, bool bNoRegistryWrite, char * szErrorMsg, IAutoUpdateSink * pSink)
+                          bool * pbFilesWereSkipped, char * szErrorMsg, IAutoUpdateSink * pSink)
     {
 
       WIN32_FIND_DATA finddata;
@@ -295,23 +299,12 @@ public:
       if (bSkipSharingViolation && pbFilesWereSkipped)
       *pbFilesWereSkipped = bFilesWereSkipped;
 
-      if (!bFilesWereSkipped && !bNoRegistryWrite)
-      {
-          // Set registry's MoveInProgress to zero, meaning move is complete
-          HKEY hKey;
-          DWORD dwValue = 0;
-          if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_WRITE, &hKey))
-          {
-            ::RegSetValueEx(hKey, "MoveInProgress", NULL, REG_DWORD, (unsigned char*)&dwValue, sizeof(DWORD));
-          }
-      }
-
       return true;
     }
 
-    static char * GetEXEFileName(int nIndex)
+    static const char * GetEXEFileName(int nIndex)
     {
-        static char * pszEXEFiles[] = 
+        static const char * pszEXEFiles[] =
         {
             "CliConfig.exe",
             "fsmon.exe",
@@ -683,11 +676,7 @@ private:
                 }
                 else 
 				{
-					if (g_outputdebugstring) { //Imago changed from _DEBUG ifdef 8/17/09
-	                    char sz[40];
-	                    sprintf(sz, "Moving Files Error: %d", GetLastError());
-	                    ZDebugOutput(sz);
-					}
+                    g_pDebugLogger->Log("Moving Files Error:" + GetLastError());
 
                     bErrorOccured = true;
                 }

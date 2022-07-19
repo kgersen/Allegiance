@@ -7,6 +7,8 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
+class INameSpace;
+class Modeler;
 void AddSoundFactories(
     INameSpace*      pns,
     Modeler*         pmodeler

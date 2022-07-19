@@ -1,8 +1,22 @@
-#include "pch.h"
+#include "Win32app.h"
 #include "regkey.h"
+#include "SlmVer.h"
 
 //Imago 7/10
 #include <dbghelp.h>
+#include <crtdbg.h>
+
+#include "zstring.h"
+#include "VersionInfo.h"
+#include <ctime>
+#include "zmath.h"
+#include "window.h"
+
+#include "Logger.h"
+
+#ifndef NO_STEAM
+	#include "steam_api.h"	
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -13,118 +27,73 @@
 Win32App *g_papp;
 
 	// Patch for SetUnhandledExceptionFilter 
-const BYTE PatchBytes[5] = { 0x33, 0xC0, 0xC2, 0x04, 0x00 };
+const uint8_t PatchBytes[5] = { 0x33, 0xC0, 0xC2, 0x04, 0x00 };
 
 	// Original bytes at the beginning of SetUnhandledExceptionFilter 
-BYTE OriginalBytes[5] = {0};
+uint8_t OriginalBytes[5] = {0};
+
+int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
+{
+    BOOL bMiniDumpSuccessful;
+    char szPathName[MAX_PATH] = "";
+    GetModuleFileNameA(nullptr, szPathName, MAX_PATH);
+    const char* p1 = strrchr(szPathName, '\\');
+    char* p = strrchr(szPathName, '\\');
+    if (!p)
+        p = szPathName;
+    else
+        p++;
+    if (!p1)
+        p1 = "mini";
+    else
+        p1++;
+    ZString zApp = p1;
+    uint32_t dwBufferSize = MAX_PATH;
+    HANDLE hDumpFile;
+    SYSTEMTIME stLocalTime;
+    MINIDUMP_EXCEPTION_INFORMATION ExpParam;
+
+    GetLocalTime(&stLocalTime);
+
+    snprintf(p, szPathName + sizeof(szPathName) - p, "%s", (PCC)zApp);
+    ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString();
+
+    char* offsetString = p + zApp.GetLength();
+    snprintf(offsetString, szPathName + sizeof(szPathName) - offsetString, "-%s-%04d%02d%02d%02d%02d%02d-%ld-%ld.dmp", (PCC)zInfo,
+        stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay,
+        stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond,
+        GetCurrentProcessId(), GetCurrentThreadId());
+
+    hDumpFile = CreateFileA(szPathName, GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_WRITE | FILE_SHARE_READ, nullptr, CREATE_ALWAYS, 0, nullptr);
+
+    ExpParam.ThreadId = GetCurrentThreadId();
+    ExpParam.ExceptionPointers = pExceptionPointers;
+    ExpParam.ClientPointers = TRUE;
+
+    MINIDUMP_TYPE mdt = (MINIDUMP_TYPE)
+        (MiniDumpWithDataSegs |
+            MiniDumpWithHandleData |
+            MiniDumpWithThreadInfo |
+            MiniDumpWithUnloadedModules |
+            MiniDumpWithProcessThreadData);
+
+    bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
+        hDumpFile, mdt, &ExpParam, nullptr, nullptr);
+#ifndef NO_STEAM
+    // BT - STEAM
+    SteamAPI_SetMiniDumpComment(p);
+
+    // The 0 here is a build ID, we don't set it
+    SteamAPI_WriteMiniDump(0, pExceptionPointers, int(rup)); // Now including build and release number in steam errors.
+#endif
+    return EXCEPTION_EXECUTE_HANDLER;
+}
 
 //Imago 6/10
 int Win32App::GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
 {
-    BOOL bMiniDumpSuccessful;
-    char szPathName[MAX_PATH] = ""; 
-	GetModuleFileNameA(NULL, szPathName, MAX_PATH);
-	char* p1 = strrchr(szPathName, '\\');
-	char* p = strrchr(szPathName, '\\');
-	if (!p)
-		p = szPathName;
-	else
-		p++;
-	if (!p1)
-		p1 = "mini";
-	else
-		p1++;
-	ZString zApp = p1;
-    DWORD dwBufferSize = MAX_PATH;
-    HANDLE hDumpFile;
-    SYSTEMTIME stLocalTime;
-    MINIDUMP_EXCEPTION_INFORMATION ExpParam;
-
-    GetLocalTime( &stLocalTime );
-    
-   strcpy(p, (PCC)zApp);
-   
-   ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString();
-   sprintf( p+zApp.GetLength(),"-%s-%04d%02d%02d%02d%02d%02d-%ld-%ld.dmp",(PCC)zInfo,
-               stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay, 
-               stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond, 
-               GetCurrentProcessId(), GetCurrentThreadId());
-   
-    hDumpFile = CreateFileA(szPathName, GENERIC_READ|GENERIC_WRITE, 
-                FILE_SHARE_WRITE|FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
-
-    ExpParam.ThreadId = GetCurrentThreadId();
-    ExpParam.ExceptionPointers = pExceptionPointers;
-    ExpParam.ClientPointers = TRUE;
-
-	MINIDUMP_TYPE mdt       = (MINIDUMP_TYPE)
-		(MiniDumpWithDataSegs		| 
-		MiniDumpWithHandleData		|
-		MiniDumpWithThreadInfo		| 
-		MiniDumpWithUnloadedModules |
-		MiniDumpWithProcessThreadData); 
-
-	//
-	//MiniDumpWithPrivateReadWriteMemory | 
-	//MiniDumpWithFullMemoryInfo | 
-	//
-
-    bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
-                    hDumpFile, mdt, &ExpParam, NULL, NULL);
-
-
-    return EXCEPTION_EXECUTE_HANDLER;
-}
-
-//lazy...or stupid... is this even hit?
-int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
-{
-    BOOL bMiniDumpSuccessful;
-    char szPathName[MAX_PATH] = ""; 
-	GetModuleFileNameA(NULL, szPathName, MAX_PATH);
-	char* p1 = strrchr(szPathName, '\\');
-	char* p = strrchr(szPathName, '\\');
-	if (!p)
-		p = szPathName;
-	else
-		p++;
-	if (!p1)
-		p1 = "mini";
-	else
-		p1++;
-	ZString zApp = p1;
-    DWORD dwBufferSize = MAX_PATH;
-    HANDLE hDumpFile;
-    SYSTEMTIME stLocalTime;
-    MINIDUMP_EXCEPTION_INFORMATION ExpParam;
-
-    GetLocalTime( &stLocalTime );
-    
-   strcpy(p, (PCC)zApp);
-   ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString();
-   sprintf( p+zApp.GetLength(),"-%s-%04d%02d%02d%02d%02d%02d-%ld-%ld.dmp",(PCC)zInfo,
-               stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay, 
-               stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond, 
-               GetCurrentProcessId(), GetCurrentThreadId());
-   
-    hDumpFile = CreateFileA(szPathName, GENERIC_READ|GENERIC_WRITE, 
-                FILE_SHARE_WRITE|FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
-
-    ExpParam.ThreadId = GetCurrentThreadId();
-    ExpParam.ExceptionPointers = pExceptionPointers;
-    ExpParam.ClientPointers = TRUE;
-
-	MINIDUMP_TYPE mdt       = (MINIDUMP_TYPE)
-		(MiniDumpWithDataSegs		| 
-		MiniDumpWithHandleData		|
-		MiniDumpWithThreadInfo		| 
-		MiniDumpWithUnloadedModules |
-		MiniDumpWithProcessThreadData); 
-
-    bMiniDumpSuccessful = MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), 
-                    hDumpFile, mdt, &ExpParam, NULL, NULL);
-
-    return EXCEPTION_EXECUTE_HANDLER;
+    return ::GenerateDump(pExceptionPointers);
 }
 
 
@@ -140,156 +109,59 @@ void ZAssertImpl(bool bSucceeded, const char* psz, const char* pszFile, int line
         // Just in case this was a Win32 error get the last error
         //
 
-        DWORD dwError = GetLastError();
-
+        uint32_t dwError = GetLastError();
+#ifdef _MSC_VER
         if (!g_papp) {
 			// Imago removed asm (x64) on ?/?, integrated with mini dump on 6/10
 			__try {
-				(*(int*)0) = 0;
+				(*(int*)nullptr) = 0;
 			}
 			__except(GenerateDump(GetExceptionInformation())) {}
         } else if (g_papp->OnAssert(psz, pszFile, line, pszModule)) {
             g_papp->OnAssertBreak();
         }
+#else
+        ::abort();
+#endif
     }
 }
 
-// mmf added code for chat logging
-// mmf 7/15 changed creation flag on chat file so other processes can read from it
-// avalanche + mmf 03/22/07 (bugs 108 and 109) place chat logs in logs folder, use \r\n
+std::string GetExecutablePath() {
+    char    pCharModulePath[MAX_PATH];
+    GetModuleFileName(nullptr, pCharModulePath, MAX_PATH);
 
-HANDLE chat_logfile = NULL;
-char logFileName[MAX_PATH + 21];
+    std::string pathFull = std::string(pCharModulePath);
 
-void InitializeLogchat()
-{
-	HKEY hKey;
-	DWORD dwType;
-	char szValue[20];
-	DWORD cbValue = sizeof(szValue);
-	bool bLogChat = false;
+    std::string pathDirectory = pathFull.substr(0, pathFull.find_last_of("\\", pathFull.size()));
 
-	if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-	{
-		//Imago fixed this but is still confused why it's not a dword.
-		if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "LogChat", NULL, &dwType, (unsigned char*)&szValue, &cbValue))		
-			bLogChat = (strcmp(szValue, "1") == 0);
-		::RegCloseKey(hKey);
-	}
-
-
-	if (bLogChat)
-	{
-		time_t longTime;
-		time(&longTime);
-		tm* t = new tm;
-	//	tm* t = localtime(&longTime);
-		localtime_s(t, &longTime);
-
-		// char logFileName[MAX_PATH + 21]; make this global so chat can open and close it
-		// turns out this is not needed but leaving it here instead of moving it again
-		GetModuleFileName(NULL, logFileName, MAX_PATH);
-		char* p = strrchr(logFileName, '\\');
-		if (!p)
-			p = logFileName;
-		else
-			p++;
-
-		strcpy(p, "logs\\");
-
-		if (!CreateDirectory(logFileName, NULL))
-		{
-			if (GetLastError() == ERROR_PATH_NOT_FOUND)
-			{
-				debugf("Unable to create chat log directory %s\n",logFileName);
-			}
-		}
-
-		// mmf 1/17/08 fixed month
-		sprintf(p+5, "chat_%02d-%02d-%02d-%02d%02d%02d.txt", (t->tm_year - 100), (t->tm_mon+1), t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-
-		// mmf changed 3 param from 0 to FILE_SHARE_READ
-		chat_logfile =
-			CreateFile(
-				logFileName,
-				GENERIC_WRITE,
-				FILE_SHARE_READ,
-				NULL,
-				OPEN_ALWAYS,
-				FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
-				NULL
-			);
-		delete t;
-
-		//Imago moved inside bLogChat
-		if (chat_logfile == NULL) debugf("Unable to create chat_logfile %s\n",logFileName);
-	}
+    return pathDirectory;
 }
 
-void TerminateLogchat()
-{
-	if (chat_logfile) {
-		CloseHandle(chat_logfile);
-        chat_logfile = NULL;
-    }
-}
+std::shared_ptr<SettableLogger> g_pDebugFileLogger = std::make_shared<SettableLogger>(std::make_shared<FileLogger>(GetExecutablePath() + "/debug.log", false));
+std::shared_ptr<SettableLogger> g_pDebugOutputLogger = std::make_shared<SettableLogger>(std::make_shared<OutputLogger>());
 
-void logchat(const char* strText)
-{
-	// unravel this from debugf-ZDebugOutputImpl-DebugOutput
-    const size_t size = 512;
-    char         bfr[size];
-	int length;
-
-	time_t  longTime;
-    time(&longTime);
-	tm* t = new tm;
-//    tm*             t = localtime(&longTime);
-	localtime_s(t, &longTime);
-
-	length = strlen(strText);
-
-	// don't log if text is bigger than buffer, we don't want to log these long 'spam' chat's anyway
-	if (chat_logfile && (length < 490)) {
-		sprintf(bfr, "%02d/%02d/%02d %02d:%02d:%02d: %s\r\n",
-            (t->tm_mon + 1), t->tm_mday, (t->tm_year - 100), t->tm_hour, t->tm_min, t->tm_sec, strText);
-        DWORD nBytes;
-        ::WriteFile(chat_logfile, bfr, strlen(bfr), &nBytes, NULL);
-	}
-	delete t;
-}
-
-// end mmf chat logging code
-
+ILogger* g_pDebugLogger = new MultiLogger(std::vector<std::shared_ptr<ILogger>>({
+    g_pDebugOutputLogger,
+    g_pDebugFileLogger
+}));
 
 void ZDebugOutputImpl(const char *psz)
 {
-    if (g_papp)
-        g_papp->DebugOutput(psz);
-    else
-        ::OutputDebugStringA(psz);
+    g_pDebugLogger->Log(std::string(psz));
 }
-HANDLE g_logfile = NULL;
-
-extern int g_outputdebugstring = 0;  // mmf temp change, control outputdebugstring call with reg key
 
 void retailf(const char* format, ...)
 {
-    if (g_bOutput)
-    {
-        const size_t size = 2048; //Avalance: Changed to log longer messages. (From 512)
-        char         bfr[size];
+    const size_t size = 2048; //Avalance: Changed to log longer messages. (From 512)
+    char         bfr[size];
 
-        va_list vl;
-        va_start(vl, format);
-        _vsnprintf_s(bfr, size, (size-1), format, vl); //Avalanche: Fix off by one error. 
-        va_end(vl);
+    va_list vl;
+    va_start(vl, format);
+    _vsnprintf_s(bfr, size, (size - 1), format, vl); //Avalanche: Fix off by one error. 
+    va_end(vl);
 
-        ZDebugOutputImpl(bfr);
-    }
+    ZDebugOutputImpl(bfr);
 }
-
-extern bool g_bOutput = true;
 
 // mmf log to file on SRVLOG define as well as _DEBUG
 #ifdef _DEBUG
@@ -367,92 +239,42 @@ extern bool g_bOutput = true;
 
     void debugf(const char* format, ...)
     {
-        if (g_bOutput)
-        {
-            const size_t size = 2048; //Avalanche: Changed to handle longer messages (from 512)
-            char         bfr[size];
+        const size_t size = 2048; //Avalanche: Changed to handle longer messages (from 512)
+        char         bfr[size];
 
-            va_list vl;
-            va_start(vl, format);
-            _vsnprintf_s(bfr, size, (size-1), format, vl); //Avalanche: Fix off by one error. 
-            va_end(vl);
+        va_list vl;
+        va_start(vl, format);
+        _vsnprintf_s(bfr, size, (size - 1), format, vl); //Avalanche: Fix off by one error. 
+        va_end(vl);
 
-            ZDebugOutputImpl(bfr);
-        }
+        ZDebugOutputImpl(bfr);
     }
 
-    void InitializeDebugf()
+    void GlobalConfigureLoggers(bool bLogToOutput, bool bLogToFile)
     {
-        HKEY hKey;
-        DWORD dwType;
-        char  szValue[20];
-        DWORD cbValue = sizeof(szValue);
-        bool  bLogToFile = false;
+        g_pDebugLogger->Log("Changing logging method based on configuration");
 
-		// mmf added this regkey check 
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-        {
-            ::RegQueryValueEx(hKey, "OutputDebugString", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
-            ::RegCloseKey(hKey);
-
-            g_outputdebugstring = (strcmp(szValue, "1") == 0);
+        //on startup this is logging to a generic logfile
+        if (bLogToFile) {
+            g_pDebugFileLogger->Log("Stopping file log, logging continued in timestamped log file");
+            g_pDebugFileLogger->SetLogger(
+                CreateTimestampedFileLogger(GetExecutablePath() + "/debug_")
+            );
+        }
+        else {
+            g_pDebugFileLogger->Log("Stopping file log.");
+            g_pDebugFileLogger->SetLogger(
+                NullLogger::GetInstance()
+            );
         }
 
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-        {
-            ::RegQueryValueEx(hKey, "LogToFile", NULL, &dwType, (unsigned char*)&szValue, &cbValue);
-            ::RegCloseKey(hKey);
-
-            bLogToFile = (strcmp(szValue, "1") == 0);
+        //this is enabled on startup
+        if (bLogToOutput == false) {
+            g_pDebugFileLogger->Log("Stopping output log");
+            g_pDebugOutputLogger->SetLogger(NullLogger::GetInstance());
         }
 
-        if (bLogToFile)
-        {
-            time_t  longTime;
-            time(&longTime);
-			tm* t = new tm;
-//            tm*             t = localtime(&longTime);
-			localtime_s(t, &longTime);
-
-            char    logFileName[MAX_PATH + 16];
-            GetModuleFileName(NULL, logFileName, MAX_PATH);
-            char*   p = strrchr(logFileName, '\\');
-            if (!p)
-                p = logFileName;
-            else
-                p++;
-
-            const char* months[] = {"jan", "feb", "mar", "apr",
-                                    "may", "jun", "jul", "aug",
-                                    "sep", "oct", "nov", "dec"};
-//            strcpy_s(p, _MAX_PATH + 16, months[t->tm_mon]);
-//            sprintf_s(p + 3, _MAX_PATH + 13, "%02d%02d%02d%02d.txt",
-//                    t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-			strcpy(p, months[t->tm_mon]);
-			sprintf(p+3, "%02d%02d%02d%02d.txt",
-				t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-			delete t;
-			// mmf this is NOT where the logfile AllSrv.txt is generated
-			//     this is the client logfile and only for FZDebug build
-            g_logfile = 
-                CreateFile(
-                    logFileName, 
-                    GENERIC_WRITE, 
-                    FILE_SHARE_READ,
-                    NULL, 
-                    OPEN_ALWAYS,
-                    FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
-                    NULL
-                );
-        }
-    }
-
-    void TerminateDebugf()
-    {
-        if (g_logfile) {
-            CloseHandle(g_logfile);
-            g_logfile = NULL;
-        }
+        g_pDebugLogger->Log("Logging configuration completed");
     }
 #endif  // SRVLOG or _DEBUG
 
@@ -486,7 +308,7 @@ void Win32App::Exit(int value)
     _exit(value);
 }
 
-int Win32App::OnException(DWORD code, EXCEPTION_POINTERS* pdata)
+int Win32App::OnException(uint32_t code, EXCEPTION_POINTERS* pdata)
 {
 			GenerateDump(pdata);
 	return EXCEPTION_CONTINUE_SEARCH;
@@ -514,14 +336,7 @@ void Win32App::DebugOutput(const char *psz)
             g_listOutput.PopEnd();
         }
     #else
-		// mmf for now tie this to a registry key
-		if (g_outputdebugstring)
-			::OutputDebugStringA(psz);
-
-        if (g_logfile) {
-            DWORD nBytes;
-            ::WriteFile(g_logfile, psz, strlen(psz), &nBytes, NULL);
-        }
+        g_pDebugLogger->Log(psz);
     #endif
 }
 
@@ -558,10 +373,14 @@ void Win32App::OnAssertBreak()
     // Cause an exception
     //
 	// Imago integrated with mini dump on 6/10
+#ifdef _MSC_VER
 	__try {
-    (*(int*)0) = 0;
-}
+        (*(int*)nullptr) = 0;
+    }
 	__except(GenerateDump(GetExceptionInformation())) {}
+#else
+    ::abort();
+#endif
 }
 
 // KGJV - added for DX9 behavior - default is false. override in parent to change this
@@ -571,20 +390,20 @@ bool Win32App::IsBuildDX9()
 }
 
 
-bool Win32App::WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size )
+bool Win32App::WriteMemory( uint8_t* pTarget, const uint8_t* pSource, uint32_t Size )
 {
-	DWORD ErrCode = 0;
+	uint32_t ErrCode = 0;
 
 
 	// Check parameters 
 
-	if( pTarget == 0 )
+	if( pTarget == nullptr )
 	{
 		_ASSERTE( !_T("Target address is null.") );
 		return false;
 	}
 
-	if( pSource == 0 )
+	if( pSource == nullptr )
 	{
 		_ASSERTE( !_T("Source address is null.") );
 		return false;
@@ -605,9 +424,9 @@ bool Win32App::WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size )
 
 	// Modify protection attributes of the target memory page 
 
-	DWORD OldProtect = 0;
+	uint32_t OldProtect = 0;
 
-	if( !VirtualProtect( pTarget, Size, PAGE_EXECUTE_READWRITE, &OldProtect ) )
+	if( !VirtualProtect( pTarget, Size, PAGE_EXECUTE_READWRITE, LPDWORD(&OldProtect) ) )
 	{
 		ErrCode = GetLastError();
 		_ASSERTE( !_T("VirtualProtect() failed.") );
@@ -622,9 +441,9 @@ bool Win32App::WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size )
 
 	// Restore memory protection attributes of the target memory page 
 
-	DWORD Temp = 0;
+	uint32_t Temp = 0;
 
-	if( !VirtualProtect( pTarget, Size, OldProtect, &Temp ) )
+	if( !VirtualProtect( pTarget, Size, OldProtect, LPDWORD(&Temp) ) )
 	{
 		ErrCode = GetLastError();
 		_ASSERTE( !_T("VirtualProtect() failed.") );
@@ -643,23 +462,23 @@ bool Win32App::WriteMemory( BYTE* pTarget, const BYTE* pSource, DWORD Size )
 
 bool Win32App::EnforceFilter( bool bEnforce )
 {
-	DWORD ErrCode = 0;
+	uint32_t ErrCode = 0;
 
 	
 	// Obtain the address of SetUnhandledExceptionFilter 
 
 	HMODULE hLib = GetModuleHandle( _T("kernel32.dll") );
 
-	if( hLib == NULL )
+	if( hLib == nullptr )
 	{
 		ErrCode = GetLastError();
 		_ASSERTE( !_T("GetModuleHandle(kernel32.dll) failed.") );
 		return false;
 	}
 
-	BYTE* pTarget = (BYTE*)GetProcAddress( hLib, "SetUnhandledExceptionFilter" );
+	uint8_t* pTarget = (uint8_t*)GetProcAddress( hLib, "SetUnhandledExceptionFilter" );
 
-	if( pTarget == 0 )
+	if( pTarget == nullptr )
 	{
 		ErrCode = GetLastError();
 		_ASSERTE( !_T("GetProcAddress(SetUnhandledExceptionFilter) failed.") );
@@ -715,25 +534,21 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
     // seed the random number generator with the current time
     // (GetTickCount may be semi-predictable on server startup, so we add the 
     // clock time to shake things up a bit)
-    srand(GetTickCount() + (int)time(NULL));
+    srand(GetTickCount() + (int)time(nullptr));
 
 	// mmf why is this done?
     // shift the stack locals and the heap by a random amount.            
     char* pzSpacer = new char[4 * (int)random(21, 256)];
     pzSpacer[0] = *(char*)_alloca(4 * (int)random(1, 256));
 
-	//Imago 6/10
-	SetUnhandledExceptionFilter(Win32App::ExceptionHandler); 
+	
+	//Imago 6/10 // BT - STEAM - Replacing this with steam logging.
+	/*SetUnhandledExceptionFilter(Win32App::ExceptionHandler); 
 	g_papp->EnforceFilter( true );
 
-    __try { 
+    __try { */
+
         do {
-            #ifdef SRVLOG
-                InitializeDebugf();
-            #endif
-
-			InitializeLogchat();  // mmf
-
             BreakOnError(hr = Window::StaticInitialize());
 
 // BUILD_DX9 - KGJV use runtime dynamic instead at preprocessor level
@@ -760,20 +575,17 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
             g_papp->Terminate();
             Window::StaticTerminate();
 
-            #ifdef SRVLOG
-                TerminateDebugf();
-            #endif
+			
+     } while (false);
 
-			TerminateLogchat(); // mmf
-
-        } while (false);
-    }  __except (g_papp->OnException(_exception_code(), (EXCEPTION_POINTERS*)_exception_info())){
+	 // BT - STEAM - Replacing this with steam logging.
+	 /*   }  __except (g_papp->OnException(_exception_code(), (EXCEPTION_POINTERS*)_exception_info())){
     }  
     delete pzSpacer;
 	if( !g_papp->EnforceFilter( false ) )
 	{
 		debugf("EnforceFilter(false) failed.\n");
 		return 0;
-	}
+	}*/
     return 0;
 }

@@ -7,7 +7,11 @@
 #ifndef _color_h_
 #define _color_h_
 
-class Color;
+#include <algorithm>
+#include "zstring.h"
+
+#undef RGB // TODO: remove this line after all #include <windows.h> are nuked
+#define RGB(r,g,b) (uint32_t(((uint8_t(r)|((uint16_t)(uint8_t(g))<<8))|(((uint32_t)uint8_t(b))<<16))))
 
 class Color {
 private:
@@ -78,9 +82,9 @@ public:
     void SetBlue(float value)  { m_b = value; }
     void SetAlpha(float value) { m_a = value; }
 
-    COLORREF MakeCOLORREF() const 
+    uint32_t MakeCOLORREF() const
     { 
-        return RGB(min(m_r * 255, 255), min(m_g * 255, 255), min(m_b * 255, 255)); 
+        return RGB(std::min<float>(m_r * 255, 255), std::min<float>(m_g * 255, 255), std::min<float>(m_b * 255, 255));
     }
 
     Color AdjustAlpha(float scale)
@@ -152,7 +156,7 @@ inline Color MakeColorFromCOLORREF(COLORREF color)
             (float)((color >> 16) & 0xff) / 255.0f,
             (float)((color >>  8) & 0xff) / 255.0f,
             (float)((color >>  0) & 0xff) / 255.0f,
-            (float)((color >> 24) & 0xff) / 255.0f
+            1.0f
         );
 }
 

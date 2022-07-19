@@ -4,7 +4,7 @@
 */
 
 #include "pch.h"
-#include "MessageCore.h"
+#include "messagecore.h"
 
 //  <NKM> 25-Aug-2004
 // For debug purposes....
@@ -341,7 +341,9 @@ void * FedMessaging::PFedMsgCreate(bool fQueueMsg, BYTE * pbFMBuff, FEDMSGID fmi
   BYTE * pBlobSrc, * pBlobDst; 
   BYTE * pbFM;
 
-  assert (IsConnected());
+  // BT - WOPR - If we aren't going to queue the message, then we don't care if we are connected. This supports AllegianceInterop clients.
+  if(fQueueMsg == true)
+	assert (IsConnected());
 
 StartOver: // if we overrun our buffer, need to start over after flushing it
   va_start(vl, cbfm); // make sure we have the last required parm
@@ -730,6 +732,14 @@ HRESULT FedMessaging::OnSysMessage( const DPlayMsg& msg )
 		Facility Code: FACILITY_DPLAY (21)
 		Error Code: 0x8420 (33824)
 	*/
+
+	// BT - WOPR - Fixing crash on client reattach to a running server.
+	if (hr != DPNERR_BUFFERTOOSMALL)
+	{
+		debugf("m_pDirectPlayServer->GetClientInfo couldn't determine how much memory to alloc.\n");
+		return hr;
+	}
+
 	assert( hr == DPNERR_BUFFERTOOSMALL );
 
     pPlayerInfo = (DPN_PLAYER_INFO*) new BYTE[dwSize];
@@ -754,7 +764,7 @@ HRESULT FedMessaging::OnSysMessage( const DPlayMsg& msg )
 	//removed below becasue connections can reset here 
 	//then GetIPAddress breaks the lobby -Imago
 
-	// char szRemoteAddress[16];
+	// char szRemoteAddress[64];
    // GetIPAddress( *pcnxn, szRemoteAddress );
    // debugf(" ip=%s\n", szRemoteAddress );
 
@@ -1018,10 +1028,22 @@ HRESULT FedMessaging::ReceiveMessages()
             {
               if(pfm->fmid > 0 && pfm->cbmsg >= sizeof(FEDMESSAGE) && pfm->cbmsg <= PacketSize())
               {
-               // debugf( "(FM=%8x %s) Msg from %s(%8x) cbmsg=%d, fmid=%d, total packet size=%d\n",
-               //         this, sOrC,
-               //         pcnxnFrom ? pcnxnFrom->GetName() : "<unknown>", p_dpMsg->dpnidSender,
-               //        cb, id, m_dwcbPacket );
+				 /* if (strcmp(pcnxnFrom->GetName(), "+BackTrak@Dev") == 0)
+				  {
+					  debugf("(FM=%8x %s) Msg from %s(%8x) cbmsg=%d, fmid=%d, total packet size=%d\n",
+						  this, sOrC,
+						  pcnxnFrom ? pcnxnFrom->GetName() : "<unknown>", p_dpMsg->dpnidSender,
+						  cb, id, m_dwcbPacket);
+
+					  char outputFile[256];
+					  sprintf(outputFile, "c:\\1\\Logs\\AllegianceClient\\%ld.dat", id);
+
+					  FILE *file = fopen(outputFile, "w+");
+					  fwrite(pfm, sizeof(char), pfm->cbmsg, file);
+					  fclose(file);
+				  }
+				  */
+
 
                 m_pfmSite->OnAppMessage(this, *pcnxnFrom, pfm);
                 pfm = PfmGetNext(pfm);
@@ -1556,7 +1578,7 @@ HRESULT FedMessaging::JoinSessionInstance( GUID guidApplication, GUID guidInstan
   if (FAILED(hr))
     return hr;
 
-      
+  debugf("DirectPlay: Connecting synchronously");
   hr = m_pDirectPlayClient->Connect( &dpnAppDesc,        // Application description
                                      addr,               // Session host address
                                      device,             // Address of device used to connect to the host (mdvalley: formerly 0)
@@ -1567,8 +1589,11 @@ HRESULT FedMessaging::JoinSessionInstance( GUID guidApplication, GUID guidInstan
                                      DPNOP_SYNC );       // Connect synchronously  //Fix memory leak -Imago 8/2/09
 
   delete[] playerInfo.pwszName;
-  if (FAILED(hr))
-    return hr;
+  if (FAILED(hr)) {
+      debugf("DirectPlay: Connect failed");
+      return hr;
+  }
+  debugf("DirectPlay: Connect success");
 
   m_guidInstance = guidInstance;
   m_fConnected = true;
@@ -1624,7 +1649,7 @@ CFMGroup * FedMessaging::GetGroupFromDpid(DPID dpid)
 }
 
 
-HRESULT FedMessaging::GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16])
+HRESULT FedMessaging::GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[64])
 {
   //assert( m_pDirectPlayServer != 0 );
 

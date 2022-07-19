@@ -1,5 +1,5 @@
-nb: this my own version of the code. The official community code is at https://github.com/FreeAllegiance/Allegiance
-
+# BUILD STATUS
+[![Build status](https://ci.appveyor.com/api/projects/status/mllnn7jx72ge8u6s/branch/master?svg=true)](https://ci.appveyor.com/project/BackTrak/allegiance)
 
 # Installation
 
@@ -31,7 +31,6 @@ Launch Visual Studio and open the main solution `src\VS2017\Allegiance.sln`
 * AutoUpdate
 * cvh
 * mdlc
-* pigs
 * reloader
 
 # Links
@@ -42,3 +41,5 @@ Launch Visual Studio and open the main solution `src\VS2017\Allegiance.sln`
 * Kage Code Documentation: http://www.freeallegiance.org/FAW/index.php/Code_documentation
 
 * Dropbox build instructions: https://paper.dropbox.com/doc/FreeAllegiance-build-instructions-LVrOqhj4PnD0UWkohmxmW
+
+* Trello Bug Reports/Feature Request: https://trello.com/b/0ApAZt6p/steam-release-testing-dx9

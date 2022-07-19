@@ -1,4 +1,10 @@
-#include "pch.h"
+#include "popup.h"
+
+#include "enginep.h"
+#include "enginewindow.h"
+#include "image.h"
+#include "pane.h"
+#include "paneimage.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -27,7 +33,7 @@ void IPopup::ClosePopup(IPopup* ppopup)
 
 TRef<Image> IPopup::GetImage(Engine* pengine)
 {
-    return CreatePaneImage(pengine, SurfaceType3D(), true, GetPane());
+    return CreatePaneImage(pengine, true, GetPane());
 }
 
 Rect IPopup::GetRect()

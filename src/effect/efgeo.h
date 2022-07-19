@@ -1,13 +1,20 @@
 #ifndef _efgeo_H_
 #define _efgeo_H_
 
+#include <event.h>
+#include <model.h>
+#include <tref.h>
+#include <value.h>
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // effect geos
 //
 //////////////////////////////////////////////////////////////////////////////
 
-TRef<Geo> CreateDebrisGeo(Modeler* pmodeler, Number* ptime, Viewport* pviewport);
+class Surface;
+class Viewport;
+TRef<Geo> CreateDebrisGeo(Modeler* pmodeler, Number* ptime, Viewport* pviewport, TRef<ModifiableNumber> distancePerParticle);
 TRef<Geo> CreateCullGeo(Geo* pgeo);
 TRef<Geo> CreateCopyModeGeo(Geo* pgeo);
 TRef<Geo> CreateWireSphereGeo(float minDot, int hSegments);

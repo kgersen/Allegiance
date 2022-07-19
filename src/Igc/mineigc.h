@@ -16,7 +16,8 @@
 #ifndef __MINEIGC_H_
 #define __MINEIGC_H_
 
-#include    "modelIGC.h"
+#include "igc.h"
+#include "modelIGC.h"
 
 const char  c_msStart = 0;
 const char  c_msExploded = 1;

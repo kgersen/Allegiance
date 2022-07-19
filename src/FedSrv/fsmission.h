@@ -264,13 +264,8 @@ public:
   CFSPlayer *           GetLeader(SideID sid);
   void                  SetLeader(CFSPlayer * pfsPlayer);
   void                  SetLeaderID(SideID sideID, ShipID shipID);
-  CFSPlayer *           GetOwner()        
-  {
-    if (m_misdef.iSideMissionOwner == NA)
-      return NULL;
-    else 
-      return GetLeader(m_misdef.iSideMissionOwner);
-  }
+  CFSPlayer *           GetOwner();
+  void					SetOwner(short iSide); // BT - WOPR
   void                  AddPlayerToMission(CFSPlayer * pfsPlayer);
   void                  RemovePlayerFromMission(CFSPlayer * pfsPlayer, QuitSideReason reason, const char* szMessageParam = NULL);
   void                  AddPlayerToSide(CFSPlayer * pfsPlayer, IsideIGC * pside);
@@ -289,7 +284,7 @@ public:
   }
   void                  RecordGameResults();
   void                  RecordTeamResults(IsideIGC* pside);
-  void                  RecordPlayerResults(const char* pszName, PlayerScoreObject* ppso, SideID sid);
+  void                  RecordPlayerResults(IshipIGC* pship, CFSPlayer *player, SideID sid); // BT - STEAM - Enable the CSteamAchievements object that is attached to the player to be sent to the stats recording functions.
   void                  QueueGameoverMessage();
 
   IsideIGC*             CheckForVictoryByStationBuild(IsideIGC* pside);

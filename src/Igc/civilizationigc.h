@@ -16,6 +16,8 @@
 #ifndef __CIVILIZATIONIGC_H_
 #define __CIVILIZATIONIGC_H_
 
+#include "igc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CcivilizationIGC
 class       CcivilizationIGC : public IcivilizationIGC

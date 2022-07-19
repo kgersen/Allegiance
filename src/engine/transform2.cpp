@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "transform.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -55,6 +55,11 @@ void TranslateTransform2::SetTranslate(const Point& point)
 
 ScaleTransform2::ScaleTransform2(PointValue* ppoint) :
     Transform2(ppoint)
+{
+}
+
+ScaleTransform2::ScaleTransform2(const Point& point) :
+	Transform2(new PointValue(point))
 {
 }
 

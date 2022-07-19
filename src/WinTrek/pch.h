@@ -1,6 +1,7 @@
 // pch.h : include file for standard system include files,
 //      or project specific include files that are used frequently,
 //      but are changed infrequently
+#pragma once
 
 #define __MODULE__ "WinTrek"
 
@@ -51,6 +52,12 @@
 // BT - STEAM
 #include "steam_api.h"
 
+#include <button.h>
+#include <controls.h>
+#include <geometry.h>
+#include <paneimage.h>
+#include <D3DDevice9.h>
+
 //
 // WinTrek headers
 //
@@ -64,6 +71,7 @@
 #include "trekinput.h"
 #include "resource.h"
 #include "Zone.h"
+#include "ui.h"
 #ifdef USEAUTH
 #include "zauth.h"
 #endif

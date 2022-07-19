@@ -15,7 +15,6 @@
 **  History:
 */
 // projectileIGC.cpp : Implementation of CprojectileIGC
-#include "pch.h"
 #include "projectileIGC.h"
 
 /////////////////////////////////////////////////////////////////////////////

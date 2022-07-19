@@ -16,6 +16,8 @@
 #ifndef __CLOAKIGC_H_
 #define __CLOAKIGC_H_
 
+#include "igc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CcloakIGC
 class CcloakIGC : public IcloakIGC

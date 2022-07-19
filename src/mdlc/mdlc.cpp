@@ -228,13 +228,15 @@ public:
         TRef<Number> pnumberFrame = new ModifiableNumber(0);
 		TRef<Surface> psurface = GetModeler()->LoadSurface(strInput, false);
 
-        TRef<Image> pimageFrame =
-            CreateFrameImage(
+        //Rock: Broken after not not storing texture in regular memory anymore.
+        ZAssert(false);
+        TRef<Image> pimageFrame = nullptr;
+            /*CreateFrameImage(
                 pnumberFrame,
                 psurface,
                 xframes,
                 yframes
-            );
+            );*/
 
         //
         // Create the name space
@@ -266,9 +268,16 @@ public:
 		//Imago set the modeler up to work in the CWD
 		PathString pathStr = pathStr.GetCurrentDirectoryA();
 		printf(pathStr);
+
+        TRef<UpdatingConfiguration> pConfiguration = new UpdatingConfiguration(
+            std::make_shared<FallbackConfigurationStore>(
+                CreateJsonConfigurationStore(GetExecutablePath() + "\\config_mdlc.json"),
+                std::make_shared<RegistryConfigurationStore>(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT "\\MDLC3DSettings")
+                )
+        );
         
 		// Imago DX9 junk
-		if( PromptUserForVideoSettings(false, false, 0, GetModuleHandle(NULL), pathStr, ALLEGIANCE_REGISTRY_KEY_ROOT "\\MDLC3DSettings") == false )
+		if( PromptUserForVideoSettings(false, 0, GetModuleHandle(NULL), pathStr, pConfiguration) == false )
 		{
 			return E_FAIL;
 		}

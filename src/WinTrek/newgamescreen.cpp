@@ -148,7 +148,7 @@ private:
 
         m_pcomboMaxImbalance   ->SetSelection(FindClosestValue(missionparams.iMaxImbalance, "MaxImbalanceValues"));
 
-		m_bIsZoneClub = !missionparams.bObjectModelCreated;// KGJV #114   missionparams.bClubGame;
+		m_bIsZoneClub = missionparams.bClubGame; //!missionparams.bObjectModelCreated;// KGJV #114   missionparams.bClubGame;
         m_bLockGameOpen = missionparams.bLockGameOpen;
         
         if (m_bIsZoneClub) //pkk #203 - Ignore clients SkillLevel, if it's a ZG
@@ -867,7 +867,7 @@ public:
             m_ptextMaxPlayers->SetString(
                 ZString(GetBaseMissionParams().nMinPlayersPerTeam) + " - " 
                     + ZString(
-						min(
+						std::min(
 							100,
 							GetBaseMissionParams().nTotalMaxPlayersPerGame
 							/ (int)FindValue(m_pcomboTeamCount->GetSelection(), "TeamCountValues")))
@@ -991,7 +991,7 @@ public:
         else
         {
             misparams.nMinPlayersPerTeam = 1;
-            misparams.nMaxPlayersPerTeam = min(100,misparams.nTotalMaxPlayersPerGame / misparams.nTeams);// KGJV #114
+            misparams.nMaxPlayersPerTeam = std::min(100,misparams.nTotalMaxPlayersPerGame / misparams.nTeams);// KGJV #114
         }
 
         misparams.iMaxImbalance = FindValue(m_pcomboMaxImbalance->GetSelection(), "MaxImbalanceValues");
@@ -1285,7 +1285,7 @@ public:
             || (trekClient.MyMission()->GetMissionParams().bAutoRestart && stage == STAGE_NOTSTARTED))
         {
             // note: have the timer lag by 1 second to give users the familiar countdown feel
-            int nTimeLeft = max(0, int(trekClient.MyMission()->GetMissionParams().timeStart - Time::Now()) + 1);
+            int nTimeLeft = std::max(0, int(trekClient.MyMission()->GetMissionParams().timeStart - Time::Now()) + 1);
 
             int nMinutesLeft = nTimeLeft/60;
             int nSecondsLeft = nTimeLeft - nMinutesLeft * 60;

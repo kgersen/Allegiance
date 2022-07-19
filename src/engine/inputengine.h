@@ -1,6 +1,10 @@
 #ifndef _inputengine_H_
 #define _inputengine_H_
 
+#include <event.h>
+
+#include "value.h"
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // type ButtonEvent = (Integer, Boolean)
@@ -51,6 +55,7 @@ public:
 	virtual void SetAccel(const int accel)			 = 0;
 	//
     virtual void SetWheelPosition(float pos)         = 0;
+    virtual bool IsEnabled()                         = 0;
     virtual void SetEnabled(bool bEnabled)           = 0;
 
     virtual const Point& GetPosition()               = 0;

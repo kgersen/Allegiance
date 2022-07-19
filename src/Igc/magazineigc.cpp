@@ -12,8 +12,7 @@
 **  History:
 */
 // magazineIGC.cpp : Implementation of CmagazineIGC
-#include "pch.h"
-#include "magazineIGC.h"
+#include "magazineigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CmagazineIGC
@@ -40,12 +39,14 @@ HRESULT     CmagazineIGC::Initialize(ImissionIGC* pMission, Time now, const void
     {
         m_partType = (IlauncherTypeIGC*)(((DataPartIGC*)data)->partType);
         assert (m_partType);
-        m_partType->AddRef();
+        if (m_partType) //Xynth for good meaure
+			m_partType->AddRef();
 
         m_missileType = (ImissileTypeIGC*)(m_partType->GetExpendableType());
         assert (m_missileType);
         assert (m_missileType->GetObjectType() == OT_missileType);
-        m_missileType->AddRef();
+        if (m_missileType) //Xynth Fix for error 8986029
+			m_missileType->AddRef();
         m_amount = 0;
     }
 

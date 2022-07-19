@@ -24,6 +24,7 @@ extern bool    g_bDownloadZoneMessage;
 extern bool    g_bDownloadNewConfig;
 extern bool    g_bDisableZoneClub;
 extern bool    g_bSkipAutoUpdate;
+bool g_bAutomaticallySkipMotdScreen = false;
 
 const char * szValidCfg  = "THIS IS A VALID CONFIG FILE";
 const char * szValidMotd = "THIS IS A VALID MESSAGE OF THE DAY FILE";
@@ -409,23 +410,11 @@ public:
 
     void BeginConfigDownload() 
     {
-#ifdef _ALLEGIANCE_PROD_
-        lstrcpy(m_szConfig, "http://allegiance.zaphop.com/allegiance.txt");  //imago updated 7/4/09 // BT - STEAM
-#else
-		lstrcpy(m_szConfig, "http://allegiance.zaphop.com/allegiance.txt");  //imago updated 6/10 // BT - STEAM
-#endif
-        HKEY hKey;
-
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-        {
-            DWORD cbValue = MAX_PATH;
-            char szConfig[MAX_PATH];
-            szConfig[0] = '\0';
-            ::RegQueryValueEx(hKey, "CfgFile", NULL, NULL, (LPBYTE)&szConfig, &cbValue);
-            // if it didn't succeed, we'll just use the default above
-            if (lstrlen(szConfig) > 0)
-              lstrcpy(m_szConfig, szConfig);
-        }
+        std::string configPath = GetConfiguration()->GetStringValue(
+            "Online.ConfigFile",
+            GetConfiguration()->GetStringValue("CfgFile", "http://allegiance.zaphop.com/allegiance.txt")
+        );
+        lstrcpy(m_szConfig, configPath.c_str());
 
         if (!g_bDownloadNewConfig || g_bQuickstart)  //imago added quickstart and reordered 7/4/09
         {
@@ -674,7 +663,7 @@ public:
                         //
                         // Let's do it!
                         //
-                        trekClient.m_pAutoDownload->BeginUpdate(pAutoUpdateSink, bForceFileCheck, false);
+                        trekClient.m_pAutoDownload->BeginUpdate(pAutoUpdateSink, bForceFileCheck);
                         // m_pAutoDownload could be NULL at this point, if the autodownload system decided
                         // not to do a download after all.  This can happen if there is an error or if
                         // the client was already up-to-date.
@@ -752,6 +741,12 @@ public:
                 m_pbuttonSquads->SetEnabled(!g_bDisableZoneClub);
                 m_pbuttonZoneEvents->SetEnabled(!trekClient.GetCfgInfo().strZoneEventsURL.IsEmpty());
             }
+
+            // This is pretty ugly, but we don't like this screen.
+            if (g_bAutomaticallySkipMotdScreen == true) {
+                g_bAutomaticallySkipMotdScreen = false;
+                OnButtonGames();
+            }
         }
     }
 
@@ -790,9 +785,7 @@ public:
 //#endif        
         GetWindow()->SetWaitCursor();
         TRef<IMessageBox> pmsgBox = CreateMessageBox("Connecting...", NULL, false);
-        Point point(c_PopupX, c_PopupY);
-        Rect rect(point, point);
-        GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, rect, false);
+        GetWindow()->GetPopupContainer()->OpenPopup(pmsgBox, false);
 
         // pause to let the "connecting..." box draw itself
         AddEventTarget(&ZoneClubScreen::OnUsernameAndPassword, GetWindow(), 0.1f);

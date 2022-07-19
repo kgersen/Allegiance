@@ -16,7 +16,8 @@
 #ifndef __PROJECTILEIGC_H_
 #define __PROJECTILEIGC_H_
 
-#include    "modelIGC.h"
+#include "igc.h"
+#include "modelIGC.h"
 
 class CprojectileIGC : public TmodelIGC<IprojectileIGC>
 {

@@ -7,6 +7,10 @@
 #ifndef _mask_H_
 #define _mask_H_
 
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <cstring>
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -104,16 +108,16 @@ public:
     }
 };
 
-class BitMask : public TBitMask<DWORD, DWORD> 
+class BitMask : public TBitMask<uint32_t, uint32_t> 
 {
 public:
-    BitMask(DWORD dw) : 
-        TBitMask<DWORD, DWORD>(dw)
+    BitMask(uint32_t dw) : 
+        TBitMask<uint32_t, uint32_t>(dw)
     {
     }
 
     BitMask() : 
-        TBitMask<DWORD, DWORD>(0)
+        TBitMask<uint32_t, uint32_t>(0)
     {
     }
 };
@@ -132,12 +136,12 @@ template<int nBits> class TLargeBitMask
             //ClearAll();
         }
 
-        TLargeBitMask(const BYTE*    bits)
+        TLargeBitMask(const uint8_t*    bits)
         {
             Set(bits);
         }
 
-        void    Set(const BYTE* bits)
+        void    Set(const uint8_t* bits)
         {
             memcpy(&(m_bits[0]), bits, sizeof(m_bits));
         }
@@ -189,12 +193,12 @@ template<int nBits> class TLargeBitMask
 		// CHECK THIS, IT MIGHT OVERFLOW ! -KGJV
         void ToString(char* pszBytes, int cch) const
         {
-          int cb = min(cch / 2, sizeof(m_bits));
+          int cb = std::min<int>(cch / 2, sizeof(m_bits));
           for (int i = 0; i < cb; ++i)
           {
             char szByte[3];
             sprintf(szByte, "%02X", m_bits[i]);
-            CopyMemory(pszBytes + (i * 2), szByte, 2);
+            memcpy(pszBytes + (i * 2), szByte, 2);
           }
         }
 
@@ -203,18 +207,18 @@ template<int nBits> class TLargeBitMask
           int cch = strlen(pszBits);
           if (cch % 2)
             return false;
-          BYTE bits[sizeof(m_bits)];
+          uint8_t bits[sizeof(m_bits)];
           ZeroMemory(bits, sizeof(bits));
-          int cb = min(cch / 2, sizeof(m_bits));
+          int cb = std::min<int>(cch / 2, sizeof(m_bits));
           for (int i = 0; i < cb; ++i)
           {
             char szByte[3];
-            CopyMemory(szByte, pszBits + (i * 2), 2);
+            memcpy(szByte, pszBits + (i * 2), 2);
             szByte[2] = '\0';
-            long nBits = strtoul(szByte, NULL, 16);
-            if ((0 == nBits || ULONG_MAX == nBits) && ERANGE == errno)
+            long lBits = strtoul(szByte, NULL, 16);
+            if ((0 == lBits || ULONG_MAX == lBits) && ERANGE == errno)
               return false;
-            bits[i] = (BYTE)nBits;
+            bits[i] = (uint8_t)lBits;
           }
 
           Set(bits);
@@ -344,7 +348,7 @@ template<int nBits> class TLargeBitMask
         }
 
     private:
-        BYTE    m_bits[((nBits - 1) / 8) + 1];
+        uint8_t    m_bits[((nBits - 1) / 8) + 1];
 
 };
 

@@ -1,6 +1,13 @@
 #ifndef _button_H_
 #define _button_H_
 
+#include "pane.h"
+
+#include <tvector.h>
+
+class IEventSource;
+class IIntegerEventSource;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // ButtonPane

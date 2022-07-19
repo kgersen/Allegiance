@@ -1,8 +1,35 @@
 #include "pch.h"
 
+#include <AllegianceSecurity.h>
+#include <ClubMessages.h>
+#include <guids.h>
+#include <regkey.h>
+
+#include "AutoDownload.h"
+
 ALLOC_MSG_LIST;
 
 bool g_bCheckFiles = false;
+
+CriticalSectionManager g_criticalSectionManager;
+
+CriticalSectionManager::CriticalSectionManager()
+{
+	::InitializeCriticalSection(&m_CS);
+}
+CriticalSectionManager::~CriticalSectionManager()
+{
+	::DeleteCriticalSection(&m_CS);
+}
+void CriticalSectionManager::Lock()
+{
+	::EnterCriticalSection(&m_CS);
+}
+void CriticalSectionManager::UnLock()
+{
+	::LeaveCriticalSection(&m_CS);
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // ClientEventSource
@@ -586,9 +613,6 @@ void ChatInfo::SetChat(ChatTarget       ctRecipient,
                        bool             bFromObjectModel,
                        bool             bFromLeader)
 {
-
-	logchat(strText);  // mmf added log chat
-
     m_ctRecipient = ctRecipient;
 
     m_cidCommand = cid;
@@ -670,113 +694,124 @@ void MissionInfo::Update(FMD_S_MISSIONDEF* pfmMissionDef)
     m_mapSideInfo.GetSink()();
 }
 
+
+
 void MissionInfo::Update(FMD_LS_LOBBYMISSIONINFO* pfmLobbyMissionInfo)
 {
-    int numSidesOld = NumSides();
-    Strncpy(m_pfmMissionDef->misparms.strGameName, FM_VAR_REF(pfmLobbyMissionInfo, szGameName), c_cbGameName);
-    m_pfmMissionDef->misparms.strGameName[c_cbGameName - 1] = '\0';
-    m_strGameDetailsFiles = (FM_VAR_REF(pfmLobbyMissionInfo, szGameDetailsFiles) != NULL)
-      ? FM_VAR_REF(pfmLobbyMissionInfo, szGameDetailsFiles) : "";
-    m_pfmMissionDef->misparms.nTeams = pfmLobbyMissionInfo->nTeams;
-    m_pfmMissionDef->misparms.nMinPlayersPerTeam = pfmLobbyMissionInfo->nMinPlayersPerTeam;
-    m_pfmMissionDef->misparms.nMaxPlayersPerTeam = pfmLobbyMissionInfo->nMaxPlayersPerTeam;
-    m_pfmMissionDef->misparms.iMinRank = pfmLobbyMissionInfo->nMinRank;
-    m_pfmMissionDef->misparms.iMaxRank = pfmLobbyMissionInfo->nMaxRank;
-    m_pfmMissionDef->misparms.timeStart = Time(pfmLobbyMissionInfo->dwStartTime);
-    m_fGuaranteedSlotsAvailable = pfmLobbyMissionInfo->fGuaranteedSlotsAvailable;
-    m_fAnySlotsAvailable = pfmLobbyMissionInfo->fAnySlotsAvailable;
-    m_nNumPlayers = pfmLobbyMissionInfo->nNumPlayers;
+	//printf("MissionInfo::Update - Trying For Lock\n");
+
+	g_criticalSectionManager.Lock();
+
+	//printf("MissionInfo::Update - Lock\n");
+
+	int numSidesOld = NumSides();
+	Strncpy(m_pfmMissionDef->misparms.strGameName, FM_VAR_REF(pfmLobbyMissionInfo, szGameName), c_cbGameName);
+	m_pfmMissionDef->misparms.strGameName[c_cbGameName - 1] = '\0';
+	m_strGameDetailsFiles = (FM_VAR_REF(pfmLobbyMissionInfo, szGameDetailsFiles) != NULL)
+		? FM_VAR_REF(pfmLobbyMissionInfo, szGameDetailsFiles) : "";
+	m_pfmMissionDef->misparms.nTeams = pfmLobbyMissionInfo->nTeams;
+	m_pfmMissionDef->misparms.nMinPlayersPerTeam = pfmLobbyMissionInfo->nMinPlayersPerTeam;
+	m_pfmMissionDef->misparms.nMaxPlayersPerTeam = pfmLobbyMissionInfo->nMaxPlayersPerTeam;
+	m_pfmMissionDef->misparms.iMinRank = pfmLobbyMissionInfo->nMinRank;
+	m_pfmMissionDef->misparms.iMaxRank = pfmLobbyMissionInfo->nMaxRank;
+	m_pfmMissionDef->misparms.timeStart = Time(pfmLobbyMissionInfo->dwStartTime);
+	m_fGuaranteedSlotsAvailable = pfmLobbyMissionInfo->fGuaranteedSlotsAvailable;
+	m_fAnySlotsAvailable = pfmLobbyMissionInfo->fAnySlotsAvailable;
+	m_nNumPlayers = pfmLobbyMissionInfo->nNumPlayers;
 	m_nNumNoatPlayers = pfmLobbyMissionInfo->nNumNoatPlayers; //Imago #169
-    SetInProgress(pfmLobbyMissionInfo->fInProgress);
-    SetCountdownStarted(pfmLobbyMissionInfo->fCountdownStarted);
-    m_pfmMissionDef->misparms.bScoresCount = pfmLobbyMissionInfo->fScoresCount;
-    m_pfmMissionDef->misparms.bAllowDevelopments = pfmLobbyMissionInfo->fAllowDevelopments;
-    m_pfmMissionDef->misparms.bInvulnerableStations = pfmLobbyMissionInfo->fInvulnerableStations;
-    m_pfmMissionDef->misparms.bObjectModelCreated = pfmLobbyMissionInfo->fMSArena;
+	SetInProgress(pfmLobbyMissionInfo->fInProgress);
+	SetCountdownStarted(pfmLobbyMissionInfo->fCountdownStarted);
+	m_pfmMissionDef->misparms.bScoresCount = pfmLobbyMissionInfo->fScoresCount;
+	m_pfmMissionDef->misparms.bAllowDevelopments = pfmLobbyMissionInfo->fAllowDevelopments;
+	m_pfmMissionDef->misparms.bInvulnerableStations = pfmLobbyMissionInfo->fInvulnerableStations;
+	m_pfmMissionDef->misparms.bObjectModelCreated = pfmLobbyMissionInfo->fMSArena;
 	// KGJV - receive game core file
 	Strncpy(m_pfmMissionDef->misparms.szIGCStaticFile, FM_VAR_REF(pfmLobbyMissionInfo, szIGCStaticFile), c_cbFileName);
 	// KGJV #114 - fill in server name & ip
-	Strncpy(m_pfmMissionDef->szServerName, FM_VAR_REF(pfmLobbyMissionInfo,szServerName), c_cbName);
-	Strncpy(m_pfmMissionDef->szServerAddr, FM_VAR_REF(pfmLobbyMissionInfo,szServerAddr), 16);
-	UTL::SetPrivilegedUsers( ((FM_VAR_REF(pfmLobbyMissionInfo, szPrivilegedUsers) != NULL) ?  FM_VAR_REF(pfmLobbyMissionInfo, szPrivilegedUsers) : ""),m_pfmMissionDef->dwCookie); //Imago 6/10 #2
-	UTL::SetServerVersion(FM_VAR_REF(pfmLobbyMissionInfo, szServerVersion),m_pfmMissionDef->dwCookie); //Imago 7/10 #62
-    m_pfmMissionDef->misparms.nTotalMaxPlayersPerGame = pfmLobbyMissionInfo->nMaxPlayersPerGame;
-    m_pfmMissionDef->misparms.bSquadGame = pfmLobbyMissionInfo->fSquadGame;
-    m_pfmMissionDef->misparms.bEjectPods = pfmLobbyMissionInfo->fEjectPods;
+	Strncpy(m_pfmMissionDef->szServerName, FM_VAR_REF(pfmLobbyMissionInfo, szServerName), c_cbName);
+	Strncpy(m_pfmMissionDef->szServerAddr, FM_VAR_REF(pfmLobbyMissionInfo, szServerAddr), 16);
+	UTL::SetPrivilegedUsers(((FM_VAR_REF(pfmLobbyMissionInfo, szPrivilegedUsers) != NULL) ? FM_VAR_REF(pfmLobbyMissionInfo, szPrivilegedUsers) : ""), m_pfmMissionDef->dwCookie); //Imago 6/10 #2
+	UTL::SetServerVersion(FM_VAR_REF(pfmLobbyMissionInfo, szServerVersion), m_pfmMissionDef->dwCookie); //Imago 7/10 #62
+	m_pfmMissionDef->misparms.nTotalMaxPlayersPerGame = pfmLobbyMissionInfo->nMaxPlayersPerGame;
+	m_pfmMissionDef->misparms.bSquadGame = pfmLobbyMissionInfo->fSquadGame;
+	m_pfmMissionDef->misparms.bEjectPods = pfmLobbyMissionInfo->fEjectPods;
 
-    if (pfmLobbyMissionInfo->fLimitedLives && m_pfmMissionDef->misparms.iLives == 0x7fff)
-        m_pfmMissionDef->misparms.iLives = 1;
-    else if (!pfmLobbyMissionInfo->fLimitedLives && m_pfmMissionDef->misparms.iLives != 0x7fff)
-        m_pfmMissionDef->misparms.iLives = 0x7fff;
+	if (pfmLobbyMissionInfo->fLimitedLives && m_pfmMissionDef->misparms.iLives == 0x7fff)
+		m_pfmMissionDef->misparms.iLives = 1;
+	else if (!pfmLobbyMissionInfo->fLimitedLives && m_pfmMissionDef->misparms.iLives != 0x7fff)
+		m_pfmMissionDef->misparms.iLives = 0x7fff;
 
-    if (pfmLobbyMissionInfo->fConquest && !m_pfmMissionDef->misparms.IsConquestGame())
-        m_pfmMissionDef->misparms.iGoalConquestPercentage = 100;
-    else if (!pfmLobbyMissionInfo->fConquest && m_pfmMissionDef->misparms.IsConquestGame())
-        m_pfmMissionDef->misparms.iGoalConquestPercentage = 0;
+	if (pfmLobbyMissionInfo->fConquest && !m_pfmMissionDef->misparms.IsConquestGame())
+		m_pfmMissionDef->misparms.iGoalConquestPercentage = 100;
+	else if (!pfmLobbyMissionInfo->fConquest && m_pfmMissionDef->misparms.IsConquestGame())
+		m_pfmMissionDef->misparms.iGoalConquestPercentage = 0;
 
-    if (pfmLobbyMissionInfo->fDeathMatch && !m_pfmMissionDef->misparms.IsDeathMatchGame())
-        m_pfmMissionDef->misparms.nGoalTeamKills = 1;
-    else if (!pfmLobbyMissionInfo->fDeathMatch && m_pfmMissionDef->misparms.IsDeathMatchGame())
-        m_pfmMissionDef->misparms.nGoalTeamKills = 0;
+	if (pfmLobbyMissionInfo->fDeathMatch && !m_pfmMissionDef->misparms.IsDeathMatchGame())
+		m_pfmMissionDef->misparms.nGoalTeamKills = 1;
+	else if (!pfmLobbyMissionInfo->fDeathMatch && m_pfmMissionDef->misparms.IsDeathMatchGame())
+		m_pfmMissionDef->misparms.nGoalTeamKills = 0;
 
-    if (pfmLobbyMissionInfo->fCountdown && !m_pfmMissionDef->misparms.IsCountdownGame())
-        m_pfmMissionDef->misparms.dtGameLength = 600;
-    else if (!pfmLobbyMissionInfo->fCountdown && m_pfmMissionDef->misparms.IsCountdownGame())
-        m_pfmMissionDef->misparms.dtGameLength = 0;
+	if (pfmLobbyMissionInfo->fCountdown && !m_pfmMissionDef->misparms.IsCountdownGame())
+		m_pfmMissionDef->misparms.dtGameLength = 600;
+	else if (!pfmLobbyMissionInfo->fCountdown && m_pfmMissionDef->misparms.IsCountdownGame())
+		m_pfmMissionDef->misparms.dtGameLength = 0;
 
-    if (pfmLobbyMissionInfo->fProsperity && !m_pfmMissionDef->misparms.IsProsperityGame())
-        m_pfmMissionDef->misparms.fGoalTeamMoney = 100;
-    else if (!pfmLobbyMissionInfo->fProsperity && m_pfmMissionDef->misparms.IsProsperityGame())
-        m_pfmMissionDef->misparms.fGoalTeamMoney = 0;
+	if (pfmLobbyMissionInfo->fProsperity && !m_pfmMissionDef->misparms.IsProsperityGame())
+		m_pfmMissionDef->misparms.fGoalTeamMoney = 100;
+	else if (!pfmLobbyMissionInfo->fProsperity && m_pfmMissionDef->misparms.IsProsperityGame())
+		m_pfmMissionDef->misparms.fGoalTeamMoney = 0;
 
-    if (pfmLobbyMissionInfo->fArtifacts && !m_pfmMissionDef->misparms.IsArtifactsGame())
-        m_pfmMissionDef->misparms.nGoalArtifactsCount = 10;
-    else if (!pfmLobbyMissionInfo->fArtifacts && m_pfmMissionDef->misparms.IsArtifactsGame())
-        m_pfmMissionDef->misparms.nGoalArtifactsCount = 0;
+	if (pfmLobbyMissionInfo->fArtifacts && !m_pfmMissionDef->misparms.IsArtifactsGame())
+		m_pfmMissionDef->misparms.nGoalArtifactsCount = 10;
+	else if (!pfmLobbyMissionInfo->fArtifacts && m_pfmMissionDef->misparms.IsArtifactsGame())
+		m_pfmMissionDef->misparms.nGoalArtifactsCount = 0;
 
-    if (pfmLobbyMissionInfo->fFlags && !m_pfmMissionDef->misparms.IsFlagsGame())
-        m_pfmMissionDef->misparms.nGoalFlagsCount = 10;
-    else if (!pfmLobbyMissionInfo->fFlags && m_pfmMissionDef->misparms.IsFlagsGame())
-        m_pfmMissionDef->misparms.nGoalFlagsCount = 0;
+	if (pfmLobbyMissionInfo->fFlags && !m_pfmMissionDef->misparms.IsFlagsGame())
+		m_pfmMissionDef->misparms.nGoalFlagsCount = 10;
+	else if (!pfmLobbyMissionInfo->fFlags && m_pfmMissionDef->misparms.IsFlagsGame())
+		m_pfmMissionDef->misparms.nGoalFlagsCount = 0;
 
-    if (pfmLobbyMissionInfo->fTerritorial && !m_pfmMissionDef->misparms.IsTerritoryGame())
-        m_pfmMissionDef->misparms.iGoalTerritoryPercentage = 70;
-    else if (!pfmLobbyMissionInfo->fTerritorial && m_pfmMissionDef->misparms.IsTerritoryGame())
-        m_pfmMissionDef->misparms.iGoalTerritoryPercentage = 100;
+	if (pfmLobbyMissionInfo->fTerritorial && !m_pfmMissionDef->misparms.IsTerritoryGame())
+		m_pfmMissionDef->misparms.iGoalTerritoryPercentage = 70;
+	else if (!pfmLobbyMissionInfo->fTerritorial && m_pfmMissionDef->misparms.IsTerritoryGame())
+		m_pfmMissionDef->misparms.iGoalTerritoryPercentage = 100;
 
-    // create or destroy sides, as needed.
-    if (NumSides() > numSidesOld)
-    {
-        // create the new sides the easy way
-        for(SideID sideID = numSidesOld; sideID < NumSides(); sideID++)
-        {
-            GetSideInfo(sideID);
-        }
-    }
-    else
-    {
-        // destroy the old sides
-        for (SideID sideID = numSidesOld - 1; sideID >= NumSides(); sideID--)
-        {
-            m_mapSideInfo.Remove(sideID);
-        }
-    }
+	// create or destroy sides, as needed.
+	if (NumSides() > numSidesOld)
+	{
+		// create the new sides the easy way
+		for (SideID sideID = numSidesOld; sideID < NumSides(); sideID++)
+		{
+			GetSideInfo(sideID);
+		}
+	}
+	else
+	{
+		// destroy the old sides
+		for (SideID sideID = numSidesOld - 1; sideID >= NumSides(); sideID--)
+		{
+			m_mapSideInfo.Remove(sideID);
+		}
+	}
 
-    // copy the squad info
-    {        
-        SideID sideID;
-        SquadID* vSquadIDs = (SquadID*)FM_VAR_REF(pfmLobbyMissionInfo, rgSquadIDs);
-        int numSquads = pfmLobbyMissionInfo->cbrgSquadIDs / sizeof(SquadID);
+	// copy the squad info
+	{
+		SideID sideID;
+		SquadID* vSquadIDs = (SquadID*)FM_VAR_REF(pfmLobbyMissionInfo, rgSquadIDs);
+		int numSquads = pfmLobbyMissionInfo->cbrgSquadIDs / sizeof(SquadID);
 
-        assert(numSquads < c_cSidesMax);
-        for (sideID = 0; sideID < numSquads; sideID++)
-            squadIDs[sideID] = vSquadIDs[sideID];
-        for (; sideID < c_cSidesMax; sideID++)
-            squadIDs[sideID] = NA;
-    }
+		assert(numSquads < c_cSidesMax);
+		for (sideID = 0; sideID < numSquads; sideID++)
+			squadIDs[sideID] = vSquadIDs[sideID];
+		for (; sideID < c_cSidesMax; sideID++)
+			squadIDs[sideID] = NA;
+	}
 
-    // signal the sides list in case something has changed.
-    m_mapSideInfo.GetSink()();
+	// signal the sides list in case something has changed.
+	m_mapSideInfo.GetSink()();
+
+	//printf("MissionInfo::Update - UnLock\n");
+	g_criticalSectionManager.UnLock();
 }
 
 void MissionInfo::UpdateStartTime(Time timeStart)
@@ -1104,7 +1139,8 @@ BaseClient::BaseClient(void)
     m_strCDKey(""),
 	// KGJV pigs - extra default init
 	m_sidBoardAfterDisembark(NA),
-	m_sidTeleportAfterDisembark(NA)
+	m_sidTeleportAfterDisembark(NA),
+	m_strPasswordToJoin("")
 {
     CoInitialize(NULL);
     m_timeLastPing = m_lastSend;
@@ -1183,7 +1219,7 @@ void    BaseClient::Reinitialize(Time timeNow)
     m_timeLastPing = timeNow;
     m_serverOffset = 0;
     m_serverOffsetValidF = false;
-    m_selectedWeapon = NULL;
+    m_selectedWeapon = 0;
     m_messageType = c_mtNone;
     m_cookie = NA;
     m_plinkSelectedChat = NULL;
@@ -1220,7 +1256,9 @@ void BaseClient::FlushGameState()
 
     if (m_ship)
         m_ship->AddRef();
+
     //Offline, we need to explicitly terminate all of the ships
+	if(m_pCoreIGC != nullptr) // BT - 10/17 - Added crash guards
     {
         const ShipListIGC*  ships = m_pCoreIGC->GetShips();
         ShipLinkIGC*  l;
@@ -1232,7 +1270,8 @@ void BaseClient::FlushGameState()
 
     m_listPlayers.purge();
 
-    m_pCoreIGC->Terminate();
+	if (m_pCoreIGC != nullptr) // BT - 10/17 - Added crash guards
+		m_pCoreIGC->Terminate();
 
     // Destroy the dummy ship
     if (m_ship)
@@ -1242,8 +1281,11 @@ void BaseClient::FlushGameState()
         m_ship = NULL;
     }
 
-    delete m_pCoreIGC;
-    m_pCoreIGC = NULL;
+	if (m_pCoreIGC != nullptr) // BT - 10/17 - Added crash guards
+	{
+		delete m_pCoreIGC;
+		m_pCoreIGC = NULL;
+	}
 
     m_bInGame = false;
 }
@@ -1275,27 +1317,7 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
 			hr = m_fm.JoinSession(FEDSRV_STANDALONE_PRIVATE_GUID, ci.strServer, ci.szName);		  
 		}
 		else {
-			//imago moved this up first 8/1/09 due to longer timeout
-            HKEY hKey;
-            DWORD cbValue = c_cbName;
-            char szServer[c_cbName];
-            szServer[0] = '\0';
-            if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey)) {
-                ::RegQueryValueEx(hKey,"ServerAddress", NULL, NULL, (unsigned char*)&szServer, &cbValue);
-                ::RegCloseKey(hKey);
-            }
-            if (szServer[0] != '\0') {
-                ZString strServer = ZString(szServer).LeftOf(":");
-                DWORD dwPort = ZString(szServer).RightOf(":").GetInteger();
-
-                hr = m_fm.JoinSession(FEDSRV_GUID, strServer, ci.szName, dwPort);
-			} else {
-				hr = -1;
-			}
-
-			if(FAILED(hr)) 
-				hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);
-
+            hr = m_fm.JoinSession(FEDSRV_GUID, ci.strServer, ci.szName, ci.dwPort);
         }
     }
 
@@ -1319,7 +1341,7 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
             FM_VAR_PARM(ci.pZoneTicket, ci.cbZoneTicket)
             FM_VAR_PARM(szCdKey, CB_ZTS) // BT - 9/11/2010 - Sending the token to the server so that the server will also enforce authentication. 
             FM_VAR_PARM(szPassword, CB_ZTS)
-			FM_VAR_PARM(szDrmHash, CB_ZTS) // BT - STEAM
+			FM_VAR_PARM(szDrmHash, CB_ZTS) // BT - STEAM // TODO: I believe this is a bug and should be removed, review later. This shouldn't be here anymore.
         END_PFM_CREATE
         pfmLogon->fedsrvVer = MSGVER;
         pfmLogon->dwCookie = dwCookie;
@@ -1343,6 +1365,8 @@ HRESULT BaseClient::ConnectToServer(ConnectInfo & ci, DWORD dwCookie, Time now, 
 HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if relogging in
 {
     HRESULT hr = S_OK;
+
+    debugf("ConnectToLobby: Start");
     
     // review:  in the event of retry logon after logon failure 
     // we need to treat this as a reconnect and dump first connection...
@@ -1358,6 +1382,7 @@ HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if reloggin
 
     // but we always use config-specified lobby server. Is this too restrictive to derived clients?
     m_ci.strServer = GetIsZoneClub() ? GetCfgInfo().strClubLobby : GetCfgInfo().strPublicLobby;
+    debugf("ConnectToLobby: Server address is " + m_ci.strServer);
 
     assert(IFF(m_ci.cbZoneTicket > 0, m_ci.pZoneTicket));
     
@@ -1365,11 +1390,16 @@ HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if reloggin
     if (m_strCDKey.IsEmpty())
         m_strCDKey = ZString(m_ci.szName).ToUpper();
 
-    if (m_fmLobby.IsConnected())
+    debugf("ConnectToLobby: CDKey " + m_strCDKey);
+
+    if (m_fmLobby.IsConnected()) {
+        debugf("ConnectToLobby: Already connected");
         return S_OK;
+    }
 
     assert(m_fLoggedOnToLobby == false);
-    
+
+    debugf("ConnectToLobby: Clearing list of already loaded missions");
     TMapListWrapper<DWORD, MissionInfo*>::Iterator iterMissions(m_mapMissions);
     while (!iterMissions.End())
     {
@@ -1378,20 +1408,12 @@ HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if reloggin
     }
     m_mapMissions.SetEmpty();
 
-	// Mdvalley: Pull lobby port from registry
-/*    DWORD dwPort = 2302;		// Default to 2302
-	HKEY hKey;
-	if(ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
-	{
-		DWORD dwSize = sizeof(DWORD);
-		::RegQueryValueEx(hKey, "LobbyPort", NULL, NULL, (BYTE*)&dwPort, &dwSize);
-		::RegCloseKey(hKey);
-	}
-*/
 	hr = m_fmLobby.JoinSession(GetIsZoneClub() ? FEDLOBBYCLIENTS_GUID : FEDFREELOBBYCLIENTS_GUID, m_ci.strServer, m_ci.szName, GetCfgInfo().dwLobbyPort);
     assert(IFF(m_fmLobby.IsConnected(), SUCCEEDED(hr)));
     if (m_fmLobby.IsConnected())
     {
+        debugf("ConnectToLobby: Session started with the lobby");
+
         DWORD dwTime = Time::Now().clock();
         int crcFileList = (g_bCheckFiles ? 0 : FileCRC("FileList.txt", NULL));
         char * szEncryptionKey = (char *)_alloca(strlen(CL_LOGON_KEY) + 30);
@@ -1419,6 +1441,14 @@ HRESULT BaseClient::ConnectToLobby(ConnectInfo * pci) // pci is NULL if reloggin
     retailf("$$MSRGuard:Set:UserName=%s\n", m_szLobbyCharName);
     m_cUnansweredPings = 0;
     m_serverOffsetValidF = false;
+
+    if (SUCCEEDED(hr)) {
+        debugf("ConnectToLobby: Completed succesfully");
+    }
+    else {
+        debugf("ConnectToLobby: Completed with error");
+    }
+
     return hr;
 }
 
@@ -1432,6 +1462,13 @@ void BaseClient::UpdateLobbyLoginRequestWithSteamAuthTokenInformation(FMD_C_LOGO
 		m_hAuthTicketLobby = SteamUser()->GetAuthSessionTicket(pfmLogon->steamAuthTicket, sizeof(pfmLogon->steamAuthTicket), &pfmLogon->steamAuthTicketLength);
 
 		pfmLogon->steamID = SteamUser()->GetSteamID().ConvertToUint64();
+	}
+	else
+	{
+		// BT - WOPR
+		strcpy((char *)pfmLogon->steamAuthTicket, "");
+		pfmLogon->steamAuthTicketLength = 0;
+		pfmLogon->steamID = 0;
 	}
 }
 
@@ -1646,7 +1683,7 @@ void    BaseClient::ResetShip(void)
     m_pmodelServerTarget = NULL;
 }
 
-void    BaseClient::ResetClusterScanners(IsideIGC*  pside)
+/*void    BaseClient::ResetClusterScanners(IsideIGC*  pside)
 {
     SideID  sid = pside->GetObjectID();
 
@@ -1665,7 +1702,7 @@ void    BaseClient::ResetClusterScanners(IsideIGC*  pside)
     {
         //Probes ...
     }
-}
+}*/
 
 void    BaseClient::BuyLoadout(IshipIGC*    pshipLoadout, bool bLaunch)
 {
@@ -1693,11 +1730,19 @@ void    BaseClient::BuyLoadout(IshipIGC*    pshipLoadout, bool bLaunch)
     {
         // I'm training here
         short   size = pshipLoadout->ExportShipLoadout(NULL);
-        void*   ptr = new char[size];
+//TODO: Check me !
+        void*   ptr = malloc(size);
         pshipLoadout->ExportShipLoadout (static_cast <ShipLoadout*> (ptr));
         m_ship->PurchaseShipLoadout (size, static_cast <ShipLoadout*> (ptr));
         m_pClientEventSource->OnPurchaseCompleted (true);
-        delete ptr;
+        free(ptr);
+
+        if (bLaunch) {
+            assert(m_ship->GetStation());
+            IstationIGC* s = m_ship->GetStation();
+            m_ship->SetStation(NULL);
+            s->Launch(m_ship);
+        }
     }
 }
 
@@ -1764,6 +1809,9 @@ void    BaseClient::SetMoney(Money m)
     }
 }
 
+// BT - WOPR (Just for debugging).
+//Vector m_lastPosition;
+
 bool    BaseClient::SendUpdate(Time now)
 {
     bool fSent = false;
@@ -1784,6 +1832,21 @@ bool    BaseClient::SendUpdate(Time now)
             if ((now >= m_lastSend + c_dsecUpdateClient) /* || ((m_oldStateM ^ stateM) & smSendUpdateNow) */)
             {
                 ZAssert(m_ship->GetPosition().LengthSquared());
+
+				// BT - WOPR (Just for debugging).
+				//Vector velocity = BaseClient::GetShip()->GetVelocity();
+				//Vector currentPosition = BaseClient::GetShip()->GetPosition();
+				//float distanceBetweenCurrentAndLastPosition = (currentPosition - m_lastPosition).LengthSquared();
+				//
+				////debugf("new position squared = %f, velocity: %f\n", distanceBetweenCurrentAndLastPosition, velocity.Length());
+
+				//char filename[200];
+				//sprintf(filename, "c:\\1\\%s_positions.txt", BaseClient::GetShip()->GetName());
+				//FILE * file = fopen(filename, "a+");
+				//fprintf(file, "%s - time: %ul, new position squared = %f, velocity.Length: %f\n", now.getTimeString(), now.clock(), distanceBetweenCurrentAndLastPosition, velocity.Length());
+				//fclose(file);
+
+				//m_lastPosition = currentPosition;
 
                 m_lastSend = now;
 
@@ -1934,12 +1997,16 @@ void BaseClient::JoinMission(MissionInfo * pMission, const char* szMissionPasswo
     BEGIN_PFM_CREATE(m_fmLobby, pfmJoinGameReq, C, JOIN_GAME_REQ)
     END_PFM_CREATE
     pfmJoinGameReq->dwCookie = pMission->GetCookie();
-    SendLobbyMessages();
-    m_dwCookieToJoin = pMission->GetCookie();
-    assert(strlen(szMissionPassword) < c_cbGamePassword);
-    strncpy(m_strPasswordToJoin, szMissionPassword, c_cbGamePassword);
-    m_strPasswordToJoin[c_cbGamePassword - 1] = '\0';
-    // waiting for FM_L_JOIN_GAME_ACK. When we get that we can join it
+
+	if (m_fmLobby.IsConnected() == true)
+	{
+		SendLobbyMessages();
+		m_dwCookieToJoin = pMission->GetCookie();
+		assert(strlen(szMissionPassword) < c_cbGamePassword);
+		strncpy(m_strPasswordToJoin, szMissionPassword, c_cbGamePassword);
+		m_strPasswordToJoin[c_cbGamePassword - 1] = '\0';
+		// waiting for FM_L_JOIN_GAME_ACK. When we get that we can join it
+	}	
 }
 
 
@@ -2050,7 +2117,7 @@ HRESULT BaseClient::ReceiveMessages(void)
     return(hr);
 }
 
-HRESULT BaseClient::OnSessionLost(char * szReason, FedMessaging * pthis)
+HRESULT BaseClient::OnSessionLost(const char * szReason, FedMessaging * pthis)
 {
     debugf("OnSessionLost. %s. lastUpdate=%d now=%d Time::Now()=%d\n", 
            szReason, m_lastUpdate.clock(), m_now.clock(), Time::Now().clock());
@@ -2271,7 +2338,15 @@ void    BaseClient::SendChat(IshipIGC*      pshipSender,
             break;
 
             case CHAT_TEAM:
-                oidRecipient = m_ship->GetSide()->GetObjectID();
+				IsideIGC * side;
+
+				if (m_ship != nullptr)
+					side = m_ship->GetSide();
+
+				if (side != nullptr)
+					oidRecipient = side->GetObjectID();
+				else
+					oidRecipient = NA;
             break;
 
             case CHAT_ALL_SECTOR:
@@ -2298,7 +2373,7 @@ void    BaseClient::SendChat(IshipIGC*      pshipSender,
 
         // do the right thing for training missions
         PilotType   pilotType = pship->GetPilotType();
-        if ((!m_fm.IsConnected ()) && (pilotType < c_ptPlayer) && (cid != c_cidNone))
+        if ((!m_fm.IsConnected ()) && (pilotType < c_ptPlayer) && (cid != c_cidNone) && (pship->GetSide()->GetObjectID() == m_pPlayerInfo->SideID()))
         {
             if ((cid == c_cidDefault) && (pmodelTarget != NULL))
             {
@@ -2328,7 +2403,9 @@ void    BaseClient::SendChat(IshipIGC*      pshipSender,
 
                         case c_ptWingman:
                         {
-                            if (pmodelTarget->GetSide() == pship->GetSide ())
+                            if (pmodelTarget->GetObjectType() == OT_buoy)
+                                cid = c_cidGoto;
+                            else if (pmodelTarget->GetSide() == pship->GetSide())
                                 cid = c_cidDefend;
                             else
                                 cid = c_cidAttack;
@@ -2605,7 +2682,7 @@ ZString BaseClient::LookupRankName(RankID rank, CivID civ)
 		// BT - 7/15 CSS Integration - TODO STEAM: Modify to work with steam ranks.
 		if (rank >= 0)
 		{
-			if (rank <= m_cRankInfo)
+			if (rank < m_cRankInfo)
 			{
 				nClosestRank = rank;
 				szRankNameTemplate = m_vRankInfo[rank].RankName;
@@ -2613,7 +2690,7 @@ ZString BaseClient::LookupRankName(RankID rank, CivID civ)
 			else
 			{
 				nClosestRank = m_cRankInfo;
-				szRankNameTemplate = m_vRankInfo[m_cRankInfo].RankName;
+				szRankNameTemplate = m_vRankInfo[m_cRankInfo - 1].RankName;
 			}
 		}
 
@@ -2802,76 +2879,63 @@ void BaseClient::StationTypeChange(IstationIGC* s)
     m_pClientEventSource->OnTechTreeChanged(sid);
 }
 
-static ItreasureIGC*    CreateTreasure(BaseClient* pClient, Time now, IshipIGC* pship, IpartIGC* p, IpartTypeIGC* ppt, const Vector& position, float dv)
+ItreasureIGC*  BaseClient::CreateTreasureLocal(Time now, IshipIGC* pship, IpartIGC* p, IpartTypeIGC* ppt, const Vector& position, float dv, float lifespan)
 {
-    assert (ppt);
-    assert (dv > 1.0f);
+    assert(p);
 
-    assert (pship);
+    short amount;
+    switch (p->GetObjectType())
+    {
+    case OT_magazine:
+    case OT_dispenser:
+    case OT_pack:
+    {
+        amount = p->GetAmount();
+        if (amount == 0)
+            return NULL;
+    }
+    break;
+    default:
+        amount = 0;
+    }
+
+    return CreateTreasureLocal(now, pship, amount, ppt, position, dv, lifespan);
+}
+
+ItreasureIGC*  BaseClient::CreateTreasureLocal(Time now, IshipIGC* pship, short amount, IpartTypeIGC* ppt, const Vector& position, float dv, float lifespan)
+{
+    assert(pship);
+    assert(ppt);
+    assert(dv > 1.0f);
 
     DataTreasureIGC dt;
     dt.treasureCode = c_tcPart;
     dt.treasureID = ppt->GetObjectID();
-
-    dt.objectID = pClient->m_pCoreIGC->GenerateNewTreasureID();
-
-    dt.p0 = position; 
-
-    Vector direction;
-    {
-        //Get a nice random 3D direction
-        direction.z = random(-1.0f, 1.0f);
-
-        float   yaw = random(0.0f, pi);
-        float   cosPitch = (float)sqrt(1.0f - direction.z * direction.z);
-
-        direction.x = cos(yaw) * cosPitch;
-        direction.y = sin(yaw) * cosPitch;
-    }
-
-    float   radius = pship->GetRadius() + 10.0f;
-    dt.p0 += radius * direction;
-
-    dt.v0 = direction * dv + pship->GetVelocity();
-    switch (ppt->GetEquipmentType())
-    {
-        case ET_Magazine:
-        case ET_Dispenser:
-        {
-            assert (p);
-            dt.amount = ((IlauncherIGC*)p)->GetAmount();
-        }
-        break;
-
-        case ET_Pack:
-        {
-            DataPackTypeIGC* pdp = (DataPackTypeIGC*)(ppt->GetData());
-            dt.amount = pdp->amount;
-        }
-        break;
-
-        default:
-            dt.amount = 0;
-    }
-    dt.lifespan = 600.0f;
-
-    IclusterIGC*    pcluster = pship->GetCluster();
-    dt.clusterID = pcluster->GetObjectID();
-
+    dt.lifespan = lifespan;
+    dt.amount = amount;
     dt.createNow = false;
 
-    dt.time0 = pClient->ServerTimeFromClientTime(now);
+    dt.objectID = pship->GetMission()->GenerateNewTreasureID();
+    dt.p0 = position;
+    Vector direction = Vector::RandomDirection();
+    float   radius = pship->GetRadius() + 10.0f;
+    dt.p0 += radius * direction;
+    dt.v0 = direction * dv + pship->GetVelocity();
+    IclusterIGC*    pcluster = pship->GetCluster();
+    dt.clusterID = pcluster->GetObjectID();
+    dt.time0 = now;
 
     ItreasureIGC* t = (ItreasureIGC *)
-                      pClient->m_pCoreIGC->CreateObject(now, OT_treasure,
-                                                        &dt, sizeof(dt));
+        pship->GetMission()->CreateObject(now, OT_treasure,
+            &dt, sizeof(dt));
 
     //Note: bad form releasing a pointer before we return it but we know it will
     //stick around since it is in a cluster.
-    assert (t);
+    assert(t);
     t->Release();
     return t;
 }
+
 void BaseClient::KillAsteroidEvent(IasteroidIGC*            pasteroid, bool explodeF)
 {
     if (!m_fm.IsConnected())
@@ -2902,13 +2966,18 @@ void BaseClient::KillMissileEvent(ImissileIGC*            pmissile, const Vector
     else
         pmissile->Disarm();
 }
+void BaseClient::KillTreasureEvent(ItreasureIGC* ptreasure)
+{
+    if (!m_fm.IsConnected()) {
+        ptreasure->Terminate();
+    }
+}
 void BaseClient::KillShipEvent(Time now, IshipIGC* pShip, ImodelIGC* pLauncher, float flAmount, const Vector& p1, const Vector& p2)
 {
     if (!m_fm.IsConnected())
     {
-        // commented because these are causing performance problems after a while BSW 10/27/1999
-        /*
-        //Blow the parts into space
+        // Previous version commented out because these were causing performance problems after a while BSW 10/27/1999
+        // Blow the parts into space
         {
             const PartListIGC*  plist = pShip->GetParts();
             PartLinkIGC*        plink;
@@ -2916,50 +2985,38 @@ void BaseClient::KillShipEvent(Time now, IshipIGC* pShip, ImodelIGC* pLauncher, 
             {
                 IpartIGC*   p = plink->data();
 
-                CreateTreasure(this, now, pShip, p, p->GetPartType(), 
-                               p1, 100.0f);
+                if (randomInt(0, 4) == 0)
+                    CreateTreasureLocal(now, pShip, p, p->GetPartType(), p1, 100.0f, 60.0f);
                 p->Terminate();
             }
 
             //Treasures for ammo
             {
-                int ammo = pShip->GetAmmo();
+                short ammo = pShip->GetAmmo();
                 if (ammo > 0)
                 {
                     IpartTypeIGC*  pptAmmo = m_pCoreIGC->GetAmmoPack();
-                    assert (pptAmmo);
-                    ItreasureIGC*   t = CreateTreasure(this, now, pShip, NULL, pptAmmo, p1, 100.0f);
-                    assert (t);
-                    int a = t->GetAmount();
-                    assert (a > 0);
-                    if (ammo <= a)
-                    {
-                        t->SetAmount((short)ammo);
-                    }
-                    pShip->SetAmmo(0);
+                    assert(pptAmmo);
+
+                    if (randomInt(0, 4) == 0)
+                        CreateTreasureLocal(now, pShip, ammo, pptAmmo, p1, 100.0f, 30.0f);
+                    //pShip->SetAmmo(0); //What's the point .. let's not trigger reload here
                 }
             }
             //Ditto for fuel
             {
-                int fuel = int(pShip->GetFuel());
+                short fuel = short(pShip->GetFuel());
                 if (fuel > 0)
                 {
                     IpartTypeIGC*  pptFuel = m_pCoreIGC->GetFuelPack();
-                    assert (pptFuel);
+                    assert(pptFuel);
 
-                    ItreasureIGC*   t = CreateTreasure(this, now, pShip, NULL, pptFuel, p1, 100.0f);
-                    assert (t);
-                    int f = t->GetAmount();
-                    assert (f > 0);
-                    if (fuel <= f)
-                    {
-                        t->SetAmount((short)fuel);
-                    }
+                    if (randomInt(0, 4) == 0)
+                        CreateTreasureLocal(now, pShip, fuel, pptFuel, p1, 100.0f, 30.0f);
+                    //pShip->SetFuel(0.0f);
                 }
-                pShip->SetFuel(0.0f);
             }
         }
-        */
 
         if (pShip == m_ship->GetSourceShip())
         {
@@ -3018,8 +3075,7 @@ void BaseClient::KillShipEvent(Time now, IshipIGC* pShip, ImodelIGC* pLauncher, 
 void BaseClient::DamageStationEvent(IstationIGC* pStation,
                                     ImodelIGC* pLauncher,
                                     DamageTypeID type, 
-                                    float flAmount,
-                                    float flLeakage)
+                                    float amount)
 {
     if ((NULL != pStation->GetCluster()) &&
         (pStation->GetCluster() == GetCluster()))
@@ -3031,26 +3087,13 @@ void BaseClient::DamageStationEvent(IstationIGC* pStation,
     }
 }
 
-
-void BaseClient::KillStationEvent(IstationIGC* pStation,
-                                  ImodelIGC* pLauncher,
-                                  float flAmount,
-                                  float flLeakage)
-{
-    if (!m_fm.IsConnected())
-    {
-        pStation->GetCluster()->GetClusterSite()->AddExplosion(pStation, c_etLargeStation);
-        pStation->Terminate();
-    }
-}
-
 void BaseClient::FireMissile(IshipIGC* pShip,
                             ImagazineIGC* pMagazine,
                             Time timeFired,
                             ImodelIGC* pTarget,
                             float flLock)
 {
-    assert (pShip == m_ship);
+    assert (pShip == m_ship || !m_fm.IsConnected());
 
     if (pTarget &&
         ((pTarget->GetCluster() != m_ship->GetCluster()) ||
@@ -3169,14 +3212,18 @@ void BaseClient::FireMissile(IshipIGC* pShip,
         //
         if (Reload(pShip, pMagazine, ET_Magazine))
         {
-            PlayNotificationSound(salReloadingMissilesSound, GetShip());
-            PlaySoundEffect(startReloadSound, GetShip());
-            PostText(false, "Reloading missiles...");
+            if (pShip == m_ship) {
+                PlayNotificationSound(salReloadingMissilesSound, GetShip());
+                PlaySoundEffect(startReloadSound, GetShip());
+                PostText(false, "Reloading missiles...");
+            }
         }
         else
         {
-            PlayNotificationSound(salMissilesDepletedSound, GetShip());
-            PostText(false, "Missiles depleted.");
+            if (pShip == m_ship) {
+                PlayNotificationSound(salMissilesDepletedSound, GetShip());
+                PostText(false, "Missiles depleted.");
+            }
         }
     }
 }
@@ -3185,7 +3232,7 @@ void BaseClient::FireExpendable(IshipIGC* pShip,
                                 IdispenserIGC* pDispenser,
                                 Time timeFired)
 {
-    assert (pShip == m_ship);
+    assert(pShip == m_ship || !m_fm.IsConnected());
 
     this->PlayFFEffect(effectFire, pShip);
 
@@ -3195,19 +3242,21 @@ void BaseClient::FireExpendable(IshipIGC* pShip,
     IexpendableTypeIGC* pet = pDispenser->GetExpendableType();
     ObjectType type = pet->GetObjectType();
 
-    switch (type)
-    {
-    case OT_chaffType:
-        this->PlaySoundEffect(deployChaffSound, pShip);
-        break;
+    if (pShip == m_ship) {
+        switch (type)
+        {
+        case OT_chaffType:
+            this->PlaySoundEffect(deployChaffSound, pShip);
+            break;
 
-    case OT_mineType:
-        this->PlaySoundEffect(deployMineSound, pShip);
-        break;
+        case OT_mineType:
+            this->PlaySoundEffect(deployMineSound, pShip);
+            break;
 
-    case OT_probeType:
-        this->PlaySoundEffect(deployProbeSound, pShip);
-        break;
+        case OT_probeType:
+            this->PlaySoundEffect(deployProbeSound, pShip);
+            break;
+        }
     }
 
     if (!m_fm.IsConnected())
@@ -3219,7 +3268,7 @@ void BaseClient::FireExpendable(IshipIGC* pShip,
         {
             assert (type == OT_chaffType);
 
-            //Drop the chaff "behind" the player's ship
+            //Drop the chaff "behind" the ship
 
             DataChaffIGC   dataChaff;
 
@@ -3234,7 +3283,30 @@ void BaseClient::FireExpendable(IshipIGC* pShip,
                                                                   OT_chaff,
                                                                   &dataChaff,
                                                                   sizeof(dataChaff)));
-            assert (c != NULL);
+            assert(c != NULL);
+
+            //Confuse any missiles lauched at the ship
+            for (MissileLinkIGC*  pml = pCluster->GetMissiles()->first(); (pml != NULL); pml = pml->next()) {
+                ImissileIGC*    pmissile = pml->data();
+                if (pmissile->GetTarget() == pShip)
+                {
+                    //A missile aimed at me .. does the chaff work?
+                    float   chaff = ((IchaffTypeIGC*)pet)->GetChaffStrength();
+                    float   missile = pmissile->GetMissileType()->GetChaffResistance();
+
+                    //The following is equivalent to random(0, chaff) > random(0, missile)
+                    float   cm = chaff * missile;
+                    float   f = (chaff > missile)
+                        ? (cm - 0.5f * missile * missile)
+                        : (0.5f * chaff * chaff);
+
+                    if (random(0.0f, cm) <= f) {
+                        //Missile lost lock
+                        pmissile->SetTarget(c);
+                    }
+                }
+            }
+
             c->Release();
         }
         else
@@ -3315,22 +3387,24 @@ void BaseClient::FireExpendable(IshipIGC* pShip,
         //
         if (Reload(pShip, pDispenser, pet->GetEquipmentType()))
         {
-            switch (pet->GetObjectType())
-            {
-            case OT_chaffType:
-                PlayNotificationSound(salReloadingChaffSound, GetShip());
-                PostText(false, "Reloading chaff...");
-                break;
+            if (pShip == m_ship) {
+                switch (pet->GetObjectType())
+                {
+                case OT_chaffType:
+                    PlayNotificationSound(salReloadingChaffSound, GetShip());
+                    PostText(false, "Reloading chaff...");
+                    break;
 
-            default:
-                PlayNotificationSound(salReloadingDispenserSound, GetShip());
-                PostText(false, "Reloading dispenser...");
-                break;
+                default:
+                    PlayNotificationSound(salReloadingDispenserSound, GetShip());
+                    PostText(false, "Reloading dispenser...");
+                    break;
+                }
+
+                PlaySoundEffect(startReloadSound, GetShip());
             }
-
-            PlaySoundEffect(startReloadSound, GetShip());
         }
-        else
+        else if (pShip == m_ship)
         {
             switch (pet->GetObjectType())
             {
@@ -3352,7 +3426,7 @@ bool BaseClient::Reload(IshipIGC* pship, IlauncherIGC* plauncher, EquipmentType 
 {
     int         nReloads = 0;
 
-    if (pship == m_ship)
+    if (pship == m_ship || !m_fm.IsConnected())
     {
         const int   c_MaxReloads = 8;
         ReloadData  reloads[c_MaxReloads];
@@ -3620,6 +3694,27 @@ bool BaseClient::Reload(IshipIGC* pship, IlauncherIGC* plauncher, EquipmentType 
                 plauncher->Terminate();
             }
         }
+        else {
+            if (plauncher && (plauncher->GetAmount() == 0))
+                plauncher->Terminate();
+            if (nReloads <= 0 && type == ET_Weapon && pship->GetPilotType() == c_ptWingman) {
+                debugf("Wingman %s out of ammo.\n", pship->GetName());
+
+                int ttMask = c_ttFriendly | c_ttStation | c_ttNearest | c_ttAnyCluster;
+                if (pship->GetHullType()->GetCapabilities() & c_habmLandOnCarrier)
+                    ttMask |= c_ttShip;
+                ImodelIGC*  pmodel = FindTarget(pship, ttMask,
+                    NULL, NULL, NULL, NULL, c_sabmReload);
+                debugf("found %s\n", pmodel ? pmodel->GetName() : "NULL");
+
+                if (pmodel) {
+                    pship->SetCommand(c_cmdPlan, pmodel, c_cidGoto);
+                    m_pCoreIGC->GetIgcSite()->SendChat(pship, CHAT_TEAM, GetSide()->GetObjectID(),
+                        NA, "Out of ammo, I'm getting resupplies."); //salNoAmmoSound
+                    pship->SetGettingAmmo(true);
+                }
+            }
+        }
     }
 
     return nReloads > 0;
@@ -3771,7 +3866,7 @@ void BaseClient::CreateDummyShip()
     ds.sideID = NA;
     ds.name[0] = '\0';
     //ds.wingID = 0;
-    ds.pilotType = c_ptCheatPlayer;
+    ds.pilotType = c_ptPlayer;
     ds.abmOrders = 0;
     ds.nDeaths = 0;
     ds.nEjections = 0;
@@ -4054,7 +4149,7 @@ void BaseClient::AddPlayerToSide(PlayerInfo* pPlayerInfo, SideID sideID)
 			if (otherside != GetSide() && otherside->AlliedSides(otherside,GetSide())) {
                 Color AllianceColors[3] = { Color::Green(), Color::Orange(), Color::Red() };
             	ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined ") + pside->GetName() + ZString(" \x81 ") + ConvertColorToString(AllianceColors[pside->GetAllies()]*0.75) + "(allied)" + END_COLOR_STRING + ".";
-	            ReceiveChat(NULL, CHAT_TEAM, NA, NULL, msg, c_cidNone, NA, NA);
+                ReceiveChat(NULL, CHAT_TEAM, NA, 0, msg, c_cidNone, NA, NA);
 			} else {
             	ZString msg = pPlayerInfo->CharacterName() + ZString(" has joined your team.");
 	            ReceiveChat(NULL, CHAT_TEAM, NA, salRecruitsArrivedSound, msg, c_cidNone, NA, NA);

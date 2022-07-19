@@ -367,26 +367,26 @@ public:
         TRef<Boolean> pboolControl    = GetKeyDown(VK_CONTROL);
         TRef<Boolean> pboolAlt        = GetKeyDown(VK_MENU   );
 
-        TRef<Boolean> pboolNotShift   = Not(pboolShift  );
-        TRef<Boolean> pboolNotControl = Not(pboolControl);
-        TRef<Boolean> pboolNotAlt     = Not(pboolAlt    );
+        TRef<Boolean> pboolNotShift   = BooleanTransform::Not(pboolShift  );
+        TRef<Boolean> pboolNotControl = BooleanTransform::Not(pboolControl);
+        TRef<Boolean> pboolNotAlt     = BooleanTransform::Not(pboolAlt    );
 
-        TRef<Boolean> pboolNotControlShift = And(pboolNotControl, pboolNotShift);
-        TRef<Boolean> pboolNotShiftAlt     = And(pboolNotShift,   pboolNotAlt  );
-        TRef<Boolean> pboolNotControlAlt   = And(pboolNotControl, pboolNotAlt  );
+        TRef<Boolean> pboolNotControlShift = BooleanTransform::And(pboolNotControl, pboolNotShift);
+        TRef<Boolean> pboolNotShiftAlt     = BooleanTransform::And(pboolNotShift,   pboolNotAlt  );
+        TRef<Boolean> pboolNotControlAlt   = BooleanTransform::And(pboolNotControl, pboolNotAlt  );
 
-        TRef<Boolean> pboolControlShift = And(pboolControl, pboolShift);
-        TRef<Boolean> pboolShiftAlt     = And(pboolShift,   pboolAlt  );
-        TRef<Boolean> pboolControlAlt   = And(pboolControl, pboolAlt  );
+        TRef<Boolean> pboolControlShift = BooleanTransform::And(pboolControl, pboolShift);
+        TRef<Boolean> pboolShiftAlt     = BooleanTransform::And(pboolShift,   pboolAlt  );
+        TRef<Boolean> pboolControlAlt   = BooleanTransform::And(pboolControl, pboolAlt  );
 
-        m_pboolNone                = And(pboolNotControlShift, pboolNotAlt         );
-        m_pboolJustShift           = And(pboolShift,           pboolNotControlAlt  );
-        m_pboolJustControl         = And(pboolControl,         pboolNotShiftAlt    );
-        m_pboolJustAlt             = And(pboolAlt,             pboolNotControlShift);
-        m_pboolJustControlShift    = And(pboolControlShift,    pboolNotAlt         );
-        m_pboolJustShiftAlt        = And(pboolShiftAlt,        pboolNotControl     );
-        m_pboolJustControlAlt      = And(pboolControlAlt,      pboolNotShift       );
-        m_pboolJustControlShiftAlt = And(pboolControlShift,    pboolAlt            );
+        m_pboolNone                = BooleanTransform::And(pboolNotControlShift, pboolNotAlt         );
+        m_pboolJustShift           = BooleanTransform::And(pboolShift,           pboolNotControlAlt  );
+        m_pboolJustControl         = BooleanTransform::And(pboolControl,         pboolNotShiftAlt    );
+        m_pboolJustAlt             = BooleanTransform::And(pboolAlt,             pboolNotControlShift);
+        m_pboolJustControlShift    = BooleanTransform::And(pboolControlShift,    pboolNotAlt         );
+        m_pboolJustShiftAlt        = BooleanTransform::And(pboolShiftAlt,        pboolNotControl     );
+        m_pboolJustControlAlt      = BooleanTransform::And(pboolControlAlt,      pboolNotShift       );
+        m_pboolJustControlShiftAlt = BooleanTransform::And(pboolControlShift,    pboolAlt            );
     }
 
     Boolean* GetKeyDown(int vk)
@@ -483,6 +483,10 @@ public:
         {
             TRef<IObjectList> plist = pns->FindList("keyCommandMap");
 
+			// BT - 10/17 - Fix for crash when the keyCommandMap corrupted.
+			if (plist == nullptr)
+				return false;
+
             plist->GetFirst();
             while (plist->GetCurrent() != NULL) {
                 TRef<IObjectPair> ppair; CastTo(ppair, plist->GetCurrent());
@@ -569,7 +573,7 @@ public:
                         }
                     }
 
-                    pbool = And(pbool, pboolModifier);
+                    pbool = BooleanTransform::And(pbool, pboolModifier);
                 }
 
                 //
@@ -580,7 +584,7 @@ public:
                     m_pboolTrekKeyDown[tk] = pbool;
                 } else {
                     m_pboolTrekKeyDown[tk] =
-                        Or(
+                        BooleanTransform::Or(
                             pbool,
                             m_pboolTrekKeyDown[tk]
                         );
@@ -655,7 +659,7 @@ public:
                             m_ppboolTrekKeyButtonDown[tk] = pboolButton;
                         } else {
                             m_ppboolTrekKeyButtonDown[tk] =
-                                Or(
+                                BooleanTransform::Or(
                                     pboolButton,
                                     m_ppboolTrekKeyButtonDown[tk]
                                 );
@@ -714,7 +718,7 @@ public:
                         m_ppboolTrekKeyButtonDown[tk] = pboolButton;
                     } else {
                         m_ppboolTrekKeyButtonDown[tk] =
-                            Or(
+                            BooleanTransform::Or(
                                 pboolButton,
                                 m_ppboolTrekKeyButtonDown[tk]
                             );
@@ -2220,6 +2224,10 @@ public:
         {
             TRef<IObjectList> plist = pns->FindList("keyCommandMap");
 
+			// BT - 10/17 - Fix for crash when the keyCommandMap corrupted.
+			if (plist == nullptr)
+				return false;
+
             plist->GetFirst();
             while (plist->GetCurrent() != NULL) {
                 TRef<IObjectPair> ppair; CastTo(ppair, plist->GetCurrent());
@@ -2575,7 +2583,11 @@ public:
                 m_bButton           = false;
                 m_bAxis             = false;
 
-                SetMessage("Key in use. Press Enter to lose old mapping.  Escape cancels");
+                int infoI;
+                for (infoI = 0; infoI < g_nCommandInfo; infoI++)
+                    if (g_pCommandInfo[infoI].m_tk == index)
+                        break;
+                SetMessage(ZString("Key in use for \"") + ZString(g_pCommandInfo[infoI].m_pcc) + ZString("\". Press Enter to lose old mapping. Escape cancels."));
 
                 return false;
             }
@@ -2619,7 +2631,11 @@ public:
                 m_bButton               = true;
                 m_bAxis                 = false;
 
-                SetMessage("Button in use.  Press Enter to lose old mapping.  Escape cancels");
+                int infoI;
+                for (infoI = 0; infoI < g_nCommandInfo; infoI++)
+                    if (g_pCommandInfo[infoI].m_tk == index)
+                        break;
+                SetMessage(ZString("Button in use for \"") + ZString(g_pCommandInfo[infoI].m_pcc) + ZString("\". Press Enter to lose old mapping. Escape cancels."));
 
                 return false;
             }
@@ -2929,7 +2945,7 @@ public:
         return 
             new EvaluateImage(
                 this,
-                CreatePaneImage(pengine, SurfaceType3D(), true, GetPane()),
+                CreatePaneImage(pengine, true, GetPane()),
                 m_ptime
             );
     }

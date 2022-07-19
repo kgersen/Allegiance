@@ -1,5 +1,8 @@
+#include "VertexGenerator.h"
 
-#include "pch.h"
+#include <zassert.h>
+
+#include "UIVertexDefn.h"
 
 //#define APPLY_VERTEX_POSITION_TEXTURING_OFFSET
 
@@ -15,6 +18,7 @@ CVertexGenerator::SPredefinedDynamicBufferConfig CVertexGenerator::m_sDynBufferC
 	{ CVBIBManager::eBT_VertexDynamic, 4096, sizeof(UIVERTEX), D3DFVF_UIVERTEX },
 	{ CVBIBManager::eBT_VertexDynamic, 4096, sizeof(UICOLOURFILLVERTEX), D3DFVF_UICOLOURVERT },
 	{ CVBIBManager::eBT_VertexDynamic, 12288, sizeof(UIFONTVERTEX), D3DFVF_UIFONTVERTEX },
+    { CVBIBManager::eBT_VertexDynamic, 12288, sizeof(UIFONTVERTEX2), D3DFVF_UIFONTVERTEX2 },
 	{ CVBIBManager::eBT_VertexDynamic, 4096, sizeof(UIVERTEX), D3DFVF_UIVERTEX },
 	{ CVBIBManager::eBT_VertexDynamic, 4096, sizeof(UIFONTVERTEX), D3DFVF_UIFONTVERTEX },
 };
@@ -49,7 +53,7 @@ void CVertexGenerator::Initialise( )
 	bool bResult;
 
 	// Reset state.
-	_ASSERT( m_sVGState.bInitialised == false );
+	ZAssert( m_sVGState.bInitialised == false );
 
 	// Create our predefined dynamic buffer resources.
 	for( i=0; i<ePDBT_NumPredefinedDynamicBuffers; i++ )
@@ -62,11 +66,11 @@ void CVertexGenerator::Initialise( )
 						m_sDynBufferConfig[i].dwNumElements,
 						m_sDynBufferConfig[i].dwElementSize,
 						m_sDynBufferConfig[i].dwFormat );
-			_ASSERT( bResult == true );
+			ZAssert( bResult == true );
 			break;
 
 		default:
-			_ASSERT( false && "Non dynamic or unsupported format supplied." );
+			ZAssert( false && "Non dynamic or unsupported format supplied." );
 		}
 	}
 	m_sVGState.bInitialised = true;
@@ -82,10 +86,10 @@ void CVertexGenerator::GenerateUITexturedVertices( 	const TEXHANDLE hTexture,
 													const WinRect & rectToDraw,
 													const bool bSetStream )
 {
-	_ASSERT( hTexture != INVALID_TEX_HANDLE );
+	ZAssert( hTexture != INVALID_TEX_HANDLE );
 	float fMinX, fMinY, fMaxX, fMaxY;
 	float fU1, fV1;
-	DWORD dwWidth, dwHeight;
+    uint32_t dwWidth, dwHeight;
 	UIVERTEX * pVertArray;
 
 	CVRAMManager::Get()->GetOriginalDimensions( hTexture, &dwWidth, &dwHeight );
@@ -97,7 +101,7 @@ void CVertexGenerator::GenerateUITexturedVertices( 	const TEXHANDLE hTexture,
 							(void**) &pVertArray ) == false )
 	{
 		// Failed to lock the vertex buffer.
-		_ASSERT( false );
+		ZAssert( false );
 		return;
 	}
 
@@ -186,7 +190,7 @@ void CVertexGenerator::GenerateFillVerticesD3DColor( const WinRect & rectToFill,
 							(void**) &pVertArray ) == false )
 	{
 		// Failed to lock the vertex buffer.
-		_ASSERT( false );
+		ZAssert( false );
 		return;
 	}
 	// 2d texturing, adjust the vertex positions slightly.

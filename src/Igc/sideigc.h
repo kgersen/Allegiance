@@ -15,6 +15,7 @@
 
 #ifndef __SIDEIGC_H_
 #define __SIDEIGC_H_
+#include "igc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CsideIGC
@@ -24,7 +25,7 @@ class       CsideIGC : public IsideIGC
         CsideIGC(void)
         :
             m_activeF(false), // sides are inactive until mission creation is over
-            m_dwPrivate(NULL)
+            m_dwPrivate(0)
         {
         }
 
@@ -507,7 +508,7 @@ class       CsideIGC : public IsideIGC
 		}
 		
 		//Xynth add funtion to set number of players on a side
-		int CsideIGC::GetNumPlayersOnSide(void) const
+        int GetNumPlayersOnSide(void) const
 		{
 			int toReturn = 0;
 			for (ShipLinkIGC* psl = m_ships.first(); psl != NULL; psl = psl->next())
@@ -590,8 +591,23 @@ class       CsideIGC : public IsideIGC
 		{
 			return m_data.allies;
 		}
+        void HandleNewEnemyCluster(IclusterIGC* pcluster);
+
+        void UpdateTerritory();
+
+        ClusterListIGC GetTerritory() 
+        {
+            return m_territoryClusters;
+        }
+
+        bool IsTerritory(IclusterIGC* pcluster)
+        {
+            return (m_territoryClusters.find(pcluster) != NULL);
+        }
 		
     private:
+        bool IsSurroundedByTerritory(IclusterIGC* pcluster, ClusterListIGC* clustersLinked, ClusterListIGC* clustersTerritory, int currentDepth = 0);
+
         void    AdjustBuckets(void)
         {
             //Empty the side buckets we can no longer build
@@ -670,6 +686,7 @@ class       CsideIGC : public IsideIGC
         StationListIGC      m_stations;
         BucketListIGC       m_buckets;
         ShipListIGC         m_ships;
+        ClusterListIGC      m_territoryClusters;
 
         StockpileList       m_stockpile;
 

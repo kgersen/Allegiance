@@ -1,4 +1,15 @@
-#include "pch.h"
+#include <color.h>
+
+#include <d3d9.h>
+#include <matrix.h>
+#include <point.h>
+#include <tref.h>
+#include <vertex.h>
+
+#include "context.h"
+#include "D3DDevice9.h"
+#include "enginep.h"
+#include "material.h"
 
 // compile this file for speed
 
@@ -112,10 +123,12 @@ class Device3D : public IDevice3D {
     // Current state
     //
 
+
     Point                m_sizeSurface;
     Rect                 m_rectClip;
     Rect                 m_rectClipScreen;
     bool                 m_bClip;
+    bool                 m_bYAxisInversion;
 
     bool                 m_bZTest;
     bool                 m_bZWrite;
@@ -237,6 +250,8 @@ public:
         m_indexIndexBuffer(0),
 
         m_bClip(true),
+        m_rectClip(0.0f, 0.0f, 1.0f, 1.0f),
+
         m_shadeMode(ShadeModeGouraud),
         m_bUpdateMatFull(true),
         m_bUpdateLighting(true),
@@ -249,7 +264,9 @@ public:
 
 		// mdvalley: Added pointer and class name. Search for '&Device3D::' to find more.
 		m_pfnDrawLines(&Device3D::DrawLinesRasterizer),
-        m_lineWidth(0.5f)
+        m_lineWidth(0.5f),
+
+        m_bYAxisInversion(true)
     {
         m_sizeSurface = prasterizer->GetSurfaceSize();
         m_mat.SetIdentity();
@@ -383,20 +400,39 @@ public:
     //
     //////////////////////////////////////////////////////////////////////////////
 
+    void SetYAxisInversion(bool bValue) {
+        m_bYAxisInversion = bValue;
+
+        GenerateProjectionTransform();
+    }
+
     void SetClipRect(const Rect& rectClip)
     {
         m_rectClip       = rectClip;
-        m_rectClipScreen =
-            Rect(
-                rectClip.XMin(),
-                m_sizeSurface.Y() - rectClip.YMax(),
-                rectClip.XMax(),
-                m_sizeSurface.Y() - rectClip.YMin()
 
-            );
+        if (!m_bYAxisInversion) {
+            m_rectClipScreen =
+                Rect(
+                    rectClip.XMin(),
+                    rectClip.YMin(),
+                    rectClip.XMax(),
+                    rectClip.YMax()
+                );
+        }
+        else {
+            m_rectClipScreen =
+                Rect(
+                    rectClip.XMin(),
+                    m_sizeSurface.Y() - rectClip.YMax(),
+                    rectClip.XMax(),
+                    m_sizeSurface.Y() - rectClip.YMin()
+                );
+        }
 
         m_bUpdateMatFull = true;
         m_prasterizer->SetClipRect(m_rectClipScreen);
+
+        GenerateProjectionTransform();
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -463,10 +499,14 @@ public:
 		else 
 		{
 			// Flip the y coordinate
-			_ASSERT( false );		// TODO: check this path.
+            ZAssert( false );		// TODO: check this path.
 			matD3D.Translate(Vector(0, -m_sizeSurface.Y(), 0));
 			matD3D.Scale(Vector(1, -1, 1));
 		}
+
+        if (!m_bYAxisInversion) {
+            matD3D.Scale(Vector(1, -1, 1));
+        }
 
 		// Reorganise the perspective matrix.
 		m_matPerspectiveD3D._11 = matD3D[0][0];
@@ -532,6 +572,8 @@ public:
 		m_matWorldD3D._42 = m_matWorldTM[1][3];
 		m_matWorldD3D._43 = m_matWorldTM[2][3];
 		m_matWorldD3D._44 = m_matWorldTM[3][3];
+
+        CD3DDevice9::Get()->SetTransform(D3DTS_WORLD, &m_matWorldD3D);
 	}
 
     const Matrix& GetFullMatrix()
@@ -610,15 +652,16 @@ public:
                 if (bClip) 
 				{
 					// Copy vertex, set light value to 1, 1, 1, 1.
-					_ASSERT( false );
-//                    m_pfnLightVertex = &Device3D::LightVertexCopy;
+//                    ZAssert( false );
+                    m_pfnLightVertex = &Device3D::LightVertexCopy;
 				} 
 				else 
 				{
 					// No lighting or transform. Uses textured screen space coords.
-//                    m_pfnLightVertex = &Device3D::TransformNoClipNoLight;
-					_ASSERT( false );
+                    m_pfnLightVertex = &Device3D::TransformNoClipNoLight;
+//                    ZAssert( false );
                 }
+                pDev->SetRenderState(D3DRS_LIGHTING, FALSE);
                 break;
 
             case ShadeModeGlobalColor:
@@ -999,6 +1042,9 @@ public:
         m_bUpdateLighting = true;
         m_bUpdateInverse  = true;
 		m_bUpdateInverseWorld = true;
+
+        GenerateWorldTransform();
+        GenerateViewTransform();
     }
 
     void SetPerspectiveMatrix(const Matrix& mat)
@@ -1438,7 +1484,7 @@ public:
         // Translate the vertices to screen coordinates
         //
 
-        MeshIndex aindex[7];
+        MeshIndex aindex[8];
         int index;
 
         for(index = 0; index < vcount; index++) {
@@ -1448,6 +1494,11 @@ public:
         //
         // Form all of the triangle fans
         //
+
+        //Additional guard to make sure we don't exceed array bounds in the next loop
+        if (vcount > 8) {
+            vcount = 8;
+        }
 
         for(index = 1; index < vcount - 1; index++) {
             StoreTriangle(
@@ -2616,18 +2667,18 @@ public:
 		GenerateWorldTransform( );
 
 		hr = CVBIBManager::Get()->SetVertexAndIndexStreams( phVB, phIB );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 		hr = CD3DDevice9::Get()->SetFVF( phVB->dwBufferFormat );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 		hr = CD3DDevice9::Get()->SetTransform( D3DTS_WORLD, &m_matWorldD3D );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 												
 		hr = CD3DDevice9::Get()->DrawIndexedPrimitive(
 				primType, 0, 0,
 				phVB->dwNumElements,
 				phIB->dwFirstElementOffset / 2,
 				phIB->dwNumElements / 3 );
-		_ASSERT( hr == S_OK );
+        ZAssert( hr == S_OK );
 	}
 
     //////////////////////////////////////////////////////////////////////////////
@@ -2643,18 +2694,14 @@ public:
 
 		// Now we update the light vectors and settings.
 		UpdateLighting( );
-
-		// Get the current world transform from the device state.
-		GenerateWorldTransform( );
+        CD3DDevice9::Get()->SetRenderState(D3DRS_LIGHTING, false);
 
 		hr = CVBIBManager::Get()->SetVertexStream( phVB );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 		hr = CD3DDevice9::Get()->SetFVF( phVB->dwBufferFormat );
-		_ASSERT( hr == D3D_OK );
-		hr = CD3DDevice9::Get()->SetTransform( D3DTS_WORLD, &m_matWorldD3D );
-		_ASSERT( hr == D3D_OK );			
+        ZAssert( hr == D3D_OK );
 		hr = CD3DDevice9::Get()->DrawPrimitive( primType, phVB->dwFirstElementOffset, dwNumPrims );
-		_ASSERT( hr == S_OK );
+        ZAssert( hr == S_OK );
 	}
 
 

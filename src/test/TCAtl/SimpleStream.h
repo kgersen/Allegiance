@@ -66,7 +66,7 @@ public:
 
     // Compute the number of bytes that can be read
     ULONG nMax = m_pbEnd - m_pbPosition;
-    nMax = min(nMax, cb);
+    nMax = std::min(nMax, cb);
 
     // Copy the maximum number of bytes to the specified buffer
     assert(!IsBadReadPtr(m_pbPosition, nMax));
@@ -92,7 +92,7 @@ public:
 
     // Compute the number of bytes that can be written
     ULONG nMax = m_pbEnd - m_pbPosition;
-    nMax = min(nMax, cb);
+    nMax = std::min(nMax, cb);
 
     // Copy the maximum number of bytes from the specified buffer
     assert(!IsBadWritePtr(m_pbPosition, nMax));
@@ -196,7 +196,7 @@ public:
 
     // Set the new size of the stream
     m_pbEnd = m_pbBegin + libNewSize.LowPart;
-    m_pbPosition = min(m_pbPosition, m_pbEnd);
+    m_pbPosition = std::min(m_pbPosition, m_pbEnd);
 
     // Indicate success
     return S_OK;
@@ -220,7 +220,7 @@ public:
 
     // Compute the number of bytes that can be copied
     ULONG nMax = m_pbEnd - m_pbPosition;
-    nMax = min(nMax, cb.LowPart);
+    nMax = std::min(nMax, cb.LowPart);
 
     // Copy from the current seek pointer, the maximum number of bytes
     ULONG cbWritten;

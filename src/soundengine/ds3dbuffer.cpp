@@ -2,8 +2,9 @@
 // ds3dbuffer.cpp: low-level classes representing actual DirectSound3D buffers
 //
 
-#include "pch.h"
 #include "soundbase.h"
+
+#include <algorithm>
 
 #include "ds3dutil.h"
 #include "ds3dbuffer.h"
@@ -81,7 +82,9 @@ HRESULT DS3DSoundBuffer::CreateBuffer8(IDirectSound8* pDirectSound, ISoundPCMDat
         switch (quality)
         {
         case ISoundEngine::minQuality:
+#ifndef __GNUC__
             dsbufferdesc.guid3DAlgorithm = DS3DALG_NO_VIRTUALIZATION;
+#endif
             break;
 
         case ISoundEngine::midQuality:
@@ -89,7 +92,9 @@ HRESULT DS3DSoundBuffer::CreateBuffer8(IDirectSound8* pDirectSound, ISoundPCMDat
             break;
 
         case ISoundEngine::maxQuality:
+#ifndef __GNUC__
             dsbufferdesc.guid3DAlgorithm = DS3DALG_HRTF_LIGHT;
+#endif
             break;
         };
     }
@@ -102,10 +107,10 @@ HRESULT DS3DSoundBuffer::CreateBuffer8(IDirectSound8* pDirectSound, ISoundPCMDat
 	// mdvalley: To use the dx8 buffers, you must create a dx4 buffer,
     // then query it up to DX8. Or something like that.
 
-    LPDIRECTSOUNDBUFFER mdDsb = NULL;
+    LPDIRECTSOUNDBUFFER mdDsb = nullptr;
     // create the new buffer
 
-	hr = pDirectSound->CreateSoundBuffer(&dsbufferdesc, &mdDsb, NULL);
+    hr = pDirectSound->CreateSoundBuffer(&dsbufferdesc, &mdDsb, nullptr);
 	if (ZFailed(hr)) return hr;
 
 	// and up to DX8.
@@ -114,7 +119,7 @@ HRESULT DS3DSoundBuffer::CreateBuffer8(IDirectSound8* pDirectSound, ISoundPCMDat
 	mdDsb->Release();
 	if (ZFailed(hr)) return hr;
 
-//	hr = pDirectSound->CreateSoundBuffer(&dsbufferdesc, &m_pdirectsoundbuffer, NULL);
+//	hr = pDirectSound->CreateSoundBuffer(&dsbufferdesc, &m_pdirectsoundbuffer, nullptr);
 //	if (FAILED(hr)) return hr;
 
 	// get a handle to the 3D buffer, if this is 3D
@@ -129,9 +134,9 @@ HRESULT DS3DSoundBuffer::CreateBuffer8(IDirectSound8* pDirectSound, ISoundPCMDat
 	DWORD writeBytes;
 
 	// Fill the buffer with silence
-	m_pdirectsoundbuffer8->Lock(0, 0, &writePtr, &writeBytes, NULL, NULL, DSBLOCK_ENTIREBUFFER);
+    m_pdirectsoundbuffer8->Lock(0, 0, &writePtr, &writeBytes, nullptr, nullptr, DSBLOCK_ENTIREBUFFER);
 	memset(writePtr, nFillValue, writeBytes);		// Seeing as we just created the buffer, the writePtr is at the beginning.
-	m_pdirectsoundbuffer8->Unlock(writePtr, writeBytes, NULL, NULL);
+    m_pdirectsoundbuffer8->Unlock(writePtr, writeBytes, nullptr, 0);
 
     return S_OK;
 };
@@ -192,7 +197,9 @@ HRESULT DS3DSoundBuffer::CreateBuffer(IDirectSound* pDirectSound, ISoundPCMData*
         switch (quality)
         {
         case ISoundEngine::minQuality:
+#ifndef __GNUC__
             dsbufferdesc.guid3DAlgorithm = DS3DALG_NO_VIRTUALIZATION;
+#endif
             break;
 
         case ISoundEngine::midQuality:
@@ -200,7 +207,9 @@ HRESULT DS3DSoundBuffer::CreateBuffer(IDirectSound* pDirectSound, ISoundPCMData*
             break;
 
         case ISoundEngine::maxQuality:
+#ifndef __GNUC__
             dsbufferdesc.guid3DAlgorithm = DS3DALG_HRTF_LIGHT;
+#endif
             break;
         };
     }
@@ -210,7 +219,7 @@ HRESULT DS3DSoundBuffer::CreateBuffer(IDirectSound* pDirectSound, ISoundPCMData*
     }
 #endif
 
-	hr = pDirectSound->CreateSoundBuffer(&dsbufferdesc, &m_pdirectsoundbuffer, NULL);
+    hr = pDirectSound->CreateSoundBuffer(&dsbufferdesc, &m_pdirectsoundbuffer, nullptr);
 	if (FAILED(hr)) return hr;
 
 	// get a handle to the 3D buffer, if this is 3D
@@ -249,9 +258,9 @@ HRESULT DS3DSoundBuffer::DuplicateBuffer8(IDirectSound8* pDirectSound, DS3DSound
     // duplicate the buffer
 
     // mdvalley: temp 'n' change. See last function.
-	LPDIRECTSOUNDBUFFER mdDsb = NULL;
+    LPDIRECTSOUNDBUFFER mdDsb = nullptr;
 
-	hr = pDirectSound->DuplicateSoundBuffer(pBuffer->m_pdirectsoundbuffer8, &mdDsb);
+    hr = pDirectSound->DuplicateSoundBuffer((IDirectSoundBuffer*)(IDirectSoundBuffer8*)pBuffer->m_pdirectsoundbuffer8, &mdDsb);
 	if (ZFailed(hr)) return hr;
 
 	hr = mdDsb->QueryInterface(IID_IDirectSoundBuffer8, (LPVOID*) &m_pdirectsoundbuffer8);
@@ -269,7 +278,7 @@ HRESULT DS3DSoundBuffer::DuplicateBuffer8(IDirectSound8* pDirectSound, DS3DSound
     if (ZFailed(hr)) return hr;
 
     // if this is 3D
-    if (pBuffer->m_pdirectsound3Dbuffer != NULL)
+    if (pBuffer->m_pdirectsound3Dbuffer != nullptr)
     {
         DS3DBUFFER ds3dbuf;
 
@@ -332,7 +341,7 @@ HRESULT DS3DSoundBuffer::DuplicateBuffer(IDirectSound* pDirectSound, DS3DSoundBu
     if (ZFailed(hr)) return hr;
 
     // if this is 3D
-    if (pBuffer->m_pdirectsound3Dbuffer != NULL)
+    if (pBuffer->m_pdirectsound3Dbuffer != nullptr)
     {
         DS3DBUFFER ds3dbuf;
 
@@ -428,17 +437,17 @@ DS3DSoundBuffer::DS3DSoundBuffer() :
     m_fGain(0),
     m_fPitch(1.0f),
     m_bListenerRelative(false),
-	m_pdirectsoundbuffer8(NULL),
-	m_pdirectsoundbuffer(NULL)
+    m_pdirectsoundbuffer8(nullptr),
+    m_pdirectsoundbuffer(nullptr)
 {
 }
 
 DS3DSoundBuffer::~DS3DSoundBuffer()
 {
     // make sure these are released before the DirectSound object.
-    m_pdirectsoundbuffer = NULL;
-	m_pdirectsoundbuffer8 = NULL;
-    m_pdirectsound3Dbuffer = NULL;
+    m_pdirectsoundbuffer = nullptr;
+    m_pdirectsoundbuffer8 = nullptr;
+    m_pdirectsound3Dbuffer = nullptr;
 }
 
 
@@ -499,7 +508,7 @@ HRESULT DS3DSoundBuffer::UpdateState3D(
     )
 {
     // if this is not a 3D-capable sound, we should not be called
-    if (m_pdirectsound3Dbuffer == NULL)
+    if (m_pdirectsound3Dbuffer == nullptr)
     {
         ZAssert(FALSE);
         return E_NOTIMPL;
@@ -848,9 +857,9 @@ HRESULT DS3DStaticSoundBuffer::GetPosition(DWORD& dwPosition)
 {
     // for static sounds, the buffer position is the source position
 	if(m_pdirectsoundbuffer8)
-		return m_pdirectsoundbuffer8->GetCurrentPosition(&dwPosition, NULL);
+        return m_pdirectsoundbuffer8->GetCurrentPosition(&dwPosition, nullptr);
 	else
-		return m_pdirectsoundbuffer->GetCurrentPosition(&dwPosition, NULL);
+        return m_pdirectsoundbuffer->GetCurrentPosition(&dwPosition, nullptr);
 };
 
 
@@ -928,9 +937,9 @@ HRESULT DS3DStreamingSoundBuffer::RestoreBuffer()
     // get the last known good playback position
     DWORD dwLastPlayedPosition;
 	if(m_pdirectsoundbuffer8)
-		hr = m_pdirectsoundbuffer8->GetCurrentPosition(&dwLastPlayedPosition, NULL);
+        hr = m_pdirectsoundbuffer8->GetCurrentPosition(&dwLastPlayedPosition, nullptr);
 	else
-		hr = m_pdirectsoundbuffer->GetCurrentPosition(&dwLastPlayedPosition, NULL);
+        hr = m_pdirectsoundbuffer->GetCurrentPosition(&dwLastPlayedPosition, nullptr);
     if (ZFailed(hr)) return hr;
 
     // reset the buffer write pointer to the same point
@@ -1089,7 +1098,7 @@ HRESULT DS3DStreamingSoundBuffer::StreamData(void *pvBuffer, DWORD dwLength)
     // for non-looping sounds, we reach the end of the source.
     do {
         // copy data up until the end of the sound.
-        DWORD dwCopyLength = min(dwLengthRemaining, dwSourceSize - m_dwSourceOffset);
+        DWORD dwCopyLength = std::min(dwLengthRemaining, dwSourceSize - m_dwSourceOffset);
 
         // copy the source
         if (dwCopyLength > 0)
@@ -1285,9 +1294,9 @@ HRESULT DS3DStreamingSoundBuffer::GetPosition(DWORD& dwPosition)
     // get the buffer position is the source position
 	HRESULT hr;
 	if(m_pdirectsoundbuffer8)
-		hr = m_pdirectsoundbuffer8->GetCurrentPosition(&dwBufferPosition, NULL);
+        hr = m_pdirectsoundbuffer8->GetCurrentPosition(&dwBufferPosition, nullptr);
 	else
-		hr = m_pdirectsoundbuffer->GetCurrentPosition(&dwBufferPosition, NULL);
+        hr = m_pdirectsoundbuffer->GetCurrentPosition(&dwBufferPosition, nullptr);
     if (ZFailed(hr)) return hr;
 
     // update the read pointer flags, as appropriate
@@ -1477,7 +1486,7 @@ HRESULT DS3DASRSoundBuffer::StreamData(void *pvBuffer, DWORD dwLength)
     if (m_dwSourceOffset < m_dwLoopOffset)
     {
         // copy data up until the end of the attack or end of the write block.
-        dwCopyLength = min(dwLengthRemaining, m_dwLoopOffset - m_dwSourceOffset);
+        dwCopyLength = std::min(dwLengthRemaining, m_dwLoopOffset - m_dwSourceOffset);
 
         // copy the source
         if (dwCopyLength > 0)
@@ -1509,7 +1518,7 @@ HRESULT DS3DASRSoundBuffer::StreamData(void *pvBuffer, DWORD dwLength)
             && (m_dwSourceOffset < m_dwLoopOffset + m_dwLoopLength))))
     {
         // copy data up until the end of a sustain loop or end of the write block.
-        dwCopyLength = min(dwLengthRemaining, 
+        dwCopyLength = std::min(dwLengthRemaining,
             m_dwLoopOffset + m_dwLoopLength - m_dwSourceOffset);
 
         // copy the source
@@ -1553,7 +1562,7 @@ HRESULT DS3DASRSoundBuffer::StreamData(void *pvBuffer, DWORD dwLength)
             m_dwSourceOffset = m_dwLoopOffset + m_dwLoopLength;
         
         // copy data up until the end or end of the write block.
-        dwCopyLength = min(dwLengthRemaining, dwSourceSize - m_dwSourceOffset);
+        dwCopyLength = std::min(dwLengthRemaining, dwSourceSize - m_dwSourceOffset);
 
         // copy the source
         if (dwCopyLength > 0)
@@ -1682,9 +1691,9 @@ HRESULT DS3DASRSoundBuffer::Stop(bool bForceNow)
         // get the first possible write position
         DWORD dwWritePosition;
 		if(m_pdirectsoundbuffer8)
-			hr = m_pdirectsoundbuffer8->GetCurrentPosition(NULL, &dwWritePosition);
+            hr = m_pdirectsoundbuffer8->GetCurrentPosition(nullptr, &dwWritePosition);
 		else
-			hr = m_pdirectsoundbuffer->GetCurrentPosition(NULL, &dwWritePosition);
+            hr = m_pdirectsoundbuffer->GetCurrentPosition(nullptr, &dwWritePosition);
         if (ZFailed(hr)) return hr;
 
         // reset the source offset to the new write position (taking into 

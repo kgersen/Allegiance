@@ -1,4 +1,11 @@
-#include "pch.h"
+#include "bspgeo.h"
+
+#include <matrix.h>
+#include <tref.h>
+#include <vertex.h>
+
+#include "context.h"
+#include "model.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -15,7 +22,7 @@ class BSPGeo : public Geo {
 
     class Node : public IObject {
     public:
-        virtual void Render(MeshIndex*& pindex, HVector& vec) = 0;
+        virtual void Render(MeshIndex*& pindex, const HVector& vec) = 0;
     };
 
     //////////////////////////////////////////////////////////////////////////////
@@ -161,7 +168,7 @@ public:
         int count = m_vvertex.GetCount();
         for(int index = 0; index < count; index++) {
             Vector vec = mat.Transform(m_vvertex[index].GetPosition());
-            radius = max(radius, vec.Length());
+            radius = std::max(radius, vec.Length());
         }
 
         return radius;

@@ -1,4 +1,12 @@
-#include "pch.h"
+#include "engine.h"
+
+#include <window.h>
+#include <zassert.h>
+
+#include "D3DDevice9.h"
+#include "EngineSettings.h"
+#include "enginep.h"
+#include "value.h"
 
 HWND g_hwndMainWindow;
 
@@ -35,11 +43,7 @@ private:
 
     bool                      m_bValid;
     bool                      m_bValidDevice;
-    bool                      m_bFullscreen;
 	bool					  m_bChanged; //imago 7/7/09
-    bool                      m_bAllowSecondary;
-    bool                      m_bAllow3DAcceleration;
-    bool                      m_b3DAccelerationImportant;
 	bool					  m_bMipMapGenerationEnabled;
     DWORD                     m_dwBPP; // KGJV 32B - user choosen bpp or desktop bbp
 
@@ -51,8 +55,10 @@ private:
     HWND                      m_hwndClip;
     WinPoint                  m_pointPrimary;
     HWND                      m_hwndFocus;
-    WinPoint                  m_pointFullscreen;
-    WinPoint                  m_pointFullscreenCurrent;
+
+	TRef<ModifiableWinPointValue>	m_sizeResolution;
+    TRef<ModifiableBoolean>		m_bFullscreen;
+	WinPoint					m_pointFullscreenCurrent;
 //    TRef<PrivateSurface>      m_psurfaceBack;
     float                     m_gamma;
 
@@ -73,12 +79,12 @@ private:
 
 public:
     EngineImpl(bool bAllow3DAcceleration, bool bAllowSecondary, DWORD dwBPP, HWND hWindow) :
-        m_pointFullscreen(800, 600),
+        m_sizeResolution(new ModifiableWinPointValue(WinPoint(
+			int(CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Width), 
+			int(CD3DDevice9::Get()->GetDeviceSetupParams()->sFullScreenMode.mode.Height)
+		))),
         m_pointFullscreenCurrent(0, 0),
-        m_bFullscreen(false),
-        m_bAllow3DAcceleration(bAllow3DAcceleration),
-        m_bAllowSecondary(bAllowSecondary),
-        m_b3DAccelerationImportant(false),
+        m_bFullscreen(new ModifiableBoolean(false)),
         m_bValid(false),
         m_bValidDevice(false),
         m_hwndFocus(NULL),
@@ -186,6 +192,10 @@ public:
 				m_modes.PushEnd((Vector(width,height,rate))); //WSXGA+ (widescreen)
 			if (width == 1920 && height == 1080)
 				m_modes.PushEnd((Vector(width,height,rate))); //WUXGA (1080p widescreen mode)
+            if (width == 1920 && height == 1200)
+                m_modes.PushEnd((Vector(width, height, rate)));
+            if (width == 2560 && height == 1440)
+                m_modes.PushEnd((Vector(width, height, rate)));
 		}
 #pragma warning(default:4244)
     }
@@ -253,7 +263,7 @@ private:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    void Terminate( bool bEngineAppTerminate /*=false*/)
+    void TerminateEngine( bool bEngineAppTerminate /*=false*/)
     {
         //ClearDependants();
 
@@ -295,7 +305,7 @@ private:
 		//OutputDebugString("\n\nCalling SetFocusWindow() ONLY SUPPOSED TO HAPPEN ONCE!\n");
 
         m_hwndFocus			= pwindow->GetHWND();
-        m_bFullscreen		= bStartFullscreen;
+        m_bFullscreen->SetValue(bStartFullscreen);
 		g_hwndMainWindow	= m_hwndFocus;
     }
 
@@ -440,7 +450,7 @@ private:
 
 		// Reset the device for windowed mode.
 
-		CD3DDevice9::Get()->ResetDevice( true, 800, 600 );
+		CD3DDevice9::Get()->ResetDevice( true);
 
         if (g_bWindowLog) {
             ZDebugOutput("InitializeWindowed exiting\n");
@@ -741,6 +751,7 @@ private:
 				ZDebugOutput("Invalid resolution\n");
 			}
 			//auto retry next mode untill end of list NYI
+            return false;
 		}
 
         if (g_bWindowLog) {
@@ -761,40 +772,8 @@ private:
             ZDebugOutput("InitalizeFullscreen()\n");
         }
 
-        //
-        // Try the secondary device first
-        //
-
-//        DDDevice* pdddevice;
-
-/*        if (
-               m_bAllowSecondary 
-            && m_bAllow3DAcceleration
-            && m_b3DAccelerationImportant
-            && m_pdddeviceSecondary != NULL
-            && m_pdddeviceSecondary->GetAllow3DAcceleration()
-        ) {
-            pdddevice = m_pdddeviceSecondary;
-        } else {
-            pdddevice = m_pdddevicePrimary;
-        }*/
-
-        //
-        // Don't do anything if we don't need to change the device
-        // or resolution
-        //
-
-/*        if (  
-               m_bValidDevice
-            && m_pdddevice              == pdddevice 
-            && m_pointFullscreenCurrent == m_pointFullscreen
-        ) {
-            ZDebugOutput("Device and resolution match\n");
-            return true;
-        }*/
-
 		if( ( CD3DDevice9::Get()->IsDeviceValid() == true ) && 
-			( m_pointFullscreenCurrent == m_pointFullscreen ) )
+			( m_pointFullscreenCurrent == m_sizeResolution->GetValue() ) )
 		{
 			return true;
 		}
@@ -812,8 +791,8 @@ private:
 
             bool bError;
 //            if (SwitchToFullscreenDevice(pdddevice, m_pointFullscreen, bError)) {  imago 7/6/09
-            if (SwitchToFullscreenDevice(g_DX9Settings.m_refreshrate, m_pointFullscreen, bError)) {
-                m_pointFullscreenCurrent = m_pointFullscreen;
+            if (SwitchToFullscreenDevice(g_DX9Settings.m_refreshrate, m_sizeResolution->GetValue(), bError)) {
+                m_pointFullscreenCurrent = m_sizeResolution->GetValue();
                 return true;
             }
 
@@ -828,17 +807,16 @@ private:
             //
             // Didn't work goto to the next lower resolution
             //
+            Vector lower_resolution = PreviousMode(m_sizeResolution->GetValue());
 
-/*            WinPoint pointNew = pdddevice->PreviousMode(m_pointFullscreen);
-
-            if (pointNew == m_pointFullscreen) {
+            if (lower_resolution.X() == m_sizeResolution->GetValue().X() && lower_resolution.Y() == m_sizeResolution->GetValue().Y()) {
                 if (g_bWindowLog) {
                     ZDebugOutput("No more valid resolutions\n");
                 }
                 return false;
             }
 
-            m_pointFullscreen = pointNew;*/
+            SetFullscreenSize(lower_resolution);
         }
     }
 
@@ -861,24 +839,19 @@ private:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    void SetAllowSecondary(bool bAllowSecondary)
-    {
-        if (m_bAllowSecondary != bAllowSecondary) {
-            m_bAllowSecondary = bAllowSecondary;
-            m_bValid       = false;
-            m_bValidDevice = false;
-        }
-    }
+	void ForceReset()
+	{
+		//I do not know why this code is needed, I expect it to do some kind of reset. Since it was repeated a bunch of times I have collected calls to this code here.
+		if (CD3DDevice9::Get()->IsInScene())
+			CD3DDevice9::Get()->EndScene();
+		CD3DDevice9::Get()->ClearScreen();
+		CD3DDevice9::Get()->RenderFinished();
+		CD3DDevice9::Get()->ClearScreen();
+		CD3DDevice9::Get()->RenderFinished();
+		WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
+		CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(), point.X(), point.Y(), g_DX9Settings.m_refreshrate);
+	}
 
-    void SetAllow3DAcceleration(bool bAllow3DAcceleration)
-    {
-        if (m_bAllow3DAcceleration != bAllow3DAcceleration) {
-            m_bAllow3DAcceleration = bAllow3DAcceleration;
-//            m_pdddevicePrimary->SetAllow3DAcceleration(m_bAllow3DAcceleration);
-            m_bValid       = false;
-            m_bValidDevice = false;
-        }
-    }
 // yp Your_Persona August 2 2006 : MaxTextureSize Patch  //Imago 7/18/09 (DX9)
 	void SetMaxTextureSize(int iMaxTextureSize)
 	{
@@ -888,14 +861,7 @@ private:
 				iMaxTextureSize = 0;
 			g_DX9Settings.m_iMaxTextureSize = iMaxTextureSize;
 
-			if (CD3DDevice9::Get()->IsInScene())
-				CD3DDevice9::Get()->EndScene();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
-			CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(),point.X(),point.Y(),g_DX9Settings.m_refreshrate);
+			ForceReset();
 		}
 	}
 
@@ -905,14 +871,7 @@ private:
 		if (g_DX9Settings.m_bVSync != bVsync) {
 			g_DX9Settings.m_bVSync = bVsync;
 
-			if (CD3DDevice9::Get()->IsInScene())
-				CD3DDevice9::Get()->EndScene();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
-			CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(),point.X(),point.Y(),g_DX9Settings.m_refreshrate);
+			ForceReset();
 		}
 	}
 
@@ -996,33 +955,7 @@ private:
 			}
 			pD3D9->Release();
 
-			//this is all very magical....
-			if (CD3DDevice9::Get()->IsInScene())
-				CD3DDevice9::Get()->EndScene();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
-			CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(),point.X(),point.Y(),g_DX9Settings.m_refreshrate);
-		}
-	}
-
-	void SetUsePack(bool bUsePack)
-	{
-		if (g_DX9Settings.mbUseTexturePackFiles != bUsePack)
-		{
-			g_DX9Settings.mbUseTexturePackFiles = bUsePack;
-
-			//this is all very magical....
-			if (CD3DDevice9::Get()->IsInScene())
-				CD3DDevice9::Get()->EndScene();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
-			CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(),point.X(),point.Y(),g_DX9Settings.m_refreshrate);
+			ForceReset();
 		}
 	}
 
@@ -1032,15 +965,8 @@ private:
 		{
 			g_DX9Settings.m_bAutoGenMipmaps = bUseAutoGenMipMaps;
 			//CD3DDevice9::Get()->GetDeviceSetupParams()->bAutoGenMipmap = bUseAutoGenMipMaps;
-			//this is all very magical....
-			if (CD3DDevice9::Get()->IsInScene())
-				CD3DDevice9::Get()->EndScene();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			CD3DDevice9::Get()->ClearScreen();
-			CD3DDevice9::Get()->RenderFinished();
-			WinPoint point = CD3DDevice9::Get()->GetCurrentResolution();
-			CD3DDevice9::Get()->ResetDevice(CD3DDevice9::Get()->IsWindowed(),point.X(),point.Y(),g_DX9Settings.m_refreshrate);
+
+			ForceReset();
 		}
 	}
 	//
@@ -1052,18 +978,10 @@ private:
 		CVRAMManager::Get()->SetEnableMipMapGeneration( bEnable );
 	}
 
-    void Set3DAccelerationImportant(bool b3DAccelerationImportant)
-    {
-        if (m_b3DAccelerationImportant != b3DAccelerationImportant) {
-            m_b3DAccelerationImportant = b3DAccelerationImportant;
-            m_bValid = false;
-        }
-    }
-
     void SetFullscreen(bool bFullscreen)
     {
-        if (m_bFullscreen != bFullscreen) {
-            m_bFullscreen = bFullscreen;
+        if (m_bFullscreen->GetValue() != bFullscreen) {
+            m_bFullscreen->SetValue(bFullscreen);
             m_bValid       = false;
             m_bValidDevice = false;
         }
@@ -1075,8 +993,9 @@ private:
             ZDebugOutput("Engine::SetFullscreenSize(" + ZString(point.X()) + "x" + ZString(point.Y()) + " @ " + ZString(point.Z()) +")\n");
         }
 
-        if (m_pointFullscreen != WinPoint(int(point.X()),int(point.Y()))) {
-            m_pointFullscreen = WinPoint(int(point.X()), int(point.Y()));
+		WinPoint next_resolution(int(point.X()), int(point.Y()));
+        if (m_sizeResolution->GetValue() != next_resolution) {
+			m_sizeResolution->SetValue(next_resolution);
             m_bValid          = false;
         }
 		if (g_DX9Settings.m_refreshrate != int(point.Z())) {
@@ -1089,11 +1008,9 @@ private:
         }
     }
 
-	//imago 7/7/09
-	void SetFullscreenChanged(bool bChanged) {
-		m_bChanged = bChanged;
-	}
-
+    void SetFullscreenSize(const WinPoint& point) {
+        SetFullscreenSize(Vector(point.X(), point.Y(), g_DX9Settings.m_refreshrate));
+    }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Re-used full screen mode change functions
@@ -1138,8 +1055,7 @@ private:
 
         for(int index = 0; index < count; index++) {
             if (
-                   m_modes[index].X() >= size.X() 
-                //&& m_modes[index].Y() >= size.Y() // Imago - look at X only due to widescreens 7/2/09
+                m_modes[index].X() == size.X() && m_modes[index].Y() == size.Y()
             ) {
                 m_modes.SetCount(index);
                 return;
@@ -1152,9 +1068,9 @@ private:
 		//Imago restored 6/29/09
    		Vector whr; //changed w,h to w,h,r  (width, height, refreshrate)
         if (bLarger) {
-			whr = NextMode(m_pointFullscreen);
+			whr = NextMode(m_sizeResolution->GetValue());
         } else {
-			whr = PreviousMode(m_pointFullscreen);
+			whr = PreviousMode(m_sizeResolution->GetValue());
 		}          
 		m_bChanged = true; //7/7/09
 		SetFullscreenSize(whr);
@@ -1166,49 +1082,29 @@ private:
     //
     //////////////////////////////////////////////////////////////////////////////
 
-    bool GetAllowSecondary()  //REVIEW IMAGO REMOVE
-    {
-        return m_bAllowSecondary;
-    }
-
     bool GetFullScreenChanged() //Imago added 7/7/09
     {
         return m_bChanged;
     }
 
-    bool GetAllow3DAcceleration() //REVIEW IMAGO (RESTORE?)
-    {
-        return m_bAllow3DAcceleration;
-    }
+	const TRef<ModifiableWinPointValue> GetResolutionSizeModifiable()
+	{
+		return m_sizeResolution;
+	}
 
-    bool Get3DAccelerationImportant()  //REVIEW IMAGO REMOVE
+    const WinPoint GetFullscreenSize()
     {
-        return m_b3DAccelerationImportant;
-    }
-
-    const WinPoint& GetFullscreenSize()
-    {
-        return m_pointFullscreen;
+        return m_sizeResolution->GetValue();
     }
 
     bool IsFullscreen()
     {
-        return m_bFullscreen;
-    }
-
-    bool PrimaryHas3DAcceleration()  //REVIEW IMAGO (RESTORE?)
-    {
-        return true;
+        return m_bFullscreen->GetValue() == true;
     }
 
     ZString GetDeviceName()
     {
 		return CD3DDevice9::Get()->GetDeviceSetupString();
-    }
-
-    bool GetUsing3DAcceleration()  //REVIEW IMAGO (RESTORE?)
-    {
-		return true;
     }
 
     ZString GetPixelFormatName()
@@ -1226,7 +1122,7 @@ private:
     {
         if (!m_bValid) 
 		{
-            if (m_bFullscreen) 
+            if (m_bFullscreen->GetValue() == true)
 			{
                 m_bValid = InitializeFullscreen(bChanges);
 			} 
@@ -1357,7 +1253,7 @@ private:
 
     void BltToWindow(Window* pwindow, const WinPoint& point, Surface* psurface, const WinRect& rectSource)
     {
-		_ASSERT( false );
+        ZAssert( false );
 /*        if (m_pdddeviceFullscreen == NULL) {
             if (m_hwndClip != pwindow->GetHWND()) {
                 m_hwndClip = pwindow->GetHWND();
@@ -1500,7 +1396,7 @@ private:
 										int             pitch,
 										BYTE*           pbits ) 
 	{
-		_ASSERT( false );
+        ZAssert( false );
         if (stype.Test(SurfaceTypeVideo())) 
 		{
             return CreateDDSurface( m_pdddevice, stype, m_ppf, NULL, size );
@@ -1660,36 +1556,15 @@ private:
         SurfaceType     stype, 
         SurfaceSite*    psite
     ) {
-//        PrivatePalette* pprivatePalette; CastTo(pprivatePalette, psurface->GetPalette());
-
-		// Construct the pixel format, including any alpha due to color keying.
+        // always a straight up format copy. Everything supported by the source should be supported by the target
 		PixelFormat * pixelFormat;
+        pixelFormat = psurface->GetPixelFormat();
 
-		if( psurface->HasColorKey() == false )
-		{
-			// No colour key, just a straight copy of the pixel format.
-			pixelFormat = psurface->GetPixelFormat();
-		}
-		else
-		{
-			// For now we just handle two explicit cases. 16 bit with 1 bit alpha or full 32 bit.
-			pixelFormat = psurface->GetPixelFormat();
-			if( ( pixelFormat->PixelBytes() == 2 ) &&
-				( CD3DDevice9::Get()->GetDevFlags()->bSupportsA1R5G6B6Format == true ) )
-			{
-				pixelFormat = new PixelFormat( D3DFMT_A1R5G5B5 );
-			}
-			else
-			{
-				pixelFormat = new PixelFormat( D3DFMT_A8R8G8B8 );
-			}
-		}
         return
             AddSurface(
                 CreatePrivateSurface(
                     this,
                     pixelFormat,
-//                    pprivatePalette,
                     size,
                     stype,
                     psite
@@ -1706,7 +1581,7 @@ private:
 
     TRef<Surface> CreateSurface(HBITMAP hbitmap)
     {
-		_ASSERT( false );
+        ZAssert( false );
 
 		return AddSurface(NULL, false);
 /*
@@ -1733,7 +1608,7 @@ private:
         D3D9PixelFormat ddpf;
         TRef<IDirectDrawPaletteX> pddpal;
 
-		_ASSERT( false );
+        ZAssert( false );
 //        ZVerify(FillDDPF(ddpf, m_pdddevicePrimary->GetDD(), hdcBitmap, hbitmap, &pddpal));
 
         TRef<PrivatePalette> ppalette;
@@ -1829,9 +1704,9 @@ private:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-TRef<Engine> CreateEngine(bool bAllow3DAcceleration, bool bAllowSecondary, DWORD dwBPP, HWND hWindow )
+TRef<Engine> CreateEngine(bool bAllow3DAcceleration, bool bAllowSecondary, DWORD dwBPP, HWND hWindow)
 {
-    return new EngineImpl(bAllow3DAcceleration, bAllowSecondary, dwBPP, hWindow ); //Fix memory leak -Imago 8/2/09
+    return new EngineImpl(bAllow3DAcceleration, bAllowSecondary, dwBPP, hWindow); //Fix memory leak -Imago 8/2/09
 }
 
 

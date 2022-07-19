@@ -1,5 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <VcpkgConfiguration Condition="'$(Configuration)' == 'FZDebug'">Debug</VcpkgConfiguration>
+    <VcpkgConfiguration Condition="'$(Configuration)' == 'FZRetail'">Release</VcpkgConfiguration>
+  </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="FZDebug|Win32">
       <Configuration>FZDebug</Configuration>
@@ -13,7 +17,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGUID>{D619B179-7FC4-4DB6-9794-1D3C75717D15}</ProjectGUID>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -31,13 +35,13 @@
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <WholeProgramOptimization>false</WholeProgramOptimization>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -55,28 +59,29 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">..\objs$(PlatformToolset)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs$(PlatformToolset)\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">..\objs$(PlatformToolset)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(IncludePath);$(DXSDK_DIR)\Include;</IncludePath>
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib</LibraryPath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">$(IncludePath);$(DXSDK_DIR)\Include;</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\src\Lib\AllegianceSecurity;..\src\Lib\Steam;..\src\Inc;..\src\_Utility;..\src\ZLib;..\src\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>D3D_DEBUG_INFO;_AFXDLL;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0800;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ExceptionHandling>
-      </ExceptionHandling>
+      <PreprocessorDefinitions>NOMINMAX;D3D_DEBUG_INFO;_AFXDLL;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0800;_DEBUG;DEBUG;__MODULE__#"Engine";EnablePerformanceCounters;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
       <BrowseInformation>
       </BrowseInformation>
       <BrowseInformationFile>
       </BrowseInformationFile>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <LanguageStandard>stdcpp14</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">
@@ -84,16 +89,14 @@
       <Optimization>Disabled</Optimization>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>..\src\Lib\AllegianceSecurity;..\src\Lib\Steam;..\src\Inc;..\src\_Utility;..\src\ZLib;..\src\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>STEAMSECURE;_AFXDLL;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0800;DEBUG;SRVLOG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ExceptionHandling>
-      </ExceptionHandling>
-      <BasicRuntimeChecks>
-      </BasicRuntimeChecks>
+      <PreprocessorDefinitions>NOMINMAX;STEAMSECURE;_AFXDLL;WIN32;_WINDOWS;STRICT;DIRECTINPUT_VERSION=0x0800;DEBUG;SRVLOG;__MODULE__#"Engine";EnablePerformanceCounters;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
       <BrowseInformation>
       </BrowseInformation>
       <BrowseInformationFile>
@@ -106,6 +109,7 @@
       <OmitFramePointers>false</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <ErrorReporting>None</ErrorReporting>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
@@ -117,6 +121,7 @@
     <ClCompile Include="..\src\engine\button.cpp" />
     <ClCompile Include="..\src\engine\camera.cpp" />
     <ClCompile Include="..\src\engine\caption.cpp" />
+    <ClCompile Include="..\src\engine\Configuration.cpp" />
     <ClCompile Include="..\src\engine\context.cpp" />
     <ClCompile Include="..\src\engine\controls.cpp" />
     <ClCompile Include="..\src\engine\D3DDevice9.cpp" />
@@ -124,7 +129,6 @@
     <ClCompile Include="..\src\engine\device3d.cpp" />
     <ClCompile Include="..\src\engine\DeviceModesDX9.cpp" />
     <ClCompile Include="..\src\engine\dinput.cpp" />
-    <ClCompile Include="..\src\engine\DX9PackFile.cpp" />
     <ClCompile Include="..\src\engine\engine.cpp" />
     <ClCompile Include="..\src\engine\engineapp.cpp" />
     <ClCompile Include="..\src\engine\enginewindow.cpp" />
@@ -134,6 +138,7 @@
     <ClCompile Include="..\src\engine\HashTable.cpp" />
     <ClCompile Include="..\src\engine\image.cpp" />
     <ClCompile Include="..\src\engine\ImageTransfer.cpp" />
+    <ClCompile Include="..\src\engine\imagetransform.cpp" />
     <ClCompile Include="..\src\engine\keyframe.cpp" />
     <ClCompile Include="..\src\engine\LogFile.cpp" />
     <ClCompile Include="..\src\engine\material.cpp" />
@@ -144,10 +149,6 @@
     <ClCompile Include="..\src\engine\namespace.cpp" />
     <ClCompile Include="..\src\engine\pane.cpp" />
     <ClCompile Include="..\src\engine\paneimage.cpp" />
-    <ClCompile Include="..\src\engine\pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZDebug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FZRetail|Win32'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="..\src\engine\pixelformat.cpp" />
     <ClCompile Include="..\src\engine\popup.cpp" />
     <ClCompile Include="..\src\engine\RasterD3D9.cpp" />
@@ -156,6 +157,7 @@
     <ClCompile Include="..\src\engine\transform.cpp" />
     <ClCompile Include="..\src\engine\transform2.cpp" />
     <ClCompile Include="..\src\engine\value.cpp" />
+    <ClCompile Include="..\src\engine\valuetransform.cpp" />
     <ClCompile Include="..\src\engine\VBIBManager.cpp" />
     <ClCompile Include="..\src\engine\VertexGenerator.cpp" />
     <ClCompile Include="..\src\engine\VideoSettingsDX9.cpp" />
@@ -169,12 +171,12 @@
     <ClInclude Include="..\src\engine\button.h" />
     <ClInclude Include="..\src\engine\camera.h" />
     <ClInclude Include="..\src\engine\caption.h" />
+    <ClInclude Include="..\src\engine\Configuration.h" />
     <ClInclude Include="..\src\engine\context.h" />
     <ClInclude Include="..\src\engine\controls.h" />
     <ClInclude Include="..\src\engine\D3DDevice9.h" />
     <ClInclude Include="..\src\engine\ddstruct.h" />
     <ClInclude Include="..\src\engine\DeviceModesDX9.h" />
-    <ClInclude Include="..\src\engine\DX9PackFile.h" />
     <ClInclude Include="..\src\engine\engine.h" />
     <ClInclude Include="..\src\engine\engineapp.h" />
     <ClInclude Include="..\src\engine\enginep.h" />
@@ -186,6 +188,7 @@
     <ClInclude Include="..\src\engine\HashTable.h" />
     <ClInclude Include="..\src\engine\image.h" />
     <ClInclude Include="..\src\engine\ImageTransfer.h" />
+    <ClInclude Include="..\src\engine\imagetransform.h" />
     <ClInclude Include="..\src\engine\inputengine.h" />
     <ClInclude Include="..\src\engine\keyframe.h" />
     <ClInclude Include="..\src\engine\LogFile.h" />
@@ -196,7 +199,6 @@
     <ClInclude Include="..\src\engine\namespace.h" />
     <ClInclude Include="..\src\engine\pane.h" />
     <ClInclude Include="..\src\engine\paneimage.h" />
-    <ClInclude Include="..\src\engine\pch.h" />
     <ClInclude Include="..\src\engine\pixelformat.h" />
     <ClInclude Include="..\src\engine\popup.h" />
     <ClInclude Include="..\src\engine\surface.h" />
@@ -204,6 +206,7 @@
     <ClInclude Include="..\src\engine\transform.h" />
     <ClInclude Include="..\src\engine\UIVertexDefn.h" />
     <ClInclude Include="..\src\engine\value.h" />
+    <ClInclude Include="..\src\engine\valuetransform.h" />
     <ClInclude Include="..\src\engine\VBIBManager.h" />
     <ClInclude Include="..\src\engine\VertexGenerator.h" />
     <ClInclude Include="..\src\engine\VideoSettingsDX9.h" />

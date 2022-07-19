@@ -29,7 +29,7 @@ HRESULT FedSrvLobbySite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
         MissionParams mp;
 		lstrcpy(mp.strGameName,    ZString(FM_VAR_REF(pfmCreateMissionReq, GameName)));// + "'s game");
 		lstrcpy(mp.szIGCStaticFile,ZString(FM_VAR_REF(pfmCreateMissionReq, IGCStaticFile)));
-        mp.bScoresCount = false;// dont set to true till clients can change this!
+        mp.bScoresCount = true; // BT - 9/17 - Scores always count. 
 		mp.iMaxImbalance = 0x7ffe;// added
         assert(!mp.Invalid());
 #endif

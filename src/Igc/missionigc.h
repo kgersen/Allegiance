@@ -15,6 +15,7 @@
 
 #ifndef __MISSIONIGC_H_
 #define __MISSIONIGC_H_
+#include "igc.h"
 
 
 struct  Constants
@@ -614,10 +615,10 @@ class   CmissionIGC : public ImissionIGC
             return m_missionID;
         }
 
-        virtual int                     Export(__int64  maskTypes,
+        virtual int                     Export(int64_t  maskTypes,
                                                char*    pdata) const;
         virtual void                    Import(Time     now,
-                                               __int64  maskTypes,
+                                               int64_t  maskTypes,
                                                char*    pdata,
                                                int      datasize);
 		

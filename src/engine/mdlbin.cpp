@@ -1,6 +1,12 @@
-#include "pch.h"
-
 #define _UNALIGNED
+
+#include "mdl.h"
+
+#include <base.h>
+
+#include "enginep.h"
+#include "model.h"
+#include "namespace.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -310,7 +316,7 @@ public:
         m_pdata = pfile->GetPointer(false, false);
         ReadFile();
         m_pdata = NULL;
-        pfile = NULL;
+        m_pfile = NULL;
     }
 
     //////////////////////////////////////////////////////////////////////////////

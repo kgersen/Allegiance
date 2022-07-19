@@ -1,6 +1,16 @@
 #ifndef _frameimage_H_
 #define _frameimage_H_
 
+#include <tref.h>
+
+#include "pane.h"
+#include "value.h"
+
+class IFunction;
+class Image;
+class Surface;
+class IEventSource;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // RLE codes
@@ -19,15 +29,7 @@ const WORD RLELengthMask = 0x3fff;
 // FrameImage
 //
 //////////////////////////////////////////////////////////////////////////////
-
 TRef<IFunction> CreateFrameImageFactory();
-
-TRef<Image> CreateFrameImage(
-    Number*  pframe,
-    Surface* psurface,
-    int      xframes,
-    int      yframes
-);
 
 //////////////////////////////////////////////////////////////////////////////
 //

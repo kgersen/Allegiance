@@ -1,8 +1,17 @@
+#pragma once
 //
 // ds3dutil.h
 //
 // basic utilility functions used by the DirectSound3D wrappers.
 //
+#include <dsound.h>
+
+#ifndef _M_CEE // BT - WOPR - AllegianceInterop Compatibility
+	#include <mutex>
+#endif
+
+#include <set>
+#include <vector.h>
 
 namespace SoundEngine {
 
@@ -96,7 +105,7 @@ private:
     TaskList m_listTasks;
 
     // a critical section controling access to the list of tasks.
-    CriticalSection m_csTaskList;
+    std::mutex m_csTaskList;
     
     // performs a single pass through the task list
     virtual bool ThreadIteration();

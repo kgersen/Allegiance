@@ -1,6 +1,11 @@
-﻿
-////////////////////////////////////////////////////////////////////////////////////////////////////
-#include "pch.h"
+﻿#include "D3DDevice9.h"
+
+#include <zassert.h>
+
+#include "EngineSettings.h"
+#include "LogFile.h"
+#include "VBIBManager.h"
+#include "VRAMManager.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Class implemented as a singleton (mSingleInstance).
@@ -32,7 +37,7 @@ CD3DDevice9::~CD3DDevice9()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CD3DDevice9::Initialise( CLogFile * pLogFile )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == false );
+    ZAssert( m_sD3DDev9.bInitialised == false );
 
 	// Should only be called once, but on the off chance it isn't, we don't want to destroy
 	// valid interfaces.
@@ -120,8 +125,12 @@ HRESULT CD3DDevice9::CreateD3D9( CLogFile * pLogFile )
 		}
 	}
 	if(hRast != 0) {
-			FARPROC D3D9GetSWInfo = GetProcAddress( hRast, "D3D9GetSWInfo");
-			HRESULT hr = m_sD3DDev9.pD3D9->RegisterSoftwareDevice(D3D9GetSWInfo);
+            FARPROC D3D9GetSWInfo = GetProcAddress( hRast, "D3D9GetSWInfo");
+#ifdef __GNUC__
+            HRESULT hr = m_sD3DDev9.pD3D9->RegisterSoftwareDevice((void*)D3D9GetSWInfo);
+#else
+            HRESULT hr = m_sD3DDev9.pD3D9->RegisterSoftwareDevice(D3D9GetSWInfo);
+#endif
 			if (hr == D3D_OK) {
 				pLogFile->OutputString( "DX registered the SW Rasterizer.\n" );
 			} else {
@@ -131,7 +140,7 @@ HRESULT CD3DDevice9::CreateD3D9( CLogFile * pLogFile )
 		pLogFile->OutputString( "SW Rasterizer failed to load.\n" );
 	}
 	
-	_ASSERT( m_sD3DDev9.pD3D9 != NULL );
+    ZAssert( m_sD3DDev9.pD3D9 != NULL );
 	if( m_sD3DDev9.pD3D9 == NULL )
 	{
 		pLogFile->OutputString( "Direct3DCreate9 failed.\n" );
@@ -142,6 +151,156 @@ HRESULT CD3DDevice9::CreateD3D9( CLogFile * pLogFile )
 	return D3D_OK;
 }
 
+
+// BT - 10/17 - Building a last chance device creation. We're gonna create SOMETHING dammit.
+D3DFORMAT CD3DDevice9::GetValidBackBufferFormat(class CLogFile * pLogFile)
+{
+	D3DFORMAT BackBufferFormats[] = {
+		D3DFMT_A2R10G10B10, D3DFMT_X8R8G8B8, 
+		D3DFMT_X1R5G5B5, D3DFMT_R5G6B5, // Windowed and fullscreen
+		D3DFMT_A8R8G8B8, D3DFMT_A1R5G5B5, // Windowed only
+		(D3DFORMAT)0 // Terminator.
+	};
+
+	D3DFORMAT *pFormatList = BackBufferFormats;
+
+	while (*pFormatList)
+	{
+		//CheckDeviceType() is used to verify that a Device can support a particular display mode.
+		HRESULT hr = m_sD3DDev9.pD3D9->CheckDeviceType(D3DADAPTER_DEFAULT, //Test the primary display device, this is
+														//necessary because systems can have add-on cards
+														//or multi-monitor setups
+			D3DDEVTYPE_HAL,  //This states that we want support for this mode
+							 //in hardware rather than emulated in software
+			*pFormatList,   //The is the primary (viewable) buffer format
+			*pFormatList,   //This is the back (drawable) buffer format
+			m_sDevSetupParams.bRunWindowed);   //Is this windowed mode? 
+
+		if (SUCCEEDED(hr)) {
+			pLogFile->OutputStringV("GetValidBackBufferFormat: Found format: %x\n", *pFormatList);
+			return *pFormatList;
+		}
+
+		pFormatList++;
+	}
+
+	pLogFile->OutputString("GetValidBackBufferFormat: No valid format found!\n");
+
+	return *pFormatList;
+}
+
+	// BT - 10/17 - Building a last chance device creation. We're gonna create SOMETHING dammit.
+	// https://www.gamedev.net/forums/topic/135961-what-format-should-i-set-autodepthstencilformat-to/
+D3DFORMAT CD3DDevice9::GetValidDepthStencilFormat(D3DFORMAT backbufferFormat, class CLogFile * pLogFile)
+{
+	D3DFORMAT DepthSetencilFormatList[] = {
+		D3DFMT_D24S8, D3DFMT_D24X4S4, D3DFMT_D15S1, D3DFMT_D32, D3DFMT_D24X8, D3DFMT_D16,  // 32bit stencil formats first...
+		D3DFMT_D32, D3DFMT_D24X8, D3DFMT_D24S8, D3DFMT_D24X4S4, D3DFMT_D16, D3DFMT_D15S1, // Then 32bit non-stencil formats...
+		D3DFMT_D15S1, D3DFMT_D24S8, D3DFMT_D24X4S4, D3DFMT_D16, D3DFMT_D32, D3DFMT_D24X8, // Then 16bit stencil formats...
+		D3DFMT_D16, D3DFMT_D15S1, D3DFMT_D32, D3DFMT_D24X8, D3DFMT_D24S8, D3DFMT_D24X4S4, // Finally 16bit non-stencil formats.
+		(D3DFORMAT)0 // Terminator.
+	};
+
+	D3DFORMAT *pFormatList = DepthSetencilFormatList;
+
+	while (*pFormatList)
+	{
+		// Does this depth format exist on this card, and can it be used in conjunction with the specified rendertarget format?
+
+		HRESULT hr = m_sD3DDev9.pD3D9->CheckDeviceFormat(m_sDevSetupParams.iAdapterID,
+			D3DDEVTYPE_HAL,
+			backbufferFormat,
+			D3DUSAGE_DEPTHSTENCIL,
+			D3DRTYPE_SURFACE,
+			*pFormatList);
+
+		if (SUCCEEDED(hr))
+		{
+			break;
+
+			/*
+			if (SUCCEEDED(m_sD3DDev9.pD3D9->CheckDepthStencilMatch(m_sDevSetupParams.iAdapterID,
+				g_Engine3D->m_pCurrentCaps->DeviceType,
+				g_pDefaultEngineWindow->m_d3dpp.BackBufferFormat,
+				surface,
+				*pFormatList)))
+				break;*/
+		}
+
+		pFormatList++;
+	}
+
+	if (*pFormatList)
+		pLogFile->OutputStringV("GetValidDepthStencilFormat: Found valid depth stencil format: %x\n", *pFormatList);
+	else
+		pLogFile->OutputString("GetValidDepthStencilFormat: No valid depth stencil format found!\n");
+
+
+	return *pFormatList;
+}
+
+
+
+// BT - 10/17 - Building a last chance device creation. We're gonna create SOMETHING dammit.
+HRESULT CD3DDevice9::LastChanceCreateDevice(HWND hParentWindow, class CLogFile * pLogFile)
+{
+	HRESULT hr;
+
+	D3DFORMAT backbufferFormat = GetValidBackBufferFormat(pLogFile);
+	D3DFORMAT depthStencilFormat = GetValidDepthStencilFormat(backbufferFormat, pLogFile);
+
+	memset(&m_sD3DDev9.d3dPresParams, 0, sizeof(D3DPRESENT_PARAMETERS));
+	m_sD3DDev9.d3dPresParams.BackBufferWidth = m_sD3DDev9.pCurrentMode->mode.Width;
+	m_sD3DDev9.d3dPresParams.BackBufferHeight = m_sD3DDev9.pCurrentMode->mode.Height;
+	m_sD3DDev9.d3dPresParams.BackBufferFormat = backbufferFormat;
+	m_sD3DDev9.d3dPresParams.BackBufferCount = 1;
+	m_sD3DDev9.d3dPresParams.MultiSampleType = D3DMULTISAMPLE_NONE;
+	m_sD3DDev9.d3dPresParams.MultiSampleQuality = 0;
+	m_sD3DDev9.d3dPresParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	m_sD3DDev9.d3dPresParams.hDeviceWindow = hParentWindow;
+	m_sD3DDev9.d3dPresParams.Windowed = m_sDevSetupParams.bRunWindowed;
+	m_sD3DDev9.d3dPresParams.EnableAutoDepthStencil = TRUE;
+	m_sD3DDev9.d3dPresParams.AutoDepthStencilFormat = depthStencilFormat;
+	m_sD3DDev9.d3dPresParams.Flags = 0;
+	m_sD3DDev9.d3dPresParams.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
+	m_sD3DDev9.d3dPresParams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+
+	hr = m_sD3DDev9.pD3D9->CreateDevice(m_sDevSetupParams.iAdapterID,
+		D3DDEVTYPE_HAL, 
+		hParentWindow,
+		D3DCREATE_HARDWARE_VERTEXPROCESSING,
+		&m_sD3DDev9.d3dPresParams,
+		&m_sD3DDev9.pD3DDevice);
+
+	if (SUCCEEDED(hr))
+	{
+		m_sD3DDev9.bHardwareVP = true;
+		m_sD3DDev9.bPureDevice = false;
+		pLogFile->OutputString("LastChanceCreateDevice: HWVP device created.\n");
+	}
+	else
+	{
+		hr = m_sD3DDev9.pD3D9->CreateDevice(m_sDevSetupParams.iAdapterID,
+			D3DDEVTYPE_HAL,
+			hParentWindow,
+			D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+			&m_sD3DDev9.d3dPresParams,
+			&m_sD3DDev9.pD3DDevice);
+	}
+
+	if (SUCCEEDED(hr))
+	{
+		m_sD3DDev9.bHardwareVP = false;
+		m_sD3DDev9.bPureDevice = false;
+		pLogFile->OutputString("LastChanceCreateDevice: SWVP device created.\n");
+	}
+	else
+	{
+		pLogFile->OutputString("LastChanceCreateDevice: Failed!\n");
+	}
+
+	return hr;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -161,6 +320,8 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 	{
 		m_sD3DDev9.pCurrentMode = &m_sDevSetupParams.sFullScreenMode;
 	}
+
+	m_sD3DDev9.hParentWindow = hParentWindow;
 
 	// Create a new 3D device.
 	memset( &m_sD3DDev9.d3dPresParams, 0, sizeof( D3DPRESENT_PARAMETERS ) );
@@ -240,12 +401,19 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 		m_sD3DDev9.d3dPresParams.AutoDepthStencilFormat = D3DFMT_D24X8;
 	}
 
+	// BT - Do not ship this one, this is just for Xynth to test!
+	//hr = LastChanceCreateDevice(hParentWindow, pLogFile);
+
+
 	hr = m_sD3DDev9.pD3D9->CreateDevice(	m_sDevSetupParams.iAdapterID,
 											DeviceType, //D3DDEVTYPE_HAL, changed for NVidia PerfHUD
 											hParentWindow,
 											dwCreationFlags,
 											&m_sD3DDev9.d3dPresParams,
 											&m_sD3DDev9.pD3DDevice );  //Fix memory leak -Imago 8/2/09
+
+
+
 
 	// Did we create a valid device?
 	// 29.07.08 - Courtesy of Imago, it appears that some device drivers (such as Intel Integrated chipset)
@@ -328,17 +496,29 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 
 	if( hr != D3D_OK )
 	{
-		return hr;
+		hr = LastChanceCreateDevice(hParentWindow , pLogFile);
+
+		if (FAILED(hr))
+		{
+
+			if (::MessageBox(NULL, "Allegiance couldn't create a valid directX device. We are actively trying to solve this issue, but we need your help. If you encounter this error, please hop onto the Steam community hub, and let us know you saw this message. Would you like to be taken there now?", "Fatal Error", MB_ICONERROR | MB_OKCANCEL) == IDOK)
+				ShellExecute(NULL, NULL, "http://steamcommunity.com/app/700480/discussions/2/", NULL, NULL, SW_SHOWNORMAL);
+
+			// BT - 10/17 - if the D3D device couldn't be created, not much point continuing. 
+			(*(int*)0) = 0; // Force exception here.
+
+			return hr;
+		}
 	}
  
 	if( hr == D3D_OK )
 	{
 		hr = m_sD3DDev9.pD3DDevice->GetDeviceCaps( &m_sD3DDev9.sD3DDevCaps );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 		hr = m_sD3DDev9.pD3D9->GetAdapterIdentifier(	m_sDevSetupParams.iAdapterID,
 													0,
 													&m_sD3DDev9.d3dAdapterID );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 	}
 	
 	// Recreate the AA depth stencil buffer, if required.
@@ -364,13 +544,16 @@ HRESULT CD3DDevice9::CreateDevice( HWND hParentWindow, CLogFile * pLogFile )
 														0,
 														D3DRTYPE_TEXTURE,
 														D3DFMT_A1R5G5B5 );
-	if( hTemp == D3D_OK )
+
+	if( hTemp == D3D_OK) // BT - Reverting this, it was causing downstream issues. && (m_sD3DDev9.pCurrentMode->mode.Format == D3DFMT_X1R5G5B5 || m_sD3DDev9.pCurrentMode->mode.Format == D3DFMT_R5G6B5 || m_sD3DDev9.pCurrentMode->mode.Format == D3DFMT_A1R5G5B5))
 	{
-		pLogFile->OutputString( "Device supports A1R5G5B5 format.\n" );
+		pLogFile->OutputString( "wasit wiDevice supports A1R5G5B5 format.\n" );
 		m_sD3DDev9.sFormatFlags.bSupportsA1R5G6B6Format = true;
 	} else {
 		m_sD3DDev9.sFormatFlags.bSupportsA1R5G6B6Format = false;
 	}
+
+	
 
 	// Auto gen mipmaps flag - include user setting.
 	if( ( ( m_sD3DDev9.sD3DDevCaps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP ) != 0 ) &&
@@ -447,12 +630,12 @@ void CD3DDevice9::CreateAADepthStencilBuffer()
 	{
 		// Store the back buffer depth stencil surface.
 		HRESULT hr = m_sD3DDev9.pD3DDevice->GetDepthStencilSurface( &m_sD3DDev9.pBackBufferDepthStencilSurface );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 		
 		// If these fire, need to look at how we create these.  Imago commented out, only supporting FSAA at this time
-		_ASSERT( m_sDevSetupParams.sFullScreenMode.mode.Width >= m_sDevSetupParams.sWindowedMode.mode.Width );
-		_ASSERT( m_sDevSetupParams.sFullScreenMode.mode.Height >= m_sDevSetupParams.sWindowedMode.mode.Height );
-		_ASSERT( m_sDevSetupParams.sFullScreenMode.fmtDepthStencil == m_sDevSetupParams.sWindowedMode.fmtDepthStencil );
+        ZAssert( m_sDevSetupParams.sFullScreenMode.mode.Width >= m_sDevSetupParams.sWindowedMode.mode.Width );
+        ZAssert( m_sDevSetupParams.sFullScreenMode.mode.Height >= m_sDevSetupParams.sWindowedMode.mode.Height );
+        ZAssert( m_sDevSetupParams.sFullScreenMode.fmtDepthStencil == m_sDevSetupParams.sWindowedMode.fmtDepthStencil );
 
 		// Create the additional render target depthstencil surface.
 		hr = m_sD3DDev9.pD3DDevice->CreateDepthStencilSurface(
@@ -464,7 +647,7 @@ void CD3DDevice9::CreateAADepthStencilBuffer()
 			TRUE,
 			&m_sD3DDev9.pRTDepthStencilSurface,
 			NULL );
-		_ASSERT( hr == D3D_OK );
+        ZAssert( hr == D3D_OK );
 	}
 }
 
@@ -505,13 +688,13 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 		if( bWindowed == true )
 		{
             //Imago - removed 1/10
-			//_ASSERT( ( m_sD3DDev9.dwCurrentWindowedWidth != 0 ) && ( m_sD3DDev9.dwCurrentWindowedHeight != 0 ) );
+            //ZAssert( ( m_sD3DDev9.dwCurrentWindowedWidth != 0 ) && ( m_sD3DDev9.dwCurrentWindowedHeight != 0 ) );
 			dwWidth = m_sD3DDev9.dwCurrentWindowedWidth;
 			dwHeight = m_sD3DDev9.dwCurrentWindowedHeight; 
 		}
 		else
 		{   // Imago Removed - 1/10
-			//_ASSERT( ( m_sD3DDev9.dwCurrentFullscreenWidth != 0 ) && ( m_sD3DDev9.dwCurrentFullscreenHeight != 0 ) );
+            //ZAssert( ( m_sD3DDev9.dwCurrentFullscreenWidth != 0 ) && ( m_sD3DDev9.dwCurrentFullscreenHeight != 0 ) );
 			dwWidth = m_sD3DDev9.dwCurrentFullscreenWidth;
 			dwHeight = m_sD3DDev9.dwCurrentFullscreenHeight;
 		}
@@ -544,14 +727,14 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 
 	}
 
-	if (g_outputdebugstring) {
-		char szBuffer[256];
-		sprintf_s( szBuffer, 256, "CD3DDevice9: switching to %s, size %d x %d @ %dHz\n", + bWindowed ? "windowed" : "fullscreen", 
-				m_sD3DDev9.d3dPresParams.BackBufferWidth, 
-				m_sD3DDev9.d3dPresParams.BackBufferHeight,
-				m_sD3DDev9.d3dPresParams.FullScreen_RefreshRateInHz);
-		OutputDebugString( szBuffer );
-	}
+    {
+        char szBuffer[256];
+        sprintf_s(szBuffer, 256, "CD3DDevice9: switching to %s, size %d x %d @ %dHz\n", +bWindowed ? "windowed" : "fullscreen",
+            m_sD3DDev9.d3dPresParams.BackBufferWidth,
+            m_sD3DDev9.d3dPresParams.BackBufferHeight,
+            m_sD3DDev9.d3dPresParams.FullScreen_RefreshRateInHz);
+        g_pDebugLogger->Log(szBuffer);
+    }
 
 	if( bResetRequired == true || //mode changes
 		g_DX9Settings.m_dwAA != (DWORD)m_sD3DDev9.pCurrentMode->d3dMultiSampleSetting || //any multisample changes
@@ -573,12 +756,20 @@ HRESULT	CD3DDevice9::ResetDevice(	bool	bWindowed,
 
 		if( m_sDevSetupParams.bAntiAliased == true )
 		{
-			m_sD3DDev9.pRTDepthStencilSurface->Release();
-			m_sD3DDev9.pRTDepthStencilSurface = NULL;
+			// BT - 9/17 - Prevent crash on reset device with AA enabled.
+			if (m_sD3DDev9.pRTDepthStencilSurface != NULL)
+			{
+				m_sD3DDev9.pRTDepthStencilSurface->Release();
+				m_sD3DDev9.pRTDepthStencilSurface = NULL;
+			}
 
-			// We also stored a pointer to the main back buffer.
-			m_sD3DDev9.pBackBufferDepthStencilSurface->Release();
-			m_sD3DDev9.pBackBufferDepthStencilSurface = NULL;
+			// BT - 9/17 - Prevent crash on reset device with AA enabled.
+			if (m_sD3DDev9.pBackBufferDepthStencilSurface != NULL)
+			{
+				// We also stored a pointer to the main back buffer.
+				m_sD3DDev9.pBackBufferDepthStencilSurface->Release();
+				m_sD3DDev9.pBackBufferDepthStencilSurface = NULL;
+			}
 		}
 
 		//Imago 7/19/09
@@ -746,8 +937,8 @@ bool CD3DDevice9::IsWindowed( )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT CD3DDevice9::SetBackBufferDepthStencil( )
 {
-	_ASSERT( m_sDevSetupParams.bAntiAliased == true );
-	_ASSERT( m_sD3DDev9.pBackBufferDepthStencilSurface != NULL );
+    ZAssert( m_sDevSetupParams.bAntiAliased == true );
+    ZAssert( m_sD3DDev9.pBackBufferDepthStencilSurface != NULL );
 
 	return m_sD3DDev9.pD3DDevice->SetDepthStencilSurface( m_sD3DDev9.pBackBufferDepthStencilSurface );
 }
@@ -760,10 +951,38 @@ HRESULT CD3DDevice9::SetBackBufferDepthStencil( )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT CD3DDevice9::SetRTDepthStencil( )
 {
-	_ASSERT( m_sDevSetupParams.bAntiAliased == true );
-	_ASSERT( m_sD3DDev9.pRTDepthStencilSurface != NULL );
+    ZAssert( m_sDevSetupParams.bAntiAliased == true );
+    ZAssert( m_sD3DDev9.pRTDepthStencilSurface != NULL );
 
 	return m_sD3DDev9.pD3DDevice->SetDepthStencilSurface( m_sD3DDev9.pRTDepthStencilSurface);
+}
+
+// BT - 10/17 - If the D3D device becomes null, re-create it to get it up and rolling again.
+const LPDIRECT3DDEVICE9 CD3DDevice9::Device()
+{ 
+	if (m_sD3DDev9.pD3DDevice == nullptr)
+	{
+		CLogFile logfile("D3DDevice9_Reinitialize.log");
+
+		for (int i = 0; i < 10 && m_sD3DDev9.pD3DDevice == nullptr; i++)
+		{
+			CreateDevice(m_sD3DDev9.hParentWindow, &logfile);
+			Sleep(100);
+		}
+
+		// If the window couldn't be created in the current mode, try to create it windowed instead.
+		for (int i = 0; i < 10 && m_sD3DDev9.pD3DDevice == nullptr; i++)
+		{
+			m_sD3DDev9.bIsWindowed = true;
+
+			CreateDevice(m_sD3DDev9.hParentWindow, &logfile);
+			Sleep(100);
+		}
+		
+		logfile.CloseLogFile();
+	}
+
+	return m_sD3DDev9.pD3DDevice; 
 }
 
 
@@ -784,7 +1003,7 @@ HRESULT CD3DDevice9::SetRTDepthStencil( )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CD3DDevice9::InitialiseDeviceStateCache( SD3D9DeviceStateCache * pCache )
 {
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 
 	DWORD i;
 
@@ -1038,7 +1257,7 @@ void CD3DDevice9::InitialiseLightCache( SD3D9LightCache * pCache )
 	{
 		// Software VP supports any number of lights, so returns -1. We'll limit it to 8,
 		// even though we don't use that many.
-		_ASSERT( m_sD3DDev9.bHardwareVP == false );
+        ZAssert( m_sD3DDev9.bHardwareVP == false );
 		pCache->dwNumLights = 8;
 	}
 
@@ -1067,9 +1286,9 @@ void CD3DDevice9::InitialiseLightCache( SD3D9LightCache * pCache )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::SetRenderState( D3DRENDERSTATETYPE State, DWORD Value )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
-	_ASSERT( State < dwMaxRenderStatesAllowed );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( State < dwMaxRenderStatesAllowed );
 	if( m_sD3DDev9.sDeviceStateCache.pRenderState[ State ] == Value )
 	{
 		return D3D_OK;
@@ -1090,9 +1309,9 @@ HRESULT	CD3DDevice9::SetRenderState( D3DRENDERSTATETYPE State, DWORD Value )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::GetRenderState( D3DRENDERSTATETYPE State, DWORD * pValue )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
-	_ASSERT( State < dwMaxRenderStatesAllowed );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( State < dwMaxRenderStatesAllowed );
 	*pValue = m_sD3DDev9.sDeviceStateCache.pRenderState[ State ];
 	return D3D_OK;
 }
@@ -1105,10 +1324,10 @@ HRESULT	CD3DDevice9::GetRenderState( D3DRENDERSTATETYPE State, DWORD * pValue )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::SetTextureStageState( DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD Value )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
-	_ASSERT( Stage < dwMaxTextureStages );
-	_ASSERT( Type < dwMaxTextureStageStatesAllowed );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( Stage < dwMaxTextureStages );
+    ZAssert( Type < dwMaxTextureStageStatesAllowed );
 	if( m_sD3DDev9.sDeviceStateCache.pTextureStageStates[Stage][Type] == Value )
 	{
 		return D3D_OK;
@@ -1129,10 +1348,10 @@ HRESULT	CD3DDevice9::SetTextureStageState( DWORD Stage, D3DTEXTURESTAGESTATETYPE
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT CD3DDevice9::GetTextureStageState( DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD * pValue )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
-	_ASSERT( Stage < dwMaxTextureStages );
-	_ASSERT( Type < dwMaxTextureStageStatesAllowed );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( Stage < dwMaxTextureStages );
+    ZAssert( Type < dwMaxTextureStageStatesAllowed );
 	*pValue = m_sD3DDev9.sDeviceStateCache.pTextureStageStates[Stage][Type];
 	return D3D_OK;
 }
@@ -1145,10 +1364,10 @@ HRESULT CD3DDevice9::GetTextureStageState( DWORD Stage, D3DTEXTURESTAGESTATETYPE
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::SetSamplerState( DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
-	_ASSERT( Sampler < m_sD3DDev9.sDeviceStateCache.dwNumSamplers );
-	_ASSERT( Type < dwMaxSamplerStatesAllowed );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( Sampler < m_sD3DDev9.sDeviceStateCache.dwNumSamplers );
+    ZAssert( Type < dwMaxSamplerStatesAllowed );
 	
 	if( m_sD3DDev9.sDeviceStateCache.pSamplerState[Sampler][Type] == Value )
 	{
@@ -1170,10 +1389,10 @@ HRESULT	CD3DDevice9::SetSamplerState( DWORD Sampler, D3DSAMPLERSTATETYPE Type, D
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::GetSamplerState( DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD * pValue )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
-	_ASSERT( Sampler < m_sD3DDev9.sDeviceStateCache.dwNumSamplers );
-	_ASSERT( Type < dwMaxSamplerStatesAllowed );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( Sampler < m_sD3DDev9.sDeviceStateCache.dwNumSamplers );
+    ZAssert( Type < dwMaxSamplerStatesAllowed );
 
 	*pValue = m_sD3DDev9.sDeviceStateCache.pSamplerState[Sampler][Type];
 	return D3D_OK;
@@ -1187,9 +1406,9 @@ HRESULT	CD3DDevice9::GetSamplerState( DWORD Sampler, D3DSAMPLERSTATETYPE Type, D
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT CD3DDevice9::SetTransform( D3DTRANSFORMSTATETYPE State, CONST D3DMATRIX * pMatrix )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
-	_ASSERT(	( State == D3DTS_PROJECTION ) ||
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert(	( State == D3DTS_PROJECTION ) ||
 				( State == D3DTS_VIEW ) ||
 				( State == D3DTS_WORLD ) );
 
@@ -1212,7 +1431,7 @@ HRESULT CD3DDevice9::SetTransform( D3DTRANSFORMSTATETYPE State, CONST D3DMATRIX 
 		break;
 
 	default:
-		_ASSERT( false );
+        ZAssert( false );
 		hr = D3DERR_INVALIDCALL;
 	}
 	return hr;
@@ -1226,9 +1445,9 @@ HRESULT CD3DDevice9::SetTransform( D3DTRANSFORMSTATETYPE State, CONST D3DMATRIX 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::GetTransform( D3DTRANSFORMSTATETYPE State, D3DMATRIX * pMatrix )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
-	_ASSERT(	( State == D3DTS_PROJECTION ) ||
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert(	( State == D3DTS_PROJECTION ) ||
 				( State == D3DTS_VIEW ) ||
 				( State == D3DTS_WORLD ) );
 	HRESULT hr = D3D_OK;
@@ -1247,7 +1466,7 @@ HRESULT	CD3DDevice9::GetTransform( D3DTRANSFORMSTATETYPE State, D3DMATRIX * pMat
 		break;
 
 	default:
-		_ASSERT( false );
+        ZAssert( false );
 		hr = D3DERR_INVALIDCALL;
 	}
 	return hr;
@@ -1261,9 +1480,9 @@ HRESULT	CD3DDevice9::GetTransform( D3DTRANSFORMSTATETYPE State, D3DMATRIX * pMat
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::SetMaterial( CONST D3DMATERIAL9 * pMaterial )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
-	_ASSERT( pMaterial != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( pMaterial != NULL );
 
 	memcpy( &m_sD3DDev9.sMaterialCache.currentMaterial, pMaterial, sizeof( D3DMATERIAL9 ) );
 	return m_sD3DDev9.pD3DDevice->SetMaterial( pMaterial );
@@ -1277,9 +1496,9 @@ HRESULT	CD3DDevice9::SetMaterial( CONST D3DMATERIAL9 * pMaterial )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::GetMaterial( D3DMATERIAL9 * pMaterial )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
-	_ASSERT( pMaterial != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( pMaterial != NULL );
 	memcpy( pMaterial, &m_sD3DDev9.sMaterialCache.currentMaterial, sizeof( D3DMATERIAL9 ) );
 	return D3D_OK;
 }
@@ -1292,10 +1511,10 @@ HRESULT	CD3DDevice9::GetMaterial( D3DMATERIAL9 * pMaterial )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT CD3DDevice9::SetLight( DWORD Index, CONST D3DLIGHT9 * pLight )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
-	_ASSERT( pLight != NULL );
-	_ASSERT( Index < m_sD3DDev9.sLightCache.dwNumLights );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( pLight != NULL );
+    ZAssert( Index < m_sD3DDev9.sLightCache.dwNumLights );
 
 	memcpy( &m_sD3DDev9.sLightCache.pLights[ Index ], pLight, sizeof( D3DLIGHT9 ) );
 	return m_sD3DDev9.pD3DDevice->SetLight( Index, pLight );
@@ -1309,10 +1528,10 @@ HRESULT CD3DDevice9::SetLight( DWORD Index, CONST D3DLIGHT9 * pLight )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT CD3DDevice9::GetLight( DWORD Index, D3DLIGHT9 * pLight )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
-	_ASSERT( pLight != NULL );
-	_ASSERT( Index < m_sD3DDev9.sLightCache.dwNumLights );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( pLight != NULL );
+    ZAssert( Index < m_sD3DDev9.sLightCache.dwNumLights );
 
 	memcpy( pLight, &m_sD3DDev9.sLightCache.pLights[ Index ], sizeof( D3DLIGHT9 ) );
 	return D3D_OK;
@@ -1326,9 +1545,9 @@ HRESULT CD3DDevice9::GetLight( DWORD Index, D3DLIGHT9 * pLight )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::LightEnable( DWORD Index, BOOL bEnable )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
-	_ASSERT( Index < m_sD3DDev9.sLightCache.dwNumLights );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( Index < m_sD3DDev9.sLightCache.dwNumLights );
 
 	HRESULT hr = D3D_OK;
 	if( m_sD3DDev9.sLightCache.pLightsActive[ Index ] != bEnable )
@@ -1347,9 +1566,9 @@ HRESULT	CD3DDevice9::LightEnable( DWORD Index, BOOL bEnable )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::GetLightEnable( DWORD Index, BOOL * pEnable )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
-	_ASSERT( Index < m_sD3DDev9.sLightCache.dwNumLights );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( Index < m_sD3DDev9.sLightCache.dwNumLights );
 
 	*pEnable = m_sD3DDev9.sLightCache.pLightsActive[Index];
 	return D3D_OK;
@@ -1363,8 +1582,8 @@ HRESULT	CD3DDevice9::GetLightEnable( DWORD Index, BOOL * pEnable )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::SetFVF( DWORD FVF )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 	
 	if( m_sD3DDev9.sDeviceStateCache.dwFVF == FVF )
 	{
@@ -1387,8 +1606,8 @@ HRESULT	CD3DDevice9::SetFVF( DWORD FVF )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::GetFVF( DWORD * pFVF )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 
 	*pFVF = m_sD3DDev9.sDeviceStateCache.dwFVF;
 	return D3D_OK;
@@ -1402,8 +1621,8 @@ HRESULT	CD3DDevice9::GetFVF( DWORD * pFVF )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::SetTexture( DWORD Sampler, LPDIRECT3DBASETEXTURE9 pTexture )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 
 #ifdef EnablePerformanceCounters
 	m_pPerformanceCounters[ eD9S_NumTextureChanges ] ++;
@@ -1420,8 +1639,8 @@ HRESULT	CD3DDevice9::SetTexture( DWORD Sampler, LPDIRECT3DBASETEXTURE9 pTexture 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::GetTexture( DWORD Sampler, LPDIRECT3DBASETEXTURE9 * ppTexture )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 	return m_sD3DDev9.pD3DDevice->GetTexture( Sampler, ppTexture );
 }
 
@@ -1433,8 +1652,8 @@ HRESULT	CD3DDevice9::GetTexture( DWORD Sampler, LPDIRECT3DBASETEXTURE9 * ppTextu
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::SetViewport( CONST D3DVIEWPORT9 * pViewport )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 	return m_sD3DDev9.pD3DDevice->SetViewport( pViewport );
 }
 
@@ -1446,8 +1665,8 @@ HRESULT	CD3DDevice9::SetViewport( CONST D3DVIEWPORT9 * pViewport )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::GetViewport( D3DVIEWPORT9 * pViewport )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 	return m_sD3DDev9.pD3DDevice->GetViewport( pViewport );
 }
 
@@ -1459,8 +1678,8 @@ HRESULT	CD3DDevice9::GetViewport( D3DVIEWPORT9 * pViewport )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::SetIndices( LPDIRECT3DINDEXBUFFER9 pIndexData )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 	return m_sD3DDev9.pD3DDevice->SetIndices( pIndexData );
 }
 
@@ -1472,8 +1691,8 @@ HRESULT	CD3DDevice9::SetIndices( LPDIRECT3DINDEXBUFFER9 pIndexData )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::GetIndices( LPDIRECT3DINDEXBUFFER9 * ppIndexData )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 	return m_sD3DDev9.pD3DDevice->GetIndices( ppIndexData );
 }
 
@@ -1485,8 +1704,8 @@ HRESULT	CD3DDevice9::GetIndices( LPDIRECT3DINDEXBUFFER9 * ppIndexData )
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::SetStreamSource( UINT StreamNumber, LPDIRECT3DVERTEXBUFFER9 pStreamData, UINT OffsetInBytes, UINT Stride )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 	return m_sD3DDev9.pD3DDevice->SetStreamSource( StreamNumber, pStreamData, OffsetInBytes, Stride );
 }
 
@@ -1498,8 +1717,8 @@ HRESULT	CD3DDevice9::SetStreamSource( UINT StreamNumber, LPDIRECT3DVERTEXBUFFER9
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT	CD3DDevice9::GetStreamSource( UINT StreamNumber, LPDIRECT3DVERTEXBUFFER9 * ppStreamData, UINT * pOffsetInBytes, UINT * pStride )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 	return m_sD3DDev9.pD3DDevice->GetStreamSource( StreamNumber, ppStreamData, pOffsetInBytes, pStride );
 }
 
@@ -1513,7 +1732,7 @@ HRESULT CD3DDevice9::BeginScene()
 {
 	HRESULT hr;
 
-	_ASSERT( m_sD3DDev9.bInScene == false );
+    ZAssert( m_sD3DDev9.bInScene == false );
 	hr = m_sD3DDev9.pD3DDevice->BeginScene();
 
 	if( hr == D3D_OK )
@@ -1526,7 +1745,7 @@ HRESULT CD3DDevice9::BeginScene()
 #endif // EnablePerformanceCounters
 
 
-	_ASSERT( hr == D3D_OK );
+    ZAssert( hr == D3D_OK );
 	return hr;
 }
 
@@ -1540,7 +1759,7 @@ HRESULT CD3DDevice9::EndScene()
 {
 	HRESULT hr;
 
-	_ASSERT( m_sD3DDev9.bInScene == true );
+    ZAssert( m_sD3DDev9.bInScene == true );
 	hr = m_sD3DDev9.pD3DDevice->EndScene();
 	
 	if( hr == D3D_OK )
@@ -1548,7 +1767,7 @@ HRESULT CD3DDevice9::EndScene()
 		m_sD3DDev9.bInScene = false;
 	}
 
-	_ASSERT( hr == D3D_OK );
+    ZAssert( hr == D3D_OK );
 	return hr;
 }
 
@@ -1562,8 +1781,8 @@ HRESULT CD3DDevice9::DrawPrimitive(	D3DPRIMITIVETYPE Type,
 									UINT StartVertex,
 									UINT PrimitiveCount )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 
 #ifdef EnablePerformanceCounters
 	m_pPerformanceCounters[ eD9S_NumDrawPrims ] ++;
@@ -1586,8 +1805,8 @@ HRESULT	CD3DDevice9::DrawIndexedPrimitive(	D3DPRIMITIVETYPE Type,
 											UINT StartIndex, 
 											UINT PrimitiveCount )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 
 #ifdef EnablePerformanceCounters
 	m_pPerformanceCounters[ eD9S_NumDrawPrims ] ++;
@@ -1613,8 +1832,8 @@ HRESULT	CD3DDevice9::DrawIndexedPrimitiveUP( D3DPRIMITIVETYPE PrimitiveType,
 												CONST void * pVertexStreamZeroData,
 												UINT VertexStreamZeroStride )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 
 #ifdef EnablePerformanceCounters
 	m_pPerformanceCounters[ eD9S_NumDrawPrims ] ++;
@@ -1637,8 +1856,8 @@ HRESULT CD3DDevice9::DrawPrimitiveUP(	D3DPRIMITIVETYPE PrimitiveType,
 										CONST void * pVertexStreamZeroData,
 										UINT VertexStreamZeroStride )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 
 #ifdef EnablePerformanceCounters
 	m_pPerformanceCounters[ eD9S_NumDrawPrims ] ++;
@@ -1657,8 +1876,8 @@ HRESULT CD3DDevice9::DrawPrimitiveUP(	D3DPRIMITIVETYPE PrimitiveType,
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 HRESULT CD3DDevice9::ColorFill( LPDIRECT3DSURFACE9 pSurface, CONST RECT * pRect, D3DCOLOR color )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 	return m_sD3DDev9.pD3DDevice->ColorFill( pSurface, pRect, color );
 }
 
@@ -1671,8 +1890,8 @@ HRESULT CD3DDevice9::ColorFill( LPDIRECT3DSURFACE9 pSurface, CONST RECT * pRect,
 HRESULT CD3DDevice9::Clear( DWORD Count, CONST D3DRECT * pRects, DWORD Flags, 
 							D3DCOLOR Color, float Z, DWORD Stencil )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 	return m_sD3DDev9.pD3DDevice->Clear( Count, pRects, Flags, Color, Z, Stencil );
 }
 
@@ -1684,8 +1903,8 @@ HRESULT CD3DDevice9::Clear( DWORD Count, CONST D3DRECT * pRects, DWORD Flags,
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CD3DDevice9::SetGammaRamp( UINT iSwapChain, DWORD Flags, CONST D3DGAMMARAMP * pRamp )
 {
-	_ASSERT( m_sD3DDev9.bInitialised == true );
-	_ASSERT( m_sD3DDev9.pD3DDevice != NULL );
+    ZAssert( m_sD3DDev9.bInitialised == true );
+    ZAssert( m_sD3DDev9.pD3DDevice != NULL );
 	m_sD3DDev9.pD3DDevice->SetGammaRamp( iSwapChain, Flags, pRamp );
 }
 

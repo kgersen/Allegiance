@@ -16,6 +16,8 @@
 #ifndef __BUCKETIGC_H_
 #define __BUCKETIGC_H_
 
+#include "igc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CbucketIGC
 class       CbucketIGC : public IbucketIGC

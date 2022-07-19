@@ -12,7 +12,6 @@
 **  History:
 */
 // treasureIGC.cpp : Implementation of CtreasureIGC
-#include "pch.h"
 #include "treasureIGC.h"
 #include <stdio.h>
 

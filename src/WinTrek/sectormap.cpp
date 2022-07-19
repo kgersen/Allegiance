@@ -61,23 +61,15 @@ static int GetClusterPopulation(IclusterIGC*   pcluster, IsideIGC*  pside)
         if (pship->GetSide() == pside)
         {
             PlayerInfo* ppi = (PlayerInfo*)(pship->GetPrivateData());
-            if (trekClient.m_fm.IsConnected())
+            if (ppi && (ppi->LastSeenSector() == sectorID) && (ppi->StatusIsCurrent()))
             {
-                if (ppi && (ppi->LastSeenSector() == sectorID) && (ppi->StatusIsCurrent()))
+                if (ppi->LastSeenState() != c_ssObserver && ppi->LastSeenState() != c_ssTurret)
                 {
-                    if (ppi->LastSeenState() != c_ssObserver && ppi->LastSeenState() != c_ssTurret)
-                    {
-                        IhullTypeIGC* pht = trekClient.GetCore()->GetHullType(ppi->LastSeenShipType());
+                    IhullTypeIGC* pht = trekClient.GetCore()->GetHullType(ppi->LastSeenShipType());
 
-                        if (pht != NULL && !(pht->GetCapabilities() & c_habmLifepod))
-                            n++;
-                    }
+                    if (pht != NULL && !(pht->GetCapabilities() & c_habmLifepod))
+                        n++;
                 }
-            }
-            else
-            {
-                if (pship->GetCluster() == pcluster)
-                    n++;
             }
         }
     }
@@ -164,7 +156,10 @@ public:
         m_pimageSmallBkgnd = GetModeler()->LoadImage("consectorinfobmp", true);
         m_pimageLargeBkgnd = GetModeler()->LoadImage("conesectorinfobmp", true);
         m_pimageExpand = GetModeler()->LoadImage("consectorexpandbmp", true);
-        m_pimageBkgnd = m_pimageSmallBkgnd;
+
+		// The minimap has an open and closed view. The selected background image controls which view is shown.
+		m_pimageBkgnd = m_pimageLargeBkgnd;
+
 		m_pprobeIcon = (Surface *)trekClient.LoadRadarIcon("probe");
     }
 
@@ -780,7 +775,7 @@ public:
         }
 
         const   float   c_bfr = 0.1f *
-            max(0.0001, max(m_xClusterMax - m_xClusterMin,
+            std::max(0.0001f, std::max(m_xClusterMax - m_xClusterMin,
                 m_yClusterMax - m_yClusterMin));
         m_xClusterMin -= c_bfr;
         m_xClusterMax += c_bfr;
@@ -804,8 +799,8 @@ public:
         if (m_xMax - m_xMin > fMaxWidth || m_yMax - m_yMin > fMaxHeight)
         {
             m_bCanDrag = true;
-            m_xMax = m_xMin + min(m_xMax - m_xMin, fMaxWidth);
-            m_yMax = m_yMin + min(m_yMax - m_yMin, fMaxHeight);
+            m_xMax = m_xMin + std::min(m_xMax - m_xMin, fMaxWidth);
+            m_yMax = m_yMin + std::min(m_yMax - m_yMin, fMaxHeight);
         }
         else
         {
@@ -944,7 +939,6 @@ public:
     void Render(Context* pcontext)
     {
         pcontext->SetShadeMode(ShadeModeFlat);
-		pcontext->SetBlendMode(BlendModeSourceAlpha); //imago 7/15/09
 
         Rect rectClip = m_bounds.GetRect();
         rectClip.Expand(-1);
@@ -1242,14 +1236,14 @@ public:
                              (psl != NULL);
                              psl = psl->next())
                         {
-                            int nPopulation = min(nMaxPop, vnSidePopCount[psl->data()->GetObjectID()]);
+                            int nPopulation = std::min(nMaxPop, vnSidePopCount[psl->data()->GetObjectID()]);
                             int nX = xy.X() + 6;
 
                             if (nPopulation > 0)
                             {
                                 while (nPopulation > 0)
                                 {
-                                    int nDotPopulation = min(nPopulation, nDotWidth/nShipWidth);
+                                    int nDotPopulation = std::min(nPopulation, nDotWidth/nShipWidth);
 
                                     pcontext->FillRect(
                                         WinRect(
@@ -1288,7 +1282,7 @@ public:
                         if (nPopulation > 0)
                         {
                             // draw bars for ships
-                            int nBarHeight = min(min(nPopulation, nMaxBarHeight), max(1,
+                            int nBarHeight = std::min(std::min(nPopulation, nMaxBarHeight), std::max(1,
                                 (int)((nMaxBarHeight - 1) * log((float)nPopulation)/log((float)nMaxPlayers))+ 1));
 
                             pcontext->FillRect(
@@ -1427,8 +1421,8 @@ private:
             float fDeltaY = fScale * (m_pointLastDrag.Y() - point.Y());
 
             // make sure we don't drag the map off of the screen
-            m_xDrag = max(min((m_xClusterMax - m_xClusterMin) - (m_xMax - m_xMin), m_xDrag + fDeltaX), 0);
-            m_yDrag = max(min((m_yClusterMax - m_yClusterMin) - (m_yMax - m_yMin), m_yDrag + fDeltaY), 0);
+            m_xDrag = std::max(std::min((m_xClusterMax - m_xClusterMin) - (m_xMax - m_xMin), m_xDrag + fDeltaX), 0.0f);
+            m_yDrag = std::max(std::min((m_yClusterMax - m_yClusterMin) - (m_yMax - m_yMin), m_yDrag + fDeltaY), 0.0f);
 
             m_pointLastDrag = point;
             GetWindow()->SetCursor(AWF_CURSOR_DRAG);

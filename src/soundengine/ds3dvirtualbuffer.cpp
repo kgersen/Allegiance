@@ -5,8 +5,9 @@
 // a real DirectSoundBuffer associated with them at any given moment.
 //
 
-#include "pch.h"
 #include "soundbase.h"
+
+#include <algorithm>
 
 #include "ds3dutil.h"
 #include "ds3dbuffer.h"
@@ -69,7 +70,7 @@ void BufferPositionTracker::Stop(bool bForceNow)
 void BufferPositionTracker::AddTime(DWORD dwElapsedTime)
 {
     DWORD dwElapsedBytes = 
-        (DWORD)(dwElapsedTime * (__int64)m_dwBytesPerSec / 1000);
+        (DWORD)(dwElapsedTime * (int64_t)m_dwBytesPerSec / 1000);
 
     if (!m_bASR)
     {
@@ -124,15 +125,15 @@ void BufferPositionTracker::AddTime(DWORD dwElapsedTime)
             }
         }
     }
-};
+}
 
 
 // Resets the position to the given one, presumably retrieved from a 
 // playing buffer.
 void BufferPositionTracker::SetPosition(DWORD dwPosition)
 {
-    m_dwPosition = min(dwPosition, m_dwLength);
-};
+    m_dwPosition = std::min(dwPosition, m_dwLength);
+}
 
 
 
@@ -151,7 +152,7 @@ HRESULT DSVirtualSoundBuffer::PrepareBuffer8(IDirectSound8* pDirectSound,
 {
     HRESULT hr;
 
-    if (m_pds3dbuffer == NULL)
+    if (m_pds3dbuffer == nullptr)
     {
         if (m_bufferPositionTracker.IsASR())
         {
@@ -207,7 +208,7 @@ HRESULT DSVirtualSoundBuffer::PrepareBuffer(IDirectSound* pDirectSound,
 {
     HRESULT hr;
 
-    if (m_pds3dbuffer == NULL)
+    if (m_pds3dbuffer == nullptr)
     {
         if (m_bufferPositionTracker.IsASR())
         {
@@ -357,11 +358,11 @@ HRESULT DSVirtualSoundBuffer::Update(DWORD dwTimeElapsed,
     if (m_bStopped && !bWasStopped)
     {
         // free the sound buffer to conserve resources
-        m_pds3dbuffer = NULL;
+        m_pds3dbuffer = nullptr;
         m_bBufferPlaying = FALSE;
 
         // if there is an event source for the sound finishing, trigger it.
-        if (m_peventsourceFinished != NULL)
+        if (m_peventsourceFinished != nullptr)
         {
             m_peventsourceFinished->Trigger();
         }
@@ -382,7 +383,7 @@ HRESULT DSVirtualSoundBuffer::Update(DWORD dwTimeElapsed,
     // important.
     m_fDynamicPriority = m_fGain + m_fPriority
         + (m_bBufferPlaying ? 0.1f : 0)
-        + max(0.0f, 1.0f * (2 - m_fAge));
+        + std::max(0.0f, 1.0f * (2 - m_fAge));
 
     return S_OK;
 };
@@ -482,7 +483,7 @@ HRESULT DSVirtualSoundBuffer::SetGain(float fGain)
         return E_INVALIDARG;
     }
 
-    m_fGain = max(fGain, -100.0f);
+    m_fGain = std::max(fGain, -100.0f);
 
     return S_OK;
 };
@@ -492,8 +493,8 @@ HRESULT DSVirtualSoundBuffer::SetGain(float fGain)
 // and 2.0 is twice normal speed.  
 HRESULT DSVirtualSoundBuffer::SetPitch(float fPitch)
 {
-    fPitch = max(fPitch, DSBFREQUENCY_MIN / m_pdata->GetSampleRate());
-    fPitch = min(fPitch, DSBFREQUENCY_MAX / m_pdata->GetSampleRate());
+    fPitch = std::max<float>(fPitch, DSBFREQUENCY_MIN / m_pdata->GetSampleRate());
+    fPitch = std::min<float>(fPitch, DSBFREQUENCY_MAX / m_pdata->GetSampleRate());
 
     m_fPitch = fPitch;
 
@@ -545,7 +546,7 @@ HRESULT DSVirtualSoundBuffer::IsPlaying()
 IEventSource* DSVirtualSoundBuffer::GetFinishEventSource()
 {
     // if we don't have an event source, create one.
-    if (m_peventsourceFinished == NULL)
+    if (m_peventsourceFinished == nullptr)
     {
         m_peventsourceFinished = new EventSourceImpl();
     }
@@ -554,17 +555,17 @@ IEventSource* DSVirtualSoundBuffer::GetFinishEventSource()
 };
 
 
-// Gets an interface for tweaking the sound, if supported, NULL otherwise.
+// Gets an interface for tweaking the sound, if supported, nullptr otherwise.
 TRef<ISoundTweakable> DSVirtualSoundBuffer::GetISoundTweakable()
 {
     return this;
 };
 
 
-// Gets an interface for tweaking the sound, if supported, NULL otherwise.
+// Gets an interface for tweaking the sound, if supported, nullptr otherwise.
 TRef<ISoundTweakable3D> DSVirtualSoundBuffer::GetISoundTweakable3D()
 {
-    return NULL;
+    return nullptr;
 };
 
 
@@ -641,7 +642,7 @@ HRESULT DS3DVirtualSoundBuffer::PrepareBuffer8(IDirectSound8* pDirectSound,
     // If the old and new quality are not the same, we need a new buffer
     // because the 3D quality is set on a per-buffer basis.
     if (quality != m_quality || m_bAllowHardware != bAllowHardware)
-        m_pds3dbuffer = NULL;
+        m_pds3dbuffer = nullptr;
 
     // do all of the 2D buffer creation stuff.
     hr = DSVirtualSoundBuffer::PrepareBuffer8(pDirectSound, quality, bAllowHardware, true);
@@ -669,7 +670,7 @@ HRESULT DS3DVirtualSoundBuffer::PrepareBuffer(IDirectSound* pDirectSound,
     // If the old and new quality are not the same, we need a new buffer
     // because the 3D quality is set on a per-buffer basis.
     if (quality != m_quality || m_bAllowHardware != bAllowHardware)
-        m_pds3dbuffer = NULL;
+        m_pds3dbuffer = nullptr;
 
     // do all of the 2D buffer creation stuff.
     hr = DSVirtualSoundBuffer::PrepareBuffer(pDirectSound, quality, bAllowHardware, true);
@@ -756,7 +757,7 @@ HRESULT DS3DVirtualSoundBuffer::Update(DWORD dwTimeElapsed,
             else
             {
                 // calculate how much softer the sound is (in dB) based on distance
-                float fDistanceGain = min(0.0f, (float)(
+                float fDistanceGain = std::min(0.0f, (float)(
                     fRolloffFactor * -10 * log(fDistanceSquared/fMinimumDistanceSquared)
                     ));
 
@@ -899,13 +900,13 @@ HRESULT DS3DVirtualSoundBuffer::SetPriority(float fPriority)
 };
 
 
-// Gets an interface for tweaking the sound, if supported, NULL otherwise.
+// Gets an interface for tweaking the sound, if supported, nullptr otherwise.
 TRef<ISoundTweakable> DS3DVirtualSoundBuffer::GetISoundTweakable()
 {
     return DSVirtualSoundBuffer::GetISoundTweakable();
 };
 
-// Gets an interface for tweaking the sound, if supported, NULL otherwise.
+// Gets an interface for tweaking the sound, if supported, nullptr otherwise.
 TRef<ISoundTweakable3D> DS3DVirtualSoundBuffer::GetISoundTweakable3D()
 {
     return this;

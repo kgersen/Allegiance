@@ -15,6 +15,7 @@
 
 #ifndef __STATIONTYPEIGC_H_
 #define __STATIONTYPEIGC_H_
+#include "igc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CstationTypeIGC

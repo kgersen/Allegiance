@@ -29,6 +29,11 @@ const float s_fMinFOV = RadiansFromDegrees(5.0f);
 class TrekWindowImpl;
 class AutoDownloadProgressDialogPopup; // MGC: move
 
+// BT - 10/17 - Work-around for backwards compatibility with delayimp.h and the Windows XP targeting pack for VS2017.
+#ifndef FACILITY_VISUALCPP
+	#define FACILITY_VISUALCPP  ((LONG)0x6d)
+#endif
+
 /*!!!
 class BillboardType {
 public:
@@ -91,6 +96,7 @@ class  WinTrekClient :
         float                   trekJoyStick[3];
         float                   fOldJoyThrottle;
         virtual void            OverrideThrottle (float fDesiredThrottle);
+		bool					bTrainingFirstClick;
 
         // igc site implementation
 
@@ -131,6 +137,9 @@ class  WinTrekClient :
 		/* pkk May 6th: Disabled bandwidth patch
 		unsigned int			m_nBandwidth; // w0dk4 June 2007: Bandwith Patch */
 
+        TRef<SimpleModifiableValue<bool>> m_pLogChatEnabled;
+        std::shared_ptr<ILogger> m_pChatLogger;
+
         //
         // Explosions
         //
@@ -154,7 +163,9 @@ class  WinTrekClient :
         virtual void      PlayFFEffect(ForceEffectID effectID, ImodelIGC* model = NULL, LONG lDirection = 0);
         virtual void      PlayVisualEffect(VisualEffectID effectID, ImodelIGC* model = NULL, float fIntensity = 1.0f);
         virtual void      TerminateModelEvent(ImodelIGC*    pmodel);
+        virtual bool      HandlePickDefaultOrder(IshipIGC* pship);
         virtual bool      DockWithStationEvent(IshipIGC* ship, IstationIGC* station);
+        virtual bool      LandOnCarrierEvent(IshipIGC* shipCarrier, IshipIGC* ship, float tCollision);
         virtual void      KillShipEvent(Time now, IshipIGC* ship, ImodelIGC* launcher, float amount, const Vector& p1, const Vector& p2);
         virtual void      DamageShipEvent(Time now,
                                           IshipIGC * pShip,
@@ -164,10 +175,12 @@ class  WinTrekClient :
                                           float flLeakage,
                                           const Vector& p1,
                                           const Vector& p2);
+        virtual void      KillStationEvent(IstationIGC* pStation, ImodelIGC* pLauncher, float amount);
         virtual void      TargetKilled(ImodelIGC*    pmodel);
         virtual void      ShipWarped(IshipIGC* ship, SectorID sidOld, SectorID sidNew);
         virtual void      ActivateTeleportProbe(IprobeIGC* pprobe);
         virtual void      DestroyTeleportProbe(IprobeIGC* pprobe);
+        virtual void      PostPlainText(bool bCritical, const char* pszText);
         virtual void      PostText(bool bCritical, const char* pszText, ...);
         virtual void      PostNotificationText(ImodelIGC* pmodel, bool bCritical, const char* pszText, ...);
         virtual void      OverrideCamera(ImodelIGC*    pmodel);
@@ -242,7 +255,6 @@ class  WinTrekClient :
 
         virtual void      OnReload(IpartIGC* ppart, bool bConsumed);
         virtual void      Preload(const char* pszModelName, const char* pszTextureName);
-        virtual void      SetCDKey(const ZString& strCDKey);
         virtual void      ChangeGameState(void) { GetWindow()->UpdateGameStateContainer(); }
 
         virtual IAutoUpdateSink * OnBeginAutoUpdate(IAutoUpdateSink * pSink, bool bConnectToLobby);
@@ -287,9 +299,6 @@ class  WinTrekClient :
         bool              GetGameoverEjectPods() { return m_bEndgameEjectPods; };
         bool              GetGameCounted() { return m_bGameCounted; };
         bool              GetScoresCounted() { return m_bScoresCounted; };
-
-        virtual void      SaveSquadMemberships(const char* szCharacterName);
-        virtual void      RestoreSquadMemberships(const char* szCharacterName);
 
         virtual void      StartLockDown(const ZString& strReason, LockdownCriteria criteria);
         virtual void      EndLockDown(LockdownCriteria criteria);

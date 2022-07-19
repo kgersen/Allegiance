@@ -16,7 +16,8 @@
 #ifndef __MISSILEIGC_H_
 #define __MISSILEIGC_H_
 
-#include    "modelIGC.h"
+#include "igc.h"
+#include "modelIGC.h"
 
 class CmissileIGC : public TmodelIGC<ImissileIGC>
 {

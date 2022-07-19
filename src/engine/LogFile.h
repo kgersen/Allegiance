@@ -1,5 +1,7 @@
 #pragma once
 
+#include <windows.h>
+
 class CLogFile
 {
 private:
@@ -9,7 +11,7 @@ private:
 	char m_szTimeStamp[256];
 
 public:
-	CLogFile( char * szLogName );
+    CLogFile(const char *szLogName );
 	~CLogFile(void);
 
 	void CloseLogFile();

@@ -1,5 +1,7 @@
 #include "pch.h"
 
+#include <button.h>
+#include <controls.h>
 
 class CharInfoScreen;
 extern CharInfoScreen * g_pCharInfoScreen; // messy but avoids .h file
@@ -189,7 +191,7 @@ private:
     TRef<ButtonPane>  m_pbuttonApply; // apply edit changes
     TRef<ButtonPane>   m_pbuttonWeb;
 
-    // header
+	// header
     TRef<EditPane>    m_peditPaneCharDescription; // when in edit mode, this is the description
     TRef<ModifiableString> m_pstringCharDescription; // when in read-only mode this is the description
     TRef<EditPane>    m_peditPaneCharName;

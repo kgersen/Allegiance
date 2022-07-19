@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "training.h"
 #include "badwords.h"
+//#include "imagetransform.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -313,39 +314,57 @@ public:
               switch (pnumberside)
               {
               case 0:
-				  m_pimageTab = GetModeler()->LoadImage("btnteamyellowbmp", true);
+                  m_pimageTab = GetModeler()->LoadImage("btnteamyellowbmp", true);
                   break;
-                  
+
               case 1:
                   m_pimageTab = GetModeler()->LoadImage("btnteambluebmp", true);
                   break;
-                  
+
               case 2:
                   m_pimageTab = GetModeler()->LoadImage("btnteampurplebmp", true);
                   break;
-                  
+
               case 3:
                   m_pimageTab = GetModeler()->LoadImage("btnteamgreenbmp", true);
                   break;
-                  
+
               case 4:
                   m_pimageTab = GetModeler()->LoadImage("btnteamredbmp", true);
                   break;
-                  
+
               case 5:
                   m_pimageTab = GetModeler()->LoadImage("btnteamwhitebmp", true);
                   break;
-              //
-              // WLP 2005 - added default for NOAT lobby team display
-              //
+                  //
+                  // WLP 2005 - added default for NOAT lobby team display
+                  //
               default:                                                                // WLP 2005 - view lobby
-				  m_pimageTab = GetModeler()->LoadImage("btnteamlobbybmp", true);     // WLP 2005 - view lobby
-				  
+                  m_pimageTab = GetModeler()->LoadImage("btnteamlobbybmp", true);     // WLP 2005 - view lobby
+              }
 
-             }
+              /*if (!trekClient.m_fm.IsConnected()) {
+                  m_pimageTab = GetModeler()->LoadImage("btnteambmp", true);
+              }*/
+
               if (m_pimageTab)
 			  {
-             	psurface->BitBlt(WinPoint(0,0), m_pimageTab->GetSurface());
+                  psurface->BitBlt(WinPoint(0, 0), m_pimageTab->GetSurface());
+                  /*if (!trekClient.m_fm.IsConnected()) {
+                      Color c = pside->GetColor();
+                      if (c.R() + c.G() + c.B() > 2.0f)
+                          c = Color(c.R()*0.7f, c.G()*0.7f, c.B()*0.7f);
+                      debugf("%s using color %f, %f, %f instead of %f, %f, %f\n", pside->GetName(), c.R(), c.G(), c.B(), pside->GetColor().R(), pside->GetColor().G(), pside->GetColor().B());
+
+                      m_pimageTab = ImageTransform::Multiply(m_pimageTab, new ColorValue(c));
+
+                      WinPoint offset = psurface->GetOffset();
+                      auto context = psurface->GetContext();
+                      context->SetYAxisInversion(false);
+                      context->Translate(Point(offset.X(), offset.Y()));
+                      m_pimageTab->Render(context);
+                      psurface->ReleaseContext(context);
+                  }*/
               	if (!m_bSingle){
                 	if (bSelected) 
                   	{
@@ -1241,19 +1260,47 @@ public:
             //
             // assert (pplayer->SideID() != SIDE_TEAMLOBBY);
             {
-                if (Training::IsTraining ())
+                if (Training::IsTraining())
                 {
-                    ImissionIGC*    pCore = trekClient.GetCore ();
-                    IshipIGC*       pShip = pCore->GetShip (shipID);
-                    IclusterIGC*    pCluster = pShip->GetCluster ();
-                    if (!pCluster)
+                    if (Training::CommandViewEnabled())
                     {
-                        IstationIGC*    pStation = pShip->GetStation ();
-                        assert (pStation);
-                        pCluster = pStation->GetCluster ();
-                        assert (pCluster);
+                        ImissionIGC*    pCore = trekClient.GetCore();
+                        IshipIGC*       pShip = pCore->GetShip(shipID); //pplayer->GetShip() should be the same
+                        IclusterIGC*    pCluster = pShip->GetCluster();
+                        const Vector*   ppos;
+                        if (!pCluster)
+                        {
+                            IstationIGC*    pStation = pShip->GetStation();
+                            if (pStation) {
+                                pCluster = pStation->GetCluster();
+                                assert(pCluster);
+                                debugf("Ship is in station %s in %s.\n", pStation->GetName(), pCluster->GetName());
+                                ppos = pStation && pStation->SeenBySide(trekClient.GetSide()) ? &(pStation->GetPosition()) : NULL;
+                            }
+                            else {
+                                debugf("Failed to get ship \"%s\" cluster OR station!\n", pShip->GetName());
+                                ppos = NULL;
+                            }
+                        }
+                        else
+                            ppos = pShip && pShip->SeenBySide(trekClient.GetSide()) ? &(pShip->GetPosition()) : NULL;
+
+                        IclusterIGC*    pClusterShip = trekClient.GetShip()->GetCluster();
+                        if ((pClusterShip == NULL) || (pClusterShip == pCluster)) { //check if in station or in the same sector
+                            if (GetWindow()->GetViewMode() != TrekWindow::vmCommand)
+                                GetWindow()->SetViewMode(TrekWindow::vmCommand);
+				
+                            if (pClusterShip == NULL) { //player in base
+                                //trekClient.RequestViewCluster (pCluster, pplayer->GetShip()); //fails for ships in stations
+                                trekClient.SetViewCluster(pCluster, ppos);
+                            }
+                            else
+                            {
+                                assert(pClusterShip == pCluster);
+                                GetWindow()->PositionCommandView(ppos, 2.0f);
+                            }
+                        }
                     }
-                    trekClient.RequestViewCluster (pCluster, pplayer->GetShip());
                 }
                 else if (pplayer->GetShipStatus().GetSectorID() != NA)
                 {
@@ -1266,7 +1313,7 @@ public:
                         if (GetWindow()->GetViewMode() != TrekWindow::vmCommand)
                             GetWindow()->SetViewMode(TrekWindow::vmCommand);
 
-                        if (pClusterShip == NULL)
+                        if (pClusterShip == NULL) //player in base
                             trekClient.RequestViewCluster(pCluster, pplayer->GetShip());
                         else
                         {
@@ -1279,7 +1326,7 @@ public:
                     }
                 }
 
-                GetWindow()->GetConsoleImage()->GetConsoleData()->PickShip(pplayer->GetShip());
+                GetWindow()->GetConsoleImage()->GetConsoleData()->PickShip(pplayer->GetShip()); //Select the ship
             }
         }
         

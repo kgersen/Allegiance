@@ -1,12 +1,14 @@
-#include "pch.h"
 #include "LogFile.h"
 
+#include <cstdio>
+#include <ctime>
+#include <zassert.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 // CLogFile()
 // Constructor.
 ////////////////////////////////////////////////////////////////////////////////
-CLogFile::CLogFile( char * szFileName )
+CLogFile::CLogFile( const char * szFileName )
 {
 	m_hLogFile = INVALID_HANDLE_VALUE;
 
@@ -28,7 +30,7 @@ CLogFile::CLogFile( char * szFileName )
 								CREATE_ALWAYS,
 								FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH,
 								NULL );
-	_ASSERT( m_hLogFile != INVALID_HANDLE_VALUE );
+	ZAssert( m_hLogFile != INVALID_HANDLE_VALUE );
 
 	OutputStringV( "Log file %s created - %s\n\n", szFileName, GetTimeStampString() );
 }

@@ -31,6 +31,8 @@
 
 #include <urlmon.h>
 
+#include <algorithm>
+
 // BT - STEAM
 #include "steam_gameserver.h"
 
@@ -39,7 +41,7 @@
 //
 #include "guids.h"
 #include "zlib.h"
-#include "utility.h"
+#include "Utility.h"
 //#include "zauth.h" // KG removed
 
 

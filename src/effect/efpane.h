@@ -1,14 +1,21 @@
 #ifndef _efpane_H_
 #define _efpane_H_
 
+#include <pane.h>
+#include <tref.h>
+#include <value.h>
+#include <ztime.h>
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // effect panes
 //
 //////////////////////////////////////////////////////////////////////////////
-
+class Window;
 void SetEffectWindow(Window* pwindow);
 
+class Modeler;
+class IPopupContainer;
 void AddPaneFactories(
     INameSpace*      pns,
     Modeler*         pmodeler,
@@ -45,7 +52,7 @@ TRef<Pane>      CreateHoverPane(HoverSite* psite, float id, Pane* ppane);
 // ThumbPane
 //
 //////////////////////////////////////////////////////////////////////////////
-
+class Image;
 class ThumbPane : public Pane {
 public:
     static TRef<ThumbPane> Create(Modeler* pmodeler, 
@@ -60,6 +67,8 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
+class IIntegerEventSource;
+class ScrollPane;
 TRef<Pane> CreateTrekScrollPane(
     unsigned height,
     Modeler* pmodeler,
@@ -73,6 +82,7 @@ TRef<Pane> CreateTrekScrollPane(
 //
 /////////////////////////////////////////////////////////////////////////////
 
+class Surface;
 class GaugePane : public Pane {
 private:
     TRef<Surface>   m_psurface;

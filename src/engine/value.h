@@ -1,6 +1,58 @@
 #ifndef _Value_h_
 #define _Value_h_
 
+#include <cast.h>
+#include <color.h>
+#include <matrix.h>
+#include <orientation.h>
+#include <rect.h>
+#include <tlist.h>
+#include <tref.h>
+#include <tvector.h>
+#include <zstring.h>
+
+#include "mdl.h"
+
+class ZFile;
+class IMDLBinaryFile;
+
+ZString GetString(int indent, const Matrix& mat);
+ZString GetString(int indent, const Matrix2& mat);
+ZString GetString(int indent, const Vector& value);
+ZString GetString(int indent, const Point& value);
+ZString GetString(int indent, const WinPoint& value);
+ZString GetString(int indent, const Point& value);
+ZString GetString(int indent, const Color& value);
+ZString GetString(int indent, const Rect& value);
+ZString GetString(int indent, const Orientation& value);
+ZString GetString(int indent, bool value);
+ZString GetString(int indent, float value);
+ZString GetString(int indent, const ZString& value);
+
+ZString GetFunctionName(const Matrix& value);
+ZString GetFunctionName(const Vector& value);
+ZString GetFunctionName(const Point& value);
+ZString GetFunctionName(const WinPoint& value);
+ZString GetFunctionName(const Point& value);
+ZString GetFunctionName(const Color& value);
+ZString GetFunctionName(const Rect& value);
+ZString GetFunctionName(const Orientation& value);
+ZString GetFunctionName(bool value);
+ZString GetFunctionName(float value);
+ZString GetFunctionName(const ZString& value);
+
+void Write(IMDLBinaryFile* pmdlFile, const Matrix& value);
+void Write(IMDLBinaryFile* pmdlFile, const Vector& value);
+void Write(IMDLBinaryFile* pmdlFile, const Point& value);
+void Write(IMDLBinaryFile* pmdlFile, const WinPoint& value);
+void Write(IMDLBinaryFile* pmdlFile, const Point& value);
+void Write(IMDLBinaryFile* pmdlFile, const Color& value);
+void Write(IMDLBinaryFile* pmdlFile, const Rect& value);
+void Write(IMDLBinaryFile* pmdlFile, const Orientation& value);
+void Write(IMDLBinaryFile* pmdlFile, bool value);
+void Write(IMDLBinaryFile* pmdlFile, float value);
+void Write(IMDLBinaryFile* pmdlFile, const ZString& value);
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // NameSpaceInfo
@@ -29,27 +81,27 @@ public:
     virtual void   WriteReference(const ZString& str) = 0;
     virtual void   WriteApply()                       = 0;
     virtual ZFile* WriteBinary()                      = 0;
-    virtual void   WriteList(DWORD count)             = 0;
+    virtual void   WriteList(uint32_t count)          = 0;
     virtual void   WriteNumber(float value)           = 0;
     virtual void   WriteBoolean(bool value)           = 0;
     virtual void   WritePair()                        = 0;
     virtual void   WriteEnd()                         = 0;
 };
 
-#define MDLMagic   ((DWORD)0xdebadf00)
-#define MDLVersion ((DWORD)0x00010000)
+#define MDLMagic   (uint32_t(0xdebadf00))
+#define MDLVersion (uint32_t(0x00010000))
 
-const DWORD ObjectEnd        = 0;
-const DWORD ObjectFloat      = 1;
-const DWORD ObjectString     = 2;
-const DWORD ObjectTrue       = 3;
-const DWORD ObjectFalse      = 4;
-const DWORD ObjectList       = 5;
-const DWORD ObjectApply      = 6;
-const DWORD ObjectBinary     = 7;
-const DWORD ObjectReference  = 8;
-const DWORD ObjectImport     = 9;
-const DWORD ObjectPair       = 10;
+const uint32_t ObjectEnd        = 0;
+const uint32_t ObjectFloat      = 1;
+const uint32_t ObjectString     = 2;
+const uint32_t ObjectTrue       = 3;
+const uint32_t ObjectFalse      = 4;
+const uint32_t ObjectList       = 5;
+const uint32_t ObjectApply      = 6;
+const uint32_t ObjectBinary     = 7;
+const uint32_t ObjectReference  = 8;
+const uint32_t ObjectImport     = 9;
+const uint32_t ObjectPair       = 10;
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -78,9 +130,6 @@ private:
     virtual void        Evaluate();
     virtual TRef<Value> Fold();
 
-    void RemoveParent(Value* pvalue);
-    void AddParent(Value* pvalue);
-
 protected:
     Value();
     Value(Value*);
@@ -98,14 +147,20 @@ protected:
 
     virtual void ChildChanged(Value* pvalue, Value* pvalueNew);
 
+    virtual void OnNoParents() {}
+
     void   Changed();
     void   AddChild(Value* pchild);
     void   SetChild(int index, Value* m_pvalueChild);
+    void   SetChildSilently(int index, Value* m_pvalueChild);
     Value* GetChild(int index) const { return m_pchildren[index];     }
     int    GetChildCount()     const { return m_pchildren.GetCount(); }
 
 public:
     virtual ~Value();
+
+    void RemoveParent(Value* pvalue);
+    void AddParent(Value* pvalue);
 
     void ChangeTo(Value* pvalue);
     bool HasChanged() { return m_bChanged; }
@@ -243,7 +298,9 @@ public:
 
     const StaticType& GetValue()
     {
-        Update();
+        if (HasChanged()) {
+            Update();
+        }
         return m_value;
     }
 
@@ -284,8 +341,8 @@ public:
 
     void SetValue(const StaticType& value)
     {
-        GetValueInternal() = value;
-        Changed();
+        TStaticValue<StaticType>::GetValueInternal() = value;
+        TStaticValue<StaticType>::Changed();
     }
 
     bool IsConstant()
@@ -300,12 +357,12 @@ public:
 
     ZString GetString(int indent)
     {
-        return FunctionName::GetName() + "(" + ::GetString(indent, GetValue()) +")";
+        return FunctionName::GetName() + "(" + ::GetString(indent, TStaticValue<StaticType>::GetValue()) +")";
     }
 
     void Write(IMDLBinaryFile* pmdlFile)
     {
-        ::Write(pmdlFile, GetValue());
+        ::Write(pmdlFile, TStaticValue<StaticType>::GetValue());
         pmdlFile->WriteReference(FunctionName::GetName());
         pmdlFile->WriteApply();
     }
@@ -326,7 +383,7 @@ protected:
 
     void Evaluate()
     {
-         GetValueInternal() = GetWrappedValue()->GetValue();
+         TStaticValue<StaticType>::GetValueInternal() = GetWrappedValue()->GetValue();
     }
 
 public:
@@ -335,8 +392,8 @@ public:
     {
     }
 
-    void SetWrappedValue(TStaticValue<StaticType>* pvalue) { SetChild(0, pvalue); }
-    TStaticValue<StaticType>* GetWrappedValue() { return TStaticValue<StaticType>::Cast(GetChild(0)); }
+    void SetWrappedValue(TStaticValue<StaticType>* pvalue) { TStaticValue<StaticType>::SetChild(0, pvalue); }
+    TStaticValue<StaticType>* GetWrappedValue() { return TStaticValue<StaticType>::Cast(TStaticValue<StaticType>::GetChild(0)); }
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -395,6 +452,25 @@ public:
 };
 
 typedef TModifiableValue<Point, ModifiablePointName> ModifiablePointValue;
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// WinPoint Value
+//
+//////////////////////////////////////////////////////////////////////////////
+
+ZString GetString(int indent, const WinPoint& vec);
+void Write(IMDLBinaryFile* pmdlFile, const WinPoint& value);
+ZString GetFunctionName(const WinPoint& value);
+
+typedef TStaticValue<WinPoint> WinPointValue;
+
+class ModifiableWinPointName {
+public:
+	static ZString GetName() { return "ModifiableWinPoint"; }
+};
+
+typedef TModifiableValue<WinPoint, ModifiableWinPointName> ModifiableWinPointValue;
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -474,18 +550,9 @@ public:
 typedef TModifiableValue<float, ModifiableNumberName> ModifiableNumber;
 typedef TWrapValue<float> WrapNumber;
 
-TRef<Number> Subtract(Number*, Number*);
-TRef<Number> Add(Number*, Number*);
-TRef<Number> Multiply(Number*, Number*);
-TRef<Number> Divide(Number*, Number*);
-TRef<Number> Sin(Number*);
-TRef<Number> Cos(Number*);
 TRef<Number> Or(Number*, Number*);
 TRef<Number> And(Number*, Number*);
 TRef<Number> XOr(Number*, Number*);
-TRef<Number> Mod(Number*, Number*);
-TRef<Number> Min(Number*, Number*);
-TRef<Number> Max(Number*, Number*);
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -536,7 +603,7 @@ public:
     {
         ZString str = "[\n";
 
-        List::Iterator iter(m_list);
+        typename List::Iterator iter(m_list);
 
         while (!iter.End()) {
             str += Value::Indent(indent + 1) + ::GetString(indent, iter.Value());

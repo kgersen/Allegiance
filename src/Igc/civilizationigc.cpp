@@ -12,8 +12,7 @@
 **  History:
 */
 // civilizationIGC.cpp : Implementation of CcivilizationIGC
-#include "pch.h"
-#include "civilizationIGC.h"
+#include "civilizationigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CcivilizationIGC

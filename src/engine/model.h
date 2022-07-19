@@ -1,6 +1,28 @@
 #ifndef _Model_h_
 #define _Model_h_
 
+#include <memory>
+
+#include "bounds.h"
+#include "context.h"
+#include "value.h"
+
+#include <input.h>
+#include <tref.h>
+#include <tvector.h>
+
+#include "FileLoader.h"
+
+class Context;
+class D3DVertex;
+class D3DLVertex;
+class Engine;
+class Matrix;
+class Surface;
+class Transform;
+class Vertex;
+class VertexL;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // 3D Hit Data
@@ -205,7 +227,7 @@ public:
     // Constructor
     //
 
-    static TRef<Modeler> Modeler::Create(Engine* pengine);
+    static TRef<Modeler> Create(Engine* pengine);
 
     //
     // Termination
@@ -217,11 +239,13 @@ public:
     // Modeler members
     //
 
-    virtual void            SetSite(ModelerSite* psite) = 0;
+    virtual void            SetSite(ModelerSite* psite) = 0; 
+    virtual void SetFileLoader(const std::shared_ptr<IFileLoader>& loader) = 0;
     virtual void            SetArtPath(const PathString& pathStr) = 0;
 
     virtual Engine*         GetEngine() = 0;
     virtual ZString         GetArtPath() = 0;
+    virtual std::shared_ptr<IFileLoader>         GetFileLoader() = 0;
 
     // KGJV 32B - move this to abstrat class modeler
     virtual TRef<ZFile> GetFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError) = 0;

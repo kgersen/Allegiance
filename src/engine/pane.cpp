@@ -1,4 +1,9 @@
-#include "pch.h"
+#include "pane.h"
+
+#include <zassert.h>
+
+#include "D3DDevice9.h"
+#include "surface.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -446,7 +451,7 @@ void Pane::Paint(Surface* psurface)
 // Added: pass the clip rect round, as with the others, pass by copy, as this can then be modified
 // and passed to child panes.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void Pane::PaintAll(	Surface * psurface )
+void Pane::PaintAll( Surface * psurface )
 {
 	// Clipping test - TBD: reinstate.
 /*	if( ( rectClip.XMax() <= rectClip.XMin() ) ||

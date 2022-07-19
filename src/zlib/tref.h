@@ -1,8 +1,9 @@
 #ifndef _tref_H_
 #define _tref_H_
 
-// BT - 9/17 - Hunting down mystery fedsrv crashes.
 #include "StackTracer.h"
+
+// BT - 9/17 - Hunting down mystery fedsrv crashes.
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -10,9 +11,18 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
+// SUPPORT COM AND LINUX
+// todo: Should this define go into a project configuration?
+#define _WIN32_DCOM
+#ifdef _WIN32_DCOM
+	#define DWORD_OR_UINT32T DWORD
+#else
+	#define DWORD_OR_UINT32T uint32_t
+#endif
+
 class IObjectSingle {
 private:
-	DWORD m_count;
+	DWORD_OR_UINT32T m_count;
 
 protected:
 	typedef IObjectSingle QIType;
@@ -34,7 +44,7 @@ public:
 	}
 
 
-	DWORD GetCount() const
+	DWORD_OR_UINT32T GetCount() const
 	{
 		return m_count;
 	}
@@ -48,7 +58,7 @@ public:
 #ifdef _DEBUG
 	virtual
 #endif
-		DWORD __stdcall AddRef()
+		DWORD_OR_UINT32T __stdcall AddRef()
 	{
 		return ++m_count;
 	}
@@ -56,21 +66,24 @@ public:
 #ifdef _DEBUG
 	virtual
 #endif
-		DWORD __stdcall Release()
+		DWORD_OR_UINT32T __stdcall Release()
 	{
+#ifndef __GNUC__
 		// BT - 9/17 - Hunting down mystery fedsrv crashes.
 		__try
 		{
+#endif
 			if (--m_count == 0) {
 				delete this;
 				return 0;
 			}
+#ifndef __GNUC__
 		}
 		__except (StackTracer::ExceptionFilter(GetExceptionInformation()))
 		{
 			StackTracer::OutputStackTraceToDebugF();
 		}
-
+#endif
 		return m_count;
 	}
 };
@@ -154,7 +167,7 @@ public:
 		if (m_pt)
 			m_pt->AddRef();
 
-		if (ptOld)
+		if (ptOld && ptOld != (Type *) 0xdddddddd && ptOld != (Type *) 0xcdcdcdcd && ptOld != (Type *) 0xcccccccc)
 			ptOld->Release();
 
 		return *this;

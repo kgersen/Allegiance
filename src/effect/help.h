@@ -1,6 +1,9 @@
 #ifndef _help_H_
 #define _help_H_
 
+#include <event.h>
+#include <pane.h>
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Nav Pane
@@ -14,6 +17,7 @@ public:
     virtual TRef<IStringEventSource> GetEventSource()                 = 0;
 };
 
+class INameSpace;
 void AddNavPaneFactory(INameSpace* pns);
 
 //////////////////////////////////////////////////////////////////////////////
@@ -22,11 +26,13 @@ void AddNavPaneFactory(INameSpace* pns);
 //
 //////////////////////////////////////////////////////////////////////////////
 
+class ZFile;
 class PagePaneIncluder : public IObject {
 public:
     virtual TRef<ZFile> Include(const ZString& str) = 0;
 };
 
+class IEngineFont;
 class PagePane : public Pane {
 public:
     virtual void SetAttributes(
@@ -44,6 +50,7 @@ public:
     virtual void                     SetPagePaneIncluder(PagePaneIncluder* ppagePaneIncluder) = 0;
 };
 
+class Modeler;
 void AddPagePaneFactory(INameSpace* pns, Modeler* pmodeler);
 
 //////////////////////////////////////////////////////////////////////////////
@@ -66,6 +73,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 
 TRef<HelpPane> CreateHelpPane(Modeler* pmodeler, const ZString& strTopic, PagePaneIncluder* ppagePaneIncluder);
+class IPopup;
 TRef<IPopup>   CreateMMLPopup(Modeler* pmodeler, const ZString& strTopic, bool bText);
 
 #endif

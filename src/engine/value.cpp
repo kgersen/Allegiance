@@ -1,4 +1,9 @@
-#include "pch.h"
+#include "value.h"
+
+#include <base.h>
+#include <matrix.h>
+
+#include "LogFile.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -221,16 +226,33 @@ void Value::RemoveParent(Value* pvalue)
 {
     ZAssert(m_listParents.Find(pvalue));
     m_listParents.Remove(pvalue);
+    if (m_listParents.GetCount() == 0) {
+        OnNoParents();
+    }
 }
 
 void Value::SetChild(int index, Value* pvalueChild)
 {
-    if (m_pchildren[index] != pvalueChild) {
+	// BT - 10/17 - If there are no elements in the list, then just add this element.
+	// Fixing crash: 8975122	211205	allegiance.exe	allegiance.exe	tvector.h	215	4	0	Win32 StructuredException at 0044750A : UNKNOWN	2017-10-05 11:54:01	0x0004750A	10	UNKNOWN
+	if (m_pchildren.GetCount() == 0)
+	{
+		AddChild(pvalueChild);
+	}
+	else if (m_pchildren[index] != pvalueChild) {
         m_pchildren[index]->RemoveParent(this);
         pvalueChild->AddParent(this);
         m_pchildren.Set(index, pvalueChild);
         Changed();
     }
+}
+
+void Value::SetChildSilently(int index, Value* pvalueChild)
+{
+    //this does not call Changed(), the caller is responsible for making sure the updates are handled correctly
+    m_pchildren[index]->RemoveParent(this);
+    pvalueChild->AddParent(this);
+    m_pchildren.Set(index, pvalueChild);
 }
 
 void Value::AddChild(Value* pvalueChild)
@@ -334,7 +356,7 @@ ZString Value::GetChildString(int indent)
 
 ZString Value::Indent(int indent)
 {
-    static char* pchSpaces = "                                                                ";
+    static const char* pchSpaces = "                                                                ";
 
     ZAssert(indent * 2 < 64);
 
@@ -431,6 +453,7 @@ bool ValueList::DoFold()
 void ValueList::ChildChanged(Value* pvalue, Value* pvalueNew)
 {
     ZAssert(m_list.Find(pvalue));
+    ZAssert(pvalue != pvalueNew); //would be a waste if it was called with the same argument
 
     if (pvalueNew) {
         pvalue->RemoveParent(this);
@@ -588,106 +611,6 @@ void ValueList::FillImportTable(IMDLBinaryFile* pfile)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////////
-//
-// Number Subclasses
-//
-//////////////////////////////////////////////////////////////////////////////
-
-class SubtractNumber : public Number {
-public:
-    SubtractNumber(Number* pvalue0, Number* pvalue1) :
-        Number(pvalue0, pvalue1)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-    Number* Get1() { return Number::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = Get0()->GetValue() - Get1()->GetValue();
-    }
-};
-
-class AddNumber : public Number {
-public:
-    AddNumber(Number* pvalue0, Number* pvalue1) :
-        Number(pvalue0, pvalue1)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-    Number* Get1() { return Number::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = Get0()->GetValue() + Get1()->GetValue();
-    }
-};
-
-class MultiplyNumber : public Number {
-public:
-    MultiplyNumber(Number* pvalue0, Number* pvalue1) :
-        Number(pvalue0, pvalue1)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-    Number* Get1() { return Number::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = Get0()->GetValue() * Get1()->GetValue();
-    }
-};
-
-class DivideNumber : public Number {
-public:
-    DivideNumber(Number* pvalue0, Number* pvalue1) :
-        Number(pvalue0, pvalue1)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-    Number* Get1() { return Number::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = Get0()->GetValue() / Get1()->GetValue();
-    }
-};
-
-class SinNumber : public Number {
-public:
-    SinNumber(Number* pvalue0) :
-        Number(pvalue0)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = sin(Get0()->GetValue());
-    }
-};
-
-class CosNumber : public Number {
-public:
-    CosNumber(Number* pvalue0) :
-        Number(pvalue0)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = cos(Get0()->GetValue());
-    }
-};
-
 class OrNumber : public Number {
 public:
     OrNumber(Number* pvalue0, Number* pvalue1) :
@@ -702,9 +625,9 @@ public:
     {
         GetValueInternal() =
             (float)(
-                  ((DWORD)Get0()->GetValue())
+            ((DWORD)Get0()->GetValue())
                 | ((DWORD)Get1()->GetValue())
-            );
+                );
     }
 };
 
@@ -722,9 +645,9 @@ public:
     {
         GetValueInternal() =
             (float)(
-                  ((DWORD)Get0()->GetValue())
+            ((DWORD)Get0()->GetValue())
                 & ((DWORD)Get1()->GetValue())
-            );
+                );
     }
 };
 
@@ -742,85 +665,11 @@ public:
     {
         GetValueInternal() =
             (float)(
-                  ((DWORD)Get0()->GetValue())
+            ((DWORD)Get0()->GetValue())
                 ^ ((DWORD)Get1()->GetValue())
-            );
+                );
     }
 };
-
-class ModNumber : public Number {
-public:
-    ModNumber(Number* pvalue0, Number* pvalue1) :
-        Number(pvalue0, pvalue1)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-    Number* Get1() { return Number::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = mod(Get0()->GetValue(), Get1()->GetValue());
-    }
-};
-
-class MinNumber : public Number {
-public:
-    MinNumber(Number* pvalue0, Number* pvalue1) :
-        Number(pvalue0, pvalue1)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-    Number* Get1() { return Number::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = min(Get0()->GetValue(), Get1()->GetValue());
-    }
-};
-
-class MaxNumber : public Number {
-public:
-    MaxNumber(Number* pvalue0, Number* pvalue1) :
-        Number(pvalue0, pvalue1)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-    Number* Get1() { return Number::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = max(Get0()->GetValue(), Get1()->GetValue());
-    }
-};
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// Number
-//
-//////////////////////////////////////////////////////////////////////////////
-
-TRef<Number> Subtract(Number* pvalue1, Number* pvalue2)
-{
-    return new SubtractNumber(pvalue1, pvalue2);
-}
-
-TRef<Number> Add(Number* pvalue1, Number* pvalue2)
-{
-    return new AddNumber(pvalue1, pvalue2);
-}
-
-TRef<Number> Multiply(Number* pvalue1, Number* pvalue2)
-{
-    return new MultiplyNumber(pvalue1, pvalue2);
-}
-
-TRef<Number> Divide(Number* pvalue1, Number* pvalue2)
-{
-    return new DivideNumber(pvalue1, pvalue2);
-}
 
 TRef<Number> Or(Number* pvalue1, Number* pvalue2)
 {
@@ -835,103 +684,6 @@ TRef<Number> And(Number* pvalue1, Number* pvalue2)
 TRef<Number> XOr(Number* pvalue1, Number* pvalue2)
 {
     return new XOrNumber(pvalue1, pvalue2);
-}
-
-TRef<Number> Mod(Number* pvalue1, Number* pvalue2)
-{
-    return new ModNumber(pvalue1, pvalue2);
-}
-
-TRef<Number> Min(Number* pvalue1, Number* pvalue2)
-{
-    return new MinNumber(pvalue1, pvalue2);
-}
-
-TRef<Number> Max(Number* pvalue1, Number* pvalue2)
-{
-    return new MaxNumber(pvalue1, pvalue2);
-}
-
-TRef<Number> Sin(Number* pvalue)
-{
-    return new SinNumber(pvalue);
-}
-
-TRef<Number> Cos(Number* pvalue)
-{
-    return new CosNumber(pvalue);
-}
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// Boolean
-//
-//////////////////////////////////////////////////////////////////////////////
-
-class AndBoolean : public Boolean {
-public:
-    AndBoolean(Boolean* pvalue0, Boolean* pvalue1) :
-        Boolean(pvalue0, pvalue1)
-    {
-    }
-
-    Boolean* Get0() { return Boolean::Cast(GetChild(0)); }
-    Boolean* Get1() { return Boolean::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() =
-               Get0()->GetValue()
-            && Get1()->GetValue();
-    }
-};
-
-class OrBoolean : public Boolean {
-public:
-    OrBoolean(Boolean* pvalue0, Boolean* pvalue1) :
-        Boolean(pvalue0, pvalue1)
-    {
-    }
-
-    Boolean* Get0() { return Boolean::Cast(GetChild(0)); }
-    Boolean* Get1() { return Boolean::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() =
-               Get0()->GetValue()
-            || Get1()->GetValue();
-    }
-};
-
-class NotBoolean : public Boolean {
-public:
-    NotBoolean(Boolean* pvalue0) :
-        Boolean(pvalue0)
-    {
-    }
-
-    Boolean* Get0() { return Boolean::Cast(GetChild(0)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = !(Get0()->GetValue());
-    }
-};
-
-TRef<Boolean> And(Boolean* pvalue1, Boolean* pvalue2)
-{
-    return new AndBoolean(pvalue1, pvalue2);
-}
-
-TRef<Boolean> Or(Boolean* pvalue1, Boolean* pvalue2)
-{
-    return new OrBoolean(pvalue1, pvalue2);
-}
-
-TRef<Boolean> Not(Boolean* pvalue1)
-{
-    return new NotBoolean(pvalue1);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -961,6 +713,14 @@ ZString GetString(int indent, const Point& point)
           "Point("
         + ZString(point.X()) + ", "
         + ZString(point.Y()) + ")";
+}
+
+ZString GetString(int indent, const WinPoint& point)
+{
+	return
+		"WinPoint("
+		+ ZString(point.X()) + ", "
+		+ ZString(point.Y()) + ")";
 }
 
 ZString GetString(int indent, const Rect& Rect)
@@ -1101,11 +861,23 @@ ZString GetFunctionName(const Point& value)
     return "Point";
 }
 
+ZString GetFunctionName(const WinPoint& value)
+{
+	return "WinPoint";
+}
+
 void Write(IMDLBinaryFile* pmdlFile, const Point& value)
 {
     pmdlFile->WriteReference("Point");
     TRef<ZFile> pfile = pmdlFile->WriteBinary();
     pfile->Write((void*)&value, sizeof(value));
+}
+
+void Write(IMDLBinaryFile* pmdlFile, const WinPoint& value)
+{
+	pmdlFile->WriteReference("WinPoint");
+	TRef<ZFile> pfile = pmdlFile->WriteBinary();
+	pfile->Write((void*)&value, sizeof(value));
 }
 
 ZString GetFunctionName(const Vector& value)

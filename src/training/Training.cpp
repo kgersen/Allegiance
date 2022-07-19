@@ -17,7 +17,8 @@
 #include    "Mission4.h"
 #include    "Mission5.h"
 #include    "Mission6.h"
-#include	"Mission8.h" //TheBored 06-JUL-07: Adding nanite mission.
+#include    "Mission8.h" //TheBored 06-JUL-07: Adding nanite mission.
+#include    "Mission10.h"
 
 namespace Training
 {
@@ -75,11 +76,12 @@ namespace Training
             case c_TM_6_Practice_Arena:
                 g_pMission = new Mission6;
                 break;
-			//TheBored 06-JUL-07: adding nanite mission
-			case c_TM_8_Nanite:
-				g_pMission = new Mission8;
-				break;
-			//End TB
+            case c_TM_8_Nanite:  //TheBored 06-JUL-07: adding nanite mission
+                g_pMission = new Mission8;
+                break;
+            case c_TM_10_Free_Flight:
+                g_pMission = new Mission10;
+                break;
             case c_TM_7_Live:
                 g_bIsMission7 = true;
                 // fall through
@@ -148,6 +150,11 @@ namespace Training
     }
 
     //------------------------------------------------------------------------------
+    bool            CommandViewEnabled(void) {
+        return g_pMission ? g_pMission->GetCommandViewEnabled() : false;
+    }
+
+    //------------------------------------------------------------------------------
     int             GetTrainingMissionID (void)
     {
         if (g_bIsMission7)
@@ -162,6 +169,13 @@ namespace Training
     {
         assert (g_pMission);
         return g_pMission->GetStartSectorID ();
+    }
+
+    //------------------------------------------------------------------------------
+    int             GetKillCount(void)
+    {
+        assert(g_pMission);
+        return g_pMission->GetKillCount();
     }
 
     //------------------------------------------------------------------------------
@@ -209,6 +223,28 @@ namespace Training
         if (g_pMission)
             return g_pMission->RestoreShip ();
         return true;
+    }
+
+    //------------------------------------------------------------------------------
+    void            ShipKilled(IshipIGC* pShip, ImodelIGC* pLauncher)
+    {
+        if (g_pMission)
+            g_pMission->ShipKilled(pShip, pLauncher);
+    }
+
+    //------------------------------------------------------------------------------
+    bool            HandlePickDefaultOrder(IshipIGC* pShip)
+    {
+        if (g_pMission)
+            return g_pMission->HandlePickDefaultOrder(pShip);
+        return false;
+    }
+
+    //------------------------------------------------------------------------------
+    void            KillStationEvent(IstationIGC* pStation, ImodelIGC* pLauncher)
+    {
+        if (g_pMission)
+            return g_pMission->KillStationEvent(pStation, pLauncher);
     }
 
     //------------------------------------------------------------------------------

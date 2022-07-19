@@ -5,7 +5,6 @@
 // sound card.
 //
 
-#include "pch.h"
 #include "soundbase.h"
 #include "soundutil.h"
 
@@ -55,13 +54,13 @@ public:
         return m_peventsourceFinished;
     };
 
-    // Gets an interface for tweaking the sound, if supported, NULL otherwise.
+    // Gets an interface for tweaking the sound, if supported, nullptr otherwise.
     virtual TRef<ISoundTweakable> GetISoundTweakable()
     {
         return this;
     };
 
-    // Gets an interface for tweaking the sound, if supported, NULL otherwise.
+    // Gets an interface for tweaking the sound, if supported, nullptr otherwise.
     virtual TRef<ISoundTweakable3D> GetISoundTweakable3D()
     {
         return this;
@@ -254,7 +253,7 @@ public:
     // Creates a static sound buffer of the given wave file.  If bLooping is 
     // true, the sound will loop until stopped.
     virtual HRESULT CreateStaticBuffer(TRef<ISoundInstance>& psoundNew, 
-        ISoundPCMData* pcmdata, bool bLooping, ISoundPositionSource* psource = NULL)
+        ISoundPCMData* pcmdata, bool bLooping, ISoundPositionSource* psource = nullptr)
     {
         DummySoundInstance* dummySound = new DummySoundInstance(bLooping, psource);
         psoundNew = (ISoundInstance*)dummySound;
@@ -267,7 +266,7 @@ public:
     // play the rest of the sound.  
     virtual HRESULT CreateASRBuffer(TRef<ISoundInstance>& psoundNew, 
         ISoundPCMData* pcmdata, unsigned uLoopStart, unsigned uLoopLength, 
-        ISoundPositionSource* psource = NULL)
+        ISoundPositionSource* psource = nullptr)
     {
         DummySoundInstance* dummySound = new DummySoundInstance(true, psource);
         psoundNew = (ISoundInstance*)dummySound;

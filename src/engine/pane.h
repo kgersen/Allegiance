@@ -7,6 +7,13 @@
 #ifndef _Pane_H_
 #define _Pane_H_
 
+#include <color.h>
+#include <input.h>
+#include <rect.h>
+
+struct UIVERTEX;
+class Surface;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // SystemColors

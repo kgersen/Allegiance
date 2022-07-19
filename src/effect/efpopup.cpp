@@ -1,4 +1,11 @@
-#include "pch.h"
+#include "efpopup.h"
+
+#include <button.h>
+#include <controls.h>
+#include <event.h>
+#include <image.h>
+
+#include "efapp.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //

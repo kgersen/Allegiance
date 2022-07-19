@@ -1,4 +1,9 @@
-#include "pch.h"
+#include "image.h"
+
+#include <base.h>
+
+#include "enginewindow.h"
+#include "namespace.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -123,7 +128,7 @@ TRef<Surface> ConstantImage::GetSurface()
 
 void ConstantImage::Render(Context* pcontext)
 {
-    pcontext->DrawImage(m_psurface);
+    pcontext->DrawImage3D(m_psurface, Color(1, 1, 1));
 }
 
 ZString ConstantImage::GetString(int indent)
@@ -131,19 +136,12 @@ ZString ConstantImage::GetString(int indent)
     return
           "ImportImage(\""
         + m_str + "\", "
-        + GetString(m_psurface->HasColorKey()) + ")";
+        + ")";
 }
 
 ZString ConstantImage::GetFunctionName()
 {
     return "ImportImage";
-}
-
-void ConstantImage::Write(IMDLBinaryFile* pmdlFile)
-{
-    pmdlFile->WriteReference("ImportImage");
-    TRef<ZFile> pfile = pmdlFile->WriteBinary();
-    m_psurface->Write(pfile);
 }
 
 //Imago 6/24/09 - removed the color hit-check check, see modeler.cpp(2520), these problems are related.
@@ -156,26 +154,6 @@ MouseResult ConstantImage::HitTest(IInputProvider* pprovider, const Point& point
 
     return MouseResult();
 }
-
-/*
-MouseResult ConstantImage::HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured)
-{
-    if (m_bounds.GetRect().Inside(point)) {
-        if (m_psurface->HasColorKey()) {
-            bool bHit = m_psurface->GetColor(WinPoint((int)point.X(), (int)point.Y())) != m_psurface->GetColorKey();
-            m_psurface->ReleasePointer();
-            
-            if (bHit) {
-                return MouseResultHit();
-            }
-        } else {
-            return MouseResultHit();
-        }
-    }
-
-    return MouseResult();
-}
-*/
 
 
 
@@ -244,7 +222,6 @@ TRef<Image> CreateConstantImage3D(Surface* psurface, ColorValue* pcolor)
 class StringImage : public Image {
 private:
     Justification     m_justification;
-    int               m_width;
     int               m_indent;
     TRef<IEngineFont> m_pfont;
 
@@ -256,20 +233,20 @@ private:
 
     StringValue* GetString() { return StringValue::Cast(GetChild(0)); }
     ColorValue*  GetColor()  { return  ColorValue::Cast(GetChild(1)); }
+    Number* GetWidth() { return Number::Cast(GetChild(2)); }
 
 public:
     StringImage(
         Justification justification,
         IEngineFont*  pfont,
         ColorValue*   pcolor,
-        int           width,
+        Number*       pwidth,
         StringValue*  pstring,
         int           indent
     ) :
-        Image(pstring, pcolor),
+        Image(pstring, pcolor, pwidth),
         m_justification(justification),
         m_pfont(pfont),
-        m_width(width),
         m_indent(indent)
     {
     }
@@ -360,25 +337,27 @@ public:
     void CalcBounds()
     {
         ZString str    = GetString()->GetValue();
+        float fWidth = GetWidth()->GetValue();
         int     xsize  = 0;
         int     ysize  = 0;
         int     indent = 0;
 
         while (!str.IsEmpty()) {
-            ZString strLine = BreakLine(str, m_width - indent);
+            ZString strLine = BreakLine(str, fWidth - indent);
             WinPoint size   = m_pfont->GetTextExtent(strLine);
 
-            xsize  = max(xsize, size.X());
+            xsize  = std::max(xsize, size.X());
             ysize += size.Y();
             indent = m_indent;
         }
 
-        m_bounds.SetRect(Rect(0, (float)(-ysize), (float)m_width, 0));
+        m_bounds.SetRect(Rect(0, (float)(-ysize), fWidth, 0));
     }
 
     void Render(Context* pcontext)
     {
         ZString     str    = GetString()->GetValue();
+        float fWidth = GetWidth()->GetValue();
         const Rect& rect   = m_bounds.GetRect();
         int         y      = 0;
         int         indent = 0;
@@ -386,16 +365,16 @@ public:
         const Color& color = GetColor()->GetValue();
 
         while (!str.IsEmpty()) {
-            ZString  strLine = BreakLine(str, m_width - indent);
+            ZString  strLine = BreakLine(str, fWidth - indent);
             WinPoint size    = m_pfont->GetTextExtent(strLine);
             int      x;
 
             if (m_justification == JustifyLeft()) {
                 x = 0;
             } else if (m_justification == JustifyRight()) {
-                x = m_width - size.X();
+                x = fWidth - size.X();
             } else if (m_justification == JustifyCenter()) {
-                x = (m_width - size.X()) / 2;
+                x = (fWidth - size.X()) / 2;
             } else {
                 ZError("Invalid Justification");
             }
@@ -429,11 +408,22 @@ TRef<Image> CreateStringImage(
     Justification justification,
     IEngineFont*  pfont,
     ColorValue*   pcolor,
+    Number*       pwidth,
+    StringValue*  pstring,
+    int           indent
+) {
+    return new StringImage(justification, pfont, pcolor, pwidth, pstring, indent);
+}
+
+TRef<Image> CreateStringImage(
+    Justification justification,
+    IEngineFont*  pfont,
+    ColorValue*   pcolor,
     int           width,
     StringValue*  pstring,
     int           indent
 ) {
-    return new StringImage(justification, pfont, pcolor, width, pstring, indent);
+    return CreateStringImage(justification, pfont, pcolor, new Number(width), pstring, indent);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -611,7 +601,6 @@ AnimatedImage::AnimatedImage(Number* ptime, Surface* psurfaceSource, int nRows, 
     m_psurfaces.SetCount(nRows * nCols);
 
     if (m_psurfaces.GetCount() == 1) {
-        psurfaceSource->SetColorKey(Color(0, 0, 0));
         m_psurfaces.Set(0, psurfaceSource);
     } else {
         for (int row = 0; row < nRows; row++) {
@@ -624,16 +613,9 @@ AnimatedImage::AnimatedImage(Number* ptime, Surface* psurfaceSource, int nRows, 
                 TRef<Surface> psurfaceTextureSource =
                     psurfaceSource->CreateCompatibleSurface(WinPoint(size, size), SurfaceType2D());
 
-				// Set the colour key, and store in the vector of surfaces.
-                psurfaceTextureSource->SetColorKey(Color(0, 0, 0));
-
 				ZAssert(size == w && size == h);
 
-				// Fill the new texture with the colour key.
-//                psurfaceTextureSource->FillSurfaceWithColorKey();
-
 				// Copy in a portion of the original image into the new texture.
-//				psurfaceTextureSource->BitBlt(	WinPoint(0, 0), psurfaceSource, WinRect(x, y, x + size, y + size) );
 				psurfaceTextureSource->CopySubsetFromSrc( WinPoint(0, 0), psurfaceSource, WinRect(x, y, x + size, y + size) );
 
                 m_psurfaces.Set(index, psurfaceTextureSource);
@@ -659,21 +641,7 @@ TRef<Surface> AnimatedImage::GetSurface()
 
 MouseResult AnimatedImage::HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured)
 {
-    //  , AnimatedImage should be a vector of images instead of a vector of psurfaces
-
-    Surface* psurface = GetSurface();
-
-    bool bHit =
-           (!psurface->HasColorKey())
-        || psurface->GetColor(WinPoint((int)point.X(), (int)point.Y())) != psurface->GetColorKey();
-
-    psurface->ReleasePointer();
-
-    if (bHit) {
-        return MouseResultHit();
-    }
-
-    return MouseResult();
+    return MouseResultHit();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -696,6 +664,7 @@ void WrapImage::SetImage(Image* pvalue)
 
 void WrapImage::CalcBounds()
 {
+    GetImage()->CalcBounds();
     m_bounds = GetImage()->GetBounds();
 }
 

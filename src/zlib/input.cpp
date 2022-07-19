@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "input.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -16,12 +16,12 @@ public:
     {
     }
 
-    bool OnChar(IInputProvider* pprovider, const KeyState& ks)
+    bool OnChar(IInputProvider* pprovider, const KeyState& ks) override
     {
         return m_pkeyboardInput->OnChar(pprovider, ks);
     }
 
-    bool OnKey(IInputProvider* pprovider, const KeyState& ks, bool& fForceTranslate)
+    bool OnKey(IInputProvider* pprovider, const KeyState& ks, bool& fForceTranslate) override
     {
         return m_pkeyboardInput->OnKey(pprovider, ks, fForceTranslate);
     }
@@ -49,32 +49,32 @@ public:
     {
     }
 
-    void RemoveCapture()
+    void RemoveCapture() override
     {
         m_pmouseInput->RemoveCapture();
     }
 
-    MouseResult HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured)
+    MouseResult HitTest(IInputProvider* pprovider, const Point& point, bool bCaptured) override
     {
         return m_pmouseInput->HitTest(pprovider, point, bCaptured);
     }
 
-    void MouseMove(IInputProvider* pprovider, const Point& point, bool bCaptured, bool bInside)
+    void MouseMove(IInputProvider* pprovider, const Point& point, bool bCaptured, bool bInside) override
     {
         m_pmouseInput->MouseMove(pprovider, point, bCaptured, bInside);
     }
 
-    void MouseEnter(IInputProvider* pprovider, const Point& point)
+    void MouseEnter(IInputProvider* pprovider, const Point& point) override
     {
         m_pmouseInput->MouseEnter(pprovider, point);
     }
 
-    void MouseLeave(IInputProvider* pprovider)
+    void MouseLeave(IInputProvider* pprovider) override
     {
         m_pmouseInput->MouseLeave(pprovider);
     }
 
-    MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown)
+    MouseResult Button(IInputProvider* pprovider, const Point& point, int button, bool bCaptured, bool bInside, bool bDown) override
     {
         return m_pmouseInput->Button(pprovider, point, button, bCaptured, bInside, bDown);
     }

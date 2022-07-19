@@ -12,8 +12,7 @@
 **  History:
 */
 // droneTypeIGC.cpp : Implementation of CdroneTypeIGC
-#include "pch.h"
-#include "droneTypeIGC.h"
+#include "dronetypeigc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CdroneTypeIGC

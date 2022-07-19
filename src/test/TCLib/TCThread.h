@@ -1,7 +1,9 @@
 #ifndef __TCThread_h__
 #define __TCThread_h__
 
+#include <zassert.h>
 #include "AutoHandle.h"
+
 
 /////////////////////////////////////////////////////////////////////////////
 // TCThread.h | Declaration of the TCThread class

@@ -1094,6 +1094,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             CASTPFM(pfmDocked, S, DOCKED, pfm);
 
             //Pretend the server sends a ship delete message for everything the player could see
+			if(m_deleteShipInfoOnDockMessage == true) // BT - WOPR - Bots don't use the sector map, so they don't get this information restored by clicking on sectors like humans do. This enables bots to keep thier current view of the sectors.
             {
                 //We could use the old cluster ... but modifying the contents of a list
                 const ShipListIGC*  ships = m_pCoreIGC->GetShips();
@@ -1161,14 +1162,14 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                         {
                             // The ship has moved to the same cluster as the player
                             debugf("Moving %s/%d to %s\n",
-                                   ship->GetName(), ship->GetObjectID(),
-                                   pcluster->GetName());
+                                ship->GetName(), ship->GetObjectID(),
+                                pcluster->GetName());
 
                             ship->SetCluster(pcluster);
                             ship->SetLastUpdate(time);
                         }
                         else
-                            assert (ship->GetCluster() == pcluster);
+                            assert (m_allowClientToReceiveClusterUpdatesForAllClusters == true || ship->GetCluster() == pcluster); // BT - WOPR - Enable bot clients to receive updates for clusters they are not currently in. This allows bots to track asteroids and warps that they have already seen.
                     }
                 }
             }
@@ -1209,7 +1210,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                     {
                         char    bfr[100];
                         sprintf(bfr, "You have started donating your income to %s", pshipTo->GetName());
-                        PostText(true, bfr);
+                        PostPlainText(true, bfr);
                     }
                     else
                     {
@@ -1221,7 +1222,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                     char    bfr[100];
                     sprintf(bfr, "%s is now donating to you", pshipBy->GetName());
 
-                    PostText(true, bfr);
+                    PostPlainText(true, bfr);
 
                     // count donors, and play the designated investor sound if we've gone from 0 to 1
                     int nNumDonors = 0;
@@ -1240,7 +1241,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 {
                     char    bfr[100];
                     sprintf(bfr, "%s has stopped donating to you", pshipBy->GetName());
-                    PostText(true, bfr);
+                    PostPlainText(true, bfr);
                 }
             }
 
@@ -1833,8 +1834,16 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 {
                     ImodelIGC*  pmodel = m_pCoreIGC->GetModel(pfmOC->objectType, pfmOC->objectID);
 
-                    if (pship != m_ship)
+                    if (pship != m_ship) {
                         pship->SetCommand(pfmOC->command, pmodel, pfmOC->commandID);
+
+                        // Post notification for miners
+                        if (pfmOC->commandID == c_cidMine) {
+                            PlayerInfo* ppi = (PlayerInfo*)(pship->GetPrivateData());
+                            if (ppi && pmodel && ppi->LastSeenSector() != pmodel->GetCluster()->GetObjectID())
+                                PostText(false, "%s: Going to mine %s in %s.", pship->GetName(), pmodel->GetName(), pmodel->GetCluster()->GetName());
+                        }
+                    }
                     else if (pfmOC->command == c_cmdCurrent)
                         m_pmodelServerTarget = pmodel;
 
@@ -2166,9 +2175,9 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
 #endif
 
 				// BT - STEAM
-                OnLogonAck(false, false, "The client and server data files are out of sync. Requesting a file reverification from Steam. Please check the Steam app "
+                OnLogonAck(false, false, "The client and server core files are out of sync. Requesting a file reverification from Steam. Please check the Steam app "
 				"for the download status on any updates, and try re-launching the game in a few minutes. If the problem persists, please un-install and re-install again, "
-				"and feel free to reach out to the help line in the forums.");
+				"and feel free to reach out to the help line on Discord or in the forums.");
             }
             else
             {
@@ -2948,7 +2957,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
                 {
                     char    bfr[100];
                     sprintf(bfr, "%s has become the team leader", pplayer->CharacterName());
-                    PostText(true, bfr);
+                    PostPlainText(true, bfr);
                 }
             }
 
@@ -3414,7 +3423,7 @@ HRESULT BaseClient::HandleMsg(FEDMESSAGE* pfm,
             //
             // Let's do it!
             //
-			m_pAutoDownload->BeginUpdate(pAutoUpdateSink, true, false); //#111 force check
+			m_pAutoDownload->BeginUpdate(pAutoUpdateSink, true); //#111 force check
             // m_pAutoDownload could be NULL at this point, if the autodownload system decided
             // not to do a download after all.  This can happen if there is an error or if
             // the client was already up-to-date.

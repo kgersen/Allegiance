@@ -3,6 +3,7 @@
 //
 
 #include "UserAcct.h"
+#include <algorithm>
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -308,8 +309,8 @@ HRESULT TCUserAccount::SetRunAsInteractiveUser(LPCTSTR szAppID)
     return S_FALSE;
 
   // Copy the specified AppID string to a non-const wide string
-  USES_CONVERSION;
-  UINT cchAppID = max(_tcslen(szAppID), 48) + 1;
+  USES_CONVERSION; 
+  UINT cchAppID = std::max<UINT>(_tcslen(szAppID), 48) + 1;
   LPWSTR pszAppID = (LPWSTR)_alloca(cchAppID * sizeof(WCHAR));
   wcscpy(pszAppID, T2CW(szAppID));
 
@@ -361,7 +362,7 @@ HRESULT TCUserAccount::SetRunAsUser(LPCTSTR szAppID, LPCTSTR szUserName, LPCTSTR
 
   // Copy the specified AppID string to a non-const wide string
   USES_CONVERSION;
-  UINT cchAppID = max(_tcslen(szAppID), 48) + 1;
+  UINT cchAppID = std::max<UINT>(_tcslen(szAppID), 48) + 1;
   LPWSTR pszAppID = (LPWSTR)_alloca(cchAppID * sizeof(WCHAR));
   wcscpy(pszAppID, T2CW(szAppID));
 

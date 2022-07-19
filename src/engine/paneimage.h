@@ -1,12 +1,18 @@
 #ifndef _PaneImage_H_
 #define _PaneImage_H_
 
+#include <tref.h>
+
+class Engine;
+class Image;
+class Pane;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // PaneImage
 //
 /////////////////////////////////////////////////////////////////////////////
 
-TRef<Image> CreatePaneImage(Engine* pengine, SurfaceType stype, bool bColorKey, Pane* ppane);
+TRef<Image> CreatePaneImage(Engine* pengine, bool bColorKey, Pane* ppane);
 
 #endif

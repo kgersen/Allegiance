@@ -10,34 +10,34 @@
 **  History:
 */
 
-#include    "pch.h"
-#include    "mapmakerIGC.h"
+#include    "mapmakerigc.h"
 
 
 //
 // Static members.
 // 08/30/04 -KGJV: added Titty Baby memorial sector name
 // 12/14/11 -pkk: added Tj Butler memorial sector name
+// 5/28/2019 - BT - Added MrChaos, Wasp to memorial sector list. 
 const char * CMapData::smszClusterName[c_NumClusterNames] =
 {
     "Aegis",        "Aeroflex",     "Ahto",         "Aredne",
-    "Blenhem",      "Borsonis",     "Bragi",        "Caladonia", "Cirt",
-    "Claytow",      "Denom",        "Dunatis",    /*"Earth",*/ "Eleesh",
-    "Enlil",        "Fejfar",       "Fenris",       "Fierro",
-    "Freya",        "Gala",         "Gery",
-    "Gobo",         "Goron",        "Holokine",   /*"Jupiter",*/ "Jol",
+    "Blenhem",      "Borsonis",     "Bragi",        "Caladonia",	
+	"Cirt",			"Claytow",      "Denom",        "Dunatis",    
+	"Eleesh",		"Enlil",        "Fejfar",       "Fenris",       
+	"Fierro",		"Freya",        "Gala",         "Gery",
+    "Gobo",         "Goron",        "Holokine",		"Jol",
     "Karlo",        "Kassano",      "Kassimier",    "Kik",
     "Kilvero",      "Kishoten",     "Kuat",         "L'Sau",
     "Larchis",      "Lemminakean",  "Leighton",     "Louhi",
-    "Loviatar",     "Luerentia",  /*"Mars",*/       "Meesh", "Mercor",
-  /*"Mercury",*/    "Miekko",       "Mielikki",     "Monmar",
-    "Nadir",      /*"Neptune",*/    "Night",        "Oblivion",
-    "Okanagon",     "Oxyl",       /*"Pluto",*/      "Pohjola",
-    "Raiko",        "Resnik",       "Rib'zki",		"Rimin",  "Sleipener",
-    "Solitaire",    "Soron",        "Sri Metsa",    "Surma",
-    "Tathlum",      "Tierankeen",   "Tjeerd",       "Torc",
-    "Touni",        "Tauceti",      "Tj Butler",    "Titty Baby"    ,"Turakeen",   /*"Uranus",*/"Udar", "Virkinow",
-  /*"Venus",*/      "Xuping"
+    "Loviatar",     "Luerentia",	"Meesh",		"Mercor",
+	"Miekko",       "Mielikki",     "Monmar",		"MrChaos",
+    "Nadir",        "Night",        "Oblivion",		"Okanagon",     
+	"Oxyl",			"Pohjola",	    "Raiko",        "Resnik",       
+	"Rib'zki",		"Rimin",		"Sleipener",	"Solitaire",    
+	"Soron",        "Sri Metsa",    "Surma",		"Tathlum",      
+	"Tierankeen",   "Tjeerd",       "Torc",			"Touni",        
+	"Tauceti",      "Tj Butler",    "Titty Baby",	"Turakeen",   
+	"Udar",			"Virkinow",		"Wasp",			"Xuping"
 } ;
 
 const char * CmapMakerIGC::smszPlanetName[c_NumberOfPlanetPosters] =

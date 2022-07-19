@@ -1,6 +1,15 @@
 #ifndef _Image_h_
 #define _Image_h_
 
+#include <tref.h>
+
+#include "engine.h"
+#include "model.h"
+#include "transform.h"
+#include "viewport.h"
+
+class IEventSource;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 //  Other Images
@@ -68,7 +77,6 @@ public:
 
     ZString GetFunctionName();
     ZString GetString(int indent);
-    void    Write(IMDLBinaryFile* pfile);
 
     //
     // IMouseInput methods
@@ -153,7 +161,14 @@ public:
     }
 
     void SetImage(Image* pvalue);
-    Image* GetImage() { return Image::Cast(GetChild(0)); }
+    Image* GetImage() 
+	{
+		// BT - 10/17 - If there are no children, then this was causing a crash.
+		if (GetChildCount() > 0)
+			return Image::Cast(GetChild(0));
+		else
+			return nullptr;
+	}
 
     //
     // Image methods
@@ -192,6 +207,15 @@ TRef<Image> CreateStringImage(
     IEngineFont*  pfont,
     ColorValue*   pcolor,
     int           width,
+    StringValue*  pstring,
+    int           indent = 0
+);
+
+TRef<Image> CreateStringImage(
+    Justification justification,
+    IEngineFont*  pfont,
+    ColorValue*   pcolor,
+    Number*       pwidth,
     StringValue*  pstring,
     int           indent = 0
 );

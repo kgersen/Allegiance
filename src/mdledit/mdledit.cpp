@@ -78,7 +78,7 @@ public:
                 vec.x,
                 vec.y + m_amplitude * sin(m_frequency * vec.x + m_phase),
                 vec.z
-                //min(0, vec.z * max(1, vec.x * 0.25f))
+                //std::min(0, vec.z * std::max(1, vec.x * 0.25f))
             );
     }
 };
@@ -195,8 +195,6 @@ public:
             m_psurface = m_pmodeler->LoadSurface("testtexturebmp", false);
             //m_psurface = m_pmodeler->LoadSurface("fig04bmp", false);
             //m_psurface = m_pmodeler->LoadSurface("f101bmp", false);
-
-            m_psurface->SetColorKey(Color::Black());
 
             for (int qindex = 0; qindex < 100; qindex++) {
                 InitPoly(qindex);
@@ -517,6 +515,7 @@ public:
 
     MDLEditWindow(
         EffectApp* papp, 
+        UpdatingConfiguration* pConfiguration,
         const ZString& strCommandLine, 
         bool bImageTest,
         bool bTest, 
@@ -525,6 +524,7 @@ public:
     ) :
         EffectWindow(
             papp,
+            pConfiguration,
             strCommandLine,
             "MDLEdit",
             false,
@@ -564,7 +564,6 @@ public:
 
         //SetFullscreen(true);
         //GetEngine()->SetDebugFullscreen(true);
-        GetEngine()->Set3DAccelerationImportant(true);
         SetShowFPS(true);
 
         //
@@ -670,8 +669,6 @@ public:
                 new CursorSurfaceSite()
             );
 
-        psurfaceCursor->SetColorKey(Color::Black());
-
         m_pimageCursor =
            new TransformImage(
                 new ConstantImage(
@@ -775,8 +772,6 @@ public:
 				true,
 				Color( 0, 0, 0 ),
 				"fxmine", true );
-		psurface->SetColorKey(Color(0, 0, 0));
-		psurface->SetEnableColorKey(true);
 
 
 
@@ -993,7 +988,7 @@ public:
                             GetModeler()->LoadGeo("bom01a"),
                             new AnimateRotateTransform(
                                 new VectorValue(Vector(0, 1, 0)),
-                                Multiply(GetTime(), new Number(1.0))
+                                NumberTransform::Multiply(GetTime(), new Number(1.0))
                             )
                         ),
                         new RotateTransform(Vector(1, 0, 0), pi/8)
@@ -1126,7 +1121,7 @@ public:
                 }
 
                 //float screenRadius = pcontext->GetScreenRadius(Vector::GetZero(), m_radius);
-                //pcontext->SetLOD(screenRadius * max(m_lodBiasMin, s_lodBias));
+                //pcontext->SetLOD(screenRadius * std::max(m_lodBiasMin, s_lodBias));
 
                 GetGeo()->Render(pcontext);
 
@@ -1141,11 +1136,13 @@ public:
 
     void AddDebris()
     {
+		TRef<ModifiableNumber> m_mdlDebrisDensity = new ModifiableNumber(1.0f);
         m_pgroupGeo->AddGeo(
             CreateDebrisGeo(
                 GetModeler(),
                 GetTime(),
-                m_pviewport
+                m_pviewport,
+				m_mdlDebrisDensity
             )
         );
     }
@@ -1185,7 +1182,6 @@ public:
             CreateVisibleImage(
                 CreatePaneImage(
                     GetEngine(),
-                    SurfaceType2D(),
                     false,
                     ppane
                 ),
@@ -1642,7 +1638,7 @@ public:
         char  szValue[MAX_PATH];
         DWORD cbValue = MAX_PATH;
 
-        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+        if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
         {
             // Get the art path from the registry
             if (ERROR_SUCCESS != ::RegQueryValueEx(hKey, "ArtPath", NULL, &dwType, (unsigned char*)&szValue, &cbValue))
@@ -1662,8 +1658,16 @@ public:
             }
             pathStr = szValue;
 		}
+
+        TRef<UpdatingConfiguration> pConfiguration = new UpdatingConfiguration(
+            std::make_shared<FallbackConfigurationStore>(
+                CreateJsonConfigurationStore(GetExecutablePath() + "\\config_mdledit.json"),
+                std::make_shared<RegistryConfigurationStore>(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT "\\MDLEdit3DSettings")
+            )
+        );
+
 		// Ask the user for video settings.
-		if( PromptUserForVideoSettings(false, true, 0, GetModuleHandle(NULL), pathStr, ALLEGIANCE_REGISTRY_KEY_ROOT "\\MDLEdit3DSettings") == false )
+		if( PromptUserForVideoSettings(false, 0, GetModuleHandle(NULL), pathStr, pConfiguration) == false )
 		{
 			return E_FAIL;
 		}
@@ -1706,7 +1710,7 @@ public:
         // Create the window
         //
 
-        m_pwindow = new MDLEditWindow(this, strCommandLine, bImageTest, bTest, initialTest, pathStr);
+        m_pwindow = new MDLEditWindow(this, pConfiguration, strCommandLine, bImageTest, bTest, initialTest, pathStr);
 
         //
         // Parse the command line

@@ -3,6 +3,7 @@
 #define _DEVICEMODES_H_
 
 #include "d3d9.h"
+#include "D3DDevice9.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 class CD3DDeviceModeData
@@ -108,7 +109,7 @@ public:
 								int iAAIndex,
 								class CLogFile * pLogFile );
 
-	char *		GetMaxTextureString( int iIndex );
+    const char *		GetMaxTextureString( int iIndex );
 
 
 
@@ -118,6 +119,9 @@ private:
 	SAdapterMode * FindMatchingWindowedMode(	CD3DDevice9::SD3DDeviceSetupParams * pParams,
 												SAdapterMode * pFSMode,
 												int iDeviceIndex );
+    SAdapterMode * FindMatchingWindowedMode(CD3DDevice9::SD3DDeviceSetupParams * pParams,
+        WinPoint size,
+        int iDeviceIndex);
 };
 
 #endif // _DEVICEMODES_H_

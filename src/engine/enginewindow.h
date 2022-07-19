@@ -1,6 +1,24 @@
 #ifndef _enginewindow_h_
 #define _enginewindow_h_
 
+#include <window.h>
+#include <ztime.h>
+
+#include "caption.h"
+#include "engine.h"
+#include "inputengine.h"
+#include "menu.h"
+
+#include "Configuration.h"
+
+class Context;
+class EngineApp;
+class GroupImage;
+class Surface;
+class TransformImage;
+class TranslateTransform2;
+class WrapImage;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // A window with an associated engine object
@@ -70,6 +88,8 @@ protected:
     //
     //////////////////////////////////////////////////////////////////////////////
 
+    TRef<UpdatingConfiguration> m_pConfiguration;
+
     TRef<Engine>               m_pengine;
     TRef<Modeler>              m_pmodeler;
     TRef<InputEngine>          m_pinputEngine;
@@ -91,7 +111,6 @@ protected:
     TRef<Image>                m_pimageCursor;
     TRef<IPopupContainer>      m_ppopupContainer;
 
-    WinPoint                   m_sizeWindowed;
     WinPoint                   m_offsetWindowed;
 
     bool                       m_bMovingWindow;
@@ -103,11 +122,10 @@ protected:
     bool                       m_bInvalid;
     bool                       m_bActive;
     bool                       m_bShowCursor;
-    bool                       m_bMouseEnabled;
     bool                       m_bRestore;
     bool                       m_bMouseInside;
     bool                       m_bMoveOnHide;
-	bool						m_bStartFullScreen;
+	TRef<SimpleModifiableValue<bool>> m_pPreferredFullscreen;
 	bool						m_bWindowStateMinimised;
 	bool						m_bWindowStateRestored;
 	bool						m_bClickBreak;
@@ -190,7 +208,7 @@ protected:
     void UpdateCursor();
     
     void UpdateInput();
-    void HandleMouseMessage(UINT message, const Point& point, UINT nFlags = NULL);
+    void HandleMouseMessage(UINT message, const Point& point, UINT nFlags = 0);
 
     void ParseCommandLine(const ZString& strCommandLine, bool& bStartFullscreen);
     void DoIdle();
@@ -209,13 +227,12 @@ protected:
     ZString GetResolutionString();
     ZString GetRenderingString();
     ZString GetPixelFormatString(); // KGJV 32B
-    ZString GetAllow3DAccelerationString();
-    ZString GetAllowSecondaryString();
     void    UpdateMenuStrings();
 
 public:
     EngineWindow(
               EngineApp*   papp,
+        UpdatingConfiguration* pConfiguration,
         const ZString&     strCommandLine,
         const ZString&     strTitle         = ZString(),
               bool         bStartFullscreen = false,
@@ -241,6 +258,7 @@ public:
 	void			PostWindowCreationInit();
 
     Number*          GetTime()           { return m_pnumberTime;             }
+    Time             GetTimeStart()      { return m_timeStart;               }
     Engine*          GetEngine()         { return m_pengine;                 }
     Modeler*         GetModeler()        { return m_pmodeler;                }
     bool             GetFullscreen()     { return m_pengine->IsFullscreen(); }
@@ -248,6 +266,7 @@ public:
     IPopupContainer* GetPopupContainer() { return m_ppopupContainer;         }
     InputEngine*     GetInputEngine()    { return m_pinputEngine;            }
     const Point&     GetMousePosition()  { return m_ppointMouse->GetValue(); }
+    ModifiablePointValue* GetMousePositionModifiable() { return m_ppointMouse; }
 	Time&		   	 GetMouseActivity()  { return m_timeLastMouseMove;		 } //Imago: Added to adjust AFK status from mouse movment
     bool             GetActive()         { return m_bActive;                 }
 
@@ -258,10 +277,8 @@ public:
 
     void SetFullscreen(bool bFullscreen);
     void SetSizeable(bool bSizeable);
-    void SetWindowedSize(const WinPoint& point);
     void SetFullscreenSize(const Vector& point);
     void ChangeFullscreenSize(bool bLarger);
-    void Set3DAccelerationImportant(bool b3DAccelerationImportant);
     void SetMouseEnabled(bool bEnable);
 
     WinPoint GetSize();
@@ -292,7 +309,12 @@ public:
     virtual ZString GetFPSString(float dtime, float mspf, Context* pcontext);
 
     virtual void EvaluateFrame(Time time) {}
-    virtual void RenderSizeChanged(bool bSmaller) {}
+    virtual void RenderSizeChanged(bool bSmaller) {
+        int x = (int)m_pengine->GetResolutionSizeModifiable()->GetValue().X();
+        int y = (int)m_pengine->GetResolutionSizeModifiable()->GetValue().Y();
+        m_pConfiguration->GetInt("Graphics.ResolutionX", x)->SetValue((float)x);
+        m_pConfiguration->GetInt("Graphics.ResolutionY", y)->SetValue((float)y);
+    }
 
     //
     // ICaptionSite methods

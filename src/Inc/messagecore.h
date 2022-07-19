@@ -9,8 +9,12 @@
 
 //  <NKM> 09-Aug-2004
 // STL lists for message queue and map for connections
+#include <Utility.h>
 #include <list>
 #include <map>
+#include <tlist.h>
+#include <ztime.h>
+#include <windowsx.h>
 
 #define OBLIVION_CLIENT_REG_KEY "Allegiance"
 
@@ -74,23 +78,24 @@ class CFMGroup;
  */
 class CFMRecipient
 {
-friend CFMConnection;
-friend CFMGroup;
+friend class CFMConnection;
+friend class CFMGroup;
 public:
   const char * GetName() {return m_szName;}
   DWORD     GetID() {return GetDPID();}
   virtual int GetCountConnections() = 0;
 
   // BT - STEAM
-  void SetSteamID(uint64 steamID) { m_steamID = steamID; }
-  uint64 GetSteamID() { return m_steamID; }
+  void SetSteamID(uint64_t steamID) { m_steamID = steamID; }
+  uint64_t GetSteamID() { return m_steamID; }
 
 protected:
   CFMRecipient(const char * szName, DPID dpid) :
     m_dpid(dpid)
   {
-    m_szName = new char[lstrlen(szName) + 1];
-    lstrcpy(m_szName, szName);
+	  // BT - Fixing compiler warning.
+    m_szName = new char[strlen(szName) + 1];
+    strcpy(m_szName, szName);
   }
   ~CFMRecipient()
   {
@@ -100,7 +105,7 @@ protected:
 
 private:
   char * m_szName;
-  uint64 m_steamID; // BT - STEAM
+  uint64_t m_steamID; // BT - STEAM
 
 protected: // groups set their own dpid since they're not pre-created.
   void      SetDPID(DPID dpid) {m_dpid = dpid;}
@@ -116,7 +121,7 @@ protected: // groups set their own dpid since they're not pre-created.
  */
 class CFMConnection : public CFMRecipient// Hungarian prefix: cnxn
 {
-friend FedMessaging;
+friend class FedMessaging;
 public:
   void    SetPrivateData(DWORD dw) {m_dwPrivate = dw;}
   DWORD   GetPrivateData() {return m_dwPrivate;}
@@ -209,7 +214,7 @@ private:
  */
 class CFMGroup : public CFMRecipient
 {
-friend FedMessaging;
+friend class FedMessaging;
 public:
   void AddConnection(FedMessaging * pfm, CFMConnection * pcnxn);
   void DeleteConnection(FedMessaging * pfm, CFMConnection * pcnxn);
@@ -478,7 +483,7 @@ public:
     tt.Stop();
   }
 
-  HRESULT         GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[16]);
+  HRESULT         GetIPAddress(CFMConnection & cnxn, char szRemoteAddress[64]);
   HRESULT         GetListeningPort(DWORD* dwPort);
 
   //  <NKM> 07-Aug-2004
@@ -625,17 +630,30 @@ private:
     FM_VAR.cbmsg = sizeof(FMD_##TYPE##_##SHORTNAME);
 
 // main macro use to create a message and queue it. 
+#ifdef _M_CEE  // BT - WOPR - PFM objects will be created in a global namespace for AllegianceInterop to use.
+#define BEGIN_PFM_CREATE(OBJ, FM_VAR, TYPE, SHORTNAME) \
+  ::FMD_##TYPE##_##SHORTNAME * FM_VAR = (::FMD_##TYPE##_##SHORTNAME *) \
+      (OBJ).PFedMsgCreate(true, NULL, FM_##TYPE##_##SHORTNAME, sizeof(::FMD_##TYPE##_##SHORTNAME),
+#else
 #define BEGIN_PFM_CREATE(OBJ, FM_VAR, TYPE, SHORTNAME) \
   FMD_##TYPE##_##SHORTNAME * FM_VAR = (FMD_##TYPE##_##SHORTNAME *) \
       (OBJ).PFedMsgCreate(true, NULL, FM_##TYPE##_##SHORTNAME, sizeof(FMD_##TYPE##_##SHORTNAME),
+#endif
 
 // Use these to create message without queing them to be sent, and to delete the message
 // The OBJ for doesn't reference any class data, so you can use any handy obj
+#ifdef _M_CEE // BT - WOPR - PFM objects will be created in a global namespace for AllegianceInterop to use.
+#define BEGIN_PFM_CREATE_ALLOC(OBJ, FM_VAR, TYPE, SHORTNAME) \
+  ::FMD_##TYPE##_##SHORTNAME * FM_VAR = (::FMD_##TYPE##_##SHORTNAME *) \
+      (OBJ).PFedMsgCreate(false, NULL, FM_##TYPE##_##SHORTNAME, sizeof(::FMD_##TYPE##_##SHORTNAME),
+
+#else
 #define BEGIN_PFM_CREATE_ALLOC(OBJ, FM_VAR, TYPE, SHORTNAME) \
   FMD_##TYPE##_##SHORTNAME * FM_VAR = (FMD_##TYPE##_##SHORTNAME *) \
       (OBJ).PFedMsgCreate(false, NULL, FM_##TYPE##_##SHORTNAME, sizeof(FMD_##TYPE##_##SHORTNAME),
-#define PFM_DEALLOC(PFM) (GlobalFreePtr(PFM))
+#endif
 
+#define PFM_DEALLOC(PFM) (GlobalFreePtr(PFM))
 
 // Use this to create message into prealloc'd memory without queing it to be sent
 #define BEGIN_PFM_CREATE_PREALLOC(OBJ, PBFM, TYPE, SHORTNAME) \
@@ -652,11 +670,22 @@ private:
 // TYPE is one of C (only client sends this message), S (only server creates),
 //   or CS (both client and server send it--usually originated by client, rebroadcast by server)
 // NUMBER is unique message number. Just use the next available number
+
+#ifdef _M_CEE // BT - WOPR - PFM objects will be created in a global namespace for AllegianceInterop to use. // If messagecore is used in an managed interop assembly, then make the generated structs public.
+
+#define DEFINE_FEDMSG(TYPE, SHORTNAME, NUMBER) \
+  CFEDMSGID FM_##TYPE##_##SHORTNAME = NUMBER; \
+  static AddMsg AM_##TYPE##_##SHORTNAME(NUMBER, "FM_" #TYPE "_" #SHORTNAME); \
+  public struct FMD_##TYPE##_##SHORTNAME : public FEDMESSAGE \
+  { \
+  public:
+#else
 #define DEFINE_FEDMSG(TYPE, SHORTNAME, NUMBER) \
   CFEDMSGID FM_##TYPE##_##SHORTNAME = NUMBER; \
   static AddMsg AM_##TYPE##_##SHORTNAME(NUMBER, "FM_" #TYPE "_" #SHORTNAME); \
   struct FMD_##TYPE##_##SHORTNAME : public FEDMESSAGE \
   { 
+#endif
 
 #define END_FEDMSG };
 
@@ -682,10 +711,10 @@ private:
      FM_##TYPE##_##SHORTNAME == ((FEDMESSAGE *)(PFM))->fmid && \
      !IsBadReadPtr(PFM, ((FEDMESSAGE *)(PFM))->cbmsg))
 
-extern char * g_rgszMsgNames[];
+extern const char * g_rgszMsgNames[];
 
 #define MAXMESSAGES 400
-#define ALLOC_MSG_LIST char * g_rgszMsgNames[MAXMESSAGES + 1]
+#define ALLOC_MSG_LIST const char * g_rgszMsgNames[MAXMESSAGES + 1]
 
 /*-------------------------------------------------------------------------
  * AddMsg
@@ -699,7 +728,7 @@ extern char * g_rgszMsgNames[];
 class AddMsg
 {
 public:
-  AddMsg(FEDMSGID fmid, char * szMsgName)
+  AddMsg(FEDMSGID fmid, const char * szMsgName)
   {
     assert (fmid <= MAXMESSAGES);
     g_rgszMsgNames[fmid] = szMsgName;

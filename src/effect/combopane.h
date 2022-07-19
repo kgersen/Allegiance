@@ -1,6 +1,10 @@
 #ifndef _combopane_h_
 #define _combopane_h_
 
+#include <pane.h>
+#include <value.h>
+
+
 //////////////////////////////////////////////////////////////////////////////
 //
 //
@@ -19,7 +23,9 @@ public:
 //
 //
 //////////////////////////////////////////////////////////////////////////////
-
+class IMenuItem;
+class IIntegerEventSource;
+class IEventSource;
 class ComboPane : public Pane {
 public:
     virtual TRef<IMenuItem>      AddItem(const ZString& str, int id) = 0;
@@ -39,9 +45,10 @@ public:
 // Constructors
 //
 //////////////////////////////////////////////////////////////////////////////
-
+class Image;
 TRef<ComboFacePane> CreateImageComboFacePane(Image* pimage);
 
+class IEngineFont;
 TRef<ComboFacePane> CreateStringComboFacePane(
     const WinPoint&    size,
           IEngineFont* pfont,
@@ -49,12 +56,15 @@ TRef<ComboFacePane> CreateStringComboFacePane(
           bool         bBackgroundColor
 );
 
+class Modeler;
+class IPopupContainer;
 TRef<ComboPane> CreateComboPane(
     Modeler*         pmodeler,
     IPopupContainer* ppopupContainer,
     IEngineFont*     pfont,
     const WinPoint&  size,
-    ComboFacePane*   pface
+    ComboFacePane*   pface,
+    ModifiablePointValue* pmousePosition
 );
 
 #endif

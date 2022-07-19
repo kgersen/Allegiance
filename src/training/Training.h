@@ -27,7 +27,8 @@ namespace Training
         c_TM_5_Command_View     = 5,
         c_TM_6_Practice_Arena   = 6,
         c_TM_7_Live             = 7,
-		c_TM_8_Nanite			= 8 //TheBored 06-JUL-07: adding nanite mission
+        c_TM_8_Nanite           = 8, //TheBored 06-JUL-07: adding nanite mission
+        c_TM_10_Free_Flight     = 10
     };
 
     //------------------------------------------------------------------------------
@@ -39,8 +40,10 @@ namespace Training
     void            SetSkipPostSlideshow (void);
     bool            IsTraining (void);
     bool            IsInstalled (void);
+    bool            CommandViewEnabled(void);
     int             GetTrainingMissionID (void);
     SectorID        GetStartSectorID (void);
+    int             GetKillCount(void);
     void            SetupShipAndCamera (void);
 
     //------------------------------------------------------------------------------
@@ -51,6 +54,9 @@ namespace Training
     bool            ShipLanded (void);
     void            ShipDied (ImodelIGC* pLauncher);
     bool            RestoreShip (void);
+    void            ShipKilled(IshipIGC* pShip, ImodelIGC* pLauncher);
+    bool            HandlePickDefaultOrder(IshipIGC* pShip);
+    void            KillStationEvent(IstationIGC* pStation, ImodelIGC* pLauncher);
 
     //------------------------------------------------------------------------------
     // control constraint functions - note that these could be inlined

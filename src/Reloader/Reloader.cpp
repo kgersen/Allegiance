@@ -47,7 +47,7 @@ char * GetArtPath()
 
     BOOL bResult = FALSE;
 
-    if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
+    if (ERROR_SUCCESS == ::RegOpenKeyEx(HKEY_CURRENT_USER, ALLEGIANCE_REGISTRY_KEY_ROOT, 0, KEY_READ, &hKey))
     {
 
         // Get the art path from the registry
@@ -171,7 +171,7 @@ bool Exists(const char * szFileName)
 
 
 
-bool GetFileTime(char * szFileName, LPFILETIME pft)
+bool GetFileTime(const char * szFileName, LPFILETIME pft)
 {
     HANDLE hFile = CreateFile(szFileName, 
                            0, 
@@ -196,7 +196,7 @@ bool GetFileTime(char * szFileName, LPFILETIME pft)
 //
 // Rename mangled name to correct name
 //
-void RenameMangledFile(char * szMangled, char * szCorrect)
+void RenameMangledFile(char * szMangled, const char * szCorrect)
 {
         if (Exists(szMangled))
         {
@@ -265,7 +265,7 @@ void RenameMangledFiles()
     for (int i = 0; i < g_cEXEFiles; ++i)
     {
         char szMangled[MAX_PATH];
-        char * szCorrect = CAutoDownloadUtil::GetEXEFileName(i);
+        const char * szCorrect = CAutoDownloadUtil::GetEXEFileName(i);
 
         // we can only handle string of at least 8 characters
         if (strlen(szCorrect) < 8) 
@@ -392,7 +392,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     ::Sleep(1000); // we wait a little more to help ensure Allegiance is completely dead.
 
 
-    if (!CAutoDownloadUtil::MoveFiles("AutoUpdate\\", szArtPath, false, NULL, false, NULL, &g_AutoDownloadSink))
+    if (!CAutoDownloadUtil::MoveFiles("AutoUpdate\\", szArtPath, false, false, NULL, &g_AutoDownloadSink))
     {
         DisplayErrorMsg("Couldn't move at least one of the downloaded files.  Reboot and try again.  As a last resort, you may need to reinstall.");
         return 3;

@@ -17,44 +17,50 @@
 **  History:
 */
 // missionIGC.cpp : Implementation of CmissionIGC
-#include    "pch.h"
-#include    "missionIGC.h"
+#include    "missionigc.h"
 #include    "clusterIGC.h"
 #include    "warpIGC.h"
-#include    "dispenserIGC.h"
-#include    "buildingEffectIGC.h"
+#include    "dispenserigc.h"
+#include    "buildingeffectigc.h"
 #include    "hullTypeIGC.h"
-#include    "buoyIGC.h"
+#include    "buoyigc.h"
 #include    "shipIGC.h"
-#include    "chaffIGC.h"
+#include    "chaffigc.h"
 #include    "shieldIGC.h"
-#include    "cloakIGC.h"
+#include    "cloakigc.h"
 #include    "projectileIGC.h"
 #include    "projectileTypeIGC.h"
 #include    "partTypeIGC.h"
-#include    "launcherTypeIGC.h"
+#include    "launchertypeigc.h"
 #include    "weaponIGC.h"
-#include    "asteroidIGC.h"
+#include    "asteroidigc.h"
 #include    "stationIGC.h"
 #include    "treasureIGC.h"
-#include    "treasureSetIGC.h"
+#include    "treasuresetigc.h"
 #include    "afterburnerIGC.h"
-#include    "packIGC.h"
-#include    "magazineIGC.h"
-#include    "missileTypeIGC.h"
-#include    "probeIGC.h"
-#include    "probeTypeIGC.h"
-#include    "mineTypeIGC.h"
-#include    "chaffTypeIGC.h"
-#include    "missileIGC.h"
-#include    "mineIGC.h"
-#include    "civilizationIGC.h"
-#include    "sideIGC.h"
-#include    "stationTypeIGC.h"
-#include    "developmentIGC.h"
-#include    "droneTypeIGC.h"
+#include    "packigc.h"
+#include    "magazineigc.h"
+#include    "missiletypeigc.h"
+#include    "probeigc.h"
+#include    "probetypeigc.h"
+#include    "minetypeigc.h"
+#include    "chafftypeigc.h"
+#include    "missileigc.h"
+#include    "mineigc.h"
+#include    "civilizationigc.h"
+#include    "sideigc.h"
+#include    "stationtypeigc.h"
+#include    "developmentigc.h"
+#include    "dronetypeigc.h"
 #include    "bucketigc.h"
 #include    "mapmakerigc.h"
+#include	"zlib.h"
+
+#ifdef STEAMSECURE
+# include "AllegianceSecurity.h"
+#endif
+
+
 static void DoDecrypt(int size, char* pdata)
 {
     DWORD encrypt = 0;
@@ -68,7 +74,7 @@ static void DoDecrypt(int size, char* pdata)
 }
 
 //------------------------------------------------------------------------------
-void    DumpIGCFile (FILE* file, ImissionIGC* pMission, __int64 iMaskExportTypes,  void (*munge)(int size, char* data))
+void    DumpIGCFile (FILE* file, ImissionIGC* pMission, int64_t iMaskExportTypes,  void (*munge)(int size, char* data))
 {
     int         iSize = pMission->Export(iMaskExportTypes, 0);
     char*       pData = new char[iSize+4];      //leave a little extra space for the encryption (which takes dword chunks)
@@ -2309,7 +2315,7 @@ void CmissionIGC::ImportStaticIGCObjs() //is opposite of ExportStaticIGCObjs()
 // End Imago
 
 //------------------------------------------------------------------------------
-bool    DumpIGCFile (const char* name, ImissionIGC* pMission, __int64 iMaskExportTypes, void (*munge)(int size, char* data))
+bool    DumpIGCFile (const char* name, ImissionIGC* pMission, int64_t iMaskExportTypes, void (*munge)(int size, char* data))
 {
     char        szFilename[MAX_PATH + 1];
     HRESULT     hr = UTL::getFile(name, ".igc", szFilename, true, true);
@@ -2347,7 +2353,7 @@ bool    LoadIGCFile (const char* name, ImissionIGC* pMission, void (*munge)(int 
 #define IGC_FILE_VERSION_TYPE   int
 
 //------------------------------------------------------------------------------
-bool    DumpIGCStaticCore (const char* name, ImissionIGC* pMission, __int64 iMaskExportTypes, void (*munge)(int size, char* data))
+bool    DumpIGCStaticCore (const char* name, ImissionIGC* pMission, int64_t iMaskExportTypes, void (*munge)(int size, char* data))
 {
     char        szFilename[MAX_PATH + 1];
     HRESULT     hr = UTL::getFile(name, ".igc", szFilename, true, true);
@@ -2761,7 +2767,7 @@ CstaticIGC::CstaticIGC(void)
     m_constants.floatConstants[c_fcidPointsFlags]           = c_pointsFlags;
     m_constants.floatConstants[c_fcidPointsArtifacts]       = c_pointsArtifacts;
     m_constants.floatConstants[c_fcidPointsRescues]         = c_pointsRescues;
-    m_constants.floatConstants[c_fcidRatingAdd]             = c_crAdd;
+	m_constants.floatConstants[c_fcidRatingAdd]             = c_crAdd;
     m_constants.floatConstants[c_fcidRatingDivide]          = c_crDivide;
 
     m_constants.floatConstants[c_fcidIncome]                = c_fIncome;
@@ -3009,15 +3015,19 @@ CstaticIGC::CstaticIGC(void)
 
 void TerminateStatic(CstaticIGC*  pStatic)
 {
-	// BT - 9/17 - Fixing fedsrv crashes.
+#ifndef __GNUC__
+    // BT - 9/17 - Fixing fedsrv crashes.
 	__try
 	{
+#endif
 		pStatic->Terminate();
-	}
+#ifndef __GNUC__
+    }
 	__except (StackTracer::ExceptionFilter(GetExceptionInformation()))
 	{
 		StackTracer::OutputStackTraceToDebugF();
 	}
+#endif
 }
 
 CmissionIGC::~CmissionIGC(void)
@@ -3063,6 +3073,10 @@ void CmissionIGC::Initialize(Time now, IIgcSite* pIgcSite)
 
 void    CmissionIGC::Terminate(void)
 {
+	// BT - Fixing crash on server exit.
+	if (GetIgcSite() == nullptr)
+		return;
+
     debugf("Terminating mission id=%d, this=%x igccount=%x\n", GetMissionID(), this, GetIgcSite()->GetCount());
   
     m_pIgcSite->TerminateMissionEvent(this);
@@ -3170,7 +3184,7 @@ void     CmissionIGC::Update(Time now)
     assert (m_lastUpdate == now);
 }
 
-static int  ExportList(__int64              maskTypes,
+static int  ExportList(int64_t              maskTypes,
                        const BaseListIGC*   plist,
                        char**               ppdata)
 {
@@ -3182,7 +3196,7 @@ static int  ExportList(__int64              maskTypes,
          pbl = pbl->next())
     {
         ObjectType  type = pbl->data()->GetObjectType();
-        if (maskTypes & (__int64(1) << __int64(type)))
+        if (maskTypes & (int64_t(1) << int64_t(type)))
         {
             if (*ppdata)
             {
@@ -3202,12 +3216,12 @@ static int  ExportList(__int64              maskTypes,
     return size;
 }
 
-int                 CmissionIGC::Export(__int64  maskTypes,
+int                 CmissionIGC::Export(int64_t  maskTypes,
                                         char*    pdata) const
 {
     int datasize = 0;
 
-    if (maskTypes & (__int64(1) << __int64(OT_constants)))
+    if (maskTypes & (int64_t(1) << int64_t(OT_constants)))
     {
         int  size = GetSizeOfConstants();
         if (pdata)
@@ -3253,7 +3267,7 @@ int                 CmissionIGC::Export(__int64  maskTypes,
 }
 
 void                CmissionIGC::Import(Time    now,
-                                        __int64 maskTypes,
+                                        int64_t maskTypes,
                                         char*   pdata,
                                         int     datasize)
 {
@@ -3262,7 +3276,7 @@ void                CmissionIGC::Import(Time    now,
         ObjectType  type = *((ObjectType*)pdata);
         int size = *((int*)(pdata + sizeof(ObjectType)));
 
-        if (maskTypes & (__int64(1) << __int64(type)))
+        if (maskTypes & (int64_t(1) << int64_t(type)))
         {
             if (type == OT_constants)
             {
@@ -3285,7 +3299,7 @@ void                CmissionIGC::Import(Time    now,
 IbaseIGC*           CmissionIGC::CreateObject(Time now, ObjectType objecttype,
                                               const void* data, int dataSize)
 {
-    #define OBJECT(CLS)   case OT_##CLS## :\
+    #define OBJECT(CLS)   case OT_##CLS :\
                                 { pBase = new C##CLS##IGC; } break;
 
     IbaseIGC*   pBase;

@@ -1,6 +1,8 @@
-
 #ifndef _VBIBMANAGER_H_
 #define _VBIBMANAGER_H_
+
+#include <cstdint>
+#include <d3d9.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -25,10 +27,10 @@ public:
 	struct SVBIBHandle
 	{
 		EBufferType		eType;
-		DWORD			dwBufferFormat;
-		DWORD			dwBufferIndex;
-		DWORD			dwFirstElementOffset;	// Bytes or elements for dyn vertex buffers.
-		DWORD			dwNumElements;
+        uint32_t		dwBufferFormat;
+        uint32_t		dwBufferIndex;
+        uint32_t		dwFirstElementOffset;	// Bytes or elements for dyn vertex buffers.
+        uint32_t		dwNumElements;
 
 		SVBIBHandle() : eType(eBT_Invalid), 
 						dwBufferIndex(0xFFFFFFFF),
@@ -52,10 +54,10 @@ private:
 	struct SD3DBuffer
 	{
 		EBufferType		eBufferType;			// Type of this buffer.
-		DWORD			dwBufferFormat;			// Format of this buffer.
-		DWORD			dwBufferSize;			// Bytes.
-		DWORD			dwBufferOffset;			// Bytes.
-		DWORD			dwElementSize;			// Size of vertex or index.
+        uint32_t		dwBufferFormat;			// Format of this buffer.
+        uint32_t		dwBufferSize;			// Bytes.
+        uint32_t		dwBufferOffset;			// Bytes.
+        uint32_t		dwElementSize;			// Size of vertex or index.
 
 		struct									// Flags.
 		{
@@ -98,7 +100,10 @@ public:
 	virtual ~ CVBIBManager();
 
 	////////////////////////////////////////////////////////////////////////////////////////////
-	static inline CVBIBManager * Get() { return &mSingleInstance;	}
+	static inline CVBIBManager * Get() {
+		mSingleInstance.Initialise(); // BT - 10/17 - Ensure that the singleton is always initialized. There is a case when calls are going into VBIBManager and this is not initialized yet.
+		return &mSingleInstance;	
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////
 	void Initialise( );

@@ -28,10 +28,11 @@ namespace Training
 	class Mission8 : public TrainingMission
 	{
         public:
+                    /* void */              Mission8(void);
             virtual /* void */              ~Mission8 (void);
             virtual int                     GetMissionID (void);
             virtual SectorID                GetStartSectorID (void);
-            //virtual bool                    RestoreShip (void);
+            bool                            ShipLanded(void);
 
         protected:
             virtual void                    CreateUniverse (void);
@@ -40,15 +41,12 @@ namespace Training
                     Goal*                   CreateGoal01 (void);
                     Goal*                   CreateGoal02 (void);
                     Goal*                   CreateGoal03 (void);
-                    Goal*                   CreateGoal04 (void);
-                    Goal*                   CreateGoal05 (void);
-                    Goal*                   CreateGoal06 (void);
-                    Goal*                   CreateGoal07 (void);
-                    Goal*                   CreateGoal08 (void);
-                    Goal*                   CreateGoal09 (void);
-					ImodelIGC*              pShip;
+
+					IshipIGC*               pShip;
 					ImissionIGC*			pMission;
-					ImodelIGC*				pStation;
+					IstationIGC*			pStation;
+                    Vector                  homeRedDoor;
+                    bool                    bUndockHintShown;
 
     };
 }

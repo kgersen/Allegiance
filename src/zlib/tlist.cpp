@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "tlist.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -98,7 +98,7 @@ void TListImpl::PushFrontImpl(ListNodeImpl* pnew)
 
     m_pfirst = pnew;
 
-    if (m_plast == NULL)
+    if (m_plast == nullptr)
         m_plast = pnew;
 
     ++m_count;
@@ -111,7 +111,7 @@ void TListImpl::PushEndImpl(ListNodeImpl* pnew)
 
     m_plast = pnew;
 
-    if (m_pfirst == NULL)
+    if (m_pfirst == nullptr)
         m_pfirst = pnew;
 
     ++m_count;
@@ -151,13 +151,13 @@ void TListImpl::InsertAfterImpl(ListNodeImpl* pnode, ListNodeImpl* pnew)
 
 void TListImpl::PopFrontImpl()
 {
-    ZAssert(m_pfirst != NULL);
+    ZAssert(m_pfirst != nullptr);
 
     m_pfirst = m_pfirst->m_pnext;
     if (m_pfirst) {
-        m_pfirst->m_pprev = NULL;
+        m_pfirst->m_pprev = nullptr;
     } else {
-        m_plast = NULL;
+        m_plast = nullptr;
     }
 
     m_count--;
@@ -165,13 +165,13 @@ void TListImpl::PopFrontImpl()
 
 void TListImpl::PopEndImpl()
 {
-    ZAssert(m_plast != NULL);
+    ZAssert(m_plast != nullptr);
 
     m_plast = m_plast->m_pprev;
     if (m_plast) {
-        m_plast->m_pnext = NULL;
+        m_plast->m_pnext = nullptr;
     } else {
-        m_pfirst = NULL;
+        m_pfirst = nullptr;
     }
 
     m_count--;
@@ -179,8 +179,8 @@ void TListImpl::PopEndImpl()
 
 void TListImpl::SetEmptyImpl()
 {
-    m_pfirst = NULL;
-    m_plast = NULL;
+    m_pfirst = nullptr;
+    m_plast = nullptr;
     m_count = 0;
 }
 

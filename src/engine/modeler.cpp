@@ -1,5 +1,23 @@
-#include "pch.h"
+#include "model.h"
 
+#include <base.h>
+#include <quaternion.h>
+#include <tmap.h>
+
+#include "controls.h"
+#include "D3DDevice9.h"
+#include "enginep.h"
+#include "geometry.h"
+#include "frameimage.h"
+#include "image.h"
+#include "imagetransform.h"
+#include "keyframe.h"
+#include "material.h"
+#include "paneimage.h"
+#include "value.h"
+#include "valuetransform.h"
+
+#include "FileLoader.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -103,8 +121,6 @@ public:
         return (Value*)
             CreatePaneImage(
                 m_pengine,
-                stype,
-//                pbooleanColorKey->GetValue(),
 				bColorKey,
                 ppane
             );
@@ -161,22 +177,6 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
-class PointX : public Number {
-private:
-    PointValue* GetPoint() { return PointValue::Cast(GetChild(0)); }
-
-public:
-    PointX(PointValue* ppoint) :
-        Number(ppoint)
-    {
-    }
-
-    void Evaluate()
-    {
-        GetValueInternal() = GetPoint()->GetValue().X();
-    }
-};
-
 class PointXFactory : public IFunction {
 private:
 public:
@@ -184,7 +184,7 @@ public:
     {
         TRef<PointValue> ppoint = PointValue::Cast((IObject*)stack.Pop());
 
-        return new PointX(ppoint);
+        return PointTransform::X(ppoint);
     }
 };
 
@@ -193,22 +193,6 @@ public:
 //
 //
 //////////////////////////////////////////////////////////////////////////////
-
-class PointY : public Number {
-private:
-    PointValue* GetPoint() { return PointValue::Cast(GetChild(0)); }
-
-public:
-    PointY(PointValue* ppoint) :
-        Number(ppoint)
-    {
-    }
-
-    void Evaluate()
-    {
-        GetValueInternal() = GetPoint()->GetValue().Y();
-    }
-};
 
 class PointYFactory : public IFunction {
 private:
@@ -217,7 +201,7 @@ public:
     {
         TRef<PointValue> ppoint = PointValue::Cast((IObject*)stack.Pop());
 
-        return new PointY(ppoint);
+        return PointTransform::Y(ppoint);
     }
 };
 
@@ -226,22 +210,6 @@ public:
 //
 //
 //////////////////////////////////////////////////////////////////////////////
-
-class ImageSize : public PointValue {
-private:
-    Image* GetImage() { return Image::Cast(GetChild(0)); }
-
-public:
-    ImageSize(Image* pimage) :
-        PointValue(pimage)
-    {
-    }
-
-    void Evaluate()
-    {
-        GetValueInternal() = Point::Cast(GetImage()->GetBounds().GetRect().Size());
-    }
-};
 
 class ImageSizeFactory : public IFunction {
 private:
@@ -250,7 +218,7 @@ public:
     {
         TRef<Image> pimage = Image::Cast((Value*)(IObject*)stack.Pop());
 
-        return new ImageSize(pimage);
+        return ImageTransform::Size(pimage);
     }
 };
 
@@ -408,7 +376,7 @@ public:
     TRef<IObject> Apply(ObjectStack& stack)
     {
         TRef<Number> pjustify = Number::Cast((IObject*)stack.Pop());
-        TRef<Image>  pimage   =  Image::Cast((Value*)(IObject*)stack.Pop());
+        TRef<Image>  pimage   = Image::Cast((Value*)(IObject*)stack.Pop());
         TRef<Number> pnumber  = Number::Cast((IObject*)stack.Pop());
 
         Justification justification;
@@ -436,7 +404,7 @@ public:
     TRef<IObject> Apply(ObjectStack& stack)
     {
         TRef<Number>    pjustify =    Number::Cast(        (IObject*)stack.Pop());
-        TRef<Image>     pimage   =     Image::Cast((Value*)(IObject*)stack.Pop());
+        TRef<Image>     pimage   = Image::Cast((Value*)(IObject*)stack.Pop());
         TRef<RectValue> prect    = RectValue::Cast(        (IObject*)stack.Pop());
         TRef<Boolean>   pbool    =   Boolean::Cast(        (IObject*)stack.Pop());
         TRef<Number>    pnumber  =    Number::Cast(        (IObject*)stack.Pop());
@@ -626,32 +594,27 @@ protected:
 public:
 	ZPackFile(const PathString& strPath, void * pData, DWORD dwFileSize )
 	{
-		m_p = (BYTE*) pData;
+		SetPointer((BYTE*) pData);
 		m_dwFileSize = dwFileSize;
 		m_strPath = strPath;
 	}
 	~ZPackFile()
 	{
-		m_p = NULL;
+		SetPointer(NULL);
 		m_dwFileSize = 0;
 	}
 	bool  IsValid()
 	{
-		return ( m_p != NULL );
+		return (GetPointer() != NULL );
 	}
 	int   GetLength()
 	{
 		return (int) m_dwFileSize;
 	}
-	BYTE * GetPointer(bool bWrite = false, bool bCopyOnWrite = false)
-	{
-		_ASSERT( !bWrite && !bCopyOnWrite );
-		return m_p;
-	}
     DWORD Read(void* p, DWORD length)
 	{
-		_ASSERT( length <= m_dwFileSize );
-		memcpy( p, m_p, length );
+        ZAssert( length <= m_dwFileSize );
+		memcpy( p, GetPointer(), length );
 		return length;
 	}
 };
@@ -682,7 +645,7 @@ public:
 												pFile->GetLength(),
 												&fileInfo ) == D3D_OK )
 		{
-			_ASSERT( fileInfo.ResourceType == D3DRTYPE_TEXTURE );
+            ZAssert( fileInfo.ResourceType == D3DRTYPE_TEXTURE );
 			
 			// We can resize non-UI textures.
 			WinPoint targetSize( fileInfo.Width, fileInfo.Height );
@@ -691,7 +654,7 @@ public:
 			if( m_pmodeler->GetUIImageUsageHint() == false )
 			{
 				DWORD dwMaxTextureSize = CD3DDevice9::Get()->GetMaxTextureSize();
-				_ASSERT( dwMaxTextureSize >= 256 );
+                ZAssert( dwMaxTextureSize >= 256 );
 				while(	( targetSize.x > (LONG)dwMaxTextureSize ) ||
 						( targetSize.y > (LONG)dwMaxTextureSize ) )
 				{
@@ -712,64 +675,8 @@ public:
 		}
 		else
 		{
-			_ASSERT( false && "Failed to load image." );
+            ZAssert( false && "Failed to load image." );
 		}
-
-		// Replace FreeImage stuff with D3DX calls.
-//        FreeImageIO fio;
-//        fio.read_proc = myReadProc;
-//        fio.seek_proc = mySeekProc;
-//        fio.tell_proc = myTellProc;
-//
-//        FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromHandle(&fio,zf);
-//        if (fif != FIF_UNKNOWN)
-//        {
-//            FIBITMAP * dib = FreeImage_LoadFromHandle(fif,&fio,zf,PNG_IGNOREGAMMA);
-//            if (dib)
-//            {
-//                int bpp = FreeImage_GetBPP(dib);
-//                assert((bpp == 16) || (bpp==24) || (bpp==32));
-//                debugf("%s = %d bpp\n",(const char *)str,bpp);
-//                UINT redm = FreeImage_GetRedMask(dib);
-//                UINT grnm = FreeImage_GetGreenMask(dib);
-//                UINT blum = FreeImage_GetBlueMask(dib);
-//                UINT alpm = (bpp==32)?0xFF000000:0;
-//                PixelFormat* ppf = m_pengine->GetPixelFormat(
-//                    bpp,
-//                    redm,
-//                    grnm,
-//                    blum,
-//                    alpm
-//                );  
-//
-//                // engine handles bitmaps mirrored ... yeeee
-//                FreeImage_FlipHorizontal(dib);
-//                FreeImage_FlipVertical(dib);
-//                FreeImage_FlipHorizontal(dib);
-//
-//				// For D3D9, we only allow black colour keys.
-//                TRef<Surface> psurface =
-//                    m_pengine->CreateSurface(
-//                    WinPoint(FreeImage_GetWidth(dib),FreeImage_GetHeight(dib)),
-//                    ppf,
-////                    NULL,				// Remove palette.
-//                    FreeImage_GetPitch(dib),
-//                    FreeImage_GetBits(dib),
-//					zf,
-//					true,
-//					Color( 0, 0, 0 ),
-//					str );
-//                //FreeImage_Unload(dib); never free 
-//                
-//                if (b) {
-//                    // could use FreeImage_HasBackgroundColor/FreeImage_GetBackgroundColor here
-//                    // or extend MDL syntax to pass the transp color
-//                    psurface->SetColorKey(Color(0, 0, 0));
-//                }
-//
-//                return (Value*)new ConstantImage(psurface, ZString());
-//            }
-//        }
         debugf("ImportImageFromFileFactory: error reading file %s\n",(const char *)str);
         return NULL;
     }
@@ -822,7 +729,7 @@ public:
 															ppf,
 															pbsi->m_pitch,
 															pdata,
-															psite->GetMemoryObject(),
+															nullptr,
 															bColorKey,
 															Color( 0, 0, 0 ),
 															psite->GetCurrentFile(),
@@ -938,6 +845,86 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
+
+
+
+class FillImageFactory : public IFunction{
+private:
+	TRef<Modeler>		m_pmodeler;
+	TRef<PrivateEngine> m_pengine;
+
+public:
+	FillImageFactory(Modeler* pmodeler) :
+		m_pmodeler(pmodeler)
+	{
+		CastTo(m_pengine, m_pmodeler->GetEngine());
+	}
+
+	class FillImage : public WrapImage
+	{
+	private:
+		TRef<Engine> m_pengine;
+	public:
+        FillImage(TRef<Engine> pengine, TRef<PointValue> psize, TRef<ColorValue> pcolor)
+			: WrapImage(Image::GetEmpty(), psize, pcolor),
+			m_pengine(pengine)
+		{
+			
+		}
+
+		PointValue* GetSize() { return PointValue::Cast(GetChild(1)); }
+		ColorValue* GetColor() { return ColorValue::Cast(GetChild(2)); }
+
+        void Evaluate()
+		{
+			PointValue* psize = GetSize();
+			ColorValue* pcolor = GetColor();
+			WinPoint sizeWinPoint = WinPoint(psize->GetValue().X(), psize->GetValue().Y());
+
+			TRef<Surface> surface = m_pengine->CreateSurface(sizeWinPoint, SurfaceType2D());
+			surface->FillSurface(pcolor->GetValue());
+
+			TRef<Image> pimage = new ConstantImage(surface, "FillImage");
+
+			SetImage(pimage);
+		}
+
+	};
+
+	TRef<IObject> Apply(ObjectStack& stack)
+	{
+		TRef<PointValue> psize = PointValue::Cast((IObject*)stack.Pop());
+		TRef<ColorValue> pcolor = ColorValue::Cast((IObject*)stack.Pop());
+
+		//TRef<PointValue> pixel = new PointValue(Point(1, 1));
+
+		//TRef<FillImage> smallImage = new FillImage(m_pengine, pixel, pcolor);
+
+		//return (Value*)
+		//	new TransformImage(
+		//		smallImage,
+		//		new ScaleTransform2(pixel / psize)
+		//	);
+
+		return (Value*)new FillImage(m_pengine, psize, pcolor);
+
+		WinPoint sizeWinPoint = WinPoint(psize->GetValue().X(), psize->GetValue().Y());
+
+		TRef<Surface> surface = //m_pengine->CreateRenderTargetSurface(sizeWinPoint);
+			m_pengine->CreateSurface(sizeWinPoint, SurfaceType2D());
+		surface->FillSurface(pcolor->GetValue());
+
+		TRef<Image> pimage = new ConstantImage(surface, "FillImage");
+		return (Value*)pimage;
+	}
+};
+
+//////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+//////////////////////////////////////////////////////////////////////////////
+
 class BlendImageFactory : public IFunction {
 private:
 public:
@@ -967,11 +954,7 @@ public:
         TRef<Image>      pimage =      Image::Cast((Value*)(IObject*)stack.Pop());
         TRef<PointValue> ppoint = PointValue::Cast(        (IObject*)stack.Pop());
 
-        return
-           (Value*)new TransformImage(
-                pimage,
-                new TranslateTransform2(ppoint)
-           );
+        return (Value*)ImageTransform::Translate(pimage, ppoint);
     }
 };
 
@@ -1005,11 +988,7 @@ public:
         TRef<Image>      pimage =      Image::Cast((Value*)(IObject*)stack.Pop());
         TRef<PointValue> ppoint = PointValue::Cast(        (IObject*)stack.Pop());
 
-        return 
-            (Value*)new TransformImage(
-                pimage, 
-                new ScaleTransform2(ppoint)
-            );
+        return (Value*)ImageTransform::Scale(pimage, ppoint);
     }
 };
 
@@ -1205,26 +1184,6 @@ public:
     }
 };
 
-class PointV : public PointValue {
-public:
-    PointV(Number* px, Number* py) :
-        PointValue(px, py)
-    {
-    }
-
-    Number* Get0() { return Number::Cast(GetChild(0)); }
-    Number* Get1() { return Number::Cast(GetChild(1)); }
-
-    void Evaluate()
-    {
-        GetValueInternal() = 
-            Point(
-                Get0()->GetValue(), 
-                Get1()->GetValue()
-            );
-    }
-};
-
 class PointVFactory : public TIFunctionBinary<Point, PointValue > {
 public:
     TRef<IObject> Apply(ObjectStack& stack)
@@ -1232,7 +1191,7 @@ public:
         Number* px; CastTo(px, (IObject*)stack.Pop());
         Number* py; CastTo(py, (IObject*)stack.Pop());
 
-        return new PointV(px, py);
+        return PointTransform::Create(px, py);
     }
 };
 
@@ -1435,7 +1394,7 @@ protected:
     TRef<ValueType> m_pdefault;
     float           m_number;
 
-    TStaticValue<StaticType>* GetWrappedValue() { return TStaticValue<StaticType>::Cast(GetChild(0)); }
+    TStaticValue<StaticType>* GetWrappedValue() { return TStaticValue<StaticType>::Cast(Value::GetChild(0)); }
 
 public:
     //////////////////////////////////////////////////////////////////////////////
@@ -1451,7 +1410,7 @@ public:
     {
     }
 
-    Number* GetNumber() { return Number::Cast(GetChild(1)); }
+    Number* GetNumber() { return Number::Cast(Value::GetChild(1)); }
 
     //////////////////////////////////////////////////////////////////////////////
     //
@@ -1467,7 +1426,7 @@ public:
 
         if (m_number == number) {
             pvalue->Update();
-            SetChild(0, pvalue);
+            TStaticValue<StaticType>::SetChild(0, pvalue);
         }
     }
 
@@ -1483,19 +1442,19 @@ public:
 
         if (m_number != number) {
             m_number = number;
-            DataList::Iterator iter(m_list);
+            typename DataList::Iterator iter(m_list);
 
             while (true) {
                 if (iter.End()) {
                     m_pdefault->Update();
-                    SetChild(0, m_pdefault);
+                    Value::SetChild(0, m_pdefault);
                     break;
                 }
                 const Data& data = iter.Value();
 
                 if (data.m_number == number) {
                     data.m_pvalue->Update();
-                    SetChild(0, data.m_pvalue);
+                    Value::SetChild(0, data.m_pvalue);
                     break;
                 }
 
@@ -1503,7 +1462,7 @@ public:
             }
         }
 
-        GetValueInternal() = GetWrappedValue()->GetValue();
+        TStaticValue<StaticType>::GetValueInternal() = GetWrappedValue()->GetValue();
     }
 };
 
@@ -1927,15 +1886,12 @@ public:
         return
             new FontValue(
                 CreateEngineFont(
-                    CreateFont(
-                        (int)pnumberSize->GetValue(),
-                        (int)pnumberStretch->GetValue(),0, 0,
-                        pboolBold->GetValue() ? FW_BOLD : FW_DONTCARE, 
-                        FALSE, FALSE, FALSE, ANSI_CHARSET,
-                        OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                        DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN,
-                        pstringName->GetValue()
-                    )
+                    std::string(pstringName->GetValue()), 
+                    (int)pnumberSize->GetValue(),
+                    (int)pnumberStretch->GetValue(),
+                    pboolBold->GetValue(),
+                    false,
+                    false
                 )
             );
     }
@@ -1955,7 +1911,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Mod(pnumber1, pnumber2);
+        return NumberTransform::Mod(pnumber1, pnumber2);
     }
 };
 
@@ -1967,7 +1923,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Min(pnumber1, pnumber2);
+        return NumberTransform::Min(pnumber1, pnumber2);
     }
 };
 
@@ -1979,7 +1935,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Max(pnumber1, pnumber2);
+        return NumberTransform::Max(pnumber1, pnumber2);
     }
 };
 
@@ -1991,7 +1947,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Add(pnumber1, pnumber2);
+        return NumberTransform::Add(pnumber1, pnumber2);
     }
 };
 
@@ -2003,7 +1959,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Subtract(pnumber1, pnumber2);
+        return NumberTransform::Subtract(pnumber1, pnumber2);
     }
 };
 
@@ -2015,7 +1971,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Multiply(pnumber1, pnumber2);
+        return NumberTransform::Multiply(pnumber1, pnumber2);
     }
 };
 
@@ -2027,7 +1983,7 @@ public:
         TRef<Number> pnumber1; CastTo(pnumber1, (IObject*)stack.Pop());
         TRef<Number> pnumber2; CastTo(pnumber2, (IObject*)stack.Pop());
 
-        return Divide(pnumber1, pnumber2);
+        return NumberTransform::Divide(pnumber1, pnumber2);
     }
 };
 
@@ -2138,6 +2094,45 @@ public:
 
 //////////////////////////////////////////////////////////////////////////////
 //
+// GetResolution
+//
+//////////////////////////////////////////////////////////////////////////////
+
+class PointFromWinPoint : public PointValue {
+private:
+	WinPointValue* GetWinPoint() { return WinPointValue::Cast(GetChild(0)); }
+
+public:
+	PointFromWinPoint(WinPointValue* ppoint)
+		: PointValue(ppoint)
+	{
+	}
+
+	void Evaluate()
+	{
+		WinPoint winpoint = GetWinPoint()->GetValue();
+		GetValueInternal() = Point(winpoint.X(), winpoint.Y());
+	}
+};
+
+class GetResolutionFactory : public IFunction {
+private:
+	Engine* m_pengine;
+
+public:
+	GetResolutionFactory(Engine* pengine) :
+		m_pengine(pengine)
+	{
+	}
+
+	TRef<IObject> Apply(ObjectStack& stack)
+	{
+		return new PointFromWinPoint(m_pengine->GetResolutionSizeModifiable());
+	}
+};
+
+//////////////////////////////////////////////////////////////////////////////
+//
 // Modeler
 //
 //////////////////////////////////////////////////////////////////////////////
@@ -2147,10 +2142,8 @@ private:
     TRef<Engine>			m_pengine;
     TRef<ModelerSite>		m_psite;
     PathString				m_pathStr;
+    std::shared_ptr<IFileLoader> m_pFileLoader;
 	ImportImageFactory *	m_pImageFactory;			// This allows us to pass extra parameters into the image factory.
-
-	// BT - STEAM
-	FileHashTable			m_fileHashTable;
 
     TMap<ZString, TRef<INameSpace> > m_mapNameSpace;
 
@@ -2176,9 +2169,19 @@ public:
         m_psite = psite;
 	}
 
+    void SetFileLoader(const std::shared_ptr<IFileLoader>& loader)
+    {
+        m_pFileLoader = loader;
+    }
+
     void SetArtPath(const PathString& pathStr)
     {
         m_pathStr = pathStr;
+    }
+
+    std::shared_ptr<IFileLoader> GetFileLoader()
+    {
+        return m_pFileLoader;
     }
 
     ZString GetArtPath()
@@ -2241,7 +2244,7 @@ public:
                         0, 0, 0,
                         FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET,
                         OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                        DEFAULT_QUALITY, DEFAULT_PITCH | FF_MODERN,
+                        ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_MODERN,
                         "tahoma"
                     )
                 )
@@ -2298,6 +2301,7 @@ public:
         pns->AddMember("ImportImageFromFile",new ImportImageFromFileFactory(this)); // KGJV 32B
         pns->AddMember("ImportImage3D",      new ImportImage3DFactory(this));
         pns->AddMember("ImportImageLR",      new ImportImageLRFactory(this));
+		pns->AddMember("FillImage",			 new FillImageFactory(this));
 
         pns->AddMember("FrameImage",         CreateFrameImageFactory());
 
@@ -2333,6 +2337,7 @@ public:
         pns->AddMember("RotateImage",        new RotateImageFactory());
         pns->AddMember("BlendImage",         new BlendImageFactory());
 
+
         //
         // Image Attributes
         //
@@ -2365,10 +2370,6 @@ public:
         
         pns->AddMember("BlendModeSource",      new Number(BlendModeSource     ));
         pns->AddMember("BlendModeAdd",         new Number(BlendModeAdd        ));
-        pns->AddMember("BlendModeSourceAlpha", new Number(BlendModeSourceAlpha));
-		//Imago exposed 7/10
-		pns->AddMember("BlendModeSourceAlphaTest", new Number(BlendModeSourceAlphaTest));
-		pns->AddMember("BlendModeAlphaStampThrough", new Number(BlendModeAlphaStampThrough));
 
         //
         // Transforms
@@ -2400,6 +2401,11 @@ public:
         pns->AddMember("AnimatedImagePaneRect", new AnimatedImagePaneRectFactory());
         pns->AddMember("FrameImageButtonPane",  new FrameImageButtonPaneFactory(this, ptime));
         pns->AddMember("PaneImage",             new PaneImageFactory(this));
+
+		//
+		// Resolution
+		//
+		pns->AddMember("GetResolution", new GetResolutionFactory(m_pengine));
 	}
 
     Engine* GetEngine()
@@ -2409,128 +2415,19 @@ public:
 
 	TRef<ZFile> GetFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError)
 	{
-		ZString strExtension = pathStr.GetExtension();
-		ZString strToTryOpen;// yp Your_Persona October 7 2006 : TextureFolder Patch
-		ZString strToTryOpenFromDev;// KGJV - 'dev' subfolder
-		ZString strPackFile; // doofus - Filename for pack searching.
-		ZString strToTryOpenFromSteamDLC; // BT - STEAM
+        ZString strExtension = pathStr.GetExtension();
+        ZString strToOpen = pathStr;
 
-		ZString strToOpen;
-		TRef<ZFile> pfile = NULL;
+        if (strExtension.IsEmpty()) {
+            strToOpen = strToOpen + "." + strExtensionArg;
+        }
 
-		if (!strExtension.IsEmpty()) {
-			if (!strExtensionArg.IsEmpty()) // KGJV 32B - ignore empty strExtensionArg
-				if (strExtension.ToLower() != strExtensionArg.ToLower()) { // KGJV 32B - ignore case
-					return NULL;
-				}
-			strPackFile = pathStr;
-			strToOpen = m_pathStr + pathStr;
-			strToTryOpenFromDev = m_pathStr + "dev/" + pathStr;
-			strToTryOpen = m_pathStr + "Textures/" + pathStr;
-			strToTryOpenFromSteamDLC = ZString(m_pathStr + "SteamDLC/") + ZString(pathStr);
+        //if we aren't allowed to throw errors, check if the file exists
+        if (bError == false && m_pFileLoader->HasFile(strToOpen) == false) {
+            return nullptr;
+        }
 
-		}
-		else {
-			strPackFile = ZString(pathStr) + ("." + strExtensionArg);
-			strToOpen = ZString(m_pathStr + pathStr) + ("." + strExtensionArg);
-			strToTryOpenFromDev = ZString(m_pathStr + "dev/" + pathStr) + ("." + strExtensionArg);
-			strToTryOpen = ZString(m_pathStr + "Textures/" + pathStr) + ("." + strExtensionArg);
-			strToTryOpenFromSteamDLC = ZString(m_pathStr + "SteamDLC/") + ZString(pathStr) + ("." + strExtensionArg);
-		}
-		DWORD dwFileSize;
-		void * pPackFile;
-		pPackFile = CDX9PackFile::LoadFile(&strPackFile[0], &dwFileSize);
-		if ((pPackFile != NULL) && (dwFileSize > 0))
-		{
-			pfile = new ZPackFile(strPackFile, pPackFile, dwFileSize);
-		}
-
-		// BT - STEAM
-		if (pfile == NULL &&
-			(strToTryOpenFromSteamDLC.Right(17) != "newgamescreen.mdl")) //newgamescreen needs to be ACSS-protected, so don't open it from mods
-		{
-			pfile = new ZFile(strToTryOpenFromSteamDLC, OF_READ | OF_SHARE_DENY_WRITE);
-
-			if (!pfile->IsValid())
-				pfile = NULL;
-
-
-#ifdef STEAMSECURE
-			// When building release mode, then enforce the artwork checksums on any MDL that is loaded by the engine.
-			else if (m_fileHashTable.DoesFileHaveHash(strToTryOpenFromSteamDLC) == true)
-				pfile = NULL;
-#endif
-		}
-
-		// yp Your_Persona October 7 2006 : TextureFolder Patch
-		if ((pfile == NULL) &&
-			(strToTryOpen.Right(7) == "bmp.mdl")) // if its a texture, try loading from the strToTryOpen
-		{
-			pfile = new ZFile(strToTryOpen, OF_READ | OF_SHARE_DENY_WRITE);
-			// mmf modified Y_P's logic
-			if (!pfile->IsValid())
-			{
-				pfile = NULL;
-			}
-		}
-		if (!pfile) // if we dont have a file here, then load regularly.
-		{
-			// mmf #if this out for release.  I left the strtoTryOpenFromDev code in above
-
-			// pkk - Use same conditional compilation like on registry keys
-#ifdef _ALLEGIANCE_PROD_
-			pfile = new ZFile(strToOpen, OF_READ | OF_SHARE_DENY_WRITE);
-#else
-			// KGJV try dev folder 1st
-			pfile = new ZFile(strToTryOpenFromDev, OF_READ | OF_SHARE_DENY_WRITE);
-			if (!pfile->IsValid()) {
-				pfile = new ZFile(strToOpen, OF_READ | OF_SHARE_DENY_WRITE);
-		}
-			else {
-				if (g_bMDLLog) {
-					ZDebugOutput("'dev' file found for " + pathStr + "\n");
-				}
-			}
-#endif     
-
-			// mmf added debugf but will still have it call assert
-			if (!pfile->IsValid()) {
-				ZDebugOutput("Could not open the artwork file " + strToOpen + "\n");
-				// this may fail/crash if strToOpen is fubar, but we are about to ZRAssert anyway
-			}
-			else
-			{
-
-#ifdef STEAMSECURE
-
-				// BT - STEAM - Do the security checksum  on the loaded file here. Steam DRM wrapper will ensure that the Allegiance exe is not
-				// tampered with, so basic checksums are all that is required.
-				if (m_fileHashTable.IsHashCorrect(strToOpen, pfile) == false)
-				{
-					// Cause the calls downward to fail out.
-					pfile = new ZFile("failsauce.nope");
-				}
-#endif
-			}
-		}
-
-		//Imago 11/09/09 - Provide a helpful message box for this common error
-		if (bError && !pfile->IsValid() && m_psite) {
-			PostMessageA(GetActiveWindow(), WM_SYSCOMMAND, SC_MINIMIZE, 0);
-
-#ifdef STEAMSECURE
-			// BT - STEAM - Queue up a full content re-verify in case the user has a corrupted file.
-			if (SteamUser() != nullptr && SteamUser()->BLoggedOn() == true)
-				SteamApps()->MarkContentCorrupt(false);
-#endif 
-
-			// BT - STEAM
-			MessageBoxA(GetDesktopWindow(), "Artwork file failed to validate: " + strToOpen + ", we have queued up an installation reverification. Check your Steam App in the downloads section for details..", "Allegiance: Fatal modeler error", MB_ICONERROR);
-
-		}
-		ZRetailAssert(!(bError && !pfile->IsValid() && m_psite));
-
-		return pfile->IsValid() ? pfile : NULL;
+        return m_pFileLoader->GetFile(strToOpen);
 	}
 
     TRef<ZFile> LoadFile(const PathString& pathStr, const ZString& strExtensionArg, bool bError)
@@ -2572,17 +2469,14 @@ public:
         // Is the image already loaded?
         //
 
-        TRef<INameSpace> pns = GetCachedNameSpace(str);
+		ZString namespaceName = str;
+
+        TRef<INameSpace> pns = GetCachedNameSpace(namespaceName);
 
         if (pns) {
             TRef<ConstantImage> pimage; CastTo(pimage, (Value*)pns->FindMember(str));
             if (pimage) {
                 TRef<Surface> psurface = pimage->GetSurface();
-                
-                // HACK: Need to uncomment and track down the bug that's 
-                // triggering this when a weapon fires, but this hack should
-                // keep the debug client testable.  
-                //ZAssert(bColorKey == psurface->HasColorKey());
 
                 return pimage;
             }     
@@ -2604,10 +2498,6 @@ public:
             if (pimage) {
                 TRef<Surface> psurface = pimage->GetSurface();
                 psurface->SetName(str);
-
-                if (bColorKey) {
-                    psurface->SetColorKey(Color(0, 0, 0));
-                }
 
                 return pimage;
             }
@@ -2696,39 +2586,45 @@ public:
 
         return NULL;
     }
-
+	
     INameSpace* GetNameSpace(const ZString& str, bool bError, bool bSystemMem)
     {
-        TRef<INameSpace> pns = GetCachedNameSpace(str);
+		TRef<INameSpace> pns;
+		
+		ZString namespaceName = str;
 
-        if (pns) {
-            return pns;
-        }
+        pns = GetCachedNameSpace(str);
 
-        TRef<ZFile> pfile = GetFile(str, "mdl", bError);
+		if (pns)
+			return pns;
 
 
-        if (pfile != NULL) 
+		TRef<ZFile> pfile = GetFile(str, "mdl", bError);
+
+
+		if (pfile != NULL)
 		{
-			bool bOriginalValue = SetSystemMemoryHint( bSystemMem );
-            if (*(DWORD*)pfile->GetPointer(false, false) == MDLMagic) {
-                if (g_bMDLLog) {
-                    ZDebugOutput("Reading Binary MDL file '" + str + "'\n");
-                }
-                pns = CreateBinaryNameSpace(str, this, pfile);
-            } else {
-                if (g_bMDLLog) {
-                    ZDebugOutput("Reading Text MDL file '" + str + "'\n");
-                }
-                pns = ::CreateNameSpace(str, this, pfile);
-            }
+			bool bOriginalValue = SetSystemMemoryHint(bSystemMem);
+			if (*(DWORD*)pfile->GetPointer(false, false) == MDLMagic) {
+				if (g_bMDLLog) {
+					ZDebugOutput("Reading Binary MDL file '" + str + "'\n");
+				}
+				pns = CreateBinaryNameSpace(namespaceName, this, pfile);
+			}
+			else {
+				if (g_bMDLLog) {
+					ZDebugOutput("Reading Text MDL file '" + str + "'\n");
+				}
+				pns = ::CreateNameSpace(namespaceName, this, pfile);
+			}
 
-			SetSystemMemoryHint( bOriginalValue );
-            m_mapNameSpace.Set(str, pns);
-            return pns;
-        }
+			SetSystemMemoryHint(bOriginalValue);
+			m_mapNameSpace.Set(namespaceName, pns);
+			return pns;
+		}
 
-        return NULL;
+		return NULL;
+
     }
 
     void UnloadNameSpace(const ZString& str)

@@ -1,4 +1,4 @@
-#include "pch.h"
+#include "matrix.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -6,7 +6,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-Matrix2 g_matIdentity;
+static Matrix2 g_matIdentity;
 
 class InitializeTranform2 {
 public:
@@ -14,7 +14,9 @@ public:
     {
         g_matIdentity.SetIdentity();
     }
-} initialize;
+};
+
+static InitializeTranform2 initialize;
 
 const Matrix2& Matrix2::GetIdentity()
 {

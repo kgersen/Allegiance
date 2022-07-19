@@ -4,7 +4,9 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
-#include "pch.h"
+#include <zassert.h>
+#include <zstring.h>
+
 #include "ddraw.h"
 //#include "d3d.h"
 //#include "d3drm.h"

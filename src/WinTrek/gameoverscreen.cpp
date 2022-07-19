@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "badwords.h"
 
+#include <button.h>
+#include <controls.h>
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // GameOver Screen
@@ -643,7 +646,7 @@ public:
             || (trekClient.MyMission()->GetMissionParams().bAutoRestart && stage == STAGE_NOTSTARTED))
         {
             // note: have the timer lag by 1 second to give users the familiar countdown feel
-            int nTimeLeft = max(0, int(trekClient.MyMission()->GetMissionParams().timeStart - Time::Now()) + 1);
+            int nTimeLeft = std::max(0, int(trekClient.MyMission()->GetMissionParams().timeStart - Time::Now()) + 1);
 
             int nMinutesLeft = nTimeLeft/60;
             int nSecondsLeft = nTimeLeft - nMinutesLeft * 60;
@@ -696,7 +699,8 @@ public:
             m_plistStats->PushEnd(trekClient.GetEndgamePlayerInfo(iPlayerIndex));
         }
         
-        if (!trekClient.GetGameCounted() || !trekClient.GetScoresCounted())
+		// BT - STEAM - Scores always count.
+        /*if (!trekClient.GetGameCounted() || !trekClient.GetScoresCounted())
         {
             if (trekClient.GetWonLastGame())
                 m_ptextGameCounted->SetString("Win not counted");
@@ -705,7 +709,7 @@ public:
             else
                 m_ptextGameCounted->SetString("");
         }
-        else
+        else*/
             m_ptextGameCounted->SetString("");
 
         RefreshPlayers();

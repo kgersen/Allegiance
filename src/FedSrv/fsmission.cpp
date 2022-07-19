@@ -129,7 +129,7 @@ CFSMission::CFSMission(
   strcpy(m_misdef.misparms.szIGCStaticFile, IGC_STATIC_CORE_FILENAME);
   }
   // hardcode this cap in one more place to make it harder to work around.
-  m_misdef.misparms.nTotalMaxPlayersPerGame = min(c_cMaxPlayersPerGame, misparms.nTotalMaxPlayersPerGame);
+  m_misdef.misparms.nTotalMaxPlayersPerGame = std::min(c_cMaxPlayersPerGame, misparms.nTotalMaxPlayersPerGame);
 #endif // !defined(ALLSRV_STANDALONE)
 
   // if this game is an auto-start game, set the start time appropriately
@@ -415,7 +415,7 @@ void CFSMission::AddPlayerToMission(CFSPlayer * pfsPlayer)
     assert(GetCookie()); // we can't be sending messages w/ cookies unless we have a real cookie
 
 	 // BT - 9/11/2010 ACSS - Supports authentication check of the CD Key.
-	char szAddress[16];
+	char szAddress[64];
 	g.fm.GetIPAddress(*pfsPlayer->GetConnection(), szAddress);
 
     BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerJoined, S, PLAYER_JOINED)
@@ -1480,6 +1480,31 @@ void    CFSMission::SetLeaderID(SideID sideID, ShipID shipID)
     }
 }
 
+// BT - WOPR - Moved this out of the header to keep things consitent
+CFSPlayer * CFSMission::GetOwner()
+{
+	if (m_misdef.iSideMissionOwner == NA)
+		return NULL;
+	else
+		return GetLeader(m_misdef.iSideMissionOwner);
+}
+
+// BT - WOPR - Let bots change the mission owner.
+void CFSMission::SetOwner(short iSide)
+{
+	m_misdef.iSideMissionOwner = iSide;
+
+	CFSPlayer * currentMissionOwner = GetLeader(iSide);
+
+	BEGIN_PFM_CREATE(g.fm, pfmSetMissionOwner, CS, SET_MISSION_OWNER)
+		END_PFM_CREATE
+
+	pfmSetMissionOwner->shipID = currentMissionOwner->GetShipID();
+	pfmSetMissionOwner->sideID = iSide;
+
+	g.fm.SendMessages(GetGroupMission(), FM_GUARANTEED, FM_FLUSH);
+}
+
 void CFSMission::SetLeader(CFSPlayer * pfsPlayer)
 {
   assert(pfsPlayer);
@@ -1783,9 +1808,10 @@ void CFSMission::SetMissionParams(const MissionParams & misparmsNew)
     misparms.bClubGame = false;
   #endif // !defined(ALLSRV_STANDALONE)
 
+	// BT - STEAM - Scores always count in steam!
   // TE: Enforce LockSides = on if ScoresCount mmf change to MaxImbalance
-  if (misparms.bScoresCount)
-	  misparms.iMaxImbalance = 0x7ffe;
+  //if (misparms.bScoresCount) 
+	 // misparms.iMaxImbalance = 0x7ffe;
 
   int numTeamsOld = m_misdef.misparms.nTeams;
 
@@ -2746,6 +2772,10 @@ void CFSMission::RecordGameResults()
     // Post the query for async completion
     g.sql.PostQuery(pquery);
 
+#endif // !defined(ALLSRV_STANDALONE)
+
+	// BT - STEAM - Making this run for all game over scenarios.
+
     // Iterate through each team of the game
     const SideListIGC* pSides = GetIGCMission()->GetSides();
     for (SideLinkIGC* itSide = pSides->first(); itSide; itSide = itSide->next())
@@ -2757,17 +2787,20 @@ void CFSMission::RecordGameResults()
       RecordTeamResults(pside);
     }
 
+	// BT - STEAM - players who are not currently connected to the mission do not have initialized CSteamAchievement objects
+	// available, so skipping this one for now. Players who disconnect before the end of the game will not get any stats recorded.
+
     // Iterate through each player that left the game before it ended
-    for (OldPlayerLink* itOld = m_oldPlayers.first(); itOld; itOld = itOld->next())
-    {
-      OldPlayerInfo& opi = itOld->data();
+    //for (OldPlayerLink* itOld = m_oldPlayers.first(); itOld; itOld = itOld->next())
+    //{
+    //  OldPlayerInfo& opi = itOld->data();
 
-      // Record the player results (if they played on a real side)
-      if (opi.sideID != SIDE_TEAMLOBBY)
-        RecordPlayerResults(opi.name, &opi.pso, opi.sideID);
-    }
+    //  // Record the player results (if they played on a real side)
+    //  if (opi.sideID != SIDE_TEAMLOBBY)
+    //    RecordPlayerResults(opi.name, &opi.pso, opi.sideID);
+    //}
 
-  #endif // !defined(ALLSRV_STANDALONE)
+
 }
 
 
@@ -2817,6 +2850,10 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
     // Post the query for async completion
     g.sql.PostQuery(pquery);
 
+#endif // !defined(ALLSRV_STANDALONE)
+
+	// BT - STEAM - Making this run for all game over scenarios.
+
     // Iterate through each player of the team
     const ShipListIGC* pShips = pside->GetShips();
     for (ShipLinkIGC* itShip = pShips->first(); itShip; itShip = itShip->next())
@@ -2832,11 +2869,9 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
         PlayerScoreObject* ppso = pfsPlayer->GetPlayerScoreObject();
 
         // Record the player results
-        RecordPlayerResults(pship->GetName(), ppso, pside->GetObjectID());
+        RecordPlayerResults(pship, pfsPlayer, pside->GetObjectID());
       }
     }
-
-  #endif // !defined(ALLSRV_STANDALONE)
 }
 
 
@@ -2846,8 +2881,12 @@ void CFSMission::RecordTeamResults(IsideIGC* pside)
    Purpose:
      Records the results of the player to the database.
  */
-void CFSMission::RecordPlayerResults(const char* pszName, PlayerScoreObject* ppso, SideID sid)
+void CFSMission::RecordPlayerResults(IshipIGC* pship, CFSPlayer *player, SideID sid)
 {
+	PlayerScoreObject*  ppso = player->GetPlayerScoreObject();
+	//Xynth I didn't need this change today but I don't think it hurts and will likely be needed down the road
+	const char * pszName = pship->GetName();
+
   #if !defined(ALLSRV_STANDALONE)
 
     // Create the database update query
@@ -2911,6 +2950,19 @@ void CFSMission::RecordPlayerResults(const char* pszName, PlayerScoreObject* pps
 
     // Post the query for async completion
     g.sql.PostQuery(pquery);
+
+#else
+
+	// BT - STEAM
+	CSteamAchievements *pSteamAchievements = player->GetSteamAchievements();
+	IshipIGC *pIship = player->GetIGCShip();
+	pSteamAchievements->AwardBetaParticipation();
+	
+	pSteamAchievements->UpdateLeaderboard(ppso);
+	pSteamAchievements->AddUserStats(ppso, pIship);	
+
+	pSteamAchievements->SaveStats();
+
 
   #endif // !defined(ALLSRV_STANDALONE)
 }
@@ -3001,7 +3053,7 @@ void CFSMission::QueueGameoverMessage()
   const int nMaxPlayersPerMsg = 50;
   while (nPlayerIndex > 0)
   {
-      int nPlayers = min(nPlayerIndex, nMaxPlayersPerMsg);
+      int nPlayers = std::min(nPlayerIndex, nMaxPlayersPerMsg);
       nPlayerIndex -= nPlayers;
 
       BEGIN_PFM_CREATE(g.fm, pfmGameOver, S, GAME_OVER_PLAYERS)
@@ -3043,6 +3095,43 @@ void CFSMission::ProcessGameOver()
 
   m_flGameDuration = g.timeNow - m_misdef.misparms.timeStart;
 
+  //Xynth Determine Rank Ratio and load it into PlayerScoreObjects
+  {
+	  int sideCount = 0;
+	  ObjectID sideID[3];
+	  int rank[3];
+	  for (SideLinkIGC* psl = m_pMission->GetSides()->first(); psl != NULL && sideCount < 3; psl = psl->next())
+	  {
+		  IsideIGC* pside = psl->data();
+		  sideID[sideCount] = pside->GetObjectID();
+		  rank[sideCount] = GetSideRankSum(pside,false);
+		  sideCount++;		  
+	  }
+	  if (sideCount == 2) //if more than 2 sides, just use the default 1.0 ratio
+	  {
+		  for (int i = 0; i < 2; i++)
+		  {
+			  if (rank[i] == 0) //avoid divide by zero
+				  rank[i] = 1;
+		  }
+		  float ratio1 = float(rank[0]) / rank[1];
+		  float ratio0 = float(rank[1]) / rank[0];
+		  for (pShiplink = pShips->first(); pShiplink; pShiplink = pShiplink->next())
+		  {
+			  CFSShip * pfsShip = (CFSShip *)pShiplink->data()->GetPrivateData();
+			  if (pfsShip->IsPlayer())
+			  {
+				  PlayerScoreObject*  ppso = pfsShip->GetPlayerScoreObject();
+				  if (pfsShip->GetSide()->GetObjectID() == sideID[0])
+					  ppso->SetRankRatio(ratio0);
+				  else
+					  ppso->SetRankRatio(ratio1);
+			  }
+		  }
+	  }
+
+  }
+  
   //Calculate scores for all players and get a running average of time played.
   float                 totalExperience                = 0.0f;
   float                 sideExperience[c_cSidesMax]    = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
@@ -3055,18 +3144,7 @@ void CFSMission::ProcessGameOver()
         CFSShip * pfsShip = (CFSShip *) pShiplink->data()->GetPrivateData();
         if (pfsShip->IsPlayer())
         {
-			// BT - STEAM
-			/*CSteamID steamID(strtoull(pfsShip->GetPlayer()->GetCDKey(), NULL, 0));
-			CSteamAchievements achievementsForPlayer(steamID);*/
-			CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
-
-			pSteamAchievements->AwardBetaParticipation();
-
-            PlayerScoreObject*  ppso = pfsShip->GetPlayerScoreObject();
-            
-			pSteamAchievements->AddUserStats(int(ppso->GetMinerKills()), int(ppso->GetBuilderKills()), int(ppso->GetPlayerKills()), int(ppso->GetBaseKills()), int(ppso->GetBaseCaptures()), int(ppso->GetScore()));
-			
-			pSteamAchievements->SaveStats();
+			PlayerScoreObject*  ppso = pfsShip->GetPlayerScoreObject();
 			
 			if (ppso->Connected())
             {
@@ -3176,10 +3254,15 @@ void CFSMission::ProcessGameOver()
 
   // award points for commanding
   {
-      for (SideLinkIGC* psl = m_pMission->GetSides()->first(); (psl != NULL); psl = psl->next())
+	  int winnerELO = -1;
+	  int loserELO = -1;
+	  CFSPlayer* theWinner;
+	  CFSPlayer* theLoser;
+	  for (SideLinkIGC* psl = m_pMission->GetSides()->first(); (psl != NULL); psl = psl->next())
       {
           IsideIGC* pside = psl->data();
           SideID    sideID = pside->GetObjectID();
+		  CFSPlayer* theLeader = GetLeader(sideID);
 
           PlayerScoreObject*  ppso = commander[sideID];
           if (ppso)
@@ -3197,8 +3280,35 @@ void CFSMission::ProcessGameOver()
             }
 
             ppso->SetCommanderScore(commandScore * ppso->GetTimePlayed());
+			if (ppso->GetWinner())
+			{
+				if (theLeader)
+				{
+					CSteamAchievements * pSteamAchievements = theLeader->GetSteamAchievements();
+					winnerELO = pSteamAchievements->GetCommELO();
+					theWinner = theLeader;
+
+				}
+			}
+			else
+			{
+				if (theLeader)
+				{
+					CSteamAchievements * pSteamAchievements = theLeader->GetSteamAchievements();
+					loserELO = pSteamAchievements->GetCommELO();
+					theLoser = theLeader;
+				}
+			}
+
           }
-      }
+	  }
+	  if (winnerELO != -1 && loserELO != -1) //steam comm worked
+	  {
+		  CSteamAchievements * pWinAchievements = theWinner->GetSteamAchievements();
+		  pWinAchievements->UpdateCommanderStats(loserELO, true);
+		  CSteamAchievements * pLoseAchievements = theLoser->GetSteamAchievements();
+		  pLoseAchievements->UpdateCommanderStats(winnerELO, false);
+	  }
   }
 
   //Save player scores
@@ -3237,10 +3347,11 @@ void CFSMission::ProcessGameOver()
   }
 
   // Record the Game Results
-  if (m_misdef.misparms.bScoresCount) // Only if scores count
-  {
+  //if (m_misdef.misparms.bScoresCount) // Only if scores count
+  //{
+  // BT - STEAM - Scores always count. 
     RecordGameResults();
-  }
+  //}
 
   // Queue the GameOver message to all connected users
   g.fm.SetDefaultRecipient(GetGroupMission(), FM_GUARANTEED);
@@ -3723,7 +3834,7 @@ void CFSMission::CreateDPGroups(IclusterIGC * pcluster)
   ClusterGroups * pcg = new ClusterGroups;
   char szDocked[] = "Everyone docked in sector ";
   char szFlying[] = "Everyone flying in sector ";
-  char szBuff[max(sizeof(szDocked), sizeof(szFlying)) + c_cbName + 1];
+  char szBuff[std::max(sizeof(szDocked), sizeof(szFlying)) + c_cbName + 1];
   wsprintf(szBuff, "%s%s", szDocked, pcluster->GetName());
   pcg->pgrpClusterDocked = g.fm.CreateGroup(szBuff);
   wsprintf(szBuff, "%s%s", szDocked, pcluster->GetName());
@@ -3824,7 +3935,7 @@ void CFSMission::QueueLobbyMissionInfo()
   }
 #endif
 
-  char szAddr[16]= "XXX-YYY-ZZZ-TTT"; // KGJV #114 IMAGO REVIEW IPv6!!!!
+  char szAddr[64]= "XXX-YYY-ZZZ-TTT"; // KGJV #114 IMAGO REVIEW IPv6!!!!
   ZVersionInfo vi; ZString zInfo = (LPCSTR)vi.GetFileVersionString(); //Imago 7/10 #62
   // KGJV: added sending m_misdef.misparms.szIGCStaticFile to lobby
   BEGIN_PFM_CREATE(g.fmLobby, pfmLobbyMissionInfo, LS, LOBBYMISSIONINFO)
@@ -3833,7 +3944,7 @@ void CFSMission::QueueLobbyMissionInfo()
     FM_VAR_PARM((PCC)m_strDetailsFiles, CB_ZTS)
 	FM_VAR_PARM(m_misdef.misparms.szIGCStaticFile,CB_ZTS)
 	FM_VAR_PARM((PCC)(g.strLocalAddress),CB_ZTS) // KGJV #114 - ServerName
-	FM_VAR_PARM(szAddr,16)                       // KGJV #114 - ServerAddr - placeholder here, lobby will fill it /Revisit, this can be Oct'ed and sent non variable
+	FM_VAR_PARM(szAddr,64)                       // KGJV #114 - ServerAddr - placeholder here, lobby will fill it /Revisit, this can be Oct'ed and sent non variable
 	FM_VAR_PARM(PCC(UTL::GetPrivilegedUsers(-1)),CB_ZTS) //Imago 6/10
 	FM_VAR_PARM(PCC(zInfo),CB_ZTS) //Imago 7/10
   END_PFM_CREATE
@@ -3881,7 +3992,7 @@ void CFSMission::QueueLobbyMissionInfo()
   pfmLobbyMissionInfo->nTeams                   = m_misdef.misparms.nTeams;
   pfmLobbyMissionInfo->nMinRank                 = m_misdef.misparms.iMinRank;
   pfmLobbyMissionInfo->nMaxRank                 = m_misdef.misparms.iMaxRank;
-  pfmLobbyMissionInfo->nMaxPlayersPerGame       = min(m_misdef.misparms.nTotalMaxPlayersPerGame,
+  pfmLobbyMissionInfo->nMaxPlayersPerGame       = std::min<int>(m_misdef.misparms.nTotalMaxPlayersPerGame,
                                                     m_misdef.misparms.nTeams
                                                         * m_misdef.misparms.nMaxPlayersPerTeam);
   pfmLobbyMissionInfo->nMinPlayersPerTeam       = m_misdef.misparms.nMinPlayersPerTeam;
@@ -3926,10 +4037,57 @@ void CFSMission::SendMissionInfo(CFSPlayer * pfsPlayer, IsideIGC*   pside)
 
     SideID  sideID = pside->GetObjectID();
 
+	// Send all clusters, and what that side sees in them
+	const ClusterListIGC * pclstlist = pMission->GetClusters();
+	ClusterLinkIGC * pclstlink;
 
-    // Send all clusters, and what that side sees in them
-    const ClusterListIGC * pclstlist = pMission->GetClusters();
-    ClusterLinkIGC * pclstlink;
+	// BT - WOPR - Bots can't see tha map preview, so give them a cluster over view, but without position. 
+	BEGIN_PFM_CREATE(g.fm, pfmClusterInfo, S, CLUSTERINFO)
+	END_PFM_CREATE
+
+	ZeroMemory(pfmClusterInfo->clusterIDs, sizeof(pfmClusterInfo->clusterIDs));
+	ZeroMemory(pfmClusterInfo->homeSectors, sizeof(pfmClusterInfo->homeSectors));
+	ZeroMemory(pfmClusterInfo->warpFromClusterIDs, sizeof(pfmClusterInfo->warpFromClusterIDs));
+	ZeroMemory(pfmClusterInfo->warpToClusterIDs, sizeof(pfmClusterInfo->warpToClusterIDs));
+
+	// The last element in these lists should always be -1;
+	pfmClusterInfo->clusterIDs[0] = -1;
+	pfmClusterInfo->warpFromClusterIDs[0] = -1;
+	pfmClusterInfo->warpToClusterIDs[0] = -1;
+
+	int clusterIndex = 0;
+	int warpIndex = 0;
+
+	for (pclstlink = pclstlist->first(); pclstlink; pclstlink = pclstlink->next())
+	{
+		IclusterIGC * pcluster = pclstlink->data();
+
+		pfmClusterInfo->clusterIDs[clusterIndex] = pcluster->GetObjectID();
+		pfmClusterInfo->homeSectors[clusterIndex] = pcluster->GetHomeSector();
+		clusterIndex++;
+
+		pfmClusterInfo->clusterIDs[clusterIndex] = -1;
+
+		const WarpListIGC * pwarplist = pcluster->GetWarps();
+		WarpLinkIGC * pwarplink;
+		for (pwarplink = pwarplist->first(); pwarplink; pwarplink = pwarplink->next())
+		{
+			IwarpIGC * warp = pwarplink->data();
+
+			pfmClusterInfo->warpFromClusterIDs[warpIndex] = warp->GetCluster()->GetObjectID();
+			pfmClusterInfo->warpToClusterIDs[warpIndex] = warp->GetDestination()->GetCluster()->GetObjectID();
+					
+			warpIndex++;
+
+			pfmClusterInfo->warpFromClusterIDs[warpIndex] = -1;
+			pfmClusterInfo->warpToClusterIDs[warpIndex] = -1;
+		}
+	}
+
+	// BT - WOPR - End.
+
+
+    
     for (pclstlink = pclstlist->first(); pclstlink; pclstlink = pclstlink->next())
     {
         IclusterIGC * pcluster = pclstlink->data();
@@ -4394,11 +4552,16 @@ DelPositionReqReason CFSMission::CheckPositionRequest(CFSPlayer * pfsPlayer, Isi
     }
 	
 	if (GetCountOfPlayers(pside, false) >= pmp->nMaxPlayersPerTeam)
+	{
 		return DPR_TeamFull;
-    else if ((nNumPlayers >= maxPlayers) &&//Xynth #166 7/2010 Add condition to let low rank players join stack
-			 !((pfsPlayer->GetPersistPlayerScore(NA)->GetRank() <= g.MaxNewbRank) && (nNumPlayers < (maxPlayers + 2))))
-			//If the player is low rank (<4) and there aren't more than 2 extra players, let him join (Imago made this configurable #174)
+	}
+	else if ((nNumPlayers >= maxPlayers) &&//Xynth #166 7/2010 Add condition to let low rank players join stack
+		!((pfsPlayer->GetPersistPlayerScore(NA)->GetRank() <= g.MaxNewbRank) && (nNumPlayers < (maxPlayers + 2))) //If the player is low rank (<4) and there aren't more than 2 extra players, let him join (Imago made this configurable #174)
+		&& (strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) != 0) // If it's a bot, then let them join.	
+		)
+	{
 		return DPR_TeamBalance;
+	}
 
 	// TE: Can they join chosen side based on rank? mmf changed to MaxImbalance
 	if ((STAGE_NOTSTARTED != GetStage()) && (pmp->iMaxImbalance == 0x7ffe))
@@ -5084,7 +5247,7 @@ void CFSMission::DeactivateSide(IsideIGC * pside)
       SideID sideid = pside->GetObjectID();
       m_misdef.rgfActive[sideid]  =
       m_misdef.rgfReady[sideid]   = false;
-      pside->SetTimeEndured(max(0.0f, Time::Now() - m_misdef.misparms.timeStart));
+      pside->SetTimeEndured(std::max(0.0f, Time::Now() - m_misdef.misparms.timeStart));
 
       //Eliminate all of the side's drones
       const ShipListIGC*    pships = pside->GetShips();
@@ -5256,6 +5419,11 @@ void CFSMission::PlayerReadyChange(CFSPlayer * pfsPlayer)
 void CFSMission::CheckForSideAllReady(IsideIGC * pside)
 {
   SideID sideid = pside->GetObjectID();
+
+  // If a player is moved to NOAT at the same time another player is joining, an assert will fire.
+  if (sideid <= NA)
+	  return;
+
   if (GetCountOfPlayers(pside, false) < m_misdef.misparms.nMinPlayersPerTeam)
     SetReady(sideid, false);
   else if (GetForceReady(pside->GetObjectID()))

@@ -1,20 +1,20 @@
+#include "ImageTransfer.h"
 
-#include "pch.h"
-
+#include <color.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CImageTransfer::Transfer16BitTo16BitNoColourKey(	const BYTE * pSrc,
+void CImageTransfer::Transfer16BitTo16BitNoColourKey(	const uint8_t * pSrc,
 														const int iSrcPitch,
-														BYTE * pDst,
+                                                        uint8_t * pDst,
 														const int iDstPitch,
 														const WinPoint & srcPos,
 														const WinPoint & dstPos,
 														const WinPoint & size )
 {
 	int x, y;
-	DWORD dwByteOffset;
-	WORD wVal;
+    uint32_t dwByteOffset;
+    uint16_t wVal;
 
 	// Copy the data over. Need to invert the data in the y direction.
 	for( y=0; y<size.Y(); y++ )
@@ -25,25 +25,52 @@ void CImageTransfer::Transfer16BitTo16BitNoColourKey(	const BYTE * pSrc,
 			wVal = ( pSrc[ dwByteOffset ] ) | ( pSrc[ dwByteOffset + 1 ] << 8 );
 
 			// Store colour.
-			pDst[ ( y * iDstPitch ) + ( x * 2 ) + 1 ] = (BYTE) (wVal >> 8 );
-			pDst[ ( y * iDstPitch ) + ( x * 2 ) + 0 ] = (BYTE) (wVal & 0x00FF );
+            pDst[ ( y * iDstPitch ) + ( x * 2 ) + 1 ] = uint8_t(wVal >> 8 );
+            pDst[ ( y * iDstPitch ) + ( x * 2 ) + 0 ] = uint8_t(wVal & 0x00FF );
 
 			wVal = ( pSrc[ dwByteOffset + 2 ] ) | ( pSrc[ dwByteOffset + 3 ] << 8 ) ;
 
 			// Store colour.
-			pDst[ ( y * iDstPitch ) + ( x * 2 ) + 3 ] = (BYTE) (wVal >> 8 );
-			pDst[ ( y * iDstPitch ) + ( x * 2 ) + 2 ] = (BYTE) (wVal & 0x00FF );
+            pDst[ ( y * iDstPitch ) + ( x * 2 ) + 3 ] = uint8_t(wVal >> 8 );
+            pDst[ ( y * iDstPitch ) + ( x * 2 ) + 2 ] = uint8_t(wVal & 0x00FF );
 		}
 	}
 }
 
 
+void CImageTransfer::Transfer16BitTo16BitCopy(const uint8_t * pSrc,
+    const int iSrcPitch,
+    uint8_t * pDst,
+    const int iDstPitch,
+    const WinPoint & srcPos,
+    const WinPoint & dstPos,
+    const WinPoint & size
+)
+{
+    int x, y;
+    uint32_t dwByteOffset;
+    uint16_t wVal, wNewColour;
+
+    // Copy the data over. Need to invert the data in the y direction.
+    for (y = 0; y<size.Y(); y++)
+    {
+        for (x = 0; x<size.X(); x += 1)
+        {
+            dwByteOffset = (y * iSrcPitch) + (x * 2);
+            wVal = (pSrc[dwByteOffset]) | (pSrc[dwByteOffset + 1] << 8);
+
+            pDst[(y * iDstPitch) + (x * 2) + 1] = uint8_t(wVal >> 8);
+            pDst[(y * iDstPitch) + (x * 2) + 0] = uint8_t(wVal & 0x00FF);
+        }
+    }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CImageTransfer::Transfer16BitTo16BitWithColourKey(	const BYTE * pSrc,
+void CImageTransfer::Transfer16BitTo16BitWithColourKey(	const uint8_t * pSrc,
 														const int iSrcPitch,
-														BYTE * pDst,
+                                                        uint8_t * pDst,
 														const int iDstPitch,
 														const WinPoint & srcPos,
 														const WinPoint & dstPos,
@@ -51,13 +78,13 @@ void CImageTransfer::Transfer16BitTo16BitWithColourKey(	const BYTE * pSrc,
 														const Color & colorKey )
 {
 	int x, y;
-	DWORD dwByteOffset;
-	WORD wVal, wNewColour;
+    uint32_t dwByteOffset;
+    uint16_t wVal, wNewColour;
 	bool bExtraGreenBit;
 
 	// Generate the 16 bit colour value to test against.
 	COLORREF colorRef = colorKey.MakeCOLORREF();
-	WORD wCompare = (WORD)(	( ( ( colorRef & 0x000000FF ) >> 3 ) << 11 ) |		// R
+    uint16_t wCompare = (uint16_t)(	( ( ( colorRef & 0x000000FF ) >> 3 ) << 11 ) |		// R
 							( ( ( colorRef & 0x0000FF00 ) >> 10 ) << 5 ) |		// G
 							( ( ( colorRef & 0x00FF0000 ) >> 19 ) ) );
 
@@ -86,8 +113,8 @@ void CImageTransfer::Transfer16BitTo16BitWithColourKey(	const BYTE * pSrc,
 				wNewColour |= 0x8000;
 			}
 			// Store colour.
-			pDst[ ( y * iDstPitch ) + ( x * 2 ) + 1 ] = (BYTE) (wNewColour >> 8 );
-			pDst[ ( y * iDstPitch ) + ( x * 2 ) + 0 ] = (BYTE) (wNewColour & 0x00FF );
+            pDst[ ( y * iDstPitch ) + ( x * 2 ) + 1 ] = uint8_t(wNewColour >> 8 );
+            pDst[ ( y * iDstPitch ) + ( x * 2 ) + 0 ] = uint8_t(wNewColour & 0x00FF );
 
 			wVal = ( pSrc[ dwByteOffset + 2 ] ) | ( pSrc[ dwByteOffset + 3 ] << 8 ) ;
 
@@ -108,8 +135,8 @@ void CImageTransfer::Transfer16BitTo16BitWithColourKey(	const BYTE * pSrc,
 				wNewColour |= 0x8000;
 			}
 			// Store colour.
-			pDst[ ( y * iDstPitch ) + ( x * 2 ) + 3 ] = (BYTE) (wNewColour >> 8 );
-			pDst[ ( y * iDstPitch ) + ( x * 2 ) + 2 ] = (BYTE) (wNewColour & 0x00FF );
+            pDst[ ( y * iDstPitch ) + ( x * 2 ) + 3 ] = uint8_t(wNewColour >> 8 );
+            pDst[ ( y * iDstPitch ) + ( x * 2 ) + 2 ] = uint8_t(wNewColour & 0x00FF );
 		}
 	}
 }
@@ -118,9 +145,9 @@ void CImageTransfer::Transfer16BitTo16BitWithColourKey(	const BYTE * pSrc,
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CImageTransfer::Transfer16BitTo32BitNoColourKey(	const BYTE * pSrc,
+void CImageTransfer::Transfer16BitTo32BitNoColourKey(	const uint8_t * pSrc,
 														const int iSrcPitch,
-														BYTE * pDst,
+                                                        uint8_t * pDst,
 														const int iDstPitch,
 														const WinPoint & srcPos,
 														const WinPoint & dstPos,
@@ -130,7 +157,7 @@ void CImageTransfer::Transfer16BitTo32BitNoColourKey(	const BYTE * pSrc,
 	// Copy the data over. Need to invert the data in the y direction.
 	for( y=0; y<size.Y(); y++ )
 	{
-		DWORD * dwPtr = (DWORD*) ( pDst + ( y * iDstPitch ) );
+        uint32_t * dwPtr = (uint32_t*) ( pDst + ( y * iDstPitch ) );
 		for( x=0; x<size.X(); x ++ )
 		{
 			*dwPtr++ = 0xFF0000FF;
@@ -142,55 +169,80 @@ void CImageTransfer::Transfer16BitTo32BitNoColourKey(	const BYTE * pSrc,
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CImageTransfer::Transfer16BitTo32BitWithColourKey(	const BYTE * pSrc,
+void CImageTransfer::Transfer16BitTo32BitWithColourKey(	const uint8_t * pSrc,
 														const int iSrcPitch,
-														BYTE * pDst,
+                                                        uint8_t * pDst,
 														const int iDstPitch,
 														const WinPoint & srcPos,
 														const WinPoint & dstPos,
 														const WinPoint & size,
 														const Color & colorKey )
 {
-/*	int x, y;
+	int x, y;
+
+    uint16_t wVal;
+    uint32_t dwNewColour;
+
+    COLORREF colorRef = Color(0, 0, 0).MakeCOLORREF();
+    uint16_t wCompare = (uint16_t)(((((colorRef & 0x000000FF) >> 3) << 11) |	// R
+        (((colorRef & 0x0000FF00) >> 10) << 5) |		// G
+        (((colorRef & 0x00FF0000) >> 19))));
+
 	// Copy the data over. Need to invert the data in the y direction.
 	for( y=0; y<size.Y(); y++ )
 	{
-		DWORD * dwPtr = (DWORD*) ( pDst + ( y * iDstPitch ) );
+        uint16_t * dwSrcPtrY = (uint16_t*)(pSrc + ((y + srcPos.Y()) * iSrcPitch));
+        uint32_t * dwDstPtrY = (uint32_t*)(pDst + ((y + dstPos.Y()) * iDstPitch));
 		for( x=0; x<size.X(); x ++ )
 		{
-			*dwPtr++ = 0xFF0000FF;
+            uint16_t * dwSrcPtrYX = dwSrcPtrY + (srcPos.X() + x);
+            uint32_t * dwDstPtrYX = dwDstPtrY + (dstPos.X() + x);
+
+            wVal = *dwSrcPtrYX;
+
+            if (wVal == wCompare)
+            {
+                // Create an A8R8G8B8 entry with alpha 0, from R5G6B5.
+                dwNewColour = 0;			// No alpha, pixel not shown.
+            }
+            else
+            {
+                // Create an A8R8G8B8 entry with alpha at 255.
+                dwNewColour = ((wVal & 0xF800) >> 8) << 16;
+                dwNewColour |= ((wVal & 0x07E0) >> 3) << 8;
+                dwNewColour |= ((wVal & 0x001F) << 3);
+                dwNewColour |= 0xFF000000;
+            }
+
+			*dwDstPtrYX = dwNewColour;
 		}
-	}*/
+	}
 }
 
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void CImageTransfer::Transfer24BitTo32BitWithColourKey(	const BYTE * pSrc,
-														const int iSrcPitch,
-														BYTE * pDst,
-														const int iDstPitch,
-														const WinPoint & srcPos,
-														const WinPoint & dstPos,
-														const WinPoint & size,
-														const Color & colorKey )
+void CImageTransfer::Transfer32BitTo32BitCopy(
+    const uint8_t * pSrc,
+    const int iSrcPitch,
+    uint8_t * pDst,
+    const int iDstPitch,
+    const WinPoint & srcPos,
+    const WinPoint & dstPos,
+    const WinPoint & size)
 {
-}
+    int x, y;
 
+    // Copy the data over. Need to invert the data in the y direction.
+    for (y = 0; y<size.Y(); y++)
+    {
+        uint32_t * dwSrcPtrY = (uint32_t*)(pSrc + ((y + srcPos.Y()) * iSrcPitch));
+        uint32_t * dwDstPtrY = (uint32_t*)(pDst + ((y + dstPos.Y()) * iDstPitch));
+        for (x = 0; x<size.X(); x++)
+        {
+            uint32_t * dwSrcPtrYX = dwSrcPtrY + (srcPos.X() + x);
+            uint32_t * dwDstPtrYX = dwDstPtrY + (dstPos.X() + x);
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void CImageTransfer::Transfer32BitTo32BitWithColourKey(	const BYTE * pSrc,
-														const int iSrcPitch,
-														BYTE * pDst,
-														const int iDstPitch,
-														const WinPoint & srcPos,
-														const WinPoint & dstPos,
-														const WinPoint & size,
-														const Color & colorKey )
-{
+            *dwDstPtrYX = *dwSrcPtrYX;
+        }
+    }
 }
 
 
@@ -200,13 +252,13 @@ void CImageTransfer::Transfer32BitTo32BitWithColourKey(	const BYTE * pSrc,
 // Fill in a rectangular area of a surface with a 16-bit colour value.
 // Note: the calling function should check colour key etc.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CImageTransfer::ColourImageFill16Bit(	void * pDst,
-											const int iDstPitch,
-											const WinPoint & dstPos,
-											const WinPoint & size,
-											const WORD wPixelColour )
+void CImageTransfer::ColourImageFill16Bit(void * pDst,
+                                            const int iDstPitch,
+                                            const WinPoint & dstPos,
+                                            const WinPoint & size,
+                                            const uint16_t wPixelColour )
 {
-	WORD * pDestData = (WORD*) pDst;
+    uint16_t * pDestData = (uint16_t*) pDst;
 	int iPitch = iDstPitch >> 1;			// Pitch / 2.
 	int iX, iY;
 
@@ -226,13 +278,13 @@ void CImageTransfer::ColourImageFill16Bit(	void * pDst,
 // Fill in a rectangular area of a surface with a 16-bit colour value.
 // Note: the calling function should check colour key etc.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CImageTransfer::ColourImageFill32Bit(	void * pDst,
-											const int iDstPitch,
-											const WinPoint & dstPos,
-											const WinPoint & size,
-											const DWORD dwPixelColour )
+void CImageTransfer::ColourImageFill32Bit(void * pDst,
+                                            const int iDstPitch,
+                                            const WinPoint & dstPos,
+                                            const WinPoint & size,
+                                            const uint32_t dwPixelColour )
 {
-	DWORD * pDestData = (DWORD*) pDst;
+    uint32_t * pDestData = (uint32_t*) pDst;
 	int iPitch = iDstPitch >> 2;			// Pitch / 4.
 	int iX, iY;
 

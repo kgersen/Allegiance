@@ -11,7 +11,10 @@
 #ifndef _MESSAGES_ALLCLUB_H_ 
 #define _MESSAGES_ALLCLUB_H_ 
 
-#include "MessageCore.h"
+#include <Squad.h>
+#include <Member.h>
+#include "messagecore.h"
+
 #define ALLCLUBVER 10
 
 #ifndef CivID

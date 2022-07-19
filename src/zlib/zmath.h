@@ -7,7 +7,11 @@
 #ifndef _zmath_H_
 #define _zmath_H_
 
+#include <cmath>
+#include <cstdint>
+
 #include "float.h"
+#include "zassert.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -49,16 +53,16 @@ inline int NextMultipleOf(int size, int value)
 //
 //////////////////////////////////////////////////////////////////////////////
 
-DWORD CountBits(DWORD dw);
-DWORD GetShift(DWORD dw);
-DWORD NextPowerOf2(DWORD x);
+uint32_t CountBits(uint32_t dw);
+uint32_t GetShift(uint32_t dw);
+uint32_t NextPowerOf2(uint32_t x);
 
-inline DWORD PowerOf2(DWORD exponent)
+inline uint32_t PowerOf2(uint32_t exponent)
 {
     return 1 << exponent;
 }
 
-inline DWORD MakeMask(int bits, int shift)
+inline uint32_t MakeMask(int bits, int shift)
 {
     return (PowerOf2(bits) - 1) << shift;
 }
@@ -98,10 +102,6 @@ inline void Swap(Type& x, Type& y)
 template<class ValueType>
 inline ValueType sign(ValueType x) { return x >= (ValueType)0 ? (ValueType)1 : (ValueType)-1; }
 
-// VS.Net 2003 port
-#if _MSC_VER < 1310
-inline float abs(float x)              { return x < 0 ? -x : x;        }
-#endif
 inline float mod(float x, float limit) 
 { 
     if (limit == 0) {
@@ -110,37 +110,6 @@ inline float mod(float x, float limit)
         return (float)fmod(x, limit); 
     }
 }
-
-// VS.Net 2003 port
-#if _MSC_VER < 1310
-    inline float floor(float x)            { return floorf(x);             }
-    inline float pow(float x, float y)     { return powf(x, y);            }
-    inline float cos(float x)              { return cosf(x);               }
-    inline float sin(float x)              { return sinf(x);               }
-    inline float tan(float x)              { return tanf(x);               }
-    inline float atan(float x)             { return atanf(x);              }
-    inline float atan2(float x, float y)   { return atan2f(x, y);          }
-    inline float log(float x)              { return logf(x);               }
-
-    inline float sqrt(float x)
-    {
-        ZAssert(x >= 0);
-        return sqrtf(x);
-    }
-
-    inline float acos(float x)
-    {
-        ZAssert(x >= -1 && x <= 1);
-        return acosf(x);
-    }
-
-    inline float asin(float x)
-    {
-        ZAssert(x >= -1 && x <= 1);
-        return asinf(x);
-    }
-#endif
-
 
 inline float random(float min, float max)
 {

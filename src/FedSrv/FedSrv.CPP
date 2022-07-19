@@ -454,9 +454,41 @@ void FetchGlobalAttributeSet(GlobalAttributeID gaid, GlobalAttributeSet& gas)
   #endif // !defined(ALLSRV_STANDALONE)
 }
 
+bool IsAnotherPlayerUsingThisName(const char * playerName, ImissionIGC * pMission)
+{
+	ShipLinkIGC* psl;
+	for (psl = pMission->GetShips()->first(); (psl != NULL); psl = psl->next())
+	{
+		CFSShip* pfsShip = (CFSShip *)(psl->data()->GetPrivateData());
+		if (pfsShip->IsPlayer())
+		{
+			CFSPlayer* pfsPlayerOther = pfsShip->GetPlayer();
+
+			if (_stricmp(playerName, pfsPlayerOther->GetName()) == 0)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
 
 void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
 {
+
+	// BT - STEAM - Rearching some complaints of stats not being logged. It turns out that US East 1 wasn't in the official game sevrer list. Derp.
+	// Leaving this here for now so I can debug some achievement stuff as well. 
+	//CSteamID id(uint64(76561198028193684));
+	//CSteamAchievements ach(id);
+	//int currScore;
+	//for (int i = 0; i < 20; i++)
+	//{
+	//	ach.GetStat(EStats::SUM_SCORE, &currScore);
+	//	ach.SetStat(EStats::SUM_SCORE, 3 + currScore);
+	//}
+	//ach.SaveStats();
+
   // Get the mission in question
   CFSMission * pfsMission;
   if (NA == (int)dwCookie && CFSMission::GetMissions()->n() > 0)
@@ -490,10 +522,41 @@ void JoinMission(CFSPlayer * pfsPlayer, DWORD dwCookie, const char * szPW)
     return;
   }
 
+  ImissionIGC * pMission = pfsMission->GetIGCMission();
+
+  if (IsAnotherPlayerUsingThisName(pfsPlayer->GetName(), pMission) == true)
+  {
+	  for (int nameIndexCounter = 1; nameIndexCounter < 100; nameIndexCounter++)
+	  {
+		  ZString currentPlayerName = pfsPlayer->GetName();
+		  ZString namePart = currentPlayerName;
+		  ZString tagPart = "";
+		  if (currentPlayerName.Find("@") > -1)
+		  {
+			  namePart = currentPlayerName.LeftOf("@");
+			  tagPart = currentPlayerName.RightOf("@");
+		  }
+
+		  if (currentPlayerName.GetLength() > 23)
+			  namePart = namePart.Left(namePart.GetLength() - 2);
+
+		  namePart += nameIndexCounter;
+
+		  if (tagPart.GetLength() > 0)
+			  namePart += "@" + tagPart;
+
+		  if (IsAnotherPlayerUsingThisName((PCC)namePart, pMission) == false)
+		  {
+			  pfsPlayer->SetName((char *)(PCC)namePart);
+			  break;
+		  }
+	  }
+  }
+
 
   if(UTL::PrivilegedUser(pfsPlayer->GetName(),-1)){ //Avalanche: Let admins bypass most checks. //Imago 6/10 #2
   // check to see if the mission is running and whether joiners are allowed
-  ImissionIGC * pMission = pfsMission->GetIGCMission();
+  
   OldPlayerLink*    popi = pfsMission->GetOldPlayerLink(pfsPlayer->GetName());
   const MissionParams*    pmp = pMission->GetMissionParams();
   SideID iSide=SIDE_TEAMLOBBY;
@@ -539,7 +602,7 @@ if (pfsMission->RequiresInvitation())
     }
   }
 
-  ImissionIGC * pMission = pfsMission->GetIGCMission();
+  //ImissionIGC * pMission = pfsMission->GetIGCMission();
 
   #if defined(ALLSRV_STANDALONE)
   if (g.fm.GetHostApplicationGuid() == FEDSRV_STANDALONE_PRIVATE_GUID)
@@ -860,12 +923,22 @@ void GotLogonDetails(CQLogonStats * pquery)
     pqd->fCanCheat = true;
     #endif
 
+	// If CDKey matches Pig CDKey then they can always cheat
+	if (strcmp(pqd->szCDKey, g.szBotAuthenticationGuid) == 0) {
+		pqd->fCanCheat = true;  
+	}
+
     dataship.pilotType = pqd->fCanCheat ? c_ptCheatPlayer : c_ptPlayer;
     dataship.abmOrders = 0;
     dataship.baseObjectID = NA;
     lstrcpy(dataship.name, pqd->szReason);
     TRef<IshipIGC> pship = (IshipIGC *) g.trekCore->CreateObject(g.timeNow,
                           OT_ship, &dataship, sizeof(dataship));
+
+	// If CDKey matches Pig CDKey then give them super powers
+	if (strcmp(pqd->szCDKey, g.szBotAuthenticationGuid) == 0) {
+		pship->SetWingmanBehaviour(c_wbbmStrafe | c_wbbmUseMissiles | c_wbbmUseMines | c_wbbmRunAt30Hull | c_wbbmInRangeAggressive);
+	}
 
 	// BT - STEAM
 	CSteamID steamID;
@@ -956,6 +1029,7 @@ void GotLogonDetails(CQLogonStats * pquery)
 
   g.fm.SendMessages(pcnxn, FM_GUARANTEED, FM_FLUSH);
   g.fm.CheckOdometer(flDTime, cMsgsOdometer, cBytesOdometer);
+  SteamGameServer_ReleaseCurrentThreadMemory();
   debugf("Player %s logon %s. Sent %d msgs and %dB to them in %1.3fs, "
          "and %d msgs and %dB to others in the process.\n",
          pqd->szCharacterName, fValid ? "succeeded" : "failed",
@@ -1106,12 +1180,14 @@ void SetCharStats(int                   characterID,
 	debugf("CharacterID=%d, Rank=%d, bScoresCount=%d, CivID=%d, Rating=%d,\n",
         characterID, Rank ,pfsMission->GetScoresCount(), pSide->GetCivilization()->GetObjectID(),
 		RATING_INT2EXT(pso.GetCombatRating()));
-    debugf("    WarpsSpotted=%.2f, AsteroidsSpotted=%.2f, TechsRecovered=%.2f,\n",
+    debugf("    WarpsSpotted=%.2f, AsteroidsSpotted=%.2f, TechsRecovered=%d,\n",
         pso.GetWarpsSpotted(), pso.GetAsteroidsSpotted(), pso.GetTechsRecovered());
     debugf("    MinerKills=%.2f, BuilderKills=%.2f, LayerKills=%.2f, PlayerKills=%.2f,\n",
         pso.GetMinerKills(), pso.GetBuilderKills(), pso.GetLayerKills(), pso.GetPlayerKills());
     debugf("    BaseKills=%.2f, BaseCaptures=%.2f, Deaths=%d, PilotBaseKills=%d, BaseCaptures=%d,\n",
         pso.GetBaseKills(), pso.GetBaseCaptures(), pso.GetDeaths(), pso.GetPilotBaseKills(), pso.GetPilotBaseCaptures());
+    debugf("    HighValueTargetsSpotted=%d, Repair=%.2f,\n",
+        pso.GetTargetsSpotted(), pso.GetRepair());
     debugf("    Minutes=%.2f, bWin=%d, bLose=%d, bWinCmd=%d, bLoseCmd=%d, Score=%.2f.\n",
         (pso.GetTimePlayed() / 60.0f), pso.GetWinner(), pso.GetLoser(), pso.GetCommandWinner(), pso.GetCommandLoser(),
 		pso.GetScore());
@@ -2889,7 +2965,7 @@ bool DoCheatCode(CFSShip * pfsShip, const char * szMessage)
 
       pfmMoney->sidTo = pfsShip->GetShipID();
       pfmMoney->sidFrom = NA;
-      pfmMoney->dMoney = max(-pfsShip->GetMoney(), atoi(strMoney));
+      pfmMoney->dMoney = std::max(-pfsShip->GetMoney(), atoi(strMoney));
 
       pfsShip->SetMoney(pfsShip->GetMoney() + pfmMoney->dMoney);
       g.fm.SendMessages(CFSSide::FromIGC(pfsShip->GetSide())->GetGroup(), FM_GUARANTEED, FM_FLUSH);
@@ -3122,14 +3198,19 @@ bool CommandToDrone(CFSMission*         pfsMission,
     if ((pcd->commandID != c_cidNone) &&
         (pfsSender->GetIGCShip()->GetSide() == pside))
     {
+        pshipTo->SetRunawayCheckCooldown(120.0f); // don't run anytime soon while executing a player command
 
+        IclusterIGC* pminerCluster = NULL;
+        char pcReply[100] = "Affirmative.";
         if (*ppmodelTarget == NULL)
 		{
             if (pdb)
             {
+                if (pshipTo->GetPilotType() == c_ptMiner && pdb->type == c_buoyCluster)
+                    pminerCluster = pfsMission->GetIGCMission()->GetCluster(pdb->clusterID);
                 //Create a buoy for this chat message
                 *ppmodelTarget = (ImodelIGC*)(pfsMission->GetIGCMission()->CreateObject(g.timeNow, OT_buoy, pdb, sizeof(*pdb)));
-                assert (*ppmodelTarget);
+                assert(*ppmodelTarget);
 
                 ((IbuoyIGC*)*ppmodelTarget)->AddConsumer();
             }
@@ -3162,7 +3243,14 @@ bool CommandToDrone(CFSMission*         pfsMission,
 					}
 				}
 				//
+                else if (pshipTo->GetPilotType() == c_ptMiner && otTarget == OT_warp) {
+                    IwarpIGC* pwarp = (IwarpIGC*)(*ppmodelTarget);
+                    IwarpIGC* pothersideWarp = pwarp ? pwarp->GetDestination() : NULL;
+                    if (pothersideWarp)
+                        pminerCluster = pothersideWarp->GetCluster();
+                }
             }
+
         }
         if ((pcd->commandID == c_cidDefault) && (*ppmodelTarget != NULL))
         {
@@ -3174,7 +3262,7 @@ bool CommandToDrone(CFSMission*         pfsMission,
             pshipTo->SetStayDocked(false);  //Xynth #48 8/2010 reset staydocked on any command
 			bAccepted = true;
             pfsMission->GetSite()->SendChat(pshipTo, CHAT_INDIVIDUAL, pfsSender->GetIGCShip()->GetObjectID(),
-                                            voAffirmativeSound, "Affirmative.");
+                                            voAffirmativeSound, pcReply);
 
             if (pcd->commandID == c_cidJoin)
             {
@@ -3194,11 +3282,11 @@ bool CommandToDrone(CFSMission*         pfsMission,
             }
             else
             {
-                //Set both current and accepted commands
+                /*//Set both current and accepted commands
                 pshipTo->SetCommand(c_cmdCurrent,
                                     *ppmodelTarget,
-                                    pcd->commandID);
-                pshipTo->SetCommand(c_cmdAccepted,
+                                    pcd->commandID);*/
+                pshipTo->SetCommand(c_cmdAccepted, //sets c_cmdCurrent as well
                                     *ppmodelTarget,
                                     pcd->commandID);
             }
@@ -3209,6 +3297,35 @@ bool CommandToDrone(CFSMission*         pfsMission,
             pfsMission->GetSite()->SendChat(pshipTo, CHAT_INDIVIDUAL, pfsSender->GetIGCShip()->GetObjectID(),
                                             voNegativeSound, "Negative.");
                                             */
+        }
+
+        // Remember player commands by storing location/ID in c_cmdQueued
+        if (pshipTo->GetPilotType() == c_ptMiner) {
+            if ((*ppmodelTarget) &&
+                (*ppmodelTarget)->GetObjectType() != OT_station &&
+                (*ppmodelTarget)->GetObjectType() != OT_ship)
+            {
+                DataBuoyIGC         buoyData;
+                buoyData.position = Vector(0.0f, 0.0f, 0.0f);
+                buoyData.type = c_buoyWaypoint; // c_buoyCluster would be deleted as soon as we are in the cluster
+                if (pminerCluster)
+                    buoyData.clusterID = pminerCluster->GetObjectID();
+                else
+                    buoyData.clusterID = (*ppmodelTarget)->GetCluster()->GetObjectID();
+                buoyData.buoyID = pfsMission->GetIGCMission()->GenerateNewBuoyID();
+                ImodelIGC* buoy = (ImodelIGC*)(pfsMission->GetIGCMission()->CreateObject(g.timeNow, OT_buoy, &buoyData, sizeof(buoyData)));
+
+                CommandID cid = c_cidGoto;
+                if (pminerCluster)
+                    cid = c_cidJoin;
+                pshipTo->SetCommand(c_cmdQueued, buoy, cid);
+
+                buoy->Release(); //SetCommand added the consumer needed
+            }
+            else {
+                // Remember that we just got a player command -> c_cidGoto instead of None
+                pshipTo->SetCommand(c_cmdQueued, NULL, c_cidGoto);
+            }
         }
     }
 
@@ -3589,6 +3706,21 @@ void SendShipUpdates(CFSMission * pfsMission)
                         pfmShipStatus->shipID = pship->GetObjectID();
                         pfmShipStatus->status = *pssOld = *pss;         //Also update the old status
                     }
+
+					//Xynth Add a periodic check for achievements and IGC Score triggers
+					
+					if (ISPLAYER(pship))
+					{
+						CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+						PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();						
+						if ((pship->GetAchievementMask() & c_achmNewRepair) > 0)
+							pso->SetRepair(pship->GetRepair());
+
+						pSteamAchievements->AwardIGCAchievements(pship->GetAchievementMask());
+						pship->ClearAchievementMask();
+
+					}
+
                 }
             }
 
@@ -4414,7 +4546,7 @@ HRESULT FedSrvSiteBase::OnNewConnection(FedMessaging * pthis, CFMConnection & cn
   // we don't do anything until they login
 
   // mmf 10/08 Log ip address (code provided by Imago)
-  char szRemote[16];
+  char szRemote[64];
   pthis->GetIPAddress(cnxn, szRemote);
   debugf("New connection ID: %x IP: %s\n",cnxn.GetID(),szRemote);
 
@@ -4645,6 +4777,22 @@ CSteamID GetSteamIDFromPlayerHandle(char *playerHandle)
 }
 
 
+// BT - STEAM 
+static DWORD WINAPI LogonThread(LPVOID threadData)
+{
+	CSteamValidation *steamValidation = (CSteamValidation *) threadData;
+	steamValidation->BeginSteamAuthentication();
+
+	// BeginSteamAuthentication will block until either 30 seconds goes by, or it gets a login response from steam.
+	// When it completes, it calls PostThreadMessage to complete the login.
+
+	delete steamValidation;
+	SteamGameServer_ReleaseCurrentThreadMemory(); 
+	return 0;
+}
+
+
+
 /*-------------------------------------------------------------------------
  * OnAppMessage
  *-------------------------------------------------------------------------
@@ -4838,7 +4986,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 				  break;
 
 			  case CHAT_LEADERS:
-				  targetName = pfsMission->GetIGCMission()->GetModel(pfmChat->otTarget, pfmChat->oidTarget)->GetName();
+				  targetName = "Leaders";
 				  break;
 
 			  default:
@@ -4849,7 +4997,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		ZString senderName = pfsPlayer->GetName();
 		sourceSteamID = strtoull(pfsPlayer->GetCDKey(), NULL, NULL);
 		
-		char szRemote[16];
+		char szRemote[64];
 		CFMConnection * connection = pfsPlayer->GetConnection();
 		pthis->GetIPAddress(*connection, szRemote);
 		debugf("chat from connection ID: %x IP: %s\n", connection->GetID(), szRemote);
@@ -4857,18 +5005,23 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		const FMD_S_MISSIONDEF *missionDef = pfsMission->GetMissionDef();
 		ZString missionName = ZString(missionDef->misparms.strGameName);
 
-		BEGIN_PFM_CREATE(g.fmLobby, pfmLogChat, S, LOG_CHAT_MESSAGE)
-			FM_VAR_PARM((PCC)missionName, CB_ZTS)
-			FM_VAR_PARM((PCC)senderName, CB_ZTS)
-			FM_VAR_PARM((PCC)targetName, CB_ZTS)
-			FM_VAR_PARM(FM_VAR_REF(pfmChat, Message), CB_ZTS)
-			FM_VAR_PARM(szRemote, CB_ZTS)
-		END_PFM_CREATE
-		  
-		pfmLogChat->sourceSteamID = sourceSteamID;
-		pfmLogChat->targetSteamID = targetSteamID;
-		  
-		g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+		// BT - 10/17 - Fixing crash on chat logging when lobby is not connected.
+		if (g.fmLobby.IsConnected() == true)
+		{
+			BEGIN_PFM_CREATE(g.fmLobby, pfmLogChat, S, LOG_CHAT_MESSAGE)
+				FM_VAR_PARM((PCC)missionName, CB_ZTS)
+				FM_VAR_PARM((PCC)senderName, CB_ZTS)
+				FM_VAR_PARM((PCC)targetName, CB_ZTS)
+				FM_VAR_PARM(FM_VAR_REF(pfmChat, Message), CB_ZTS)
+				FM_VAR_PARM(szRemote, CB_ZTS)
+				END_PFM_CREATE
+
+			pfmLogChat->sourceSteamID = sourceSteamID;
+			pfmLogChat->targetSteamID = targetSteamID;
+
+			g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+		}
+
 		// BT - STEAN - End of chat logging.
 
       if (pfmChat->cbMessage > 0)
@@ -4885,101 +5038,101 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 #endif
 		{
 
-			// BT - STEAM - Enable a user that is a member of the MS Allegiance Steam Group to get a list of players and steam IDs 
-			// so that a moderator can kick or ban users from inside the game console.
-			if (pfmChat->cbMessage > strlen("#who") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#who", strlen("#who")) == 0)
-			{
-				if (CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) == true)
-				{
-					for (ShipLinkIGC* psl = pfsMission->GetIGCMission()->GetShips()->first(); (psl != NULL); psl = psl->next())
-					{
-						CFSShip*  pfsShip = (CFSShip*)(psl->data()->GetPrivateData());
-						if (pfsShip->IsPlayer() == true)
-						{
-							char playerData[1024];
+			//// BT - STEAM - Enable a user that is a member of the MS Allegiance Steam Group to get a list of players and steam IDs 
+			//// so that a moderator can kick or ban users from inside the game console.
+			//if (pfmChat->cbMessage > strlen("#who") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#who", strlen("#who")) == 0)
+			//{
+			//	if (CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) == true)
+			//	{
+			//		for (ShipLinkIGC* psl = pfsMission->GetIGCMission()->GetShips()->first(); (psl != NULL); psl = psl->next())
+			//		{
+			//			CFSShip*  pfsShip = (CFSShip*)(psl->data()->GetPrivateData());
+			//			if (pfsShip->IsPlayer() == true)
+			//			{
+			//				char playerData[1024];
 
-							uint64 steamUID = strtoull(pfsShip->GetPlayer()->GetCDKey(), NULL, 0);
-							CSteamID steamID(steamUID);
+			//				uint64 steamUID = strtoull(pfsShip->GetPlayer()->GetCDKey(), NULL, 0);
+			//				CSteamID steamID(steamUID);
 
-							char playerHandle[256];
-							GetPlayerHandleFromSteamID(steamID, playerHandle);
+			//				char playerHandle[256];
+			//				GetPlayerHandleFromSteamID(steamID, playerHandle);
 
-							sprintf(playerData, "%s - %s", pfsShip->GetPlayer()->GetName(), playerHandle);
+			//				sprintf(playerData, "%s - %s", pfsShip->GetPlayer()->GetName(), playerHandle);
 
-							CSteamID testID = GetSteamIDFromPlayerHandle(playerHandle);
+			//				CSteamID testID = GetSteamIDFromPlayerHandle(playerHandle);
 
-							pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
-								NA, playerData);
-						}
-					}
-				}
-			}
+			//				pfsMission->GetSite()->SendChatf(NULL, CHAT_INDIVIDUAL_NOFILTER, pfsPlayer->GetIGCShip()->GetObjectID(),
+			//					NA, playerData);
+			//			}
+			//		}
+			//	}
+			//}
 
-			// BT - STEAM
-			if (pfmChat->cbMessage > strlen("#kick") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#kick", strlen("#kick")) == 0)
-			{
-				if (CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) == true)
-				{
-					char *kickPlayerHandle = FM_VAR_REF(pfmChat, Message) + strlen("#kick ");
-					CSteamID targetSteamID = GetSteamIDFromPlayerHandle(kickPlayerHandle);
-					char kickSteamID[1024];
-					sprintf(kickSteamID, "%" PRIu64, targetSteamID.ConvertToUint64());
-
-
-					for (ShipLinkIGC* psl = pfsMission->GetIGCMission()->GetShips()->first(); (psl != NULL); psl = psl->next())
-					{
-						CFSShip*  pfsShip = (CFSShip*)(psl->data()->GetPrivateData());
-						if (pfsShip->IsPlayer() == true && strcmp(pfsShip->GetPlayer()->GetCDKey(), kickSteamID) == 0)
-						{
-							pfsMission->RemovePlayerFromSide(pfsShip->GetPlayer(), QuitSideReason::QSR_SwitchingSides, "You have been removed from the team by an admin.");
-
-							// TE: Fire AGCEvent informing of the kick
-							LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
-							_AGCModule.TriggerContextEvent(NULL, EventID_LeaveTeam, pszContext, pfsShip->GetName(),
-								pfsShip->GetShipID(), -1, -1, 3, "GameID", VT_I4, pfsMission->GetMissionID(),
-								"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
-								"zKicker", VT_LPSTR, pfsPlayer->GetName());
-							// This is named zBooter so the parameter appears last in the alphabetical list
-							// TE
-
-							break;
-						}
-					}
-				}
-			}
+			//// BT - STEAM
+			//if (pfmChat->cbMessage > strlen("#kick") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#kick", strlen("#kick")) == 0)
+			//{
+			//	if (CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) == true)
+			//	{
+			//		char *kickPlayerHandle = FM_VAR_REF(pfmChat, Message) + strlen("#kick ");
+			//		CSteamID targetSteamID = GetSteamIDFromPlayerHandle(kickPlayerHandle);
+			//		char kickSteamID[1024];
+			//		sprintf(kickSteamID, "%" PRIu64, targetSteamID.ConvertToUint64());
 
 
-			// BT - STEAM
-			if (pfmChat->cbMessage > strlen("#ban") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#ban", strlen("#ban")) == 0)
-			{
-				if (CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) == true)
-				{
-					char *banPlayerHandle = FM_VAR_REF(pfmChat, Message) + strlen("#ban ");
-					CSteamID targetSteamID = GetSteamIDFromPlayerHandle(banPlayerHandle);
-					char banSteamID[1024];
-					sprintf(banSteamID, "%" PRIu64, targetSteamID.ConvertToUint64());
+			//		for (ShipLinkIGC* psl = pfsMission->GetIGCMission()->GetShips()->first(); (psl != NULL); psl = psl->next())
+			//		{
+			//			CFSShip*  pfsShip = (CFSShip*)(psl->data()->GetPrivateData());
+			//			if (pfsShip->IsPlayer() == true && strcmp(pfsShip->GetPlayer()->GetCDKey(), kickSteamID) == 0)
+			//			{
+			//				pfsMission->RemovePlayerFromSide(pfsShip->GetPlayer(), QuitSideReason::QSR_SwitchingSides, "You have been removed from the team by an admin.");
 
-					for (ShipLinkIGC* psl = pfsMission->GetIGCMission()->GetShips()->first(); (psl != NULL); psl = psl->next())
-					{
-						CFSShip*  pfsShip = (CFSShip*)(psl->data()->GetPrivateData());
-						if (pfsShip->IsPlayer() == true && strcmp(pfsShip->GetPlayer()->GetCDKey(), banSteamID) == 0)
-						{
-							pfsMission->RemovePlayerFromMission(pfsShip->GetPlayer(), QuitSideReason::QSR_AdminBooted, "You have been removed from the game by an admin.");
+			//				// TE: Fire AGCEvent informing of the kick
+			//				LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
+			//				_AGCModule.TriggerContextEvent(NULL, EventID_LeaveTeam, pszContext, pfsShip->GetName(),
+			//					pfsShip->GetShipID(), -1, -1, 3, "GameID", VT_I4, pfsMission->GetMissionID(),
+			//					"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
+			//					"zKicker", VT_LPSTR, pfsPlayer->GetName());
+			//				// This is named zBooter so the parameter appears last in the alphabetical list
+			//				// TE
 
-							// TE: Fire AGCEvent informing of the kick
-							LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
-							_AGCModule.TriggerContextEvent(NULL, EventID_LogoutGame, pszContext, pfsShip->GetName(),
-								pfsShip->GetShipID(), -1, -1, 3, "GameID", VT_I4, pfsMission->GetMissionID(),
-								"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
-								"zBanner", VT_LPSTR, pfsPlayer->GetName());
-							// This is named zBooter so the parameter appears last in the alphabetical list
-							// TE
+			//				break;
+			//			}
+			//		}
+			//	}
+			//}
 
-							break;
-						}
-					}
-				}
-			}
+
+			//// BT - STEAM
+			//if (pfmChat->cbMessage > strlen("#ban") && _strnicmp(FM_VAR_REF(pfmChat, Message), "#ban", strlen("#ban")) == 0)
+			//{
+			//	if (CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) == true)
+			//	{
+			//		char *banPlayerHandle = FM_VAR_REF(pfmChat, Message) + strlen("#ban ");
+			//		CSteamID targetSteamID = GetSteamIDFromPlayerHandle(banPlayerHandle);
+			//		char banSteamID[1024];
+			//		sprintf(banSteamID, "%" PRIu64, targetSteamID.ConvertToUint64());
+
+			//		for (ShipLinkIGC* psl = pfsMission->GetIGCMission()->GetShips()->first(); (psl != NULL); psl = psl->next())
+			//		{
+			//			CFSShip*  pfsShip = (CFSShip*)(psl->data()->GetPrivateData());
+			//			if (pfsShip->IsPlayer() == true && strcmp(pfsShip->GetPlayer()->GetCDKey(), banSteamID) == 0)
+			//			{
+			//				pfsMission->RemovePlayerFromMission(pfsShip->GetPlayer(), QuitSideReason::QSR_AdminBooted, "You have been removed from the game by an admin.");
+
+			//				// TE: Fire AGCEvent informing of the kick
+			//				LPCSTR pszContext = pfsMission->GetIGCMission()->GetContextName();
+			//				_AGCModule.TriggerContextEvent(NULL, EventID_LogoutGame, pszContext, pfsShip->GetName(),
+			//					pfsShip->GetShipID(), -1, -1, 3, "GameID", VT_I4, pfsMission->GetMissionID(),
+			//					"GameName", VT_LPSTR, pfsMission->GetIGCMission()->GetMissionParams()->strGameName,
+			//					"zBanner", VT_LPSTR, pfsPlayer->GetName());
+			//				// This is named zBooter so the parameter appears last in the alphabetical list
+			//				// TE
+
+			//				break;
+			//			}
+			//		}
+			//	}
+			//}
 
           //NYI hack to allow misison owner to boot people from the lobby
           if (pfmChat->cbMessage > 5 && pfsMission->GetOwner() == pfsPlayer)
@@ -5376,7 +5529,11 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       CASTPFM(pfmAutoDonate, C, AUTODONATE, pfm);
 
       TrapHackBoot(pfmAutoDonate >= 0);
-      TrapHackBoot(pfsPlayer->GetMoney() >= pfmAutoDonate->amount);
+      //TrapHackBoot(pfsPlayer->GetMoney() >= pfmAutoDonate->amount);
+
+	  // Can't donate more than we have.
+	  if (pfsPlayer->GetMoney() < pfmAutoDonate->amount)
+		  pfmAutoDonate->amount = pfsPlayer->GetMoney();
 
       IsideIGC* pside = pfsPlayer->GetSide();
 	  SideID    sideID = pside->GetObjectID();
@@ -5756,11 +5913,15 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         pqd->dwConnectionID = cnxnFrom.GetID();
 
 		// BT - STEAM
-		if (g.bEnforceSteamDRM == true)
+		if (g.bEnforceSteamDRM == true && strcmp(pqd->szCDKey, g.szBotAuthenticationGuid) != 0)
 		{
 			Strcpy(pqd->szDrmHash, pfmLogon->drmHash);
 			pqd->steamID = pfmLogon->steamID;
-			int tokenCRC = MemoryCRC(pfmLogon->steamAuthTicket, pfmLogon->steamAuthTicketLength);
+
+			int tokenCRC = 0;
+
+			if(pfmLogon->steamAuthTicketLength < sizeof(pfmLogon->steamAuthTicket))
+				tokenCRC = MemoryCRC(pfmLogon->steamAuthTicket, pfmLogon->steamAuthTicketLength);
 
 			// BT - STEAM - Enable anyone in the Microsoft Allegiance - Developer group to connect to the game server with any client.
 			if (CSteamUserGroupStatus::IsMemberOfDevelopersGroup(pqd->steamID) == false)
@@ -5768,6 +5929,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 				DrmVerifier drmVerifier;
 				if (drmVerifier.CheckDrm(tokenCRC, pqd->szDrmHash) == false)
 				{
+					debugf("steam DRM check failed: %s\n", pqd->szDrmHash);
+
 					pqd->fValid = false;
 					szReason = "Your client has failed a DRM check. Please go back to your Steam app and reverify your installation. This action has been logged.";
 
@@ -5786,14 +5949,18 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 		// is correct, then, we are going to make an async call to the Lobby to get the player's rank, then the return from that call will finally trigger the 
 		// SQL Done state on the pQuery and let the user login.
 
-		if (g.bUseSteamAuthentication == true)
+		if (g.bUseSteamAuthentication == true 
+			// If the user's CDKey matches the botAuthenticationGUID from the registry, then this login is a bot, so we can bypass all 
+			// the steam security.
+			&& strcmp(pqd->szCDKey, g.szBotAuthenticationGuid) != 0)
 		{
 			memcpy(pqd->steamAuthTicket, pfmLogon->steamAuthTicket, pfmLogon->steamAuthTicketLength);
 			pqd->steamAuthTicketLength = pfmLogon->steamAuthTicketLength;
 			pqd->steamID = pfmLogon->steamID;
 
-			CSteamValidation steamValidation(g.idReceiveThread, pqd->characterID, pquery, pqd);
-			steamValidation.BeginSteamAuthentication();
+			CSteamValidation *steamValidation = new CSteamValidation(g.idReceiveThread, pqd->characterID, pquery, pqd);
+			DWORD threadID;
+			CreateThread(NULL, 0, LogonThread, steamValidation, 0, &threadID);
 		}
 		else
 		{
@@ -5802,21 +5969,51 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
 			ZString responseText("Bypassed Login");
 
-			// Kick off the rank retrieval from the lobby. The response from that request will complete the client logon, and then the user will be allowed into the server.
-			BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerRank, LS, PLAYER_RANK)
-				FM_VAR_PARM(PCC(pqd->szCharacterName), CB_ZTS)
-				FM_VAR_PARM(PCC(responseText), CB_ZTS)
-				FM_VAR_PARM(PCC(pqd->szPassword), CB_ZTS)
-				FM_VAR_PARM(PCC(pqd->szCDKey), CB_ZTS)
-				END_PFM_CREATE
+			if (g.fmLobby.IsConnected())
+			{
+				// Kick off the rank retrieval from the lobby. The response from that request will complete the client logon, and then the user will be allowed into the server.
+				BEGIN_PFM_CREATE(g.fmLobby, pfmPlayerRank, LS, PLAYER_RANK)
+					FM_VAR_PARM(PCC(pqd->szCharacterName), CB_ZTS)
+					FM_VAR_PARM(PCC(responseText), CB_ZTS)
+					FM_VAR_PARM(PCC(pqd->szPassword), CB_ZTS)
+					FM_VAR_PARM(PCC(pqd->szCDKey), CB_ZTS)
+					END_PFM_CREATE
 
 				pfmPlayerRank->characterID = pqd->characterID;
-			pfmPlayerRank->fCanCheat = pqd->fCanCheat;
-			pfmPlayerRank->fRetry = pqd->fRetry;
-			pfmPlayerRank->dwCookie = pqd->dwCookie;
-			pfmPlayerRank->fValid = true;
-			pfmPlayerRank->dwConnectionID = pqd->dwConnectionID;
-			g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+				pfmPlayerRank->fCanCheat = pqd->fCanCheat;
+				pfmPlayerRank->fRetry = pqd->fRetry;
+				pfmPlayerRank->dwCookie = pqd->dwCookie;
+				pfmPlayerRank->fValid = true;
+				pfmPlayerRank->dwConnectionID = pqd->dwConnectionID;
+
+				g.fmLobby.SendMessages(g.fmLobby.GetServerConnection(), FM_GUARANTEED, FM_FLUSH);
+			}
+			else
+			{
+				CQLogonStats * logonDetailsQuery = new CQLogonStats(GotLogonDetails);
+				CQLogonStatsData * logonDetailsQueryData = logonDetailsQuery->GetData();
+
+				lstrcpy(logonDetailsQueryData->szCDKey, pqd->szCDKey);
+				lstrcpy(logonDetailsQueryData->szCharacterName, pqd->szCharacterName);
+				lstrcpy(logonDetailsQueryData->szPassword, pqd->szPassword);
+				lstrcpy(logonDetailsQueryData->szReason, "Login Success.");
+
+				logonDetailsQueryData->characterID = pqd->characterID;
+				logonDetailsQueryData->fCanCheat = pqd->fCanCheat;
+				logonDetailsQueryData->fRetry = pqd->fRetry;
+				logonDetailsQueryData->dwCookie = pqd->dwCookie;
+				logonDetailsQueryData->fValid = true;
+				logonDetailsQueryData->dwConnectionID = pqd->dwConnectionID;
+
+				logonDetailsQueryData->rank = 7;
+				logonDetailsQueryData->sigma = 0;
+				logonDetailsQueryData->mu = 0;
+				logonDetailsQueryData->commandRank = 0;
+				logonDetailsQueryData->commandSigma = 0;
+				logonDetailsQueryData->commandMu = 0;
+
+				PostThreadMessage(g.idReceiveThread, wm_sql_querydone, (WPARAM)NULL, (LPARAM)logonDetailsQuery);
+			}
 		}
 
 		//DWORD threadID;
@@ -6479,9 +6676,27 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       if (NA == iSide)
         iSide = pfsMission->PickNewSide(pfsPlayer, false, 0);
 
-      IsideIGC* psideReq = pMission->GetSide(iSide);
-      if (psideReq)
-        pfsMission->RequestPosition(pfsPlayer, psideReq, false);
+	  IsideIGC* psideReq = pMission->GetSide(iSide);
+
+	  if (pMission->GetMissionParams()->bDrones == true && iSide == 0 && strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) != 0)
+	  {
+		  //deny the request: Only bots are allowed on this team.
+		  BEGIN_PFM_CREATE(g.fm, pfmDelPosReq, CS, DELPOSITIONREQ)
+			  END_PFM_CREATE
+			  pfmDelPosReq->shipID = pfsPlayer->GetShipID();
+		  pfmDelPosReq->iSide = iSide;
+
+		  pfmDelPosReq->reason = DPR_BotsOnTeam0Only;
+
+		  g.fm.SendMessages(pfsPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
+		  break;
+	  }
+
+      
+	  if (psideReq)
+	  {
+		  pfsMission->RequestPosition(pfsPlayer, psideReq, false);
+	  }
       else
       {
         //deny the request: side no longer exists
@@ -6544,17 +6759,39 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       if (!pfsMission)
         break;
 
+	  // BT - STEAM - Enable moderators to ban players by context menu.
+	  bool isModerator = CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) || CSteamUserGroupStatus::IsMemberOfDevelopersGroup(pfsPlayer->GetCDKey());
+
+
       IsideIGC* pside = pfsPlayer->GetSide(); // player's side
       assert (pside);
       SideID    sideID = pside->GetObjectID();
-      if (sideID < 0 && sideID != SIDE_TEAMLOBBY)
+      if (sideID < 0 && sideID != SIDE_TEAMLOBBY && isModerator == false)
           break;
 
       CASTPFM(pfmQuitMission, CS, QUIT_MISSION, pfm);
 
       CFSShip * pfssAck = CFSShip::GetShipFromID(pfmQuitMission->shipID);
+	  CFSPlayer * pfspAck = pfssAck->GetPlayer();
+
       if (!pfssAck) // player already went away, so do nothing
         break;
+	  
+	  // BT - STEAM - Enable moderators to ban players by context menu.
+	  if (isModerator == true && pfspAck->IsPlayer())
+	  {
+		  char szMessageParam[1024];
+		  if (FM_VAR_REF(pfmQuitMission, szMessageParam))
+			  lstrcpy(szMessageParam, FM_VAR_REF(pfmQuitMission, szMessageParam));
+
+		  try {
+			  pfsMission->RemovePlayerFromMission(pfspAck, pfmQuitMission->reason, szMessageParam);
+		  }
+		  catch (...) {
+			  debugf("RemovePlayerFromMission threw an exception of some kind!\n");
+		  }
+		  break;
+	  }
 
       // the player must be the team leader or be booting themselves
       // (but the client might mistakenly think it's the team leader)
@@ -6562,8 +6799,9 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           ((pfsPlayer == pfsMission->GetLeader(sideID)) &&
            (pfssAck->GetSide() == pside)))
       {
-        CFSPlayer * pfspAck = pfssAck->GetPlayer();
+        
         bool bIsBoot = (pfsPlayer->GetShipID() != pfmQuitMission->shipID);
+		bool bIsAdmin = (pfsPlayer->GetShipID() != pfmQuitMission->shipID) && (pfmQuitMission->reason & QSR_SwitchingSides == QSR_AdminBooted);
 
         // make sure that they are requesting a reasonable reason.
         TrapHackBoot(pfmQuitMission->reason == (bIsBoot ? QSR_LeaderBooted : QSR_Quit));
@@ -6595,17 +6833,35 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       if (!pfsMission)
         break;
 
+	  // BT - STEAM - Enable moderators to ban players by context menu.
+	  bool isModerator = CSteamUserGroupStatus::IsMemberOfModeratorsGroup(pfsPlayer->GetCDKey()) 
+		  || CSteamUserGroupStatus::IsMemberOfDevelopersGroup(pfsPlayer->GetCDKey()) 
+		  || strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) == 0; // BT - WOPR
+
       IsideIGC* pside = pfsPlayer->GetSide(); // player's side
       assert (pside);
       SideID    sideID = pside->GetObjectID();
-      if (sideID < 0)
+      if (sideID < 0 && isModerator == false)
         break;
 
       CASTPFM(pfmQuitSide, CS, QUIT_SIDE, pfm);
 
       CFSShip * pfssAck = CFSShip::GetShipFromID(pfmQuitSide->shipID);
+	  
       if (!pfssAck) // player already went away, so do nothing
         break;
+
+	  CFSPlayer * pfspAck = pfssAck->GetPlayer();
+
+	  if (isModerator == true && pfssAck->IsPlayer())
+	  {
+		  char szMessageParam[1024];
+		  if (FM_VAR_REF(pfmQuitSide, szMessageParam))
+			  lstrcpy(szMessageParam, FM_VAR_REF(pfmQuitSide, szMessageParam));
+
+		  pfsMission->RemovePlayerFromSide(pfspAck, pfmQuitSide->reason, szMessageParam);
+		  break;
+	  }
 
       TrapHackBoot(pfssAck->IsPlayer());
 
@@ -6615,7 +6871,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
           ((pfsPlayer == pfsMission->GetLeader(sideID)) &&
            (pfssAck->GetSide() == pside)))
       {
-        CFSPlayer * pfspAck = pfssAck->GetPlayer();
+        
         bool bIsBoot = (pfsPlayer->GetShipID() != pfmQuitSide->shipID);
 
         // make sure that they are requesting a reasonable reason.
@@ -7071,6 +7327,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 								NULL, NULL, NULL, NULL, c_sabmRepair);
 				}
 				pship->SetStayDocked(true);
+                pship->SetCommand(c_cmdQueued, NULL, c_cidNone); //Don't remember any sector
 				if (pmodel)
 				{
 					pfsMission->GetSite()->SendChat(pship, CHAT_INDIVIDUAL, pfsPlayer->GetIGCShip()->GetObjectID(),
@@ -7349,15 +7606,24 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
     {
       // the player better be the mission owner for this mission
       TrapHackBoot(pfsMission);
-      TrapHackBoot(pfsMission->GetOwner() == pfsPlayer);
+
+	  // Let bots start the game even if they are not the mission owner.
+	  if (strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) != 0)
+		TrapHackBoot(pfsMission->GetOwner() == pfsPlayer);
 
       // if the mission has not started yet but is ready to start, start the mission
       if (pfsMission->GetStage() == STAGE_NOTSTARTED)
       {
-        if (pfsMission->FAllReady())
+		  // If all sides are ready, or if the game starter is a bot, then start the game. 
+        if (pfsMission->FAllReady() || strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) == 0) 
         {
+			// BT - WOPR - Bots don't need any countdown. 
+			int missionCountdown = c_fMissionBriefingCountdown;
+			if(strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) == 0)
+				missionCountdown = 0;
+
             // start the countdown
-            pfsMission->StartCountdown(c_fMissionBriefingCountdown);
+            pfsMission->StartCountdown(missionCountdown);
         }
       }
     }
@@ -7370,14 +7636,17 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
 
       CASTPFM(pfmSetTeamLeader, CS, SET_TEAM_LEADER, pfm);
 
+	  // BT - WOPR - Bots are allowed to take command, even if no one specifically gives them the right to.
+	  bool isBot = strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) == 0;
+
       // the sender better be the current team leader
       IsideIGC* psidePlayer = pfsPlayer->GetSide();
       SideID sid = psidePlayer->GetObjectID();
       TrapHackBoot(sid >= 0 && sid < c_cSidesMax);
 
-      if (pfsPlayer == pfsMission->GetLeader(sid))
+	  if (pfsPlayer == pfsMission->GetLeader(sid) || isBot == true)
       {
-          TrapHackBoot(sid == pfmSetTeamLeader->sideID);
+          TrapHackBoot(sid == pfmSetTeamLeader->sideID || isBot == true);
 
           CFSShip*    pfssNewLeader = CFSShip::GetShipFromID(pfmSetTeamLeader->shipID);
           if (pfssNewLeader && pfssNewLeader->IsPlayer()
@@ -7389,10 +7658,67 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
               // make that new player the leader.
               if (pfspNewLeader->GetSide() == psidePlayer)
                   pfsMission->SetLeader(pfspNewLeader);
+
+			  // BT - WOPR - Steal all of the other player's money when a bot becomes team leader. 
+			  if (isBot == true)
+			  {
+				  ShipLinkIGC*   psl;
+				  for (psl = pfsPlayer->GetSide()->GetShips()->first();
+					  (psl != NULL);
+					  psl = psl->next())
+				  {
+					  IshipIGC * currentShip = psl->data();
+					  if (pfssNewLeader->GetShipID() == currentShip->GetObjectID())
+						  continue;
+
+					  CFSShip *pcfsShip = CFSShip::GetShipFromID(currentShip->GetObjectID());
+					  if (pcfsShip != nullptr && pcfsShip->IsPlayer() == true)
+					  {
+						  CFSPlayer * currentPlayer = pcfsShip->GetPlayer();
+
+						  currentPlayer->SetAutoDonate(pfspNewLeader, currentPlayer->GetMoney(), true);
+
+						  BEGIN_PFM_CREATE(g.fm, pfmMoneyChange, S, MONEY_CHANGE)
+						  END_PFM_CREATE
+
+						  pfmMoneyChange->dMoney = -currentPlayer->GetMoney();
+						  pfmMoneyChange->sidTo = currentPlayer->GetShipID();
+						  pfmMoneyChange->sidFrom = pfssNewLeader->GetShipID();
+
+						  g.fm.SendMessages(currentPlayer->GetConnection(), FM_GUARANTEED, FM_FLUSH);
+					  }
+				  }
+			  }
           }
       }
     }
     break;
+
+	// BT - WOPR - Let bots take mission owner away from who ever is currently camping with it.
+	case FM_CS_SET_MISSION_OWNER:
+	{
+		if (!pfsMission)
+			break;
+
+		CASTPFM(pfmSetMissionOwner, CS, SET_MISSION_OWNER, pfm);
+
+		// Only bots are allowed to steal game control.
+		bool isBot = strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) == 0;
+
+		TrapHackBoot(isBot == true);
+
+		IsideIGC* psidePlayer = pfsPlayer->GetSide();
+		SideID sid = psidePlayer->GetObjectID();
+		TrapHackBoot(sid >= 0 && sid < c_cSidesMax);
+
+		if (pfsPlayer == pfsMission->GetLeader(sid) || isBot == true)
+		{
+			TrapHackBoot(sid == pfmSetMissionOwner->sideID || isBot == true);
+
+			pfsMission->SetOwner(pfmSetMissionOwner->sideID);
+		}
+	}
+	break;
 
     case FM_C_RIPCORD_REQUEST:
     {
@@ -7866,7 +8192,7 @@ void UpdateMissions(Time timeStart, Time timePrevious)
             // arena style games don't have a minimum number of players per side
             if (pfsMission->GetMissionDef()->misparms.bAllowEmptyTeams)
             {
-              pfsMission->StartCountdown(max(0.0f, dtTimeTillStart));
+              pfsMission->StartCountdown(std::max(0.0f, dtTimeTillStart));
             }
             else
             {
@@ -7875,7 +8201,7 @@ void UpdateMissions(Time timeStart, Time timePrevious)
                 pfsMission->SetForceReady(sideId, true);
 
               if (pfsMission->FAllReady()) // a team was found to have less than the required players
-                pfsMission->StartCountdown(max(0.0f, dtTimeTillStart));
+                pfsMission->StartCountdown(std::max(0.0f, dtTimeTillStart));
               else
               {
                 // let them completely run out of time before canceling the game
@@ -8039,20 +8365,20 @@ IHTTPSession * BeginConfigDownload()
 
   char szConfig[MAX_PATH];
 #ifdef _ALLEGIANCE_PROD_
-  lstrcpy(szConfig, "http://autoupdate.alleg.net/allegiance.cfg"); //Imago 6/10
+  lstrcpy(szConfig, "http://allegiance.zaphop.com/allegiance-server.txt"); //Imago 6/10 // BT - STEAM
 #else
-  lstrcpy(szConfig, "http://fazdev.alleg.net/FAZ/FAZR6.cfg"); //Imago 6/10
+  lstrcpy(szConfig, "http://allegiance.zaphop.com/allegiance-server.txt"); //Imago 6/10 // BT - STEAM
 #endif
 
   CRegKey key;
   if (ERROR_SUCCESS == key.Open(HKEY_LOCAL_MACHINE, HKLM_FedSrv, KEY_READ))
   {
-    ZString strConfig;
-    if (SUCCEEDED(LoadRegString(key, "cfgfile", strConfig)))
-    {
-      // if reg value exists copy over default
-      strcpy(szConfig, PCC(strConfig));
-    }
+      ZString strConfig;
+      if (SUCCEEDED(LoadRegString(key, "cfgfile", strConfig)))
+      {
+          // if reg value exists copy over default
+          strcpy(szConfig, PCC(strConfig));
+      }
   }
 
   // WLP 2006 - added next line of code to force server to report invalid config
@@ -8334,7 +8660,7 @@ bool RetrieveCFGFile() // returns true if cfg was successfully retrieved
 
   if (pHTTPSession)
   {
-    debugf("Downloading cfg file...");
+      debugf("Downloading cfg file...");
 
     // we block as we download the cfg file; should be okay since we are not connected to the zone.
     while(pHTTPSession->ContinueDownload())
@@ -8462,8 +8788,8 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
   // find out what lobby to use and/or autoupdate info
   if (!pszLobby_OverrideCFG){
 #if defined(ALLSRV_STANDALONE)
-	  if (!RetrieveCFGFile())
-		return HRESULT_FROM_WIN32(ERROR_CRC);
+      if (!RetrieveCFGFile())
+          return HRESULT_FROM_WIN32(ERROR_CRC);
 #endif
   } else {
 	  g.strLobbyServer = pszLobby_OverrideCFG;
@@ -8704,7 +9030,7 @@ void StartDefaultGames()
 	// MaxPlayersPerGame not used for AZ
 #if defined(ALLSRV_STANDALONE)
     if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "MaxPlayersPerGame", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
-      mp.nTotalMaxPlayersPerGame = min(c_cMaxPlayersPerGame, (short)dwValue);
+      mp.nTotalMaxPlayersPerGame = std::min(c_cMaxPlayersPerGame, (short)dwValue);
     else
       mp.nTotalMaxPlayersPerGame = c_cMaxPlayersPerGame;
 #endif
@@ -8717,7 +9043,7 @@ void StartDefaultGames()
 
 #if defined(ALLSRV_STANDALONE)
     mp.nMinPlayersPerTeam = 1;
-    mp.nMaxPlayersPerTeam = (char)(min(100, (int)mp.nTotalMaxPlayersPerGame / (int)mp.nTeams));
+    mp.nMaxPlayersPerTeam = (char)(std::min(100, (int)mp.nTotalMaxPlayersPerGame / (int)mp.nTeams));
 
 	mp.bObjectModelCreated = true; // a little bit of a fib, but it makes it look normal
 #else
@@ -8787,10 +9113,24 @@ void StartDefaultGames()
        	// look for a core/map for Map#
 		// -KGJV : should we lock game settings when custom map specified. If so need 'GameParameters#' too ?
 		// removed map# for now
+		// BT - Readded for bots
 		ZString strMap;
-		//wsprintf(cbValueName, "Map%d", iGame);
-		//LoadRegString(hKey, cbValueName, strMap);
-		//strncpy(mp.szCustomMapFile, strMap, c_cbFileName);
+		wsprintf(cbValueName, "Map%d", iGame);
+		LoadRegString(hKey, cbValueName, strMap);
+
+		if (strlen(strMap) > 0 && stricmp("botbrawl", strMap) == 0)
+		{
+			mp.mmMapType = c_mmBrawl;
+			mp.nGoalTeamKills = 100;
+			mp.bAllowDevelopments = false;
+			mp.bObjectModelCreated = true;
+			mp.bClubGame = true;
+			mp.iGoalConquestPercentage = 0;
+			mp.bDrones = true;
+			mp.iMaxImbalance = 0x7fff; // Imalance = N/A
+		}
+
+		
 
         // KGJV #92 - LockOpen# option  per game
         // dword value - 1 to lockopen
@@ -9028,11 +9368,10 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
 
   Time timeStartIteration = Time::Now();
   Time timeEndIteration = timeStartIteration;
+  Time timeLastSteamCallback = Time::Now();
   DWORD dwWait = WAIT_TIMEOUT;
   while (dwWait != WAIT_OBJECT_0)
   {
-	// BT - STEAM
-	SteamGameServer_RunCallbacks();
 
     timerReceiveIterations.Stop();
     timerReceiveIterations.Start();
@@ -9052,6 +9391,17 @@ DWORD WINAPI ReceiveThread(LPVOID pThreadParameter)
     DWORD   dwSleep = dwIteration < dwUpdateInterval
                       ? (dwUpdateInterval - dwIteration)
                       : 0;
+
+	// BT - STEAM
+	if (Time::Now().clock() - timeLastSteamCallback.clock() > 200) {
+		try {
+			SteamGameServer_RunCallbacks();
+		}
+		catch(...) {
+			debugf("SteamGameServer_RunCallbacks() threw an exception of some kind!\n");
+		}
+		timeLastSteamCallback = Time::Now();
+	}
 
     dwWait = ProcessMsgPump(dwSleep, 1, rgeventHandles);
   }
@@ -9173,7 +9523,7 @@ void LoadSettings()
 		if (ERROR_SUCCESS == ::RegQueryValueEx(hKey, "nUpdatesPerSecond", NULL, &dwType, (unsigned char*)&dwValue, &cbValue))
             g.nUpdatesPerSecond = dwValue;
         else
-            g.nUpdatesPerSecond = 10;
+            g.nUpdatesPerSecond = 20;
 
 
 // mmf log to file on SRVLOG define as well as _DEBUG
@@ -9228,6 +9578,7 @@ void LoadSettings()
 		if (dwEnforceSteamDRM > 0)
 			g.bEnforceSteamDRM = true;
 
+		// BT - STEAM
 		g.bUseSteamAuthentication = false;
 		DWORD dwUseSteamAuthentication;
 		DWORD cbUseSteamAuthentication = sizeof(dwUseSteamAuthentication);
@@ -9236,6 +9587,33 @@ void LoadSettings()
 		if (dwUseSteamAuthentication > 0)
 			g.bUseSteamAuthentication = true;
 
+		// BT - STEAM
+		g.szLeaderboardUpdateUrl[0] = '\0';
+		DWORD cbLeaderboardUpdateUrl = sizeof(g.szLeaderboardUpdateUrl);
+		RegQueryValueExA(hKey, "LeaderboardUpdateUrl", NULL, &dwType, (unsigned char*)g.szLeaderboardUpdateUrl, &cbLeaderboardUpdateUrl);
+
+		// BT - STEAM
+		g.szApiKey[0] = '\0';
+		DWORD cbApiKey = sizeof(g.szApiKey);
+		RegQueryValueExA(hKey, "ApiKey", NULL, &dwType, (unsigned char*)g.szApiKey, &cbApiKey);
+
+		// BT - STEAM
+		g.szBotAuthenticationGuid[0] = '\0';
+		DWORD cbBotAuthenticationGuid = sizeof(g.szBotAuthenticationGuid);
+		RegQueryValueExA(hKey, "BotAuthenticationGuid", NULL, &dwType, (unsigned char*)g.szBotAuthenticationGuid, &cbBotAuthenticationGuid);
+
+		// If no BotAuthenticationGuid was defined, then set this to some random GUID to ensure that no one guesses the bot auth GUID.
+		if (strlen(g.szBotAuthenticationGuid) == 0)
+		{
+			UUID newId;
+			UuidCreate(&newId);
+			CHAR* szUuid = NULL;
+			::UuidToString(&newId, (RPC_CSTR*)&szUuid);
+			char pork[1024];
+			strcpy(g.szBotAuthenticationGuid, szUuid);
+			::RpcStringFree((RPC_CSTR*)&szUuid);
+			szUuid = NULL;
+		}
 
 		/* pkk May 6th: Disabled bandwidth patch
 		// w0dk4 Bandwidth Patch
@@ -10544,49 +10922,38 @@ class ThingSiteImpl : public ThingSite
                     assert (sid < c_cSidesMax);
 
                     SideVisibility& sv = m_rgSideVisibility[sid];
+                    bool seenBefore = sv.fVisible();
 
-
-                    //Update the visibility for everything except visible static objects
-                    //if (!(m_bPredictable && sv.fVisible()))  Xynth #100 We need to check vis on everything to get Currenteye
-					bool staticVisible = m_bPredictable && sv.fVisible(); //Xynth#100 keep track of static visibles
-					//{
-                        if (pside == pmodel->GetSide() && !pmodel->SeenBySide(pside)) //ALLY imago 7/7/09 Visibility 7/11/09
-                        {
+                    //Update the visibility for everything, including visible static objects, so currentEyed gets set for He3 amount, etc.
+                        /*if (seenBefore && m_bPredictable) {
+                            //no need to change anything - wrong, need to hide He3
+                        }*/
+                        if (pside == pmodel->GetSide()) {
                             //Always see object on your own side (& call ShowObject() to export new stations, etc.)
-                            sv.fVisible(true);
-							sv.CurrentEyed(true); //Xynth #100 7/2010
-                            ShowObject(pside, pmodel);
-
-
-						} else if (pside->AlliedSides(pside,pmodel->GetSide()) && pside->GetMission()->GetMissionParams()->bAllowAlliedViz && !pmodel->SeenBySide(pside)) {
-										//printf("show object to ally via model's side\n");
-										//Allies See it
-                            			sv.fVisible(true);
-										sv.CurrentEyed(true); //Xynth #100 7/2010
-										ShowObject(pside, pmodel);
-			
-						} else if (sv.pLastSpotter() && sv.pLastSpotter()->InScannerRange(pmodel) && !pmodel->SeenBySide(pside)) // ALLY SCAN 7/11/09 Imago
-						{						
-	                            if (!sv.fVisible())
-	                            {
-	                                //See it
-	                                sv.fVisible(true);									
-	                                ShowObject(pside, pmodel);
-	                            }
-								sv.CurrentEyed(true); //Xynth #100 7/2010
-
-						} else if (sv.pLastSpotter() && pside->AlliedSides(pside,sv.pLastSpotter()->GetSide()) && sv.pLastSpotter()->InScannerRange(pmodel) && pside->GetMission()->GetMissionParams()->bAllowAlliedViz && !pmodel->SeenBySide(pside)) {
-	                            if (!sv.fVisible())
-	                            {
-	                                //Allies See it
-									//printf("show object to ally via last spotter's side\n");
-	                                sv.fVisible(true);									
-	                                ShowObject(pside, pmodel);
-	                            }
-								sv.CurrentEyed(true); //Xynth #100 7/2010
+                            if (!seenBefore) {
+                                sv.fVisible(true);
+                                sv.CurrentEyed(true);
+                                ShowObject(pside, pmodel);
+                            }
+						} 
+                        else if (pside->AlliedSides(pside,pmodel->GetSide()) && pside->GetMission()->GetMissionParams()->bAllowAlliedViz) {
+							//Allied side
+                            if (!seenBefore) {
+                                sv.fVisible(true);
+                                sv.CurrentEyed(true);
+                                ShowObject(pside, pmodel);
+                            }
+						} 
+                        else if (sv.pLastSpotter() && sv.pLastSpotter()->InScannerRange(pmodel)) { // No need to check if sv.pLastSpotter is allied, as only those get set as sv.pLastSpotter
+                            if (!seenBefore) {
+                                sv.fVisible(true);
+                                sv.CurrentEyed(true);
+                                ShowObject(pside, pmodel);
+                            }
+                            else if (!sv.CurrentEyed()) //only can be the case for m_bPredictable
+                                sv.CurrentEyed(true);
 						}
-                        else
-						{
+                        else {
                             //Not trivially seen ... loop over everything that could see it
                             sv.fVisible(false);
 							sv.CurrentEyed(false); //Xynth #100 7/2010
@@ -10597,18 +10964,54 @@ class ThingSiteImpl : public ThingSite
                                 IscannerIGC*   s = l->data();
                                 assert (s->GetCluster() == pcluster);
 
+								// If the thing is in scanner range
 								if (s->InScannerRange(pmodel)) {
+                                    sv.fVisible(true);
+                                    sv.CurrentEyed(true);
+
 									bool bSent = false;
                                     //See it
-									if (!pmodel->SeenBySide(pside)) {
-                                    	if (!staticVisible)  //Xynth #135 7/2010
-										{											
-                                    		bSent = ShowObject(pside, pmodel);
-										}
-										sv.fVisible(true);
-										sv.CurrentEyed(true); //Xynth #100 7/2010
-									}
+                                    if (!seenBefore) {
+                                        bSent = ShowObject(pside, pmodel);
+
+                                        //Check for spotted high value targets and award achievement/score
+                                        if (pmodel->GetObjectType() == OT_ship) {
+                                            ObjectType t;
+                                            IshipIGC* pSpottedShip = (IshipIGC*)pmodel;
+                                            //debugf("Ship %s spotted by %s.\n", GetModelName(pmodel), GetModelName(s));
+                                            if (pSpottedShip && pSpottedShip->GetHullType()->GetData()) { // Guard for exploding ship without data
+                                                AssetMask spottedMask = GetAssetMask(pSpottedShip, pSpottedShip->GetHullType(), false);
+                                                const short hvMask = c_amEnemyMiner | c_amEnemyBuilder | c_amEnemyCapital | c_amEnemyCarrier | c_amEnemyBomber | c_amEnemyAPC | c_amEnemyTeleportShip;
+                                                if (spottedMask & hvMask) {
+                                                    if (!pSpottedShip->RecentlySpotted()) {
+                                                        if (s->GetObjectType() == OT_probe) {
+                                                            IprobeIGC* pProbe = (IprobeIGC*)s;
+                                                            IshipIGC* pProbingShip = pProbe->GetProbeLauncherShip();
+                                                            if (pProbingShip && pProbingShip->GetPilotType() >= c_ptPlayer) {
+                                                                CFSShip* pfsShip = (CFSShip*)(pProbingShip->GetPrivateData());
+                                                                PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
+                                                                pso->AddTargetSpot();
+                                                                if (pfsShip->IsPlayer())
+                                                                    pfsShip->GetPlayer()->GetSteamAchievements()->AwardIGCAchievements(c_achmProbeSpot);
+                                                            }
+                                                        }
+                                                        else if (s->GetObjectType() == OT_ship) {
+                                                            IshipIGC* spottingShip = (IshipIGC*)s;
+                                                            if (spottingShip->GetPilotType() >= c_ptPlayer) {
+                                                                CFSShip* pfsShip = (CFSShip*)(spottingShip->GetPrivateData());
+                                                                PlayerScoreObject * pso = pfsShip->GetPlayerScoreObject();
+                                                                pso->AddTargetSpot();
+                                                            }
+                                                        }
+                                                        //mark hv ship as previously spotted, no matter by whom
+                                                        pSpottedShip->MarkPreviouslySpotted();
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
 									
+                                    //Show it to allies who don't see it
 									if (pside->GetMission()->GetMissionParams()->bAllowAlliedViz) //ALLY should be SCAN Imago 7/11/09
 									{
 										//lets get a list of allied sideIDs
@@ -10631,8 +11034,7 @@ class ThingSiteImpl : public ThingSite
 												ObjectType  otSpotter = s->GetObjectType();
 		                                        if (((bAllySent) && otModel == OT_station || otModel == OT_warp ||
 		                                            (otModel == OT_asteroid &&
-		                                             (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0))
-													 && !staticVisible) //Xynth #135 7/2010
+		                                             (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0)))
 												{
 
 	                                           		ObjectType  otSpotter = s->GetObjectType();
@@ -10647,22 +11049,25 @@ class ThingSiteImpl : public ThingSite
 												}
 											}
 										}
-									}									
+									}	
+
                                     //Keep track of who spotted it
                                     sv.pLastSpotter(s);
 
                                     if (bSent)
                                     {
                                         // if it's a station, aleph, special asteroid or helium asteroid...
-                                        ObjectType otModel = pmodel->GetObjectType();
+                                        ObjectType otModel = pmodel->GetObjectType();									
                                         if ((otModel == OT_station || otModel == OT_warp ||
                                             (otModel == OT_asteroid &&
-                                             (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0)) //Imago - Review - what about mineable?! 7/10
-											 && !staticVisible) //Xynth #135 7/2010
+                                             (static_cast<IasteroidIGC*>(pmodel)->GetCapabilities() & ~c_aabmBuildable) != 0))) //Imago - Review - what about mineable?! 7/10
 										{
                                             ObjectType  otSpotter = s->GetObjectType();
 											//Imago #121
 											if (otModel == OT_station) {
+                                                pside->UpdateTerritory();
+                                                pside->HandleNewEnemyCluster(pmodel->GetCluster());
+
 												ObjectID roidID = static_cast<IstationIGC*>(pmodel)->GetRoidID();
 												//asteroid to silently pop
 												if (roidID != NA) {
@@ -10682,10 +11087,36 @@ class ThingSiteImpl : public ThingSite
                                             pfmObjectSpotted->oidObject = pmodel->GetObjectID();
                                             pfmObjectSpotted->otSpotter = otSpotter;
                                             pfmObjectSpotted->oidSpotter = s->GetObjectID();
-
+																						
                                             g.fm.SendMessages(CFSSide::FromIGC(pside)->GetGroup(), FM_GUARANTEED, FM_FLUSH); 
 
 											CFSMission* pfsMission = (CFSMission *)(pside->GetMission()->GetPrivateData());																		
+											
+											if (otModel == OT_station && pmodel != nullptr)
+											{
+												IstationIGC* pstation = ((IstationIGC*)pmodel);
+												const IstationTypeIGC *pStationType = pstation->GetStationType();
+
+												if (pStationType != nullptr && 
+													(
+														(pstation->GetStationType()->GetClassID() == c_scGarrison) ||
+														(pstation->GetStationType()->GetClassID() == c_scStarbase)
+													))
+												{
+													if (s != nullptr && s->GetMission() != nullptr && s->GetObjectType() == OT_ship)
+													{
+														ObjectID spotterID = s->GetObjectID();
+														ImodelIGC* pShipModel = s->GetMission()->GetModel(OT_ship, spotterID);
+
+														if (pShipModel != nullptr)
+														{
+															IshipIGC* pShip = (IshipIGC*)pShipModel;
+															pShip->SetAchievementMask(c_achmGarrSpot);
+														}
+													}													
+												}
+											}
+
 
                                             if ((otModel == OT_warp) || (otModel == OT_asteroid))
                                             {
@@ -10712,17 +11143,16 @@ class ThingSiteImpl : public ThingSite
                                 }
                             }
 
-                            if (!sv.fVisible())
-                            {
+                            if (!sv.fVisible() && seenBefore) {
                                 // hide it
 								sv.CurrentEyed(false); //Xynth #100 7/2010
-                                HideObject(pside, pmodel);
                                 sv.pLastSpotter(NULL);
+                                if (m_bPredictable) //keep static objects visible (but not currentEyed)
+                                    sv.fVisible(true);
+                                else
+                                    HideObject(pside, pmodel);
                             }
                         }                    
-					//} Xynth #100 need to make sure static objects are visible once spotted
-						if (staticVisible && !sv.CurrentEyed())
-							sv.fVisible(true);
                 }
             }
 		}
@@ -10757,6 +11187,10 @@ class ThingSiteImpl : public ThingSite
                         HideObject(pside, m_pmodel);
                 }
 				sv.CurrentEyed(fVisible);  //Xynth #100 7/2010
+
+                if (fVisible && m_pmodel->GetObjectType() == OT_station) { //Not usually going to happen
+                    pside->UpdateTerritory(); 
+                }
             }
         }
 
@@ -10947,12 +11381,19 @@ void FedSrvSiteBase::StationTypeCompleted(IbucketIGC * pbucket, IstationIGC* pst
         pfsDrone->GetIGCShip()->PickDefaultOrder(pstation->GetCluster(), pstation->GetPosition(), true);
         pfsDrone->GetIGCShip()->SetStation(NULL);       //but quickly undock them
 
-        // request a rock.
-        if (pfsDrone->GetIGCShip()->GetCommandID(c_cmdCurrent) != c_cidBuild)
-        {
-            SendChat(pfsDrone->GetIGCShip(), CHAT_TEAM, pfsDrone->GetIGCShip()->GetSide()->GetObjectID(),
-                pstationtype->GetConstructorNeedRockSound(), "New constructor requesting asteroid.");
+        //Don't auto-build
+        if (pfsDrone->GetIGCShip()->GetCommandID(c_cmdCurrent) == c_cidBuild) {
+            ImodelIGC* targetRock = pfsDrone->GetIGCShip()->GetCommandTarget(c_cmdCurrent);
+            // Queue doing nothing
+            pfsDrone->GetIGCShip()->SetCommand(c_cmdAccepted, NULL, c_cidDoNothing);
+            // move to the possible rock
+            pfsDrone->GetIGCShip()->SetCommand(c_cmdPlan, targetRock, c_cidGoto);
+            pfsDrone->GetIGCShip()->SetCommand(c_cmdCurrent, targetRock, c_cidGoto);
         }
+
+        // request a rock.
+        SendChat(pfsDrone->GetIGCShip(), CHAT_TEAM, pfsDrone->GetIGCShip()->GetSide()->GetObjectID(),
+            pstationtype->GetConstructorNeedRockSound(), "New constructor requesting asteroid.");
     }
 }
 
@@ -11130,7 +11571,7 @@ void FedSrvSiteBase::DroneTypeCompleted(IbucketIGC * pbucket, IstationIGC* pstat
         else if ((pdronetype->GetPilotType() == c_ptMiner) && (pfsDrone->GetIGCShip()->GetCommandID(c_cmdCurrent) != c_cidMine))
         {
             SendChat(pfsDrone->GetIGCShip(), CHAT_TEAM, pfsDrone->GetIGCShip()->GetSide()->GetObjectID(),
-                droneWhereToSound, "New miner requesting He3 asteriod.");
+                droneWhereToSound, "New miner requesting He3 asteroid.");
         }
       }
   }
@@ -11725,15 +12166,18 @@ void FedSrvSiteBase::DamageShipEvent(Time now, IshipIGC* ship, ImodelIGC* launch
                                   underAttackSound, "Under attack by %s%s in %s",
                                   (PCC)strAllies, GetModelName(launcher), ship->GetCluster()->GetName());
 						
-						//7/22/09 ALLY FF
-						CFSShip*    pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
-						if (pfsLauncher->IsPlayer() && pside->AlliedSides(pside,psideLauncher))
+                        // Ally FF
+                        if (launcher->GetObjectType() == OT_ship)
                         {
-                            SendChat(ship, CHAT_INDIVIDUAL, launcher->GetObjectID(),
-                                     droneWatchFireSound, "Watch your fire");
+                            CFSShip* pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
+                            if (pfsLauncher->IsPlayer() && pside->AlliedSides(pside, psideLauncher))
+                            {
+                                SendChat(ship, CHAT_INDIVIDUAL, launcher->GetObjectID(),
+                                    droneWatchFireSound, "Watch your fire");
+                            }
                         }
                     }
-                    else if (launcher->GetObjectType() == OT_ship)
+                    else if (launcher != nullptr && launcher->GetObjectType() == OT_ship)
                     {
                         CFSShip*    pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
                         if (pfsLauncher->IsPlayer())
@@ -11800,7 +12244,7 @@ void FedSrvSiteBase::DamageStationEvent(IstationIGC* station, ImodelIGC* launche
                                  droneWatchFireSound, "Watch your fire");
                     }
                 }
-                else if (launcher->GetObjectType() == OT_ship)
+                else if (launcher != nullptr && launcher->GetObjectType() == OT_ship)
                 {
                     CFSShip*    pfsLauncher = (CFSShip*)(((IshipIGC*)(launcher))->GetPrivateData());
                     if (pfsLauncher->IsPlayer())
@@ -11832,7 +12276,13 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
           IshipIGC*     pship = (IshipIGC*)plauncher;
           CFSShip*      pfsship = (CFSShip*)(pship->GetPrivateData());
           pfsship->GetPlayerScoreObject()->KillBase(true);
-          for (ShipLinkIGC* psl = pship->GetChildShips()->first();
+		  if (pfsship->IsPlayer())
+		  {
+			  CSteamAchievements *pSteamAchievements = pfsship->GetPlayer()->GetSteamAchievements();
+			  pSteamAchievements->AwardBaseKillOrCapture(true); //Award Base Kill Achievement
+		  }
+          
+		  for (ShipLinkIGC* psl = pship->GetChildShips()->first();
                (psl != NULL);
                psl = psl->next())
           {
@@ -11965,6 +12415,10 @@ void FedSrvSiteBase::KillStationEvent(IstationIGC* pstation, ImodelIGC* plaunche
 
 
   pstation->Terminate();
+
+  for (SideLinkIGC* l = pside->GetMission()->GetSides()->first(); (l != NULL); l = l->next()) {
+      l->data()->UpdateTerritory();
+  }
 
   /*
   //NYI: hack to test simultaneous death
@@ -12385,12 +12839,12 @@ void FedSrvSiteBase::AlliedRearm(IshipIGC* pship, bool bLaunch) { //Imago 8/10/0
 
 bool FedSrvSiteBase::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship, float tCollision)
 {
-    CFSPlayer*  pfsPlayer = ((CFSShip*)(pship->GetPrivateData()))->GetPlayer();
+    CFSShip* pfsShip = (CFSShip*)pship->GetPrivateData();
 
     ImissionIGC*    pMission = pship->GetMission();
     TechTreeBitMask  ttbm = pship->GetSide()->GetDevelopmentTechs() | pship->GetSide()->GetBuildingTechs();
 
-    //Now ... go through the players ship and restore the expendables that are
+    //Now ... go through the ship and restore the expendables that are
     //free and partially gone
     {
         //refill parts backwards so that newly added parts will not be revisited
@@ -12405,83 +12859,52 @@ bool FedSrvSiteBase::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship,
         }
     }
 
-    //Copy the list of desired parts
-    IpartTypeIGC*   ptDesired[c_maxCargo + 3];      //Must be kept sync'd with
-    memcpy(ptDesired, pfsPlayer->GetDesiredLoadout(), sizeof(ptDesired));
+    if (pfsShip->IsPlayer()) {
+        //Copy the list of desired parts
+        IpartTypeIGC*   ptDesired[c_maxCargo + 3];      //Must be kept sync'd with
+        memcpy(ptDesired, pfsShip->GetPlayer()->GetDesiredLoadout(), sizeof(ptDesired));
 
-    //Go through and fill any holes with the desired parts
-    {
-        ErasePart(pship, ET_Magazine, 0, ptDesired);
-        ErasePart(pship, ET_Dispenser, 0, ptDesired);
-        ErasePart(pship, ET_ChaffLauncher, 0, ptDesired);
-        for (Mount i = 0; (i < c_maxCargo); i++)
-            ErasePart(pship, NA, -1 - i, ptDesired);
-    }
-
-    {
-        IpartTypeIGC*   ptFuel = (pship->GetMountedPart(ET_Afterburner, 0) != NULL)
-                                 ? pMission->GetFuelPack()
-                                 : NULL;
-
-        IpartTypeIGC*   ptAmmo = NULL;
+        //Go through and fill any holes with the desired parts
         {
-            for (Mount i = pship->GetHullType()->GetMaxWeapons() - 1; (i >= 0); i--)
-            {
-                IweaponIGC* pw = (IweaponIGC*)(pship->GetMountedPart(ET_Weapon, i));
-                if (pw && (pw->GetAmmoPerShot() != 0))
-                {
-                    ptAmmo = pMission->GetAmmoPack();
-                    break;
-                }
-            }
+            ErasePart(pship, ET_Magazine, 0, ptDesired);
+            ErasePart(pship, ET_Dispenser, 0, ptDesired);
+            ErasePart(pship, ET_ChaffLauncher, 0, ptDesired);
+            for (Mount i = 0; (i < c_maxCargo); i++)
+                ErasePart(pship, NA, -1 - i, ptDesired);
         }
 
-        bool    bBuyFuel = true;
-
-        // Remount launcher parts if they are depleted AaronMoore 1/10 (Imago)
-        for (int i = 0; i < 3; i++)
         {
-            if ((i == 0 && pship->GetMountedPart(ET_Magazine, 0) == NULL) ||
-                (i == 1 && pship->GetMountedPart(ET_Dispenser, 0) == NULL) ||
-                (i == 2 && pship->GetMountedPart(ET_ChaffLauncher, 0) == NULL))
+            IpartTypeIGC*   ptFuel = (pship->GetMountedPart(ET_Afterburner, 0) != NULL)
+                ? pMission->GetFuelPack()
+                : NULL;
+
+            IpartTypeIGC*   ptAmmo = NULL;
             {
-                IpartTypeIGC*   pt = ptDesired[i];
- 
-                if (pt)
+                for (Mount i = pship->GetHullType()->GetMaxWeapons() - 1; (i >= 0); i--)
                 {
-                    // Upgrade part if posible
-                    while (true)
+                    IweaponIGC* pw = (IweaponIGC*)(pship->GetMountedPart(ET_Weapon, i));
+                    if (pw && (pw->GetAmmoPerShot() != 0))
                     {
-                        IpartTypeIGC*   ptNext = pt->GetSuccessorPartType();
-                        if (ptNext && (ptNext->GetRequiredTechs() <= ttbm))
-                            pt = ptNext;
-                        else
-                            break;
+                        ptAmmo = pMission->GetAmmoPack();
+                        break;
                     }
-                    pship->CreateAndAddPart(pt, 0, SHRT_MAX);
-
-                    // Remove this part from the desired list so it is not added again into cargo
-                    ptDesired[i] = NULL;
                 }
             }
-        }
-		//end AaaronMoore 1/10
-        
 
-        int     iDesired = 0;
-        for (Mount i = 0; (i < c_maxCargo); i++)
-        {
-            IpartIGC*   ppart = pship->GetMountedPart(NA, -1 - i);
-            if (ppart == NULL)
+            bool    bBuyFuel = true;
+
+            // Remount launcher parts if they are depleted AaronMoore 1/10 (Imago)
+            for (int i = 0; i < 3; i++)
             {
-                //Shove an instance of the first part left in the
-                //desired part list into the slot
-                while (iDesired < c_maxCargo + 3)
+                if ((i == 0 && pship->GetMountedPart(ET_Magazine, 0) == NULL) ||
+                    (i == 1 && pship->GetMountedPart(ET_Dispenser, 0) == NULL) ||
+                    (i == 2 && pship->GetMountedPart(ET_ChaffLauncher, 0) == NULL))
                 {
-                    IpartTypeIGC*   pt = ptDesired[iDesired++];
+                    IpartTypeIGC*   pt = ptDesired[i];
 
-                    if (pt && (pt->GetRequiredTechs() <= ttbm))
+                    if (pt)
                     {
+                        // Upgrade part if posible
                         while (true)
                         {
                             IpartTypeIGC*   ptNext = pt->GetSuccessorPartType();
@@ -12490,24 +12913,57 @@ bool FedSrvSiteBase::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship,
                             else
                                 break;
                         }
+                        pship->CreateAndAddPart(pt, 0, SHRT_MAX);
 
-                        ppart = pship->CreateAndAddPart(pt, -1 - i, SHRT_MAX);
-                        assert (ppart->GetPrice() == 0);
-                        break;
+                        // Remove this part from the desired list so it is not added again into cargo
+                        ptDesired[i] = NULL;
                     }
                 }
+            }
+            //end AaaronMoore 1/10
 
+
+            int     iDesired = 0;
+            for (Mount i = 0; (i < c_maxCargo); i++)
+            {
+                IpartIGC*   ppart = pship->GetMountedPart(NA, -1 - i);
                 if (ppart == NULL)
                 {
-                    if (bBuyFuel && ptFuel)
+                    //Shove an instance of the first part left in the
+                    //desired part list into the slot
+                    while (iDesired < c_maxCargo + 3)
                     {
-                        pship->CreateAndAddPart(ptFuel, -1 - i, SHRT_MAX);
-                        bBuyFuel = (ptAmmo == NULL);
+                        IpartTypeIGC*   pt = ptDesired[iDesired++];
+
+                        if (pt && (pt->GetRequiredTechs() <= ttbm))
+                        {
+                            while (true)
+                            {
+                                IpartTypeIGC*   ptNext = pt->GetSuccessorPartType();
+                                if (ptNext && (ptNext->GetRequiredTechs() <= ttbm))
+                                    pt = ptNext;
+                                else
+                                    break;
+                            }
+
+                            ppart = pship->CreateAndAddPart(pt, -1 - i, SHRT_MAX);
+                            assert(ppart->GetPrice() == 0);
+                            break;
+                        }
                     }
-                    else if (ptAmmo)
+
+                    if (ppart == NULL)
                     {
-                        pship->CreateAndAddPart(ptAmmo, -1 - i, SHRT_MAX);
-                        bBuyFuel = true;
+                        if (bBuyFuel && ptFuel)
+                        {
+                            pship->CreateAndAddPart(ptFuel, -1 - i, SHRT_MAX);
+                            bBuyFuel = (ptAmmo == NULL);
+                        }
+                        else if (ptAmmo)
+                        {
+                            pship->CreateAndAddPart(ptAmmo, -1 - i, SHRT_MAX);
+                            bBuyFuel = true;
+                        }
                     }
                 }
             }
@@ -12582,8 +13038,19 @@ bool FedSrvSiteBase::LandOnCarrierEvent(IshipIGC* pshipCarrier, IshipIGC* pship,
         pfmLaunch->position = position;
         pfmLaunch->velocity = velocity;
         pfmLaunch->orientation.Set(*porientation);
-        pfmLaunch->cookie = pfsPlayer->NewCookie();
+        if (pfsShip->IsPlayer())
+            pfmLaunch->cookie = pfsShip->GetPlayer()->NewCookie();
         g.fm.SendMessages(GetGroupSectorFlying(pship->GetCluster()), FM_GUARANTEED, FM_FLUSH);
+    }
+
+    if (pship->GetAutopilot()) {
+        if (pship->GetCommandTarget(c_cmdAccepted) == (ImodelIGC*)pshipCarrier && pship->GetCommandID(c_cmdAccepted) == c_cidGoto) {
+            pship->SetCommand(c_cmdAccepted, pshipCarrier, c_cidDefend);
+            if (pship->GetPilotType() >= c_ptPlayer)
+                pship->SetCommand(c_cmdPlan, pshipCarrier, c_cidDefend);
+        }
+        else
+            pship->SetCommand(c_cmdPlan, NULL, c_cidNone); // drones will do c_cmdAccepted
     }
 
     return true;
@@ -12596,6 +13063,18 @@ bool FedSrvSiteBase::RescueShipEvent(IshipIGC* pshipRescued, IshipIGC* pshipResc
   {
       CFSShip* pfsShip = (CFSShip*)(pshipRescuer->GetPrivateData());
       pfsShip->GetPlayerScoreObject()->AddRescue();
+	  if (pfsShip->IsPlayer())
+	  {
+		  CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+		  pSteamAchievements->AwardPodPickup();
+	  }
+
+	  CFSShip* rescuedShip = (CFSShip*)(pshipRescued->GetPrivateData());
+	  if (rescuedShip->IsPlayer())
+	  {
+		  CSteamAchievements *pSteamAchievements = rescuedShip->GetPlayer()->GetSteamAchievements();
+		  pSteamAchievements->AwardGetRescued();
+	  }
       BEGIN_PFM_CREATE(g.fm, pfmPlayerRescued, S, PLAYER_RESCUED)
       END_PFM_CREATE
       pfmPlayerRescued->shipIDRescuer = pshipRescuer->GetObjectID();
@@ -12768,8 +13247,12 @@ void    FedSrvSiteBase::ChangeStation(IshipIGC* pship, IstationIGC* pstationOld,
 
             IsideIGC*   pside = pship->GetSide();
             assert (pside);
-            if (pside->ApplyDevelopmentTechs(ttbm))
-                pfsShip->GetPlayerScoreObject()->AddTechsRecovered();
+			if (pside->ApplyDevelopmentTechs(ttbm))
+			{
+				pfsShip->GetPlayerScoreObject()->AddTechsRecovered();
+				CSteamAchievements *pSteamAchievements = pfsShip->GetPlayer()->GetSteamAchievements();
+				pSteamAchievements->AwardRecoverTechAchievement();
+			}
 		}
 		
 		if (pstationNew && pship && !pship->GetParentShip() && pship->GetBaseHullType() && //imago fix crash when boarding turret 7/22/09
@@ -13040,6 +13523,9 @@ bool FedSrvSiteBase::UseRipcord(IshipIGC* pship, ImodelIGC* pmodel)
         }
 		*/
     }
+
+    CFSShip* pfsShip = (CFSShip*)pship->GetPrivateData();
+    pfsShip->ShipStatusSpotted(pship->GetSide());
 
     return true;
 }

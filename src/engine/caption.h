@@ -1,6 +1,11 @@
 #ifndef _caption_h_
 #define _caption_h_
 
+#include <tref.h>
+
+class Modeler;
+class Pane;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // CaptionSite

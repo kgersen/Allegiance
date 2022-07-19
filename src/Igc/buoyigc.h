@@ -16,7 +16,8 @@
 #ifndef __BUOYIGC_H_
 #define __BUOYIGC_H_
 
-#include    "modelIGC.h"
+#include "igc.h"
+#include "modelIGC.h"
 
 class CbuoyIGC : public TmodelIGC<IbuoyIGC>
 {
@@ -65,7 +66,7 @@ class CbuoyIGC : public TmodelIGC<IbuoyIGC>
 
         virtual bool                 GetVisibleF(void) const
         {
-            return (m_nConsumers > 0);
+            return (m_nConsumers > 0 && m_visible);
         }
         virtual void                 SetRender(unsigned char render)
         {
@@ -94,6 +95,7 @@ class CbuoyIGC : public TmodelIGC<IbuoyIGC>
         short    m_nConsumers;
         BuoyID   m_buoyID;
         BuoyType m_type;
+        bool     m_visible;
 };
 
 #endif //__BUOYIGC_H_

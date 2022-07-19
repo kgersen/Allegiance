@@ -1,4 +1,13 @@
-#include "pch.h"
+#include "engineapp.h"
+
+#include <token.h>
+
+#include "engine.h"
+#include "enginep.h"
+#include "inputengine.h"
+#include "model.h"
+#include "pane.h"
+#include "popup.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -51,7 +60,7 @@ void EngineApp::Terminate()
     if (m_pmodeler)
         m_pmodeler->Terminate();
     if (m_pengine)
-        m_pengine->Terminate( true );
+        m_pengine->TerminateEngine( true );
 
     m_pmodeler = NULL;
     m_pengine = NULL;

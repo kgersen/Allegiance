@@ -587,6 +587,12 @@ void CFSShip::CaptureStation(IstationIGC * pstation)
 
   {
       GetPlayerScoreObject()->CaptureBase(true);
+	  if (IsPlayer())
+	  {
+		  CSteamAchievements *pSteamAchievements = GetPlayer()->GetSteamAchievements();
+		  pSteamAchievements->AwardBaseKillOrCapture(false); //Award Base Capture Achievement
+	  }
+
       for (ShipLinkIGC* psl = GetIGCShip()->GetChildShips()->first();
            (psl != NULL);
            psl = psl->next())
@@ -675,6 +681,17 @@ void CFSShip::CaptureStation(IstationIGC * pstation)
   }
   else if (psideOld->GetActiveF())						//RESET OUR EYE HERE?  IMAGO CAPTURE EYE BUG FIX?  REVIEW 7/23/09
       m_pfsMission->VacateStation(pstation);
+
+  for (SideLinkIGC* l = pside->GetMission()->GetSides()->first(); (l != NULL); l = l->next()) {
+      IsideIGC* pcurSide = l->data();
+      if (pcurSide == psideOld || IsideIGC::AlliedSides(psideOld, pcurSide)) {
+          pcurSide->HandleNewEnemyCluster(pstation->GetCluster());
+          pcurSide->UpdateTerritory();
+      }
+      else if (pcurSide == pside || IsideIGC::AlliedSides(pside, pcurSide)) {
+          pcurSide->UpdateTerritory();
+      }
+  }
 }
 
 void CFSShip::QueueLoadoutChange(bool bForce)
@@ -733,6 +750,8 @@ void CFSPlayer::SetCluster(IclusterIGC* pcluster, bool bViewOnly)
 
             //Send the position of the parent ship if we are a child, otherwise our position
             IshipIGC*   pshipSource = pshipParent ? pshipParent : GetIGCShip();
+            pshipSource->SetStateBits(keyMaskIGC, 0);   //deactivate states for side-thrust, afterburner
+            pshipSource->SetStateBits(0x70000, 0);      //deactivate states for missiles, mines, chaff
             pshipSource->ExportShipUpdate(&(pfmSetCluster->shipupdate));
             pfmSetCluster->cookie = NewCookie();
         }

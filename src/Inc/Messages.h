@@ -11,7 +11,9 @@
 #ifndef _MESSAGES_ 
 #define _MESSAGES_ 
 
-#include "MessageCore.h"
+#include <igc.h>
+
+#include "messagecore.h"
 
 // KGJV - MSGVER has its own include file now
 #include "MessageVersion.h"
@@ -40,10 +42,12 @@ DEFINE_FEDMSG(C, LOGONREQ, 1)   // First message the client sends to the server.
   Time      time;
   DWORD     dwCookie;
   int       crcFileList; 
-  int8		steamAuthTicket[1024]; // BT - STEAM
-  uint32	steamAuthTicketLength; // BT - STEAM
-  uint64	steamID; // BT - STEAM
+#ifndef NO_STEAM
+  int8_t	steamAuthTicket[1024]; // BT - STEAM
+  uint32_t	steamAuthTicketLength; // BT - STEAM
+  uint64_t	steamID; // BT - STEAM
   char		drmHash[50]; // BT - STEAM
+#endif
 END_FEDMSG
 
 DEFINE_FEDMSG(S, LOGONACK, 2) // sent when the server recives FM_C_LOGONREQ
@@ -131,6 +135,7 @@ DEFINE_FEDMSG(CS, PROJECTILE_INSTANCE, 12)
 END_FEDMSG
 
 // keep in sync copy in ClubMessages.h
+#ifndef _MESSAGES_ALLCLUB_H_
 struct RankInfo
 {
     int     requiredRanking;
@@ -138,6 +143,7 @@ struct RankInfo
     RankID  rank;
     char    RankName[c_cbName];
 };
+#endif
 
 DEFINE_FEDMSG(S, RANK_INFO, 13)
   FM_VAR_ITEM(ranks); // an array of RankInfo sorted by civ, then rank
@@ -295,7 +301,7 @@ DEFINE_FEDMSG(S, MISSIONDEF, 38) // sent when a mission is created, and when it 
   STAGE     stage;
   // KGJV #114 - added server name & addr
   char      szServerName[c_cbName];
-  char      szServerAddr[16];
+  char      szServerAddr[64];
   // yes, for missions with fewer than c_cSidesMax sides, the following arrays will waste space,
   // but that allows us to just keep an array of missions
   // $CRC: should probably just make a struct for the per team stuff and have an array of the struct
@@ -353,7 +359,8 @@ enum DelPositionReqReason
     DPR_CantLeadSquad,
     DPR_ServerPaused,
     DPR_DuplicateLogin,
-    DPR_Other
+    DPR_Other,
+	DPR_BotsOnTeam0Only
 };
 
 DEFINE_FEDMSG(CS, DELPOSITIONREQ, 42) // cancel/reject a pending request
@@ -1026,6 +1033,19 @@ END_FEDMSG
 DEFINE_FEDMSG(CS, HIGHLIGHT_CLUSTER, 199)  //Xynth #208 Notify clients of sector highlight
     SectorID            clusterID;	
 	bool				highlight;	
+END_FEDMSG
+
+
+DEFINE_FEDMSG(S, CLUSTERINFO, 200)  //BT - WOPR - Give the bots extra data at game start about the map so that they can determine when they have discovered enough stuff.
+	SectorID			clusterIDs[32]; // A list of all cluster IDs in the mission.
+	bool				homeSectors[32]; // A list of flags for which sectors are home sectors. Aligns with clusterIDs.
+
+	// Indexes on these align so warpFromCluster[1] = warpToCluster[1] to tell you what the source and destination for the warp is. 
+	// with 32 max sectors we can have 1024 warps with full connectivity. Of course this won't work for Bacon's anniversary map, 
+	// but then again... what really does?
+	SectorID			warpFromClusterIDs[1026]; // A list of source cluster IDs. 
+	SectorID			warpToClusterIDs[1026]; // A list of destination cluster IDs. 
+
 END_FEDMSG
 
 #endif // _MESSAGES_ 
