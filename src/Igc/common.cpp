@@ -2357,7 +2357,7 @@ bool        LineOfSightExist(const IclusterIGC* pcluster,
             Vector          V13 = P3 - P1;
             float           fLengthSquaredV13 = V13.LengthSquared ();
 
-            // if the obscruing object is closer than the target, then it might really
+            // if the obscuring object is closer than the target, then it might really
             // obscure the view of the target
             if (fLengthSquaredV13 < fLengthSquaredV12)
             {

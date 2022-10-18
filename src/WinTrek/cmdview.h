@@ -62,11 +62,16 @@ private:
     TVector<WORD>     m_indices;
     TRef<IclusterIGC> m_pcluster;
     float             m_zGrid;
+    float             m_radius;
+
+    
+    //TRef<Surface>  m_top; //GetModeler()->LoadImage("toparrowbmp", true)->GetSurface();
 
     void DrawShips(Context* pcontext);
+    void DrawTop(Context* pcontext);
 
 public:
-    CommandGeo(float radius, float zGrid, int nSegments);
+    CommandGeo(float radius, float zGrid, int nSegments); //Surface* top
     void Render(Context* pcontext);
     void SetCluster(IclusterIGC* pcluster);
 

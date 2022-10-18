@@ -373,6 +373,9 @@ class   CameraControl
             //
             // Jiggle the camera orientation based on the amount of afterburner and any residual effects
             //
+
+            // Student TODO: reduce camera jiggle on afterburn (maybe make it adjustable? also potential accessibility issue)
+
             const double jiggleHalfLife = 0.25f;
             m_jiggle *= (float)pow(jiggleHalfLife, (double)dt);
 
@@ -2888,7 +2891,7 @@ public:
         pnsGamePanes->AddMember(
             "StyleHUD",
             m_pwrapNumberStyleHUD = new WrapNumber(
-                m_pnumberStyleHUD = new ModifiableNumber(0)
+                m_pnumberStyleHUD = new ModifiableNumber(atof(LoadPreference("StyleHUD", "0.0")))
             )
         );
 
@@ -2975,8 +2978,14 @@ public:
 			}
 		}
 
+        // display load preferences
+        GetEngine()->SetAA(uint32_t(LoadPreference("UseAntialiasing", uint32_t(0)))); // Student 8/11/2022 load anti-aliasing preference
+
+        GetEngine()->SetVSync(bool(LoadPreference("UseVSync", bool(false)))); // Student 8/12/2022 load VSync preferebce
+
+
         //
-        // initialize the sound engine (for the intro music if nothing else)
+        // initialize the sound engine (for the intro music if nothingB else)
         //
 
         DWORD dwSoundInitStartTime = timeGetTime();
@@ -3034,6 +3043,7 @@ public:
 
         m_bShowJoystickIndicator = (LoadPreference("ShowJoystickIndicator", 1) != 0);
 
+
         GetInputEngine()->GetMouse()->SetAccel(m_iMouseAccel);
 
 // BUILD_DX9
@@ -3071,8 +3081,9 @@ public:
         //
         // Command View
         //
+        m_pCommandGeo = new CommandGeo(c_fCommandGridRadius, 0.0f, 40); //Student, shipping without attempts to load image in grid GetModeler()->LoadSurface("toparrowbmp", true
 
-        m_pCommandVisibleGeo = new VisibleGeo(m_pCommandGeo = new CommandGeo(c_fCommandGridRadius, 0.0f, 40));
+        m_pCommandVisibleGeo = new VisibleGeo(m_pCommandGeo); 
         m_pCommandVisibleGeo->SetVisible(false);
 
         //
@@ -3275,8 +3286,8 @@ public:
             ToggleCenterHUD();
         if (!LoadPreference("TargetHUD", TRUE))
             ToggleTargetHUD();
-        if (LoadPreference("SoftwareHUD", FALSE))  //All we need with two styles
-            CycleStyleHUD();
+        //if (LoadPreference("SoftwareHUD", FALSE))  //All we need with two styles //Student 7/28/2022 loading preference elsewhere
+        //    CycleStyleHUD();
 		SetDeadzone(LoadPreference("DeadZone", 5)); //ToggleLargeDeadZone(); //Imago updated 7/8/09 // BT 8/17 - Small deadzone default.
 		SetRadarLOD(LoadPreference("RadarLOD", 0)); //Imago updated 7/8/09 #24 (Gamma, VirtualJoystick, RadarLOD, ShowGrid)
 		if (LoadPreference("ShowGrid", FALSE))
@@ -3722,7 +3733,7 @@ public:
 	void contextBanPlayer()
 	{
 		char szMessageParam[CB_ZTS];
-		lstrcpy(szMessageParam, "You have been banned from this game an administrator.");
+		lstrcpy(szMessageParam, "You have been banned from this game by an administrator.");
 		trekClient.SetMessageType(BaseClient::c_mtGuaranteed);
 		BEGIN_PFM_CREATE(trekClient.m_fm, pfmQuitSide, CS, QUIT_MISSION)
 			FM_VAR_PARM(szMessageParam, CB_ZTS)
@@ -4584,6 +4595,16 @@ public:
 
         return pmenu;
     }
+    
+    //Student 8/11/2022 explicitly handle changing Anti-Aliasing 
+    void ToggleAA()
+    {
+        GetEngine()->SetAA(g_DX9Settings.m_dwAA + 1);
+        SavePreference("UseAntialiasing", g_DX9Settings.m_dwAA); //Student TODO: This is never used, make a toggle and loadpreference
+        if (m_pitemAA != NULL) {
+            m_pitemAA->SetString(GetAAString());
+        }
+    }
 
     void ToggleDebris()
     {
@@ -5037,15 +5058,52 @@ public:
 
     //Something of a misnomer since there are only two styles but this may change
 	//Andon: Changed to support up to 5 styles
-    void CycleStyleHUD()
+    void CycleStyleHUD() //Student 7/28/2022 Upgrade to save preference correctly
     {
+        float style = m_pnumberStyleHUD->GetValue();
+        
+        if (style < 5.0f)
+        {
+            style += 1.0f;
+        }
+        else
+        {
+            style = 0.0f;
+        }
+        m_pnumberStyleHUD->SetValue(style);
+        if (m_pitemStyleHUD != NULL)
+            m_pitemStyleHUD->SetString(GetStyleHUDMenuString());
+        
+        if (style == 1.0f)
+        {
+            SavePreference("StyleHUD", "1.0");
+        } 
+        else if (style == 2.0f)
+        {
+            SavePreference("StyleHUD", "2.0");
+        }
+        else if (style == 3.0f)
+        {
+            SavePreference("StyleHUD", "3.0");
+        }
+        else if (style == 1.0f)
+        {
+            SavePreference("StyleHUD", "4.0");
+        }
+        else
+        {
+            SavePreference("StyleHUD", "5.0");
+        }
+        
+
+        /* Student 7/28/2022 was:
         int style = (int(m_pnumberStyleHUD->GetValue()) + 1) % 5;
         m_pnumberStyleHUD->SetValue(float(style));
 
-        SavePreference("SoftwareHUD", (DWORD)style);
+        SavePreference("StyleHUD", (DWORD)style);
 
         if (m_pitemStyleHUD != NULL)
-            m_pitemStyleHUD->SetString(GetStyleHUDMenuString());
+            m_pitemStyleHUD->SetString(GetStyleHUDMenuString());*/
     }
 
 	//Imago 7/8/09 7/13/09
@@ -5627,7 +5685,7 @@ public:
 
     ZString GetTransparentObjectsMenuString()
     {
-        return ThingGeo::GetTransparentObjects() ? "TransparentObjects On " : "TransparentObjects Off ";
+        return ThingGeo::GetTransparentObjects() ? "Transparent Objects On " : "Transparent Objects Off ";
     }
 
     ZString GetLensFlareMenuString()
@@ -6085,11 +6143,7 @@ public:
 				break;
 
 			case idmAA:
-				GetEngine()->SetAA(g_DX9Settings.m_dwAA + 1);
-				SavePreference("UseAntialiasing", g_DX9Settings.m_dwAA);
-				if (m_pitemAA != NULL) {
-					m_pitemAA->SetString(GetAAString());
-				}
+                ToggleAA(); //Student 8/11/2022 moved to function ToggleAA()
 				break;
 			case idmMip:
 				GetEngine()->SetAutoGenMipMaps(!g_DX9Settings.m_bAutoGenMipmaps);

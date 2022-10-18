@@ -10,4 +10,4 @@ Go to C:\Allegiance\Server
 Follow instructions in the readme. 
 
     
-The batch files are looking for files in these paths, so it would be easiest not to modify them.
+The batch files are looking for files in these paths, so it would be easiest not to modify them...

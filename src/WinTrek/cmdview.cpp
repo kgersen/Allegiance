@@ -13,17 +13,20 @@
 float xMin, float yMin, 
                        float xMax, float yMax, 
 */
-CommandGeo::CommandGeo(float radius, float zGrid, int nSegments)
-:
-        m_vertices(
-            4 * (nSegments + 1),
-            4 * (nSegments + 1)
-        ),
-        m_indices(
-            4 * (nSegments + 1),
-            4 * (nSegments + 1)
-        ),
-        m_zGrid(zGrid)
+//Surface* top
+CommandGeo::CommandGeo(float radius, float zGrid, int nSegments) 
+    :
+    m_vertices(
+        4 * (nSegments + 1),
+        4 * (nSegments + 1)
+    ),
+    m_indices(
+        4 * (nSegments + 1),
+        4 * (nSegments + 1)
+    ),
+    m_zGrid(zGrid),
+    m_radius(radius)
+    //m_top(top)
 {
     int index = 0;
     float radius2 = radius * radius;
@@ -256,6 +259,27 @@ void CommandGeo::DrawShips(Context* pcontext)
         pcontext->DrawLines(vertices, indices);
 }
 
+//Student 7/18/2022 - indicate the original top of the sector, so it can be rotated and there still be a point of reference to discuss with teammates.
+void CommandGeo::DrawTop(Context* pcontext)
+{
+    TRef<IEngineFont> pfont = TrekResources::HugeBoldFont();
+
+    char* topString = "NORTH";
+    float xShiftStr = pfont->GetTextExtent(topString).X();
+    //float yShiftStr = pfont->GetHeight();
+    
+
+    //float yShiftArrow = m_top->GetSize().Y();
+    //float xShiftArrow = m_top->GetSize().X();
+
+    
+    Point offset(0, 3 * m_radius / 4);
+    //pcontext->DrawImage3D(m_top, s_colorNeutral, true, offset); //Something is going wrong with this image.
+    
+    offset.SetX(offset.X() - xShiftStr * 0.5f);
+
+    pcontext->DrawString(pfont, s_colorNeutral, offset, topString);
+}
 
 void CommandGeo::Render(Context* pcontext)
 {
@@ -267,6 +291,8 @@ void CommandGeo::Render(Context* pcontext)
 
     // draw the grid
     pcontext->DrawLines(m_vertices, m_indices);
+
+    DrawTop(pcontext);
 
     //Draw the drop line for the point in space (if there is one)
     {
@@ -287,6 +313,7 @@ const Color CommandGeo::s_colorGridMajor(0,0,128.0f/255.0f);
 const Color CommandGeo::s_colorDropLineUp(200.0f / 255.0f, 180.0f / 255.0f, 20.0f / 255.0f);
 const Color CommandGeo::s_colorDropLineDown(150.0f / 255.0f, 100.0f / 255.0f, 0.0f / 255.0f);
 const Color CommandGeo::s_colorFeet(0,0,128.0f/255.0f);
+const Color CommandGeo::s_colorNeutral(1.0f, 1.0f, 1.0f);
 
 const Color g_colorUp(75 / 255.0f, 124 / 255.0f, 88 / 255.0f);
 const Color g_colorDown(2 / 255.0f, 84 / 255.0f, 84 / 255.0f);

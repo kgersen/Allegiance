@@ -1754,7 +1754,7 @@ class       CshipIGC : public TmodelIGC<IshipIGC>
                 assert (pship->GetSide() == pside);
                 assert (pship->GetAutoDonate() == NULL);
 
-                //Was anyone on my ide donating to me ... if so, they start donating to the new person
+                //Was anyone on my side donating to me ... if so, they start donating to the new person
                 for (ShipLinkIGC*   psl = pside->GetShips()->first();
                      (psl != NULL);
                      psl = psl->next())
