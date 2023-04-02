@@ -53,6 +53,7 @@ class RadarImageImpl : public RadarImage {
     public:
         const char* m_pszName;
         int         m_range;
+        int         m_ripTime;
         float       m_shield;
         float       m_hull;
         float       m_fill;
@@ -61,28 +62,34 @@ class RadarImageImpl : public RadarImage {
         Point       m_position;
         Point       m_direction;
         Color       m_color;
+        bool        m_bEye;
 
-        TextData(const char*    pszName,
-                 int            range,
-                 float          shield,
-                 float          hull,
-                 float          fill,
-                 Command        cmd,
-                 CommandID      cid,
-                 const Point&   position,
-                 const Point&   direction,
-                 const Color&   color)
-        :
+
+        TextData(const char* pszName,
+            int            range,
+            float          ripTime,
+            float          shield,
+            float          hull,
+            float          fill,
+            Command        cmd,
+            CommandID      cid,
+            const Point& position,
+            const Point& direction,
+            const Color& color,
+            bool           bEye)
+            :
             m_pszName(pszName),
             m_range(range),
             m_shield(shield),
             m_hull(hull),
-            m_fill (fill),
+            m_fill(fill),
+            m_ripTime(ripTime),
             m_cmd(cmd),
             m_cid(cid),
             m_position(position),
             m_direction(direction),
-            m_color(color)
+            m_color(color),
+            m_bEye(bEye)
         {
         }
 
@@ -93,11 +100,13 @@ class RadarImageImpl : public RadarImage {
             m_shield(data.m_shield),
             m_hull(data.m_hull),
             m_fill(data.m_fill),
+            m_ripTime(data.m_ripTime),
             m_cmd(data.m_cmd),
             m_cid(data.m_cid),
             m_position(data.m_position),
             m_direction(data.m_direction),
-            m_color(data.m_color)
+            m_color(data.m_color),
+            m_bEye(data.m_bEye)
         {
         }
     };
@@ -112,6 +121,7 @@ class RadarImageImpl : public RadarImage {
 
     TextDataList        m_listTextData;
 
+
     TRef<Surface>       m_psurfaceLastFired;
     TRef<Surface>       m_psurfaceTargeted;
     TRef<Surface>       m_psurfaceLocked;
@@ -124,6 +134,8 @@ class RadarImageImpl : public RadarImage {
 	TRef<Surface>       m_psurfaceRip;  //Xynth #171 8/10
 
     TRef<Surface>       m_psurfaceTechIcon;
+
+    TRef<Surface>       m_psurfaceEye; //Student 7/2/2022 show if friendly eyed
 
     TRef<Surface>       m_psurfaceAccepted[c_cidMax];
     TRef<Surface>       m_psurfaceQueued[c_cidMax];
@@ -211,6 +223,8 @@ public:
 
         m_psurfaceTechIcon    = pmodeler->LoadSurface("icontechbmp", true);
 
+        m_psurfaceEye         = pmodeler->LoadSurface(AWF_FLIGHT_EYE_ICON, false); //Student 7/2/2022 show if friendly eyed
+
         for (CommandID i = c_cidAttack; (i < c_cidMax); i++)
         {
             if (c_cdAllCommands[i].szAccepted[0] != '\0')
@@ -278,6 +292,7 @@ public:
                   Surface*      psurfaceIcon,
                   const char*   pszName,
                   int           range,
+                  int           ripTime,
                   float         shield,
                   float         hull,
                   float         fill,
@@ -286,7 +301,8 @@ public:
                   int           maskBrackets,
                   float         lock,
                   bool          bIcon,
-                  bool          bStats)
+                  bool          bStats,
+                  bool          bEye)
     {
         float               radiusObject = pts->GetScreenRadius();
         {
@@ -364,6 +380,8 @@ public:
         }
 
         Point   positionIcon;
+        Point   positionEye;
+
         if (ucRadarState != c_ucRadarOnScreenLarge)
         {
             positionIcon.SetX(0.0f);
@@ -402,9 +420,9 @@ public:
         {
             Point   positionLabel = positionObject + positionIcon;
             if (maskBrackets & (c_maskTarget | c_maskAccepted | c_maskThreat))
-                m_listTextData.PushEnd(TextData(pszName, range, shield, hull, fill, cmd, cid, positionLabel, directionCenter, colorOther));
+                m_listTextData.PushEnd(TextData(pszName, range, ripTime, shield, hull, fill, cmd, cid, positionLabel, directionCenter, colorOther, bEye));
             else
-                m_listTextData.PushFront(TextData(pszName, range, shield, hull, fill, cmd, cid, positionLabel, directionCenter, colorOther));
+                m_listTextData.PushFront(TextData(pszName, range, ripTime, shield, hull, fill, cmd, cid, positionLabel, directionCenter, colorOther, bEye));
         }
     }
 
@@ -634,6 +652,7 @@ public:
                         maskBrackets |= c_maskSubject;
 
 					IsideIGC* sthis = pmodel->GetSide();
+                    
 					if (pmodelEnemy) {
 						IsideIGC* sthat = pmodelEnemy->GetSide();
                     	if (pmodel == pmodelEnemy && !sthis->AlliedSides(sthis,sthat))  //ALLY - imago 7/3/09
@@ -661,7 +680,7 @@ public:
                         maskBrackets |= c_maskMe;
 
                     Color color = pside
-                                  ? ((maskBrackets & c_maskFlash) ? Color::Red() : pside->GetColor())
+                                  ? ((maskBrackets & c_maskFlash) ? Color::Red() : pside->GetColor()) //Possibe Student TODO future � color blind colors (or consistent colors)
                                   : s_colorNeutral;
 
 
@@ -690,6 +709,7 @@ public:
                                                        c_maskFlag |
                                                        c_maskArtifact)) != 0);
                     bool    bStats = bLabel;
+                    bool    bEye = false;
 
                     if (bLabel)
                     {
@@ -943,6 +963,7 @@ public:
                     float   shield = 2.0f;
                     float   hull = 2.0f;
                     float   fill = 2.0f;
+                    int     ripTime = -1;
                     if (!bLabel)
                     {
                         pszName = c_pszEmpty;
@@ -977,12 +998,41 @@ public:
 
 								//Xynth #47 7/2010
 								if (((pship->GetStateM() & droneRipMaskIGC) != 0) &&
-									 (pship->GetSide() == psideMine) &&
-									 (pship->GetPilotType() < c_ptPlayer))  //Xynth #175 7/2010
+									 (pship->GetSide() == psideMine) && 
+                                     (pship->GetPilotType() < c_ptPlayer))  //Xynth #175 7/2010 
+                                
 								{
 									maskBrackets |= c_maskRip; //Xynth #171 8/10
 								}
 
+                                //Student 7/1/2022 if friendly is spotted, pass the information to drawBlip
+                                if (pship != pshipSource && //if ship is not me (we already know when we are eyed)
+                                    pship->GetPilotType() >= c_ptPlayer && //if ship is a player
+                                    pship->GetSide() == psideMine) //if player is on our team
+                                { 
+                                    PlayerInfo* ppi = (PlayerInfo*)(pship->GetPrivateData());
+                                    if (ppi) {
+                                        ShipStatus ss = ppi->GetShipStatus();
+                                        bEye = ss.GetDetected();
+                                    }
+
+                                }
+                                //Student 7/4/2022
+                                if (pship != pshipSource && //if ship is not me (we already know when we are ripcording)
+                                    pship->GetSide() == psideMine && //if player is on our team
+                                    //pship->GetPilotType() >= c_ptPlayer && //if ship is a player
+                                    pship->GetRipcordTimeLeft() >= 0 && //probably don't need this
+                                    pship->fRipcordActive())
+                                {
+                                    
+                                    ripTime = (int) pship->GetRipcordTimeLeft() + 1; //cast to int, we don't care about the decimal (for now)
+                                    if (ripTime > 99999)
+                                    {
+                                        //if somehow we have a riptime over 1 day and change, just show the 1 day and change on countdown.
+                                        debugf("Ridiculous ripcord time of %i.", ripTime);
+                                        ripTime = int(99999);
+                                    }
+                                }
                             }
                             break;
 
@@ -1057,6 +1107,7 @@ public:
                              psurfaceIcon,
                              pszName,
                              range,
+                             ripTime,
                              shield,
                              hull,
                              fill,
@@ -1065,7 +1116,8 @@ public:
                              maskBrackets,
                              lock,
                              bIcon,
-                             bStats);
+                             bStats,
+                             bEye);
 
                     pcontext->PopState();
                 }
@@ -1179,23 +1231,58 @@ public:
                 }
 
                 Surface*    psurfaceIcon = NULL;
-                float       xshift;
+                float       xshift = 0;
+                float       ripShiftConstant = 4.0f;
+                float       ripShift = 0;
+                Point       size;
+                char        szRipTime[5];
 
+                //go through the possible left-side information:
+                //CMD icon, Eye Icon, and/or rip time
+                //Take greatest x component and add it to width
+                
                 if (data.m_cid != c_cidNone)
                 {
                     assert (data.m_cid >= 0);
                     assert (data.m_cid < c_cidMax);
-                    psurfaceIcon = (data.m_cmd != c_cmdQueued) ? m_psurfaceAccepted[data.m_cid] :  m_psurfaceQueued[data.m_cid];
+                    psurfaceIcon = (data.m_cmd != c_cmdQueued) ? m_psurfaceAccepted[data.m_cid] : m_psurfaceQueued[data.m_cid];
                     if (psurfaceIcon)
                     {
-                        Point size  = Point::Cast(psurfaceIcon->GetSize());
+                        size   = Point::Cast(psurfaceIcon->GetSize());
                         xshift = size.X();
                         width += xshift;
                     }
                 }
 
+                if (data.m_bEye)
+                {
+                    size = Point::Cast(m_psurfaceEye->GetSize());
+                    float w = size.X();
+                    if (w > xshift)
+                    {
+                        width -= xshift;
+                        xshift = w;
+                        width += xshift;
+                    }
+                }
+
+                if (data.m_ripTime > 0)
+                {
+                    _itoa(data.m_ripTime, szRipTime, 10);
+                    ripShift = (float)(pfont->GetTextExtent(szRipTime).X()) + ripShiftConstant;
+                    if (ripShift > xshift)
+                    {
+                        width -= xshift;
+                        xshift = ripShift;
+                        width += xshift;
+                    }
+                }
+
+                if (psurfaceIcon || data.m_bEye || (data.m_ripTime > 0))
+                    lines += 1.0f;
+
                 //Find the offset to center the text at position + offset
-                Point   offset(data.m_position.X() - 0.5f * width, data.m_position.Y()  + heightFont * 0.5f * (lines - 2.0f));
+                Point   offset(data.m_position.X() - 0.5f * width, data.m_position.Y() + heightFont * 0.5f * (lines - 2.0f));
 
                 //Adjust the offset by the amount required to move a point from the center to the edge
                 //in the specified direction
@@ -1223,14 +1310,87 @@ public:
                     offset.SetX(offset.X() + x * 0.5f);
                     offset.SetY(offset.Y() + y * 0.5f);
 
-                    if (psurfaceIcon)
-                    {
+                    if (psurfaceIcon || data.m_bEye || (data.m_ripTime > 0)) { //if we are drawing things to the left of name, hull, shield, do the x and y offsets together
+                        //Student TODO: Fix x centering on ripTime
+                        BlendMode previousBlendMode = pcontext->GetBlendMode(); //blend mode might already be this, but being explicit and allowing other things to exist
+                        pcontext->SetBlendMode(BlendModeAdd);
+                        
+                        float maxy = 0.0f; //this keeps the left-side icons from being too low. Also handy to use to check if there are other icons.
+                        float yshift = 0.0f;
+                        
+                        offset.SetX(offset.X() + xshift * 0.5f); //move halfway in. 
+                        
+                        if (psurfaceIcon)
+                        {
+                            pcontext->DrawImage3D(psurfaceIcon, data.m_color, true, offset);
+                            float height = psurfaceIcon->GetSize().Y();
+                            offset.SetY(offset.Y() - height);
+                            yshift += height;
+                            if (height > maxy)
+                                maxy = height;
+                        }
+
+                        if (data.m_bEye) //Student 7/3/2022 moving eye drawing here, want to draw below psurfaceIcon if it exists 7/4/2022 altering
+                        {
+                            /*float shiftx = m_psurfaceEye->GetSize().X() * 0.5f;
+                            float shifty = 0.0f;
+                            offset.SetX(offset.X() - shiftx);
+                            if (psurfaceIcon)
+                            {
+                                //offset.SetX(offset.X() - shiftx);
+                                //shifty = psurfaceIcon->GetSize().Y();
+                            }
+                            else
+                            {
+                                //offset.SetX(offset.X() + shiftx);
+                            }*/
+                             //shift down if there is a command icon
+                            pcontext->DrawImage3D(m_psurfaceEye, data.m_color, true, offset);
+                            float height = m_psurfaceEye->GetSize().Y();
+                            offset.SetY(offset.Y() - height);
+                            yshift += height;
+                            if (height > maxy)
+                                maxy = height;
+                            //offset.SetX(offset.X() + shiftx);
+                            //offset.SetY(offset.Y() + shifty); //reset to before
+                        }
+
+                        if (data.m_ripTime > 0)
+                        {
+                            float shift = 0;
+                            float yoffset = 0;
+                            //offset.SetY(offset.Y() - yshift * 0.5f);
+                            if (maxy == 0.0f) //if we are only showing rip time, move it down so it does not collide with name
+                            {
+                                offset.SetY(offset.Y() - heightFont * 0.5f);
+                                yshift += heightFont * 0.5f;
+                            }
+                            else
+                            {
+                                if (data.m_ripTime < 10) //if ripTime is in single digits, center it (2 digits is fine,
+                                {                        //3 digits is greater than the x length of other icons 
+                                                         //(and also should rarely if ever come up). Also, if only one, don't screw with it.
+                                    shift = (ripShift - ripShiftConstant) * 0.5f;
+                                }
+
+                                offset.SetY(offset.Y() - yoffset); //help reduce collisions with cmd icon.
+                                yshift += yoffset;
+                            }
+                            offset.SetX(offset.X() - xshift * 0.5f + shift); //Draw String draws from the left side, not the center,
+                                                                             //unlike the other left-side icons. So we move it back.
+
+                            pcontext->DrawString(pfont, data.m_color, offset, ZString(szRipTime));
+                            //yshift += heightFont;
+                            offset.SetX(offset.X() + xshift * 0.5f - shift);
+                        }
+
+                        offset.SetY(offset.Y() + yshift - maxy * 0.5f);
                         offset.SetX(offset.X() + xshift * 0.5f);
-                        pcontext->DrawImage3D(psurfaceIcon, data.m_color, true, offset);
-                        offset.SetX(offset.X() + xshift * 0.5f);
+                        pcontext->SetBlendMode(previousBlendMode);
                     }
                 }
 
+                
                 if (data.m_pszName[0] != '\0')
                 {
                     pcontext->DrawString(pfont, data.m_color, offset, ZString(data.m_pszName));

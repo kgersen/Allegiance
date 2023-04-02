@@ -82,6 +82,7 @@
 #define AWF_FLIGHT_CURRENT_DIRECTION_ICON       "directionbmp"
 #define AWF_FLIGHT_CROSSHAIR_IN_ICON            "centerinbmp"
 #define AWF_FLIGHT_CROSSHAIR_OUT_ICON           "centeroutbmp"
+#define AWF_FLIGHT_EYE_ICON						"eyebmp" //Student 7/2/2022 Show friendly eyed ships
 
 #define AWF_HUD_BACKGROUND                      "hudbkgrndbmp"
 #define AWF_HUD_SPEED_INDICATOR                 "speedindicatorbmp"
