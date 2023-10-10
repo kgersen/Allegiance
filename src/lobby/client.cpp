@@ -21,9 +21,6 @@ const DWORD CFLClient::c_dwID = 19680815;
 bool g_fLogonCRC = true; 
 #endif
 
-//appweb
-static MprMutex* mutex = new MprMutex();
-
 void encodeURL( char * url,char * token) // url = output, token gets append to url
 {
     // wlp - we will do brute force URL encoding - it's normal alphaNumeric or it's URL encoded

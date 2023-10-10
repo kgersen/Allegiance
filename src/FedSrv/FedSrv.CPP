@@ -27,14 +27,6 @@
     #include "FedSrvApp.h"
 #endif
 
-//appweb -Imago
-static Mpr *mpr;
-static MprMutex	*mutex;
-
-#ifdef _DEBUG
-	static MprLogModule *tMod;
-#endif
-
 #if !defined(ALLSRV_STANDALONE)
 void DoDecrypt(int size, char* pdata)
 {
@@ -10247,20 +10239,6 @@ int __cdecl main(int argc, char *argv[])
     // clock time to shake things up a bit)
     srand(GetTickCount() + time(NULL));
 
-	// start the appweb service thread w/log Imago 7/3/08
-	char *programName = mprGetBaseName(argv[0]);
-	mutex = new MprMutex();
-	mpr = new Mpr(programName);
-#ifdef _DEBUG
-    MprLogToFile *logger;
-	tMod = new MprLogModule(programName);
-	logger = new MprLogToFile();
-	mpr->addListener(logger);
-    mpr->setLogSpec("allsrv_appweb.log:9");
-#endif
-	mpr->setMaxPoolThreads(4);    //NYI make the 4 a constant becasue it ended up getting reused
-	mpr->start(MPR_SERVICE_THREAD);
-
 
     // Enter this thread into the COM MTA
     TCCoInit init(COINIT_MULTITHREADED);
@@ -10596,15 +10574,6 @@ int __cdecl main(int argc, char *argv[])
 
     // Terminate AGC
     _Module.TermAGC();
-
-	//appweb
-	mpr->stop(0);
-	delete mutex;
-#ifdef _DEBUG
-	delete tMod;
-    delete logger;
-#endif
-	mprMemClose();
 
 	// Indicate success
     return 0;
