@@ -364,9 +364,12 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 
 		postData += "&sourceIP=" + sourceIP;
 
-		postData += "&sourceSteamID=" + pfmLogChatMessage->sourceSteamID;
-		
-		postData += "&targetSteamID=" + pfmLogChatMessage->targetSteamID;
+		char steamID[256];
+		sprintf(steamID, "%" PRIu64, pfmLogChatMessage->sourceSteamID);
+		postData += "&sourceSteamID=" + std::string(steamID);
+
+		sprintf(steamID, "%" PRIu64, pfmLogChatMessage->targetSteamID);
+		postData += "&targetSteamID=" + std::string(steamID);
 
 		postData += "&message=" + message;
 
