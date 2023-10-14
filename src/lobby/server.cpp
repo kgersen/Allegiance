@@ -343,11 +343,11 @@ HRESULT LobbyServerSite::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxn
 	{
 		CASTPFM(pfmLogChatMessage, S, LOG_CHAT_MESSAGE, pfm);
 
-		std::string missionName = FM_VAR_REF(pfmLogChatMessage, MissionName);
-		std::string sourceName = FM_VAR_REF(pfmLogChatMessage, SourceName);
-		std::string targetName = FM_VAR_REF(pfmLogChatMessage, TargetName);
-		std::string message = FM_VAR_REF(pfmLogChatMessage, Message);
-		std::string sourceIP = FM_VAR_REF(pfmLogChatMessage, SourceIP);
+		std::string missionName = FM_VAR_REF_STDSTRING(pfmLogChatMessage, MissionName);
+		std::string sourceName = FM_VAR_REF_STDSTRING(pfmLogChatMessage, SourceName);
+		std::string targetName = FM_VAR_REF_STDSTRING(pfmLogChatMessage, TargetName);
+		std::string message = FM_VAR_REF_STDSTRING(pfmLogChatMessage, Message);
+		std::string sourceIP = FM_VAR_REF_STDSTRING(pfmLogChatMessage, SourceIP);
 
 		debugf("%s %s->%s: %s\n", missionName.c_str(), sourceName.c_str(), targetName.c_str(), message.c_str());
 
