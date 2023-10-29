@@ -891,7 +891,12 @@ void CLobbyApp::SetPlayerMission(const char* szPlayerName, const char* szCDKey, 
 #endif
 
   // BT - STEAM - Check for any bans on this user's SteamID. 
-  std::string url = std::string(g_pLobbyApp->GetBanCheckUrl()) + "?apiKey=" + g_pLobbyApp->GetApiKey() + "&steamID=" + szCDKey;
+
+  std::string cdKey = std::string("");
+  if (szCDKey != NULL)
+	  cdKey = std::string(szCDKey);
+
+  std::string url = std::string(g_pLobbyApp->GetBanCheckUrl()) + "?apiKey=" + g_pLobbyApp->GetApiKey() + "&steamID=" + cdKey;
   std::string host = url.substr(0, url.find_first_of("/", 8));
   std::string path = url.substr(url.find_first_of("/", 8));
   httplib::Client client(host);
