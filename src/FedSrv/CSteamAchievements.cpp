@@ -470,14 +470,22 @@ static DWORD WINAPI UpdateLeaderboardThread(LPVOID pThreadParameter)
 #ifndef _DEBUG // catch exceptions in FZRetail, in debug builds use the debugger
 	try {
 #endif
-	httplib::Result result = client.Get(path);
-	int response = result->status;
+		httplib::Result result = client.Get(path);
 
-	debugf("Leaderboard Update(%ld): %s\n", response, url);
+		if (result)
+		{
+			int response = result->status;
+
+			debugf("Leaderboard Update(%ld): %s\n", response, url);
+		}
+		else
+		{
+			debugf("UpdateLeaderboardThread failed to send request: %s\n", url);
+		}
 #ifndef _DEBUG
 	}
 	catch (...) {
-		debugf("UpdateLeaderboardThread failed to send request");
+		debugf("UpdateLeaderboardThread failed to send request: %s\n", url);
 	}
 #endif
 	SteamGameServer_ReleaseCurrentThreadMemory();
