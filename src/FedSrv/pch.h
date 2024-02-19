@@ -52,6 +52,8 @@
 
 #include "cpp-httplib/httplib.h"
 
+#include "json.hpp"
+
 #include "resource.h"
 #include <utility.h>
 #include <igc.h>
