@@ -9584,6 +9584,11 @@ void LoadSettings()
 		DWORD cbLeaderboardUpdateUrl = sizeof(g.szLeaderboardUpdateUrl);
 		RegQueryValueExA(hKey, "LeaderboardUpdateUrl", NULL, &dwType, (unsigned char*)g.szLeaderboardUpdateUrl, &cbLeaderboardUpdateUrl);
 
+        // Loran - Game statistics logging
+        g.szGameStatsUpdateUrl[0] = '\0';
+        DWORD cbGameStatsUpdateUrl = sizeof(g.szGameStatsUpdateUrl);
+        RegQueryValueExA(hKey, "GameStatsUpdateUrl", NULL, &dwType, (unsigned char*)g.szGameStatsUpdateUrl, &cbGameStatsUpdateUrl);
+
 		// BT - STEAM
 		g.szApiKey[0] = '\0';
 		DWORD cbApiKey = sizeof(g.szApiKey);
