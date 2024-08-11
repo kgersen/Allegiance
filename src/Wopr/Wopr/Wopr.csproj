@@ -183,6 +183,7 @@
     </None>
     <None Include="LaunchWithoutYellowCom.bat" />
     <None Include="packages.config" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AllegianceInterop\AllegianceInterop.vcxproj">
