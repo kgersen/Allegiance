@@ -8798,7 +8798,7 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
 		PCC(g.strLobbyServer), PCC(g.strLocalAddress), g.dwLobbyPort);		// mdvalley: forced to lobby port
   if (FAILED(hr))
   {
-    printf("failed.\n", PCC(g.strLobbyServer));
+    printf("failed. %08x\n", hr, PCC(g.strLobbyServer));
     return hr;
   }
 
