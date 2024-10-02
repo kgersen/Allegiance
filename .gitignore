@@ -328,3 +328,20 @@ $RECYCLE.BIN/
 # Allow boost library
 !src/Lib/boost/boost/preprocessor/debug
 /src/Pigs/Piglets/Junk
+
+#CMake
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+/build
+
+#directx libs
+!/src/Lib/directx/Lib/x64
+!/src/Lib/directx/Lib/x86
