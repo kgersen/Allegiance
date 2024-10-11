@@ -2,7 +2,10 @@ SET_MODULE("zlib")
 
 INCLUDE_DIRECTORIES(../Inc)
 
-SET(Zlib_SRC
+ADD_LIBRARY(Zlib ${Zlib_SRC} ${PLATFORM_SRC})
+SET_PROPERTY(TARGET Zlib PROPERTY CXX_STANDARD 17)
+target_sources(Zlib
+    PRIVATE
     StackTracer.cpp
     Win32app.cpp
     color.cpp
@@ -41,5 +44,3 @@ ELSE()
     MESSAGE(FATAL_ERROR "Unhandled platform")
 ENDIF()
 
-ADD_LIBRARY(Zlib ${Zlib_SRC} ${PLATFORM_SRC})
-SET_PROPERTY(TARGET Zlib PROPERTY CXX_STANDARD 14)
