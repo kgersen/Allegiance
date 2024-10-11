@@ -1,7 +1,11 @@
 ADD_DEFINITIONS(-D__MODULE__="SoundEngine")
-INCLUDE_DIRECTORIES(../Inc ../zlib)
+INCLUDE_DIRECTORIES(../Inc ../zlib ../Lib/directx/include)
 
-SET(SoundEngine_SRC
+ADD_LIBRARY(SoundEngine ${SoundEngine_SRC})
+SET_PROPERTY(TARGET SoundEngine PROPERTY CXX_STANDARD 17)
+
+target_sources(SoundEngine
+    PRIVATE
     ds3dbuffer.cpp
     ds3dengine.cpp
     ds3dutil.cpp
@@ -12,5 +16,3 @@ SET(SoundEngine_SRC
     soundutil.cpp
    )
 
-ADD_LIBRARY(SoundEngine ${SoundEngine_SRC})
-SET_PROPERTY(TARGET SoundEngine PROPERTY CXX_STANDARD 14)
