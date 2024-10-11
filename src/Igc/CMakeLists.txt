@@ -2,7 +2,10 @@ ADD_DEFINITIONS(-D__MODULE__="igc")
 
 INCLUDE_DIRECTORIES(../Inc ../zlib ../engine  ../soundengine ../guids)
 
-SET(Igc_SRC
+ADD_LIBRARY(Igc ${Igc_SRC})
+SET_PROPERTY(TARGET Igc PROPERTY CXX_STANDARD 14)
+
+target_sources(Igc PRIVATE
     afterburnerIGC.cpp
     asteroidigc.cpp
     bucketigc.cpp
@@ -43,5 +46,3 @@ SET(Igc_SRC
     weaponIGC.cpp
    )
 
-ADD_LIBRARY(Igc ${Igc_SRC})
-SET_PROPERTY(TARGET Igc PROPERTY CXX_STANDARD 14)

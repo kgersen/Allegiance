@@ -9,8 +9,7 @@ INCLUDE_DIRECTORIES(../Inc ../zlib ../_Utility ../Lib/AllegianceSecurity ../Lib/
 ADD_LIBRARY(Engine STATIC)
 SET_PROPERTY(TARGET Engine PROPERTY CXX_STANDARD 17)
 
-target_sources(Engine
-    PRIVATE
+target_sources(Engine PRIVATE
         D3DDevice9.cpp
         DeviceModesDX9.cpp
         HashTable.cpp

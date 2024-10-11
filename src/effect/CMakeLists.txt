@@ -1,8 +1,11 @@
 ADD_DEFINITIONS(-D__MODULE__="Effect" -DFixPermedia=1)
 
-INCLUDE_DIRECTORIES(../Inc ../zlib ../engine  ../soundengine)
+INCLUDE_DIRECTORIES(../Inc ../zlib ../engine ../soundengine ../_Utility ../Lib/directx/include)
 
-SET(effect_SRC
+ADD_LIBRARY(effect ${effect_SRC})
+SET_PROPERTY(TARGET effect PROPERTY CXX_STANDARD 14)
+
+target_sources(effect PRIVATE
     alephgeo.cpp
     combopane.cpp
     conegeo.cpp
@@ -26,5 +29,3 @@ SET(effect_SRC
     thinggeo.cpp
    )
 
-ADD_LIBRARY(effect ${effect_SRC})
-SET_PROPERTY(TARGET effect PROPERTY CXX_STANDARD 14)

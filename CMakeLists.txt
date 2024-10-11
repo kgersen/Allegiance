@@ -14,5 +14,15 @@ MACRO(SET_MODULE MODULE_NAME)
     ENDIF()
 ENDMACRO()
 
+# Set architecture flags for 32-bit
+if(MSVC)
+    # For Visual Studio
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:IA32")
+    add_compile_options(/wd4996)
+else()
+    # For GCC/Clang
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
+endif()
 
 ADD_SUBDIRECTORY(src)
+

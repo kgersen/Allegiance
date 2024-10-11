@@ -34,7 +34,9 @@
 #include <algorithm>
 
 // BT - STEAM
+#ifdef USE_STEAM
 #include "steam_gameserver.h"
+#endif
 
 //
 // Wintrek headers

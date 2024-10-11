@@ -2,7 +2,7 @@ ADD_DEFINITIONS(-D__MODULE__="SoundEngine")
 INCLUDE_DIRECTORIES(../Inc ../zlib ../Lib/directx/include)
 
 ADD_LIBRARY(SoundEngine ${SoundEngine_SRC})
-SET_PROPERTY(TARGET SoundEngine PROPERTY CXX_STANDARD 17)
+SET_PROPERTY(TARGET SoundEngine PROPERTY CXX_STANDARD 14)
 
 target_sources(SoundEngine
     PRIVATE
