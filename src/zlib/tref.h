@@ -104,6 +104,7 @@ public:
 //
 //////////////////////////////////////////////////////////////////////////////
 
+
 template <class Type>
 class TRef {
 private:
@@ -167,7 +168,14 @@ public:
 		if (m_pt)
 			m_pt->AddRef();
 
-		if (ptOld && ptOld != (Type *) 0xdddddddd && ptOld != (Type *) 0xcdcdcdcd && ptOld != (Type *) 0xcccccccc)
+		// constexpr uintptr_t UNINITIALIZED_MEMORY = 0xdddddddd;
+		// constexpr uintptr_t FREED_MEMORY = 0xcdcdcdcd;
+		// constexpr uintptr_t CLEAN_MEMORY = 0xcccccccc;
+		if (ptOld && 
+			ptOld != reinterpret_cast<Type*>(static_cast<uintptr_t>(0xdddddddd)) && 
+			ptOld != reinterpret_cast<Type*>(static_cast<uintptr_t>(0xcdcdcdcd)) && 
+			ptOld != reinterpret_cast<Type*>(static_cast<uintptr_t>(0xcccccccc)))
+
 			ptOld->Release();
 
 		return *this;
