@@ -1,16 +1,52 @@
-﻿add_executable(WinTrek WIN32)
+﻿link_directories(
+    ../Lib/directx/Lib/x86 #todo use a variable
+    ../Lib/AllegianceSecurity
+    ../Lib/steam
+    ../Lib/lua
+    ../Lib/DirectPlay
+    ../Lib/OggVorbis
+)
+
+add_executable(WinTrek WIN32)
+
 set_property(TARGET WinTrek PROPERTY CXX_STANDARD 17)
 
 target_link_libraries(WinTrek PRIVATE
-#    ../Lang\Usa\allegiance\allegiance.rc2
-  Utility
-  effect
-  Engine
-  ../Guids
-  Igc
-  SoundEngine
-  training
-  Zlib
+#    ../Lang/Usa/allegiance/allegiance.rc2
+    Utility
+    effect
+    Engine
+    Guids
+    ClintLib
+    Igc
+    SoundEngine
+    Training
+    Zlib
+
+    AllegianceSecurity
+    steam_api
+    lua53
+    dbghelp
+    d3d9
+    d3dx9
+    dsound
+    dinput8
+    #$(OutDir)../ui/Ui.lib
+    urlmon
+    winmm
+    comctl32
+    version
+    ws2_32
+    delayimp
+    wininet
+    lz32
+    netapi32
+    comsupp
+    oledb
+    dxguid
+    vorbis_nonsse2
+    ogg_nonsse2
+    file_nonsse2
 )
 
 

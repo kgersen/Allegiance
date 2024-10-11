@@ -1,4 +1,4 @@
-﻿ADD_DEFINITIONS(-D__MODULE__="igc")
+﻿ADD_DEFINITIONS(-D__MODULE__="Utility")
 
 INCLUDE_DIRECTORIES(../Inc ../zlib ../guids ../Lib/nlohmann/json/include)
 
