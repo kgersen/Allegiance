@@ -15,6 +15,7 @@ target_sources(effect PRIVATE
     efimage.cpp
     efpane.cpp
     efpopup.cpp
+    #efsound.cpp
     efwindow.cpp
     explosion.cpp
     framedata.cpp
@@ -24,8 +25,29 @@ target_sources(effect PRIVATE
     mmlpopup.cpp
     navpane.cpp
     pagepane.cpp
+    #panes.cpp
     particlegeo.cpp
     starimage.cpp
     thinggeo.cpp
-   )
+    # include
+    efsound.h
+    combopane.h
+    debrisgeo.h
+    efapp.h
+    efart.h
+    effect.h
+    efgeo.h
+    efimage.h
+    efpane.h
+    efpopup.h
+    efwindow.h
+    explosion.h
+    framedata.h
+    gamestate.h
+    help.h
+    listpane.h
+    particlegeo.h
+    starimage.h
+    thinggeo.h
+)
 
