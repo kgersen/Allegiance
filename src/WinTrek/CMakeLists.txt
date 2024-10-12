@@ -1,17 +1,19 @@
-﻿link_directories(
-    ../Lib/directx/Lib/x86 #todo use a variable
-    ../Lib/AllegianceSecurity
-    ../Lib/steam
+﻿add_executable(WinTrek WIN32)
+
+target_link_directories(WinTrek PUBLIC
+    ../Lib/DirectPlay # keep before directx for dxguid
+    ../Lib/directx/Lib/x86
     ../Lib/lua
-    ../Lib/DirectPlay
     ../Lib/OggVorbis
 )
 
-add_executable(WinTrek WIN32)
+set_property(TARGET WinTrek PROPERTY CXX_STANDARD 14)
 
-set_property(TARGET WinTrek PROPERTY CXX_STANDARD 17)
-
-target_link_libraries(WinTrek PRIVATE
+target_link_libraries(WinTrek
+PUBLIC
+    SteamAPI
+    AllegianceSecurity
+PRIVATE
 #    ../Lang/Usa/allegiance/allegiance.rc2
     Utility
     effect
@@ -22,16 +24,14 @@ target_link_libraries(WinTrek PRIVATE
     SoundEngine
     Training
     Zlib
-
-    AllegianceSecurity
-    steam_api
+    UI
     lua53
-    dbghelp
+    # dbghelp
     d3d9
     d3dx9
     dsound
     dinput8
-    #$(OutDir)../ui/Ui.lib
+    dxguid
     urlmon
     winmm
     comctl32
@@ -41,9 +41,8 @@ target_link_libraries(WinTrek PRIVATE
     wininet
     lz32
     netapi32
-    comsupp
-    oledb
-    dxguid
+    # comsupp
+    # oledb
     vorbis_nonsse2
     ogg_nonsse2
     file_nonsse2
@@ -51,8 +50,9 @@ target_link_libraries(WinTrek PRIVATE
 
 
 target_include_directories(WinTrek PRIVATE
-    ../Lib/AllegianceSecurity
-    ../Lib/Steam
+PUBLIC
+    SteamAPI
+PRIVATE
     ../Lib/sol/include
     ../Lib/lua/include
     ../effect
@@ -84,12 +84,12 @@ add_compile_definitions(
     # STEAM_APP_ID=700480
     NOMINMAX
     WINTREK
-    _USRDLL
-    DLL
+    # _USRDLL
+    _DLL
     DIRECTINPUT_VERSION=0x0800
     _WINDOWS
     WIN32
-    AFXDLL
+    _AFXDLL
     EnablePerformanceCounters
 )
 
@@ -186,3 +186,13 @@ target_sources(WinTrek PRIVATE
     ../Lang/Usa/allegiance/resource.h
 
 )
+
+# copy dlls if Windows
+if (WIN32)
+  add_custom_command(
+    TARGET WinTrek POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_RUNTIME_DLLS:WinTrek> $<TARGET_FILE_DIR:WinTrek>
+    COMMAND_EXPAND_LISTS
+  )
+endif ()

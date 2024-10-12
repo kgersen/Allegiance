@@ -26,4 +26,4 @@ target_sources(Utility PRIVATE
     listwrappers.h
     Utility.h
 )
-target_precompile_headers(Utility PRIVATE pch.h)
+
