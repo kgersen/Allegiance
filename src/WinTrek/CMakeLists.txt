@@ -1,17 +1,21 @@
-﻿add_executable(WinTrek WIN32
+﻿# find_package(Lua 5.4 REQUIRED)
+# find_package(Sol2 4.0.0 REQUIRED)
+
+add_executable(Allegiance WIN32
     ../Lang/Usa/allegiance/allegiance.rc
 )
 
-target_link_directories(WinTrek PUBLIC
+
+target_link_directories(Allegiance PUBLIC
     ../Lib/DirectPlay # keep before directx for dxguid
     ../Lib/directx/Lib/x86
     ../Lib/lua
     ../Lib/OggVorbis
 )
 
-set_property(TARGET WinTrek PROPERTY CXX_STANDARD 14)
+set_property(TARGET Allegiance PROPERTY CXX_STANDARD 14)
 
-target_link_libraries(WinTrek
+target_link_libraries(Allegiance
 PUBLIC
     SteamAPI
     AllegianceSecurity
@@ -50,7 +54,7 @@ PRIVATE
 )
 
 
-target_include_directories(WinTrek PRIVATE
+target_include_directories(Allegiance PRIVATE
 PUBLIC
     SteamAPI
 PRIVATE
@@ -94,7 +98,7 @@ add_compile_definitions(
     EnablePerformanceCounters
 )
 
-target_sources(WinTrek PRIVATE
+target_sources(Allegiance PRIVATE
     CallsignTagInfo.cpp
     cdkeydialog.cpp
     CharInfoScreen.cpp
@@ -191,9 +195,9 @@ target_sources(WinTrek PRIVATE
 # copy dlls if Windows
 if (WIN32)
   add_custom_command(
-    TARGET WinTrek POST_BUILD
+    TARGET Allegiance POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_RUNTIME_DLLS:WinTrek> $<TARGET_FILE_DIR:WinTrek>
+            $<TARGET_RUNTIME_DLLS:Allegiance> $<TARGET_FILE_DIR:Allegiance>
     COMMAND_EXPAND_LISTS
   )
 endif ()
