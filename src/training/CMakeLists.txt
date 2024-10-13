@@ -1,29 +1,25 @@
-﻿ADD_LIBRARY(Training ${effect_SRC})
+﻿ADD_LIBRARY(Training)
 SET_PROPERTY(TARGET Training PROPERTY CXX_STANDARD 14)
 
-INCLUDE_DIRECTORIES(
-      ../Inc 
-      ../zlib 
-      ../engine 
-      ../soundengine 
-      ../_Utility 
-      ../Lib/directx/include
-      ../lib/Steam
-     ../lib/boost
-     ../Effect
-     ../ui
-     ../Engine
-     ../ZLib
-     ../_Utility
-     ../Igc
-     ../clintlib
-     ../wintrek
-     ../lobby
-     ../Zone
-     ../Lib/sol/include
-     ../Lib/lua/include
+target_include_directories(Training PRIVATE
+    ../_Utility 
+    ../clintlib
+    ../Effect
+    ../engine 
+    ../Igc
+    ../Inc 
+    ../lib/boost
+    ../Lib/directx/include
+    ../Lib/lua/include
+    ../Lib/sol/include
+    ../Lib/Steam
+    ../lobby
+    ../soundengine 
+    ../ui
+    ../WinTrek
+    ../zlib 
+    ../Zone
 )
-
 
 target_sources(Training PRIVATE
     AbstractTarget.cpp
