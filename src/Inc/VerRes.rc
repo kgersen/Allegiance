@@ -83,15 +83,14 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName",     "Microsoft® Corporation"
+            VALUE "CompanyName",     "MicrosoftÂ® Corporation"
             VALUE "FileDescription",  SZFILEDESCRIPTION
             VALUE "FileVersion",      SZVERSTR(rmj,rmm,rel,buildnum) // rel added by mmf
             VALUE "InternalName",     SZINTERNALNAME
-            VALUE "LegalCopyright",  "Copyright © 1995-2000. All rights reserved."
+            VALUE "LegalCopyright",  "CopyrightÂ© 1995-2000. All rights reserved."
             VALUE "OriginalFilename", SZORIGFILENAME
             VALUE "ProductName",      SZFILEDESCRIPTION
             VALUE "ProductVersion",   SZVERSTR(rmj,rmm,rel,buildnum) // rel added by mmf
-            VALUE "BuildFlavor",      FLAVOR
 #ifdef DEBUG
             VALUE "PrivateBuild", szVerUser
 #endif
