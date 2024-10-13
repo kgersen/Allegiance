@@ -1,4 +1,6 @@
-﻿add_executable(WinTrek WIN32)
+﻿add_executable(WinTrek WIN32
+    ../Lang/Usa/allegiance/allegiance.rc
+)
 
 target_link_directories(WinTrek PUBLIC
     ../Lib/DirectPlay # keep before directx for dxguid
@@ -14,7 +16,6 @@ PUBLIC
     SteamAPI
     AllegianceSecurity
 PRIVATE
-#    ../Lang/Usa/allegiance/allegiance.rc2
     Utility
     effect
     Engine
