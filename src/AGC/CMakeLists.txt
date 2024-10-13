@@ -41,7 +41,8 @@ add_custom_command(
     VERBATIM
 )
 
-target_sources(AGC PRIVATE 
+add_library(AGCGuid )
+target_sources(AGCGuid PRIVATE 
     ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsCPP.h ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsMC.mc ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsRC2.rc2 ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsRCH.h
     ${AGC_H} ${AGCIDL_H}
     AGCGuid.c
@@ -49,6 +50,11 @@ target_sources(AGC PRIVATE
 
 target_link_libraries(AGC PRIVATE
     Zlib
+    Igc
+    TCLib
+    Utility
+    Version
+    Winmm
 )
 
 target_include_directories(AGC PRIVATE
