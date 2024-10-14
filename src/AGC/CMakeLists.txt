@@ -1,54 +1,39 @@
 add_library(AGC SHARED)
 set_property(TARGET AGC PROPERTY CXX_STANDARD 14)
 
+add_dependencies(AGC Guids)
+
+target_include_directories(AGC PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_BINARY_DIR}/Guids
+    ../Igc
+    ../Zlib
+    ../Inc
+    ../test/Inc)
+    
+set(AGCEVENTSFILES 
+    ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsCPP.h 
+    ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsMC.mc 
+    ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsRC2.rc2 
+    ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsRCH.h
+)
+
 add_custom_command(
-  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsCPP.h ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsMC.mc ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsRC2.rc2 ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsRCH.h ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsIDL.idl
+  OUTPUT ${AGCEVENTSFILES}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   COMMAND cscript /e:jscript /NoLogo XMLXForm.js AGCEvents.xml AGCEventsCPP.xsl ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsCPP.h
   COMMAND cscript /e:jscript /NoLogo XMLXForm.js AGCEvents.xml AGCEventsMC.xsl  ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsMC.mc
   COMMAND cscript /e:jscript /NoLogo XMLXForm.js AGCEvents.xml AGCEventsRC2.xsl ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsRC2.rc2
   COMMAND cscript /e:jscript /NoLogo XMLXForm.js AGCEvents.xml AGCEventsRCH.xsl ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsRCH.h
-  COMMAND cscript /e:jscript /NoLogo XMLXForm.js AGCEvents.xml AGCEventsIDL.xsl ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsIDL.idl
-  )
-
-set(AGC_H
-    ${CMAKE_CURRENT_BINARY_DIR}/AGC.h
-)
-set(AGC_IDL
-    ${CMAKE_CURRENT_LIST_DIR}/AGC.idl
-)
-add_custom_command(
-    OUTPUT ${AGC_H}
-    COMMAND midl /I ../Inc /I ${CMAKE_CURRENT_BINARY_DIR} /h ${AGC_H} /out ${CMAKE_CURRENT_BINARY_DIR} ${AGC_IDL}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS ${AGC_IDL}
-    MAIN_DEPENDENCY ${AGC_IDL}
-    VERBATIM
+  COMMAND mc.exe -r ${CMAKE_CURRENT_BINARY_DIR}/ -h ${CMAKE_CURRENT_BINARY_DIR}/ ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsMC.mc
 )
 
-set(AGCIDL_H
-    ${CMAKE_CURRENT_BINARY_DIR}/AGCIDL.h
-)
-set(AGCIDL_IDL
-    ${CMAKE_CURRENT_LIST_DIR}/../Inc/AGCIDL.idl
-)
-add_custom_command(
-    OUTPUT ${AGCIDL_H}
-    COMMAND midl /I ../Inc /I ${CMAKE_CURRENT_BINARY_DIR} /h ${AGCIDL_H} /out ${CMAKE_CURRENT_BINARY_DIR} ${AGCIDL_IDL}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS ${AGCIDL_IDL}
-    MAIN_DEPENDENCY ${AGCIDL_IDL}
-    VERBATIM
-)
-
-add_library(AGCGuid )
-target_sources(AGCGuid PRIVATE 
-    ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsCPP.h ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsMC.mc ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsRC2.rc2 ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsRCH.h
-    ${AGC_H} ${AGCIDL_H}
-    AGCGuid.c
+target_sources(AGC PRIVATE  
+    ${AGCEVENTSFILES}
 )
 
 target_link_libraries(AGC PRIVATE
+    Guids
     Zlib
     Igc
     TCLib
@@ -56,13 +41,6 @@ target_link_libraries(AGC PRIVATE
     Version
     Winmm
 )
-
-target_include_directories(AGC PRIVATE
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ../Igc
-    ../Zlib
-    ../Inc
-    ../test/Inc)
 
 target_sources(AGC PRIVATE
     AdminSessionHelper.cpp
