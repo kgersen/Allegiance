@@ -4,6 +4,17 @@ add_dependencies(AllLobby Guids Igc Zlib Utility sharemem)
 
 set_property(TARGET AllLobby PROPERTY CXX_STANDARD 14)
 
+target_compile_definitions(AllLobby PRIVATE
+    NOMINMAX
+    _TEST
+    ALLSRV_STANDALONE
+    LOBBY
+    _ATL_STATIC_REGISTRY
+    WIN
+    _CRT_SECURE_NO_DEPRECATE
+    _WIN32
+)
+
 target_link_directories(AllLobby PUBLIC
     ../Lib/DirectPlay
     ../Lib/appWeb
@@ -37,26 +48,13 @@ PUBLIC
     ../Inc
     ../test/Inc
     ../Zone
-    ${CMAKE_CURRENT_BINARY_DIR}/../AGC # fix this 
+    ${CMAKE_BINARY_DIR}/src/Guids # fix this 
 PRIVATE
     ../zlib
     ../_Utility
     ../Igc
     ../guids
 )
-
-
-target_compile_definitions(AllLobby PRIVATE
-    NOMINMAX
-    _TEST
-    ALLSRV_STANDALONE
-    LOBBY
-    _ATL_STATIC_REGISTRY
-    WIN
-    _CRT_SECURE_NO_DEPRECATE    
-)
-
-
 
 # copy dlls if Windows
 if (WIN32)

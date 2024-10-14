@@ -5,7 +5,7 @@ add_dependencies(AGC Guids)
 
 target_include_directories(AGC PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_BINARY_DIR}/Guids
+    ${CMAKE_BINARY_DIR}/src/Guids
     ../Igc
     ../Zlib
     ../Inc
