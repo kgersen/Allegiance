@@ -5,7 +5,6 @@ add_executable(Allegiance WIN32
     ../Lang/Usa/allegiance/allegiance.rc
 )
 
-
 target_link_directories(Allegiance PUBLIC
     ../Lib/DirectPlay # keep before directx for dxguid
     ../Lib/directx/Lib/x86
@@ -87,7 +86,6 @@ PRIVATE
 
 add_compile_definitions(  
     # STEAM_APP_ID=700480
-    NOMINMAX
     WINTREK
     # _USRDLL
     _DLL

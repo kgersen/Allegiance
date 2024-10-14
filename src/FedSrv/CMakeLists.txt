@@ -1,12 +1,9 @@
-add_executable(AllSrv WIN32
-   # FedSrv.rc
-)
+add_executable(AllSrv)
+
 add_dependencies(AllSrv Guids AGC Igc Zlib Utility sharemem TCLib)
 
 set_property(TARGET AllSrv PROPERTY CXX_STANDARD 14)
 
-# <AdditionalIncludeDirectories>..\src\Lib\nlohmann\json\include;..\src\lib\AllegianceSecurity;..\src\lib\Steam;.\$(IntDir)..\Guids;.\;..\src\guids;..\src\zlib;..\src\_Utility;..\src\Igc;..\src\Inc;..\src\AGC;..\src\test\Inc;..\src\lobby;..\src\Zone;.\$(IntDir)..\Igc;.\$(IntDir)..\FedSrv;.\$(IntDir)..\AGC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-# <AdditionalDependencies> ;dbghelp.lib;$(OutDir)..\sharemem\sharemem.lib;urlmon.lib;..\src\Lib\DirectPlay\dxguid.lib;comctl32.lib;delayimp.lib;wininet.lib;lz32.lib;netapi32.lib;comsupp.lib
 target_link_directories(AllSrv PUBLIC
     ../Lib/appweb
     ../Lib/DirectPlay # keep before directx for dxguid
@@ -29,6 +26,7 @@ PRIVATE
     dxguid
     ws2_32
     oledb
+    odbc32
     Rpcrt4
     Netapi32
     Wininet
@@ -54,23 +52,33 @@ PRIVATE
 )
 
 
-add_compile_definitions(  
-    # STEAM_APP_ID=700480
+add_compile_definitions(
     NOMINMAX
-    WINTREK
-    # _USRDLL
-    _DLL
-    _WINDOWS
-    WIN32
-    _AFXDLL
-    EnablePerformanceCounters
-    _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
+    _TEST
     ALLSRV_STANDALONE
     FEDSRV
     AGC_HOST
-    #SRVLOG
+    _WIN32
+    _WINDOWS
+    _AFXDLL
     _CONSOLE
     WIN
+    _CRT_SECURE_NO_DEPRECATE    
+    # # STEAM_APP_ID=700480
+    # NOMINMAX
+    # WINTREK
+    # _WINDOWS
+    # _WIN32
+    # _AFXDLL
+    # EnablePerformanceCounters
+    # _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR
+    # ALLSRV_STANDALONE
+    # FEDSRV
+    # AGC_HOST
+    # #SRVLOG
+    # _CONSOLE
+    # WIN
+    # _CRT_SECURE_NO_DEPRECATE
 )
 
 target_sources(AllSrv PRIVATE
@@ -154,15 +162,6 @@ if (WIN32)
     COMMAND_EXPAND_LISTS
   )
 endif ()
-
-    # <Midl>
-    #   <AdditionalIncludeDirectories>.\AGC;..\src\Inc;.\$(Outdir)..\Guids;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    #   <TypeLibraryName>$(TargetDir)/%(FileName).tlb</TypeLibraryName>
-    #   <OutputDirectory>$(TargetDir)\</OutputDirectory>
-    #   <HeaderFileName>%(FileName).h</HeaderFileName>
-    #   <DllDataFileName>%(Filename)_dlldata.c</DllDataFileName>
-    # </Midl>
-
 
 set(AllSrvModule_H
     ${CMAKE_CURRENT_BINARY_DIR}/AllSrvModuleIDL.h

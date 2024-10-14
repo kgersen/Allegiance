@@ -1,16 +1,16 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+    CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 
 PROJECT(Allegiance)
 ADD_DEFINITIONS(-DNOMINMAX -DUSE32bit=true)
-OPTION(USE_STEAM "Use steam" OFF)
+OPTION(USE_STEAM "Use steam")
 
 MACRO(SET_MODULE MODULE_NAME)
-    ADD_DEFINITIONS(-D__MODULE__="${MODULE_NAME}")
-    INCLUDE_DIRECTORIES(../Inc)
+    add_compile_definitions(__MODULE__="${MODULE_NAME}")
+    include_directories(../Inc)
     IF (USE_STEAM)
-        INCLUDE_DIRECTORIES(../Lib/steam)
+        include_directories(../Lib/steam)
     ELSE()
-        ADD_DEFINITIONS(-DNO_STEAM)
+        add_compile_definitions(NO_STEAM)
     ENDIF()
 ENDMACRO()
 

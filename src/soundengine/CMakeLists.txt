@@ -1,4 +1,5 @@
-ADD_DEFINITIONS(-D__MODULE__="SoundEngine")
+SET_MODULE(SoundEngine)
+
 INCLUDE_DIRECTORIES(../Inc ../zlib ../Lib/directx/include)
 
 ADD_LIBRARY(SoundEngine)

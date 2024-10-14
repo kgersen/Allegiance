@@ -1,9 +1,11 @@
-ADD_DEFINITIONS(-D__MODULE__="Effect" -DFixPermedia=1)
+SET_MODULE(Effect)
 
-INCLUDE_DIRECTORIES(../Inc ../zlib ../engine ../soundengine ../_Utility ../Lib/directx/include)
-
-ADD_LIBRARY(effect ${effect_SRC})
+ADD_LIBRARY(effect)
 SET_PROPERTY(TARGET effect PROPERTY CXX_STANDARD 14)
+
+add_compile_definitions(Effect PRIVATE FixPermedia=1)
+
+target_include_directories(effect PRIVATE ../Inc ../zlib ../engine ../soundengine ../_Utility ../Lib/directx/include)
 
 target_sources(effect PRIVATE
     alephgeo.cpp

@@ -34,7 +34,7 @@
 #include <algorithm>
 
 // BT - STEAM
-#ifdef USE_STEAM
+#ifdef NO_STEAM
 #include "steam_gameserver.h"
 #endif
 
