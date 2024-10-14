@@ -3,6 +3,8 @@ SET_MODULE(Effect)
 ADD_LIBRARY(effect)
 SET_PROPERTY(TARGET effect PROPERTY CXX_STANDARD 14)
 
+add_dependencies(effect Zlib Engine)
+
 add_compile_definitions(Effect PRIVATE FixPermedia=1)
 
 target_include_directories(effect PRIVATE ../Inc ../zlib ../engine ../soundengine ../_Utility ../Lib/directx/include)

@@ -5,6 +5,8 @@ add_executable(Allegiance WIN32
     ../Lang/Usa/allegiance/allegiance.rc
 )
 
+add_dependencies(Igc Guids Zlib Utility Engine effect SoundEngine UI Training ClintLib)
+
 target_link_directories(Allegiance PUBLIC
     ../Lib/DirectPlay # keep before directx for dxguid
     ../Lib/directx/Lib/x86
