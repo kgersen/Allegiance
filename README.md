@@ -11,9 +11,10 @@ update from october 2024: full port to CMake
 ## building
 * with Visual Studio Code:
     * create a the file `.vscode/settings.json` with `{cmake.generator": "Ninja"}` in it.
-    * launch VSCode and install the CMake extension - open the source folder and build in the CMake left side panel
-* command line:
-    * ninja: `cmake -DCMAKE_BUILD_TYPE:STRING=Debug -S . -B ./build -G Ninja`
+    * launch VSCode and install the CMake extension
+    * open the source folder 
+    * choose a 32 bit build kit when asked
+    * build in the CMake left side panel
 
 
 # Main projects (binaries)
