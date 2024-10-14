@@ -1,21 +1,29 @@
 nb: this my own version of the code. The official community code is at https://github.com/FreeAllegiance/Allegiance 
 
+update from october 2024: full port to CMake
 # Installation
 
-Download and install the lastest "Visual Studio Community Edition" : https://www.visualstudio.com/downloads/
+## Requirements
+* CMake 3.5 or later
+* Ninja (can work without but not tested)
+* C++ compiler for Windows (only tested with VS Studio 2022)
 
-Download and install the latest Microsoft DirectX SDK (jun 2010): https://www.microsoft.com/en-us/download/details.aspx?id=6812 (if you don't want to install it, just extract the DirectX `include` and `lib` folders somewhere and set the environment variable `DXSDK_DIR` to their parent directory)
+## building
+* with Visual Studio Code:
+    * create a the file `.vscode/settings.json` with `{cmake.generator": "Ninja"}` in it.
+    * launch VSCode and install the CMake extension - open the source folder and build in the CMake left side panel
+* command line:
+    * ninja: `cmake -DCMAKE_BUILD_TYPE:STRING=Debug -S . -B ./build -G Ninja`
 
-Launch Visual Studio and open the main solution `src\VS2017\Allegiance.sln`
 
-# Main projects
+# Main projects (binaries)
 
 * Allegiance (`WinTrek` folder) : the main client program
 * Server (`FedSrv` folder) : the game server
 * Lobby (`lobby` folder) : the game lobby
-* IGC (`Igc` floder): game logic library
 
 # Sub projects
+* IGC (`Igc` floder): game logic library
 * `zlib`: various low level libraries used by all projects
 * `engine`: 3d gfx engine
 * `effect`: fx engine above `engine`
