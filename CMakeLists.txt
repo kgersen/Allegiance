@@ -19,7 +19,7 @@ set(CMAKE_DEBUG_POSTFIX d)
 # Set architecture flags for 32-bit
 if(MSVC)
     # For Visual Studio
-    set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} /arch:IA32")
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:IA32")
     add_compile_options(/wd4996)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 else()
