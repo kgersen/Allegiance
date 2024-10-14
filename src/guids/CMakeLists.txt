@@ -6,3 +6,51 @@ target_sources(Guids PRIVATE
     guids.h
 )
 
+# built
+set(AGCEVENTS_IDL ${CMAKE_CURRENT_BINARY_DIR}/AGCEventsIDL.idl)
+set(AGC_H         ${CMAKE_CURRENT_BINARY_DIR}/AGC.h)
+set(AGCIDLI       ${CMAKE_CURRENT_BINARY_DIR}/AGCIDL_i.c)
+set(AGCIDL_H      ${CMAKE_CURRENT_BINARY_DIR}/AGCIDL.h)
+
+
+# source
+set(AGC_IDL       ${CMAKE_CURRENT_SOURCE_DIR}/../AGC/AGC.idl)
+set(AGCEVENTS_XSL ${CMAKE_CURRENT_SOURCE_DIR}/../AGC/AGCEventsIDL.xsl)
+set(AGCIDL_IDL    ${CMAKE_CURRENT_SOURCE_DIR}/../Inc/AGCIDL.idl)
+
+# build AGCEventsIDL.idl
+add_custom_command(
+  OUTPUT ${AGCEVENTS_IDL}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMAND cscript /e:jscript /NoLogo ../AGC/XMLXForm.js ../AGC/AGCEvents.xml ${AGCEVENTS_XSL} ${AGCEVENTS_IDL}
+  DEPENDS ${AGCEVENTS_XSL}
+  )
+
+ # build
+add_custom_command(
+    OUTPUT ${AGC_H} ${AGCIDLI}
+    COMMAND midl /I ../Inc /I ${CMAKE_CURRENT_BINARY_DIR} /h ${AGC_H} /out ${CMAKE_CURRENT_BINARY_DIR} ${AGC_IDL}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS ${AGC_IDL} ${AGCEVENTS_IDL}
+    MAIN_DEPENDENCY ${AGC_IDL}
+    VERBATIM
+)
+
+add_custom_command(
+    OUTPUT ${AGCIDL_H}
+    COMMAND midl /I ../Inc /I ${CMAKE_CURRENT_BINARY_DIR} /h ${AGCIDL_H} /out ${CMAKE_CURRENT_BINARY_DIR} ${AGCIDL_IDL}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS ${AGCIDL_IDL} ${AGCEVENTS_IDL}
+    MAIN_DEPENDENCY ${AGCIDL_IDL}
+    VERBATIM
+)
+
+target_include_directories(Guids PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+target_sources(Guids PRIVATE  
+    ${AGC_H}
+    ${AGCIDL_H}
+    ../AGC/AGCGuid.c
+)

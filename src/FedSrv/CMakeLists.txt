@@ -1,6 +1,7 @@
 add_executable(AllSrv WIN32
    # FedSrv.rc
 )
+add_dependencies(AllSrv Guids AGC Igc Zlib Utility sharemem TCLib)
 
 set_property(TARGET AllSrv PROPERTY CXX_STANDARD 14)
 
