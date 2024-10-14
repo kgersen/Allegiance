@@ -1,9 +1,10 @@
-SET_MODULE("zlib")
+SET_MODULE(ZLib)
 
-INCLUDE_DIRECTORIES(../Inc)
+add_library(Zlib STATIC)
+set_property(TARGET Zlib PROPERTY CXX_STANDARD 14)
 
-ADD_LIBRARY(Zlib STATIC)
-SET_PROPERTY(TARGET Zlib PROPERTY CXX_STANDARD 17)
+target_include_directories(Zlib PUBLIC ../Inc)
+
 target_sources(Zlib PRIVATE
     # cpp
     color.cpp
