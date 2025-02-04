@@ -1,6 +1,6 @@
 nb: this my own version of the code. The official community code is at https://github.com/FreeAllegiance/Allegiance 
 
-update from october 2024: full port to CMake
+main update from october 2024: full port to CMake, sunsetting VS for vscode
 # Installation
 
 ## Requirements
@@ -13,7 +13,7 @@ update from october 2024: full port to CMake
     * create a the file `.vscode/settings.json` with `{cmake.generator": "Ninja"}` in it.
     * launch VSCode and install the CMake extension
     * open the source folder 
-    * choose a 32 bit build kit when asked
+    * choose a ❗ **32 bit build kit** ❗ when asked
     * build in the CMake left side panel
 
 
