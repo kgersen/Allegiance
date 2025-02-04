@@ -74,17 +74,17 @@ ELSE()
     target_sources(Zlib PRIVATE VersionInfo_dummy.cpp)
 ENDIF()
 
-IF(UNIX)
-    target_sources(Zlib PRIVATE
-        base_unix.cpp
-        FTPSession_unix.cpp
-    )
-ELSEIF(WIN32)
+#IF(UNIX)
+#    target_sources(Zlib PRIVATE
+#        base_unix.cpp
+#        FTPSession_unix.cpp
+#    )
+#ELSEIF(WIN32)
     target_sources(Zlib PRIVATE
         base_win.cpp
         FTPSession_win.cpp
         )
-ELSE()
-    MESSAGE(FATAL_ERROR "Unhandled platform")
-ENDIF()
+#ELSE()
+#    MESSAGE(FATAL_ERROR "Unhandled platform")
+#ENDIF()
 

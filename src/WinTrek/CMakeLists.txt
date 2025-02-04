@@ -184,8 +184,7 @@ target_sources(Allegiance PRIVATE
     trekinput.h
     trekmdl.h
     treksound.h
-    WinTrek.H
-    WinTrekp.h
+    WinTrek.h
     ZoneSquad.h
 
     ../Lang/Usa/allegiance/resource.h

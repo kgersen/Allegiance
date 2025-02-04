@@ -79,7 +79,7 @@ target_sources(AllLobby PRIVATE
     broadcast.cpp
     client.cpp
     CSteamValidation.cpp
-    Lobby.CPP
+    lobby.cpp
     lobbyapp.cpp
     lobbyevents.cpp
     lobqguids.cpp
@@ -95,7 +95,7 @@ target_sources(AllLobby PRIVATE
     client.h
     counters.h
     CSteamValidation.h
-    Lobby.H
+    lobby.h
     lobbyapp.h
     LobbyAppSite.h
     lobbyevents.h
