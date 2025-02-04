@@ -342,6 +342,7 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 /build
+CMakeUserPresets.json
 
 #directx libs
 !/src/Lib/directx/Lib/x64
