@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <Windows.h>
+#include <windows.h>
 
 class ILogger {
 public:
