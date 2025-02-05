@@ -1,5 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 
+set(ZIG_TARGET x86-windows-gnu)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/zig-toolchain.cmake)
 
 PROJECT(Allegiance)
@@ -16,7 +17,7 @@ MACRO(SET_MODULE MODULE_NAME)
     ENDIF()
 ENDMACRO()
 
-set(CMAKE_DEBUG_POSTFIX d)
+# set(CMAKE_DEBUG_POSTFIX d)
 
 # Set architecture flags for 32-bit
 if(MSVC)

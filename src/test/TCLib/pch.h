@@ -28,7 +28,7 @@
 #include <tchar.h>
 #include <malloc.h>
 #include <comcat.h>
-#include <..\zlib\zassert.h>
+#include <../../zlib/zassert.h>
 #include <comdef.h>
 #include <commctrl.h>
 #include <atlconv.h>

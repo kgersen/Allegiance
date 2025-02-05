@@ -80,8 +80,6 @@ protected:
 
     void PushFrontImpl(ListNodeImpl* pnew);
     void PushEndImpl(ListNodeImpl* pnew);
-    void InsertBeforeImpl(ListNodeImpl* pnode, ListNodeImpl* pnew);
-    void InsertAfterImpl(ListNodeImpl* pnode, ListNodeImpl* pnew);
 
     void RemoveNode(ListNodeImpl* premove);
     void PopFrontImpl();
@@ -91,6 +89,9 @@ protected:
     ListNodeImpl* Get(int index) const;
 
 public:
+    void InsertBeforeImpl(ListNodeImpl* pnode, ListNodeImpl* pnew);
+    void InsertAfterImpl(ListNodeImpl* pnode, ListNodeImpl* pnew);
+
     int GetCount()
     {
         return m_count;
