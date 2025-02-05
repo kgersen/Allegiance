@@ -1,5 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/zig-toolchain.cmake)
+
 PROJECT(Allegiance)
 add_compile_definitions(NOMINMAX USE32bit=true)
 OPTION(USE_STEAM "Use steam")
