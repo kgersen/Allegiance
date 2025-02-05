@@ -3,7 +3,7 @@
 #ifndef __ZAutoCriticalSection_h__
 #define __ZAutoCriticalSection_h__
 
-#include <Windows.h>
+#include <windows.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // ZAutoCriticalSection.h | Declaration of the ZAutoCriticalSection class.
