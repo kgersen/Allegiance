@@ -17,7 +17,6 @@ target_compile_definitions(AllLobby PRIVATE
 
 target_link_directories(AllLobby PUBLIC
     ../Lib/DirectPlay
-    ../Lib/appWeb
 )
 
 target_link_libraries(AllLobby
@@ -25,7 +24,6 @@ PUBLIC
     SteamAPI
     AllegianceSecurity
 PRIVATE
-    appweb
     sharemem
     Zlib
     Igc
@@ -44,7 +42,6 @@ target_include_directories(AllLobby PRIVATE
 PUBLIC
     SteamAPI
     AGC
-    ../Inc/appWeb
     ../Inc
     ../test/Inc
     ../Zone

@@ -325,7 +325,7 @@ void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso, IshipIGC * pIshi
 	int tempStat;
 	bool getSucceed;
 
-	int minerKills = ppso->GetMinerKills();
+	int minerKills = (int)ppso->GetMinerKills();
 	if (minerKills > 0)
 	{
 		getSucceed = GetStat(EStats::MINER_KILLS, &tempStat);
@@ -337,7 +337,7 @@ void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso, IshipIGC * pIshi
 		}
 	}
 
-	int conKills = ppso->GetBuilderKills();
+	int conKills = (int)ppso->GetBuilderKills();
 	if (conKills > 0)
 	{
 		getSucceed = GetStat(EStats::CON_KILLS, &tempStat);
@@ -345,7 +345,7 @@ void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso, IshipIGC * pIshi
 			SetStat(EStats::CON_KILLS, tempStat + conKills);
 	}
 
-	int forceEjects = ppso->GetPlayerKills();
+	int forceEjects = (int)ppso->GetPlayerKills();
 	if (forceEjects > 0)
 	{
 		getSucceed = GetStat(EStats::FORCE_EJECT, &tempStat);
@@ -357,7 +357,7 @@ void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso, IshipIGC * pIshi
 		}
 	}
 
-	int baseKills = ppso->GetBaseKills();
+	int baseKills = (int)ppso->GetBaseKills();
 	if (baseKills > 0)
 	{
 		getSucceed = GetStat(EStats::BASE_KILLS, &tempStat);
@@ -367,7 +367,7 @@ void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso, IshipIGC * pIshi
 
 	//int(ppso->GetBaseCaptures()), int(ppso->GetScore()), ppso->GetAssists(), ppso->);
 
-	int baseCaps = ppso->GetBaseCaptures();
+	int baseCaps = (int)ppso->GetBaseCaptures();
 	if (baseCaps > 0)
 	{
 		getSucceed = GetStat(EStats::BASE_CAPS, &tempStat);
@@ -375,7 +375,7 @@ void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso, IshipIGC * pIshi
 			SetStat(EStats::BASE_CAPS, tempStat + baseCaps);
 	}
 
-	int score = ppso->GetScore();
+	int score = (int)ppso->GetScore();
 	if (score > 0)
 	{
 		getSucceed = GetStat(EStats::SUM_SCORE_2, &tempStat);
@@ -409,7 +409,7 @@ void CSteamAchievements::AddUserStats(PlayerScoreObject*  ppso, IshipIGC * pIshi
 			SetStat(EStats::PLAYER_LOSS, tempStat + 1);
 	}
 
-	int repair = floor(100 * ppso->GetRepair());
+	int repair = (int)floor(100 * ppso->GetRepair());
 	if (repair > 0.0)
 	{
 		getSucceed = GetStat(EStats::REPAIR_PERCENT, &tempStat);
@@ -435,9 +435,9 @@ void CSteamAchievements::UpdateCommanderStats(int opponentELO, bool win)
 {
 	bool getSucceed;
 	int numGames;
-	double K;
+	//double K;
 	int playerELO;
-	double expectedScore;
+	//double expectedScore;
 
 	getSucceed = GetStat(EStats::COMM_GAMES, &numGames);
 	getSucceed = getSucceed && GetStat(EStats::COMM_ELO, &playerELO);
@@ -448,7 +448,7 @@ void CSteamAchievements::UpdateCommanderStats(int opponentELO, bool win)
 		
 		numGames += 1;
 		if (playerELO > 0)
-			playerELO = floor(playerELO / numGames);
+			playerELO = (int)floor(playerELO / numGames);
 		else
 			playerELO = 0;
 

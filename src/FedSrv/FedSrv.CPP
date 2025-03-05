@@ -4730,7 +4730,7 @@ void GetPlayerHandleFromSteamID(CSteamID steamID, char *playerHandle)
 		*pWritePos = m_lookUpTable[value62];
 		pWritePos++;
 
-		leftOver = floor(leftOver / 62);
+		leftOver = (uint64)floor(leftOver / 62);
 		counter++;
 	}
 	*pWritePos = 0;
@@ -4751,9 +4751,9 @@ CSteamID GetSteamIDFromPlayerHandle(char *playerHandle)
 	uint64 returnValue = 0;
 	int multiplier = 62;
 
-	for (int index = 0; index < strlen(playerHandle); index++)
+	for (unsigned int index = 0; index < strlen(playerHandle); index++)
 	{
-		for (int i = 0; i < sizeof(m_lookUpTable); i++)
+		for (unsigned int i = 0; i < sizeof(m_lookUpTable); i++)
 		{
 			if (m_lookUpTable[i] == playerHandle[index])
 			{
@@ -6793,7 +6793,8 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
       {
         
         bool bIsBoot = (pfsPlayer->GetShipID() != pfmQuitMission->shipID);
-		bool bIsAdmin = (pfsPlayer->GetShipID() != pfmQuitMission->shipID) && (pfmQuitMission->reason & QSR_SwitchingSides == QSR_AdminBooted);
+		    bool bIsAdmin = (pfsPlayer->GetShipID() != pfmQuitMission->shipID) && 
+          ((pfmQuitMission->reason & QSR_SwitchingSides)== QSR_AdminBooted);
 
         // make sure that they are requesting a reasonable reason.
         TrapHackBoot(pfmQuitMission->reason == (bIsBoot ? QSR_LeaderBooted : QSR_Quit));
@@ -7610,7 +7611,7 @@ HRESULT FedSrvSiteBase::OnAppMessage(FedMessaging * pthis, CFMConnection & cnxnF
         if (pfsMission->FAllReady() || strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) == 0) 
         {
 			// BT - WOPR - Bots don't need any countdown. 
-			int missionCountdown = c_fMissionBriefingCountdown;
+			float missionCountdown = c_fMissionBriefingCountdown;
 			if(strcmp(pfsPlayer->GetCDKey(), g.szBotAuthenticationGuid) == 0)
 				missionCountdown = 0;
 
@@ -8798,11 +8799,11 @@ HRESULT ConnectToLobby(const char * pszLobby_OverrideCFG /* NULL == do not overr
 		PCC(g.strLobbyServer), PCC(g.strLocalAddress), g.dwLobbyPort);		// mdvalley: forced to lobby port
   if (FAILED(hr))
   {
-    printf("failed. %08x\n", hr, PCC(g.strLobbyServer));
+    printf("join to %s failed: %08x\n", PCC(g.strLobbyServer), hr);
     return hr;
   }
 
-  printf("succeeded.\n", PCC(g.strLobbyServer));
+  printf("join to %s succeeded.\n", PCC(g.strLobbyServer));
 
   // Save the new LobbyServer value
   g.strLobbyServer = PCC(g.strLobbyServer);
@@ -9606,7 +9607,7 @@ void LoadSettings()
 			UuidCreate(&newId);
 			CHAR* szUuid = NULL;
 			::UuidToString(&newId, (RPC_CSTR*)&szUuid);
-			char pork[1024];
+			//char pork[1024];
 			strcpy(g.szBotAuthenticationGuid, szUuid);
 			::RpcStringFree((RPC_CSTR*)&szUuid);
 			szUuid = NULL;
@@ -10548,7 +10549,7 @@ int __cdecl main(int argc, char *argv[])
 
       if (!_Module.IsInstalled())
       {
-        printf("\nThe server needs to be installed before running.\n\n", argv[0]);
+        printf("%s:\nThe server needs to be installed before running.\n\n", argv[0]);
       }
       //      ----+----1----+----2----+----3----+----4----+----5----+----6----+----7----+----8
       printf("usage is ONE of:\n\n");
@@ -10950,7 +10951,7 @@ class ThingSiteImpl : public ThingSite
 
                                         //Check for spotted high value targets and award achievement/score
                                         if (pmodel->GetObjectType() == OT_ship) {
-                                            ObjectType t;
+                                            //ObjectType t;
                                             IshipIGC* pSpottedShip = (IshipIGC*)pmodel;
                                             //debugf("Ship %s spotted by %s.\n", GetModelName(pmodel), GetModelName(s));
                                             if (pSpottedShip && pSpottedShip->GetHullType()->GetData()) { // Guard for exploding ship without data

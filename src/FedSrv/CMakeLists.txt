@@ -5,7 +5,6 @@ add_dependencies(AllSrv Guids AGC Igc Zlib Utility sharemem TCLib)
 set_property(TARGET AllSrv PROPERTY CXX_STANDARD 14)
 
 target_link_directories(AllSrv PUBLIC
-    ../Lib/appweb
     ../Lib/DirectPlay # keep before directx for dxguid
 )
 
@@ -14,7 +13,6 @@ PUBLIC
     SteamAPI
     AllegianceSecurity
 PRIVATE
-    appweb
     sharemem
     Zlib
     Igc
@@ -37,7 +35,6 @@ target_include_directories(AllSrv PRIVATE
 PUBLIC
     SteamAPI
     AGC
-    ../Inc/appWeb
     ../Inc
     ../test/Inc
     ../Zone

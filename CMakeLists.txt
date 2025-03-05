@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 
-set(ZIG_TARGET x86-windows-gnu)
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/zig-toolchain.cmake)
+# set(ZIG_TARGET x86-windows-gnu)
+# include(${CMAKE_CURRENT_LIST_DIR}/cmake/zig-toolchain.cmake)
 
 PROJECT(Allegiance)
 add_compile_definitions(NOMINMAX USE32bit=true)

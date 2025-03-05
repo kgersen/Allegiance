@@ -2062,7 +2062,7 @@ CFMGroup::CFMGroup(FedMessaging * pfm, const char * szName)
 
 void CFMGroup::Delete (FedMessaging * pfm) 
 {
-  DPNHANDLE hand;
+  // DPNHANDLE hand;
   pfm->GetDPlayServer()->DestroyGroup(GetDPID(), 0, 0, DPNOP_SYNC );
   delete this;
 }
