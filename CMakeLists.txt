@@ -45,7 +45,7 @@ set_property(
 )
 set_target_properties(AllegianceSecurity PROPERTIES
     IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "CXX"
-    IMPORTED_LOCATION_RELEASE "../Lib/AllegianceSecurity/AllegianceSecurity.lib"
+    IMPORTED_LOCATION_RELEASE "${CMAKE_SOURCE_DIR}/src/Lib/AllegianceSecurity/AllegianceSecurity.lib"
 )
 set_target_properties(AllegianceSecurity PROPERTIES INTERFACE_INCLUDE_DIRECTORIES  "${CMAKE_SOURCE_DIR}/src/Lib/AllegianceSecurity")
 
