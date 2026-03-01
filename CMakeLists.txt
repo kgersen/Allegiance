@@ -23,7 +23,7 @@ ENDMACRO()
 
 # set(CMAKE_DEBUG_POSTFIX d)
 
-OPTION(USE_RAYLIB "Use Raylib for rendering" ON)
+OPTION(USE_RAYLIB "Use Raylib for rendering" OFF)
 
 IF(USE_RAYLIB)
     include(FetchContent)
