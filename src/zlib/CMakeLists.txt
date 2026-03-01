@@ -1,6 +1,8 @@
 SET_MODULE(ZLib)
 
+find_package(Threads REQUIRED)
 add_library(Zlib STATIC)
+target_link_libraries(Zlib PRIVATE Threads::Threads)
 set_property(TARGET Zlib PROPERTY CXX_STANDARD 14)
 
 target_include_directories(Zlib PUBLIC ../Inc)
@@ -64,8 +66,7 @@ target_sources(Zlib PRIVATE
     zlib.h
     zmath.h
     zreg.h
-    zstring.h
-    ztime.h
+    zlib_platform.h
 )
 
 IF (MSVC)
@@ -74,17 +75,17 @@ ELSE()
     target_sources(Zlib PRIVATE VersionInfo_dummy.cpp)
 ENDIF()
 
-#IF(UNIX)
-#    target_sources(Zlib PRIVATE
-#        base_unix.cpp
-#        FTPSession_unix.cpp
-#    )
-#ELSEIF(WIN32)
+IF(UNIX)
+    target_sources(Zlib PRIVATE
+        base_unix.cpp
+        FTPSession_unix.cpp
+    )
+ELSEIF(WIN32)
     target_sources(Zlib PRIVATE
         base_win.cpp
         FTPSession_win.cpp
         )
-#ELSE()
-#    MESSAGE(FATAL_ERROR "Unhandled platform")
-#ENDIF()
+ELSE()
+    MESSAGE(FATAL_ERROR "Unhandled platform")
+ENDIF()
 

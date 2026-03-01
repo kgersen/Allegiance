@@ -1,20 +1,8 @@
 #include "StackTracer.h"
-
-#include <tchar.h>
-
 #include "zassert.h"
 
-/*
-// -- https://www.codeproject.com/Articles/41923/Get-the-call-stack-when-an-exception-is-being-caug
-// Description: This class is used to get the call stack when there is an exception being caught use SEH
-//
-// Author: Baiyan Huang
-// Date: 8/30/2009
-//
-*/
-
-
-#include "StackTracer.h"
+#ifdef _WIN32
+#include <tchar.h>
 #include <dbghelp.h>
 #include <sstream>
 #pragma comment(lib, "dbghelp.lib")
@@ -214,3 +202,15 @@ void StackTracer::TraceCallStack(CONTEXT* pContext)
 
 	}
 }
+#else
+StackTracer StackTracer::s_StackTracer;
+StackTracer::StackTracer(void) : m_dwExceptionCode(0), m_dwMachineType(0) {}
+StackTracer::~StackTracer(void) {}
+LONG StackTracer::ExceptionFilter(LPEXCEPTION_POINTERS e) { return 1; }
+void StackTracer::OutputStackTraceToDebugF() {}
+std::string StackTracer::GetExceptionMsg() { return "Stack trace not supported on Linux"; }
+uint32_t StackTracer::GetExceptionCode() { return 0; }
+std::vector<FunctionCall> StackTracer::GetExceptionCallStack() { return {}; }
+LONG __stdcall StackTracer::HandleException(LPEXCEPTION_POINTERS e) { return 1; }
+void StackTracer::TraceCallStack(CONTEXT* pContext) {}
+#endif

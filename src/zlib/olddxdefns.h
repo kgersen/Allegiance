@@ -3,7 +3,7 @@
 #define _OLDDXDEFNS_H_
 
 #include <cstdint>
-#include <windows.h>
+#include "zlib_platform.h"
 
 // KGJV: D3DCOLORVALUE renamned to COLORVALUE and defined here so it becomes independent of DirectX
 

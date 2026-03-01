@@ -136,8 +136,8 @@ Window::Window(
 
         s_mapWindow.Set(m_hwnd, this);
 
-        m_pfnWndProc = (WNDPROC)::GetWindowLong(m_hwnd, GWLx_WNDPROC); //x64 Imago 6/20/09
-        ::SetWindowLong(m_hwnd, GWLx_WNDPROC, (uint32_t)Win32WndProc);  //x64 Imago 6/20/09
+        m_pfnWndProc = (WNDPROC)::GetWindowLongPtr(m_hwnd, GWLx_WNDPROC); //x64 Imago 6/20/09
+        ::SetWindowLongPtr(m_hwnd, GWLx_WNDPROC, (LONG_PTR)Win32WndProc);  //x64 Imago 6/20/09
     }
 
     m_styleEX.SetWord(::GetWindowLong(m_hwnd, GWL_EXSTYLE));
@@ -181,15 +181,15 @@ BOOL Window::Create(
             m_rect.left, m_rect.top,
             m_rect.XSize(), m_rect.YSize(),
             pwindowParent ? pwindowParent->GetHWND() : nullptr,
-            hmenu ? hmenu : (HMENU) nID,
+            hmenu ? hmenu : (HMENU)(uintptr_t)nID,
             GetModuleHandle(nullptr),
             this);
     
     s_mapWindow.Set(m_hwnd, this);
-    m_pfnWndProc = (WNDPROC)::GetWindowLong(m_hwnd, GWLx_WNDPROC); //x64 Imago 6/20/09
+    m_pfnWndProc = (WNDPROC)::GetWindowLongPtr(m_hwnd, GWLx_WNDPROC); //x64 Imago 6/20/09
 
     if ((WNDPROC)m_pfnWndProc != (WNDPROC)Win32WndProc) {
-        ::SetWindowLong(m_hwnd, GWLx_WNDPROC, (uint32_t)Win32WndProc); //x64 Imago 6/20/09
+        ::SetWindowLongPtr(m_hwnd, GWLx_WNDPROC, (LONG_PTR)Win32WndProc); //x64 Imago 6/20/09
     } else {
         m_pfnWndProc = DefWindowProc;
     }
@@ -771,7 +771,7 @@ void Window::SetCursor(HCURSOR hcursor)
             // REVIEW: ideally we'd send a WM_NCHITTEST message to figure out 
             // which cursor to set, but if the app below the cursor was frozen
             // that could freeze us too.  
-            ::PostMessage(hwndBelowCursor, WM_SETCURSOR, (unsigned)hwndBelowCursor, 
+            ::PostMessage(hwndBelowCursor, WM_SETCURSOR, (WPARAM)hwndBelowCursor, 
                 MAKELONG(HTCLIENT, WM_MOUSEMOVE));
         }
     }

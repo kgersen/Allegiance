@@ -22,7 +22,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <windows.h>
+#include "zlib_platform.h"
 
 struct FunctionCall 
 {

@@ -7,8 +7,7 @@
 #ifndef _assert_h_
 #define _assert_h_
 
-#include <memory>
-#include <windows.h>
+#include "zlib_platform.h"
 
 #include "Logger.h"
 
@@ -39,7 +38,11 @@ extern ILogger* g_pDebugLogger;
     // These are implemented in Win32app.cpp
     //
 
+#ifdef _MSC_VER
     inline void ZDebugBreak() { DebugBreak(); }
+#else
+    inline void ZDebugBreak() { __builtin_trap(); }
+#endif
 
 
     // void debugf(const char* , ...);

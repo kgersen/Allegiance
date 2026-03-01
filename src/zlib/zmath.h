@@ -279,10 +279,7 @@ extern float g_Inv255;
     }
 
 #else
-    __forceinline int MakeIntMacro(const float& value, int& result)
-    {
-        result = int(value);
-    }
+    #define MakeIntMacro(value, result) result = int(value)
 
     __forceinline int MakeInt(float value)
     {

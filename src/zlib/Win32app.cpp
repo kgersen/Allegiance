@@ -3,8 +3,10 @@
 #include "SlmVer.h"
 
 //Imago 7/10
+#ifdef _WIN32
 #include <dbghelp.h>
 #include <crtdbg.h>
+#endif
 
 #include "zstring.h"
 #include "VersionInfo.h"
@@ -62,7 +64,7 @@ int GenerateDump(EXCEPTION_POINTERS* pExceptionPointers)
     snprintf(offsetString, szPathName + sizeof(szPathName) - offsetString, "-%s-%04d%02d%02d%02d%02d%02d-%ld-%ld.dmp", (PCC)zInfo,
         stLocalTime.wYear, stLocalTime.wMonth, stLocalTime.wDay,
         stLocalTime.wHour, stLocalTime.wMinute, stLocalTime.wSecond,
-        GetCurrentProcessId(), GetCurrentThreadId());
+        (long)GetCurrentProcessId(), (long)GetCurrentThreadId());
 
     hDumpFile = CreateFileA(szPathName, GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_WRITE | FILE_SHARE_READ, nullptr, CREATE_ALWAYS, 0, nullptr);

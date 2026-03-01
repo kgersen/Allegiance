@@ -5,9 +5,11 @@
 // VersionInfo.h : Declaration of the ZVersionInfo class.
 //
 
-#include <windows.h>
+#include "zlib_platform.h"
+#ifdef _WIN32
 #include <winver.h>
 #include <tchar.h>
+#endif
 
 #include <memory>
 #include "zassert.h"

@@ -64,6 +64,8 @@ public:
 
 // BT - mutex rollback 9/24
 
+#include <mutex>
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Critical Section
@@ -72,20 +74,18 @@ public:
 
 class CriticalSection {
 protected:
-    CRITICAL_SECTION m_crit;
+    std::mutex m_mutex;
 
 public:
     CriticalSection()
     {
-        InitializeCriticalSection(&m_crit);
     }
     ~CriticalSection()
     {
-        DeleteCriticalSection(&m_crit);
     }
 
-    void Enter() { EnterCriticalSection(&m_crit); }
-    void Leave() { LeaveCriticalSection(&m_crit); }
+    void Enter() { m_mutex.lock(); }
+    void Leave() { m_mutex.unlock(); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////

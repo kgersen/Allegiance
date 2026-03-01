@@ -18,6 +18,7 @@
  *-----------------------------------------------------------------------*/
 
 #include <cstdlib>
+#include "tref.h"
 
 //
 //  IFTPSessionUpdateSink is used to receive events about the transfer.  
@@ -118,7 +119,7 @@ public IInternetSessionSink
 
 
 
-class IInternetSessionBase
+class IInternetSessionBase : public IObject
 {
 public:
     virtual ~IInternetSessionBase() {}

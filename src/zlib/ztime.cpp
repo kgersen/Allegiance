@@ -95,7 +95,7 @@ INT64 Time::getUnixTime()
 // Does not include milli seconds :(
 const char * Time::getTimeString()
 {
-	char timeString[20];
+	static char timeString[20];
 	time_t t = time(NULL);
 	struct tm *tm = localtime(&t);
 

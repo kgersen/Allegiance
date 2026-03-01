@@ -32,8 +32,7 @@
 // Required Win32 headers
 //
 
-#include "windows.h"
-#include "wininet.h"
+#include "zlib_platform.h"
 
 //
 // DirectX Stuff

@@ -11,6 +11,8 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
+#include <cerrno>
+#include <climits>
 
 //////////////////////////////////////////////////////////////////////////////
 //

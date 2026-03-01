@@ -1,6 +1,8 @@
 #include "zmath.h"
 
+#ifdef _WIN32
 #include <crtdbg.h>
+#endif
 
 #include "zassert.h"
 

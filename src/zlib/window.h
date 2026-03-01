@@ -7,13 +7,15 @@
 #include "tmap.h"
 #include "winstyles.h"
 
-#include "commctrl.h"
+#include "zlib_platform.h"
 
 // x64: GWL is GWLP in x64 SDK Imago 6/20/09
+#ifdef _WIN32
 #if defined (_WIN64) 
 	#define GWLx_WNDPROC GWLP_WNDPROC
 #else
 	#define GWLx_WNDPROC GWL_WNDPROC
+#endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -26,7 +28,10 @@
     #define ID_APP_ICON IDI_APPLICATION
 #endif
 
-__declspec(dllexport) void FillSolidRect(HDC hdc, const WinRect& rect, COLORREF color);
+#ifdef _WIN32
+  __declspec(dllexport) 
+#endif
+void FillSolidRect(HDC hdc, const WinRect& rect, COLORREF color);
 
     typedef BOOL (WINAPI *PFNTrackMouseEvent)(TRACKMOUSEEVENT* tme);
 

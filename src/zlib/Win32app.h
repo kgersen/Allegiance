@@ -7,7 +7,7 @@
 #ifndef _Win32App_h_
 #define _Win32App_h_
 
-#include <windows.h>
+#include "zlib_platform.h"
 
 #include "tref.h"
 
@@ -22,10 +22,16 @@ public:
 class ZString;
 class Win32App : public IObject {
 protected:
-    __declspec(dllexport) Win32App();
+#ifdef _WIN32
+    __declspec(dllexport) 
+#endif
+    Win32App();
 
 public:
-    __declspec(dllexport) virtual ~Win32App();
+#ifdef _WIN32
+    __declspec(dllexport) 
+#endif
+    virtual ~Win32App();
 
     static  void    Exit(int value);
 

@@ -5,7 +5,7 @@
 
 #include <malloc.h>  // Needed for _alloca
 #include <cstdint>
-#include <windows.h>
+#include "zlib_platform.h"
 
 /////////////////////////////////////////////////////////////////////////////
 //
