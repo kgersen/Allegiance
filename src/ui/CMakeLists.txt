@@ -7,6 +7,7 @@ else ()
 endif ()
 
 ADD_LIBRARY(UI STATIC)
+target_link_libraries(UI PRIVATE Zlib Engine SoundEngine)
 SET_PROPERTY(TARGET UI PROPERTY CXX_STANDARD 14)
 
 target_sources(UI PRIVATE

@@ -1,4 +1,5 @@
 ADD_LIBRARY(TCLib)
+target_link_libraries(TCLib PRIVATE Zlib)
 SET_PROPERTY(TARGET TCLib PROPERTY CXX_STANDARD 14)
 
 target_include_directories(TCLib PRIVATE

@@ -1,8 +1,7 @@
-﻿ADD_LIBRARY(Utility STATIC)
-SET_PROPERTY(TARGET Utility PROPERTY CXX_STANDARD 17)
-
+ADD_LIBRARY(Utility STATIC)
+target_link_libraries(Utility PRIVATE Zlib)
 target_include_directories(Utility PUBLIC ../Inc ../zlib ../guids ../Lib/nlohmann/json/include)
-add_dependencies(Utility Zlib)
+SET_PROPERTY(TARGET Utility PROPERTY CXX_STANDARD 17)
 
 target_sources(Utility PRIVATE
     allegdb.cpp

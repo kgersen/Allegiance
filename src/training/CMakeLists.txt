@@ -1,4 +1,5 @@
-﻿ADD_LIBRARY(Training)
+ADD_LIBRARY(Training)
+target_link_libraries(Training PRIVATE Zlib Engine ClintLib effect Igc SoundEngine UI)
 SET_PROPERTY(TARGET Training PROPERTY CXX_STANDARD 14)
 
 target_include_directories(Training PRIVATE

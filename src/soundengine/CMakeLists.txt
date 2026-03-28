@@ -3,6 +3,7 @@ SET_MODULE(SoundEngine)
 INCLUDE_DIRECTORIES(../Inc ../zlib ../Lib/directx/include)
 
 ADD_LIBRARY(SoundEngine)
+target_link_libraries(SoundEngine PRIVATE Zlib)
 SET_PROPERTY(TARGET SoundEngine PROPERTY CXX_STANDARD 14)
 
 target_sources(SoundEngine PRIVATE

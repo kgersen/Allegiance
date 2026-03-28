@@ -20,6 +20,10 @@
 	#include "steam_api.h"	
 #endif
 
+#ifdef USE_SDL3
+	#include <SDL3/SDL.h>
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Some assertion functions
@@ -538,6 +542,13 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
     // clock time to shake things up a bit)
     srand(GetTickCount() + (int)time(nullptr));
 
+#ifdef USE_SDL3
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD)) {
+        retailf("SDL_Init failed: %s\n", SDL_GetError());
+        return 1;
+    }
+#endif
+
 	// mmf why is this done?
     // shift the stack locals and the heap by a random amount.            
     char* pzSpacer = new char[4 * (int)random(21, 256)];
@@ -576,6 +587,10 @@ __declspec(dllexport) int WINAPI Win32Main(HINSTANCE hInstance, HINSTANCE hPrevI
 
             g_papp->Terminate();
             Window::StaticTerminate();
+
+#ifdef USE_SDL3
+            SDL_Quit();
+#endif
 
 			
      } while (false);

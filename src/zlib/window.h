@@ -9,6 +9,10 @@
 
 #include "zlib_platform.h"
 
+#ifdef USE_SDL3
+    #include <SDL3/SDL.h>
+#endif
+
 // x64: GWL is GWLP in x64 SDK Imago 6/20/09
 #ifdef _WIN32
 #if defined (_WIN64) 
@@ -47,6 +51,9 @@ class Window :
     public ITimerEventSource
 {
 private:
+#ifdef USE_SDL3
+    SDL_Window* m_sdlWindow;
+#endif
     HWND     m_hwnd;
     HMENU    m_hmenu;
     HCURSOR  m_hcursor;
@@ -213,6 +220,9 @@ public:
     // Accessors
     //
 
+#ifdef USE_SDL3
+          SDL_Window* GetSDLWindow() const { return m_sdlWindow; }
+#endif
           HWND     GetHWND()       const { return m_hwnd;       }
     const WinRect& GetRect()       const { return m_rect;       }
     const WinRect& GetClientRect() const { return m_rectClient; }

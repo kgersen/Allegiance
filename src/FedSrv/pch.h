@@ -35,6 +35,7 @@
 
 // Windows Includes
 #include <windows.h>
+#include <wininet.h>
 #include <ShellAPI.h>
 #include <commctrl.h>
 #include <sqlext.h>

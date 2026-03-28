@@ -7,6 +7,10 @@ ENDIF()
 INCLUDE_DIRECTORIES(../Inc ../zlib ../_Utility ../Lib/AllegianceSecurity ../Lib/directx/include)
 
 ADD_LIBRARY(Engine STATIC)
+target_link_libraries(Engine PRIVATE Zlib)
+IF(USE_SDL3)
+    target_link_libraries(Engine PUBLIC SDL3::SDL3-static)
+ENDIF()
 SET_PROPERTY(TARGET Engine PROPERTY CXX_STANDARD 14)
 
 target_sources(Engine PRIVATE

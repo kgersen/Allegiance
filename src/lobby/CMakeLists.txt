@@ -45,7 +45,8 @@ PUBLIC
     ../Inc
     ../test/Inc
     ../Zone
-    ${CMAKE_BINARY_DIR}/src/Guids # fix this 
+    ${CMAKE_BINARY_DIR}/src/guids
+    ${CMAKE_BINARY_DIR}/src/AGC
 PRIVATE
     ../zlib
     ../_Utility

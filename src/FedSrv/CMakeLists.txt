@@ -40,7 +40,8 @@ PUBLIC
     ../Zone
     ../lobby
     ../AGC
-    ${CMAKE_CURRENT_BINARY_DIR}/../AGC # fix this 
+    ${CMAKE_BINARY_DIR}/src/guids
+    ${CMAKE_BINARY_DIR}/src/AGC
 PRIVATE
     ../zlib
     ../_Utility
@@ -168,7 +169,7 @@ set(AllSrvModule_IDL
 )
 add_custom_command(
     OUTPUT ${AllSrvModule_H}
-    COMMAND midl /I ../Inc /I ${CMAKE_CURRENT_BINARY_DIR} /I ../AGC /I  ${CMAKE_CURRENT_BINARY_DIR}/../AGC /h ${AllSrvModule_H} /out ${CMAKE_CURRENT_BINARY_DIR} ${AllSrvModule_IDL}
+    COMMAND midl /I ../Inc /I ${CMAKE_CURRENT_BINARY_DIR} /I ../AGC /I  ${CMAKE_CURRENT_BINARY_DIR}/../AGC /I ${CMAKE_BINARY_DIR}/src/guids /h ${AllSrvModule_H} /out ${CMAKE_CURRENT_BINARY_DIR} ${AllSrvModule_IDL}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     DEPENDS ${AllSrvModule_IDL}
     MAIN_DEPENDENCY ${AllSrvModule_IDL}

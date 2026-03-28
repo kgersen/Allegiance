@@ -3,6 +3,7 @@ SET_MODULE(Igc)
 INCLUDE_DIRECTORIES(../Inc ../zlib ../engine  ../soundengine ../guids)
 
 ADD_LIBRARY(Igc ${Igc_SRC})
+target_link_libraries(Igc PRIVATE Zlib Engine)
 SET_PROPERTY(TARGET Igc PROPERTY CXX_STANDARD 14)
 
 target_sources(Igc PRIVATE

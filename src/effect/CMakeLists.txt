@@ -3,7 +3,7 @@ SET_MODULE(Effect)
 ADD_LIBRARY(effect)
 SET_PROPERTY(TARGET effect PROPERTY CXX_STANDARD 14)
 
-add_dependencies(effect Zlib Engine)
+target_link_libraries(effect PRIVATE Zlib Engine)
 
 add_compile_definitions(Effect PRIVATE FixPermedia=1)
 

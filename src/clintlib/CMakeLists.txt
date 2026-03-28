@@ -1,4 +1,5 @@
 add_library(ClintLib)
+target_link_libraries(ClintLib PRIVATE Zlib Igc)
 set_property(TARGET ClintLib PROPERTY CXX_STANDARD 14)
 target_include_directories(ClintLib PRIVATE
     ../guids

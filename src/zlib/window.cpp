@@ -33,6 +33,9 @@ void Window::Construct()
     m_bMouseInside  = false;
     m_sizeMin       = WinPoint(0, 0);
     m_hcursor       = nullptr;
+#ifdef USE_SDL3
+    m_sdlWindow     = nullptr;
+#endif
 }
 
 Window::Window():
@@ -58,6 +61,9 @@ Window::Window(
           HMENU    hmenu,
           StyleEX  styleEX
 ) :
+#ifdef USE_SDL3
+    m_sdlWindow(nullptr),
+#endif
     m_pwindowParent(pwindowParent),
     m_style(style),
     m_styleEX(styleEX),
@@ -90,6 +96,31 @@ Window::Window(
     m_style.Set(StyleVisible() | StyleClipChildren() | StyleClipSiblings());
 
     m_rect = rect;
+    
+#ifdef USE_SDL3
+    uint32_t sdlFlags = SDL_WINDOW_HIDDEN;
+    if (m_style.Test(StyleThickFrame())) sdlFlags |= SDL_WINDOW_RESIZABLE;
+    if (m_style.Test(StyleMaximizeBox())) sdlFlags |= SDL_WINDOW_MAXIMIZED;
+    if (m_pwindowParent == nullptr) {
+        m_sdlWindow = SDL_CreateWindow(strTitle, m_rect.XSize(), m_rect.YSize(), sdlFlags);
+        if (m_sdlWindow) {
+            SDL_SetWindowPosition(m_sdlWindow, m_rect.XMin(), m_rect.YMin());
+#ifdef _WIN32
+            m_hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_sdlWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+            SDL_SetPointerProperty(SDL_GetWindowProperties(m_sdlWindow), "WindowPtr", this);
+            if (m_hwnd) {
+                s_mapWindow.Set(m_hwnd, this);
+                // We still want to hook the WndProc for some Win32 messages if needed, 
+                // but SDL usually handles them. For now, we'll keep the mapping.
+                m_pfnWndProc = (WNDPROC)::GetWindowLongPtr(m_hwnd, GWLx_WNDPROC);
+                ::SetWindowLongPtr(m_hwnd, GWLx_WNDPROC, (LONG_PTR)Win32WndProc);
+                ::SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (LONG_PTR)this);
+            }
+#endif
+            SDL_ShowWindow(m_sdlWindow);
+        }
+    }
+#else
     AdjustWindowRect(&m_rect, m_style.GetWord(), m_hmenu != nullptr);
 
     if (strClass.IsEmpty()) {
@@ -98,14 +129,7 @@ Window::Window(
             TEXT(GetTopLevelWindowClassname()),
             strTitle,
             m_style.GetWord(),
-			//Imago restored original impl in multimon & topmost effort 7/10
-// BUILD_DX9
-//            rect.XMin(), rect.YMin(),
-//#else
             CW_USEDEFAULT, CW_USEDEFAULT,
-// BUILD_DX9
-
-            //m_rect.XMin(), m_rect.YMin(), 
             m_rect.XSize(), m_rect.YSize(),
             pwindowParent ? pwindowParent->GetHWND() : nullptr,
             m_hmenu,
@@ -118,15 +142,7 @@ Window::Window(
             strClass,
             strTitle,
             m_style.GetWord(),
-
-			//Imago restored original impl in multimon & topmost effort 7/10
-// BUILD_DX9
- //           rect.XMin(), rect.YMin(),
-//#else
             CW_USEDEFAULT, CW_USEDEFAULT,
-// BUILD_DX9
-
-            //m_rect.XMin(), m_rect.YMin(), 
             m_rect.XSize(), m_rect.YSize(),
             pwindowParent ? pwindowParent->GetHWND() : nullptr,
             m_hmenu,
@@ -139,8 +155,11 @@ Window::Window(
         m_pfnWndProc = (WNDPROC)::GetWindowLongPtr(m_hwnd, GWLx_WNDPROC); //x64 Imago 6/20/09
         ::SetWindowLongPtr(m_hwnd, GWLx_WNDPROC, (LONG_PTR)Win32WndProc);  //x64 Imago 6/20/09
     }
+#endif
 
-    m_styleEX.SetWord(::GetWindowLong(m_hwnd, GWL_EXSTYLE));
+    if (m_hwnd) {
+        m_styleEX.SetWord(::GetWindowLong(m_hwnd, GWL_EXSTYLE));
+    }
 
     if (m_pwindowParent) {
         m_pwindowParent->AddChild(this);
@@ -728,6 +747,12 @@ WinPoint MakePoint(LPARAM lParam)
 
 void Window::OnClose()
 {
+#ifdef USE_SDL3
+    if (m_sdlWindow) {
+        SDL_DestroyWindow(m_sdlWindow);
+        m_sdlWindow = nullptr;
+    }
+#endif
     ::PostQuitMessage(0);
 }
 
@@ -1109,8 +1134,6 @@ void Window::SetContinuousIdle(bool b)
 
 HRESULT Window::MessageLoop()
 {
-    MSG msg;
-
     while (true) {
         //
         // Turn on Profiling
@@ -1144,9 +1167,113 @@ HRESULT Window::MessageLoop()
         CallIdleFunctions();
 
         //
-        // Handles Win32 messages
+        // Handles events
         //
 
+#ifdef USE_SDL3
+        SDL_Event event;
+        bool bAnyEvent;
+
+        if (g_bContinuousIdle) {
+            bAnyEvent = SDL_PollEvent(&event);
+        } else {
+            bAnyEvent = SDL_WaitEvent(&event);
+        }
+
+        if (bAnyEvent) {
+            do {
+                if (event.type == SDL_EVENT_QUIT) {
+                    s_mapWindow.SetEmpty();
+                    return S_OK;
+                }
+
+                Window* pwindow = nullptr;
+                SDL_Window* sdlWindow = nullptr;
+
+                if (event.type >= SDL_EVENT_WINDOW_FIRST && event.type <= SDL_EVENT_WINDOW_LAST) {
+                    sdlWindow = SDL_GetWindowFromID(event.window.windowID);
+                } else if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_KEY_UP) {
+                    sdlWindow = SDL_GetWindowFromID(event.key.windowID);
+                } else if (event.type >= SDL_EVENT_MOUSE_MOTION && event.type <= SDL_EVENT_MOUSE_WHEEL) {
+                    sdlWindow = SDL_GetWindowFromID(event.motion.windowID); // motion, button, and wheel all have windowID at the same offset in SDL3? 
+                    // Actually, in SDL3, common fields are handled via the windowID in the specific event struct.
+                }
+
+                if (sdlWindow) {
+                    pwindow = (Window*)SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWindow), "WindowPtr", NULL);
+                }
+
+                switch (event.type) {
+                    case SDL_EVENT_KEY_DOWN:
+                    case SDL_EVENT_KEY_UP:
+                        {
+                            KeyState ks;
+                            // Basic mapping: use SDL keycode for vk for now, 
+                            // though we should eventually have a full mapping table.
+                            ks.vk = (int)event.key.key; 
+                            ks.bAlt = (event.key.mod & SDL_KMOD_ALT) != 0;
+                            ks.bShift = (event.key.mod & SDL_KMOD_SHIFT) != 0;
+                            ks.bControl = (event.key.mod & SDL_KMOD_CTRL) != 0;
+                            ks.bDown = (event.type == SDL_EVENT_KEY_DOWN);
+                            ks.countRepeat = 1;
+
+                            bool fHandled = false;
+                            bool fForceTranslate = false;
+
+                            TList<TRef<IKeyboardInput> >::Iterator iter(g_listKeyboardInputFilters);
+                            while (!iter.End() && !fHandled) {
+                                fHandled = iter.Value()->OnKey(nullptr, ks, fForceTranslate);
+                                iter.Next();
+                            }
+
+                            if (!fHandled && pwindow) {
+                                pwindow->OnKey(ks);
+                            }
+                        }
+                        break;
+
+                    case SDL_EVENT_TEXT_INPUT:
+                        {
+                            // SDL3 provides UTF-8 strings. For now, we'll take the first char.
+                            KeyState ks;
+                            ks.vk = event.text.text[0];
+                            ks.bShift = false; // mod state not directly in text event, but usually irrelevant here
+                            ks.bControl = false;
+                            ks.countRepeat = 1;
+
+                            bool fHandled = false;
+                            TList<TRef<IKeyboardInput> >::Iterator iter(g_listKeyboardInputFilters);
+                            while (!iter.End() && !fHandled) {
+                                fHandled = iter.Value()->OnChar(nullptr, ks);
+                                iter.Next();
+                            }
+
+                            if (!fHandled && pwindow) {
+                                pwindow->OnChar(ks);
+                            }
+                        }
+                        break;
+
+                    case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+                        if (pwindow) {
+                            pwindow->OnClose();
+                        }
+                        break;
+
+                    case SDL_EVENT_WINDOW_RESIZED:
+                        if (pwindow) {
+                            pwindow->RectChanged();
+                        }
+                        break;
+
+                    default:
+                        // Other events handled by SDL internally
+                        break;
+                }
+            } while (SDL_PollEvent(&event));
+        }
+#else
+        MSG msg;
         bool bAnyMessage = true;
         if (g_bContinuousIdle) {
             bAnyMessage = ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != 0;
@@ -1226,5 +1353,6 @@ HRESULT Window::MessageLoop()
                 } 
             } while (::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE));
         }
+#endif
     }
 }

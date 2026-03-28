@@ -20,21 +20,20 @@ ENDMACRO()
 
 # set(CMAKE_DEBUG_POSTFIX d)
 
-OPTION(USE_RAYLIB "Use Raylib for rendering" OFF)
+OPTION(USE_SDL3 "Use SDL3 for portability" ON)
 
-IF(USE_RAYLIB)
+IF(USE_SDL3)
     include(FetchContent)
     FetchContent_Declare(
-    raylib
-    URL https://github.com/raysan5/raylib/archive/refs/tags/5.0.tar.gz
+      SDL3
+      GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+      GIT_TAG main
     )
-    set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-    set(USE_WAYLAND ON CACHE BOOL "" FORCE)
-    # GLFW flags
-    set(GLFW_BUILD_WAYLAND ON CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_X11 OFF CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(raylib)
-    add_compile_definitions(USE_RAYLIB)
+    set(SDL_STATIC ON CACHE BOOL "" FORCE)
+    set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+    set(SDL_TEST OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(SDL3)
+    add_compile_definitions(USE_SDL3)
 ENDIF()
 
 # Set architecture flags
