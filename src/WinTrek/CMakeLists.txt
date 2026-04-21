@@ -107,8 +107,6 @@ target_sources(Allegiance PRIVATE
     console.cpp
     consoledata.cpp
     CreateGameDialog.h
-    ddstream.cpp
-    ddvideo.cpp
     downloader.cpp
     gameoverscreen.cpp
     gamescreen.cpp
@@ -159,8 +157,6 @@ target_sources(Allegiance PRIVATE
     cmdview.h
     console.h
     consoledata.h
-    ddstream.h
-    ddvideo.h
     downloader.h
     gamesite.h
     gametypes.h
